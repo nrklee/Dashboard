@@ -2076,22 +2076,18 @@ var MultiSelect = function MultiSelect(_ref2) {
     _useState4 = _slicedToArray(_useState3, 2),
     searchTerm = _useState4[0],
     setSearchTerm = _useState4[1];
-  var _useState5 = useState(null),
+  var _useState5 = useState('left'),
     _useState6 = _slicedToArray(_useState5, 2),
-    dropdownWidth = _useState6[0],
-    setDropdownWidth = _useState6[1];
-  var _useState7 = useState(0),
+    dropdownPlacement = _useState6[0],
+    setDropdownPlacement = _useState6[1];
+  var _useState7 = useState(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    dropdownLeft = _useState8[0],
-    setDropdownLeft = _useState8[1];
-  var _useState9 = useState(0),
+    dropdownWidth = _useState8[0],
+    setDropdownWidth = _useState8[1];
+  var _useState9 = useState(320),
     _useState10 = _slicedToArray(_useState9, 2),
-    dropdownTop = _useState10[0],
-    setDropdownTop = _useState10[1];
-  var _useState11 = useState(320),
-    _useState12 = _slicedToArray(_useState11, 2),
-    dropdownMaxHeight = _useState12[0],
-    setDropdownMaxHeight = _useState12[1];
+    dropdownMaxHeight = _useState10[0],
+    setDropdownMaxHeight = _useState10[1];
   var dropdownRef = useRef(null);
   var buttonRef = useRef(null);
   var inputRef = useRef(null);
@@ -2123,18 +2119,16 @@ var MultiSelect = function MultiSelect(_ref2) {
       var rect = buttonRef.current.getBoundingClientRect();
       var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
       var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-      var horizontalPadding = viewportWidth <= 480 ? 10 : viewportWidth <= 820 ? 12 : 20;
-      var verticalPadding = 12;
+      var horizontalPadding = viewportWidth <= 480 ? 12 : viewportWidth <= 820 ? 16 : 20;
+      var verticalPadding = 14;
       var maxWidth = Math.max(220, viewportWidth - horizontalPadding * 2);
       var preferredWidth = viewportWidth <= 820 ? maxWidth : Math.max(rect.width, isWide ? rect.width : Math.min(420, Math.max(320, rect.width + 120)));
       var nextWidth = Math.min(preferredWidth, maxWidth);
-      var nextLeft = Math.min(rect.left, viewportWidth - horizontalPadding - nextWidth);
-      nextLeft = Math.max(horizontalPadding, nextLeft);
-      var nextTop = rect.bottom + 6;
+      var shouldAlignRight = rect.left + nextWidth > viewportWidth - horizontalPadding && rect.right - nextWidth >= horizontalPadding;
+      var nextTop = rect.bottom + 8;
       var availableHeight = Math.max(180, viewportHeight - nextTop - verticalPadding);
+      setDropdownPlacement(shouldAlignRight ? 'right' : 'left');
       setDropdownWidth(nextWidth);
-      setDropdownLeft(nextLeft);
-      setDropdownTop(nextTop);
       setDropdownMaxHeight(Math.min(availableHeight, viewportWidth <= 820 ? 360 : 420));
     };
     updateDropdownLayout();
@@ -2190,13 +2184,11 @@ var MultiSelect = function MultiSelect(_ref2) {
   })), isOpen && /*#__PURE__*/React.createElement("div", {
     className: "absolute z-50 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden dropdown-content flex flex-col ".concat(dropdownClassName),
     style: {
-      position: 'fixed',
       minWidth: '220px',
       width: dropdownWidth ? "".concat(dropdownWidth, "px") : isWide ? '100%' : 'min(420px, calc(100vw - 24px))',
       maxWidth: 'calc(100vw - 16px)',
-      left: "".concat(dropdownLeft, "px"),
-      top: "".concat(dropdownTop, "px"),
-      marginTop: 0,
+      left: dropdownPlacement === 'left' ? 0 : 'auto',
+      right: dropdownPlacement === 'right' ? 0 : 'auto',
       maxHeight: "".concat(dropdownMaxHeight, "px")
     }
   }, /*#__PURE__*/React.createElement("div", {
