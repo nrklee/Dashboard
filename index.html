@@ -2334,6 +2334,113 @@ var getRepeatGapMetricValue = function getRepeatGapMetricValue(item, metric) {
   if (metric === 'ton') return Number(item.latestTon !== undefined ? item.latestTon : item.ton || item.value || 0);
   return Number(item.latestSales !== undefined ? item.latestSales : item.sales || item.value || 0);
 };
+var RepeatPurchaseGapSizeRow = function RepeatPurchaseGapSizeRow(_ref5) {
+  var sizeRow = _ref5.sizeRow,
+    metric = _ref5.metric,
+    unit = _ref5.unit,
+    latestMetricValue = _ref5.latestMetricValue;
+  var _useState7 = useState(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    isExpanded = _useState8[0],
+    setIsExpanded = _useState8[1];
+  var sizeValue = getRepeatGapMetricValue(sizeRow, metric);
+  var skuRows = (sizeRow.skus || []).map(function (skuRow) {
+    return _objectSpread(_objectSpread({}, skuRow), {}, {
+      value: getRepeatGapMetricValue(skuRow, metric)
+    });
+  }).filter(function (skuRow) {
+    return skuRow.value > 0;
+  }).sort(function (a, b) {
+    if (b.value !== a.value) return b.value - a.value;
+    return b.monthsSinceLastOrder - a.monthsSinceLastOrder;
+  });
+  var hasSkus = skuRows.length > 0;
+  var toggleNode = hasSkus ? /*#__PURE__*/React.createElement(Icon, {
+    name: isExpanded ? "ChevronUp" : "ChevronDown",
+    size: 12,
+    className: "text-slate-400 justify-self-end self-center"
+  }) : /*#__PURE__*/React.createElement("span", null);
+  var headerNode = /*#__PURE__*/React.createElement("div", {
+    className: "text-xs ".concat(hasSkus ? 'cursor-pointer hover:bg-slate-50' : ''),
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) auto auto 18px',
+      gap: '0.5rem',
+      alignItems: 'center',
+      padding: '0.45rem 0.6rem'
+    },
+    onClick: hasSkus ? function () {
+      return setIsExpanded(!isExpanded);
+    } : undefined
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-slate-700 font-medium truncate",
+    style: {
+      lineHeight: '1.1'
+    },
+    title: sizeRow.name
+  }, sizeRow.name)), /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-600 text-right whitespace-nowrap",
+    style: {
+      lineHeight: '1.1'
+    }
+  }, formatValue(sizeValue, metric, unit), /*#__PURE__*/React.createElement("span", {
+    className: "text-blue-500 ml-1 font-mono"
+  }, "(", latestMetricValue > 0 ? (sizeValue / latestMetricValue * 100).toFixed(1) : '0.0', "%)")), /*#__PURE__*/React.createElement("span", {
+    className: "text-amber-700 font-medium text-right whitespace-nowrap",
+    style: {
+      lineHeight: '1.1'
+    }
+  }, formatRepeatGapMonthLabel(sizeRow.monthsSinceLastOrder)), toggleNode);
+  var detailNode = hasSkus && isExpanded ? /*#__PURE__*/React.createElement("div", {
+    className: "border-t border-slate-100 px-2 py-2 bg-slate-50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] font-semibold text-slate-500 uppercase pb-1 border-b border-slate-200",
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) auto auto',
+      gap: '0.5rem',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\u0E23\u0E2B\u0E31\u0E2A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"), /*#__PURE__*/React.createElement("span", {
+    className: "text-right"
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("span", {
+    className: "text-right"
+  }, "\u0E23\u0E30\u0E22\u0E30\u0E40\u0E27\u0E25\u0E32")), /*#__PURE__*/React.createElement("div", {
+    className: "max-h-44 overflow-y-auto custom-scrollbar pr-1 mt-1"
+  }, skuRows.map(function (skuRow, idx) {
+    var skuLabel = skuRow.lastOrderLabel && skuRow.lastOrderLabel !== '-' ? "".concat(skuRow.name, " \u00B7 \u0E0B\u0E37\u0E49\u0E2D\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14 ").concat(skuRow.lastOrderLabel) : skuRow.name;
+    return /*#__PURE__*/React.createElement("div", {
+      key: "".concat(skuRow.name, "-").concat(idx),
+      className: "text-[11px] rounded border border-slate-100 bg-white mt-1 first:mt-0",
+      style: {
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) auto auto',
+        gap: '0.5rem',
+        alignItems: 'center',
+        padding: '0.4rem 0.55rem'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "min-w-0",
+      title: skuLabel
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-slate-700 leading-tight truncate",
+      style: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+      }
+    }, skuLabel)), /*#__PURE__*/React.createElement("span", {
+      className: "text-right text-blue-700 font-semibold whitespace-nowrap"
+    }, formatValue(skuRow.value, metric, unit)), /*#__PURE__*/React.createElement("span", {
+      className: "text-right text-amber-700 font-medium whitespace-nowrap"
+    }, formatRepeatGapMonthLabel(skuRow.monthsSinceLastOrder)));
+  }))) : null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded border border-slate-100 bg-white"
+  }, headerNode, detailNode);
+};
 var RepeatPurchaseGapItem = function RepeatPurchaseGapItem(_ref5) {
   var item = _ref5.item,
     index = _ref5.index,
@@ -2412,17 +2519,13 @@ var RepeatPurchaseGapItem = function RepeatPurchaseGapItem(_ref5) {
   }, /*#__PURE__*/React.createElement("span", null, "\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32 (", breakdownMetricRows.length, ")"), /*#__PURE__*/React.createElement("span", null, "\u0E22\u0E2D\u0E14\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14 (", getUnitLabel(metric, unit), ")")), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-1"
   }, breakdownMetricRows.map(function (size, idx) {
-    return /*#__PURE__*/React.createElement("div", {
-      key: idx,
-      className: "flex justify-between items-center text-xs px-2 py-1 bg-white rounded border border-slate-100"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-700 font-medium truncate pr-2",
-      title: size.name
-    }, size.name), /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-600 shrink-0 whitespace-nowrap"
-    }, formatValue(size.value, metric, unit), /*#__PURE__*/React.createElement("span", {
-      className: "text-blue-500 ml-1 font-mono"
-    }, "(", latestMetricValue > 0 ? (size.value / latestMetricValue * 100).toFixed(1) : '0.0', "%)")));
+    return /*#__PURE__*/React.createElement(RepeatPurchaseGapSizeRow, {
+      key: "".concat(size.name, "-").concat(idx),
+      sizeRow: size,
+      metric: metric,
+      unit: unit,
+      latestMetricValue: latestMetricValue
+    });
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-2"
   }, "\u0E22\u0E2D\u0E14\u0E2A\u0E31\u0E48\u0E07\u0E0B\u0E37\u0E49\u0E2D\u0E04\u0E23\u0E31\u0E49\u0E07\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", /*#__PURE__*/React.createElement("span", {
@@ -5948,19 +6051,19 @@ var App = function App() {
       value: others
     }]) : top;
   };
-  var processTop10Shops = function processTop10Shops(data) {
+  var processTop20Shops = function processTop20Shops(data) {
     var total = data.reduce(function (sum, item) {
       return sum + item.value;
     }, 0);
     var result = [];
-    if (data.length <= 10) {
+    if (data.length <= 20) {
       result = data;
     } else {
-      var top10 = data.slice(0, 10);
-      var othersVal = data.slice(10).reduce(function (sum, item) {
+      var top20 = data.slice(0, 20);
+      var othersVal = data.slice(20).reduce(function (sum, item) {
         return sum + item.value;
       }, 0);
-      result = [].concat(_toConsumableArray(top10), [{
+      result = [].concat(_toConsumableArray(top20), [{
         name: 'อื่นๆ (Others)',
         value: othersVal
       }]);
@@ -6786,7 +6889,8 @@ var App = function App() {
           cv: cv,
           groupName: groupName,
           brand: brand,
-          byMonth: {}
+          byMonth: {},
+          skuHistory: {}
         };
       }
       var monthKey = item.monthSerial;
@@ -6805,6 +6909,7 @@ var App = function App() {
       grouped[key].byMonth[monthKey].qty += qtyValue;
       grouped[key].byMonth[monthKey].ton += tonValue;
       var sizeName = normalizeDimensionValue(item.size);
+      var skuName = normalizeDimensionValue(item.sku) === '-' ? 'ไม่ระบุรหัสสินค้า' : normalizeDimensionValue(item.sku);
       if (!grouped[key].byMonth[monthKey].sizeMetrics[sizeName]) {
         grouped[key].byMonth[monthKey].sizeMetrics[sizeName] = {
           sales: 0,
@@ -6815,6 +6920,25 @@ var App = function App() {
       grouped[key].byMonth[monthKey].sizeMetrics[sizeName].sales += salesValue;
       grouped[key].byMonth[monthKey].sizeMetrics[sizeName].qty += qtyValue;
       grouped[key].byMonth[monthKey].sizeMetrics[sizeName].ton += tonValue;
+      if (!grouped[key].skuHistory[sizeName]) {
+        grouped[key].skuHistory[sizeName] = {};
+      }
+      if (!grouped[key].skuHistory[sizeName][skuName]) {
+        grouped[key].skuHistory[sizeName][skuName] = {
+          name: skuName,
+          byMonth: {}
+        };
+      }
+      if (!grouped[key].skuHistory[sizeName][skuName].byMonth[monthKey]) {
+        grouped[key].skuHistory[sizeName][skuName].byMonth[monthKey] = {
+          sales: 0,
+          qty: 0,
+          ton: 0
+        };
+      }
+      grouped[key].skuHistory[sizeName][skuName].byMonth[monthKey].sales += salesValue;
+      grouped[key].skuHistory[sizeName][skuName].byMonth[monthKey].qty += qtyValue;
+      grouped[key].skuHistory[sizeName][skuName].byMonth[monthKey].ton += tonValue;
     });
     var items = Object.values(grouped).map(function (entry) {
       var monthKeys = Object.keys(entry.byMonth).map(Number).sort(function (a, b) {
@@ -6834,11 +6958,42 @@ var App = function App() {
         var _ref55 = _slicedToArray(_ref54, 2),
           name = _ref55[0],
           value = _ref55[1];
+        var skuRows = Object.values(entry.skuHistory[name] || {}).map(function (skuEntry) {
+          var skuMonthKeys = Object.keys(skuEntry.byMonth || {}).map(Number).sort(function (a, b) {
+            return a - b;
+          });
+          if (skuMonthKeys.length === 0) return null;
+          var skuLastMonthSerial = skuMonthKeys[skuMonthKeys.length - 1];
+          var skuLatestData = skuEntry.byMonth[skuLastMonthSerial] || {};
+          return {
+            name: skuEntry.name,
+            latestSales: Number(skuLatestData.sales || 0),
+            latestQty: Number(skuLatestData.qty || 0),
+            latestTon: Number(skuLatestData.ton || 0),
+            monthsSinceLastOrder: latestMonthSerial - skuLastMonthSerial,
+            lastOrderLabel: formatMonthSerialLabel(skuLastMonthSerial)
+          };
+        }).filter(Boolean).filter(function (row) {
+          return row.latestSales > 0 || row.latestQty > 0 || row.latestTon > 0;
+        }).sort(function (a, b) {
+          var metricA = a.latestSales > 0 ? a.latestSales : a.latestQty > 0 ? a.latestQty : a.latestTon;
+          var metricB = b.latestSales > 0 ? b.latestSales : b.latestQty > 0 ? b.latestQty : b.latestTon;
+          if (metricB !== metricA) return metricB - metricA;
+          return b.monthsSinceLastOrder - a.monthsSinceLastOrder;
+        });
+        var sizeLastMonthSerial = skuRows.reduce(function (maxSerial, row) {
+          if (!(row !== null && row !== void 0 && row.lastOrderLabel)) return maxSerial;
+          var rowSerial = latestMonthSerial - Number(row.monthsSinceLastOrder || 0);
+          return rowSerial > maxSerial ? rowSerial : maxSerial;
+        }, -Infinity);
         return {
           name: name,
           sales: Number((value === null || value === void 0 ? void 0 : value.sales) || 0),
           qty: Number((value === null || value === void 0 ? void 0 : value.qty) || 0),
-          ton: Number((value === null || value === void 0 ? void 0 : value.ton) || 0)
+          ton: Number((value === null || value === void 0 ? void 0 : value.ton) || 0),
+          skus: skuRows,
+          monthsSinceLastOrder: Number.isFinite(sizeLastMonthSerial) ? latestMonthSerial - sizeLastMonthSerial : 0,
+          lastOrderLabel: Number.isFinite(sizeLastMonthSerial) ? formatMonthSerialLabel(sizeLastMonthSerial) : '-'
         };
       }).filter(function (row) {
         return row.sales > 0 || row.qty > 0 || row.ton > 0;
@@ -7040,8 +7195,8 @@ var App = function App() {
       if (b.latestValue !== a.latestValue) return b.latestValue - a.latestValue;
       return b.totalAcrossYears - a.totalAcrossYears;
     });
-    if (sorted.length <= 10) return sorted;
-    var top10 = sorted.slice(0, 10);
+    if (sorted.length <= 20) return sorted;
+    var top20 = sorted.slice(0, 20);
     var others = {
       name: 'อื่นๆ (Others)',
       latestValue: 0,
@@ -7050,7 +7205,7 @@ var App = function App() {
     years.forEach(function (year) {
       others["value_".concat(year)] = 0;
     });
-    sorted.slice(10).forEach(function (row) {
+    sorted.slice(20).forEach(function (row) {
       years.forEach(function (year) {
         others["value_".concat(year)] += Number(row["value_".concat(year)] || 0);
       });
@@ -7059,7 +7214,7 @@ var App = function App() {
     others.totalAcrossYears = years.reduce(function (sum, year) {
       return sum + Number(others["value_".concat(year)] || 0);
     }, 0);
-    return [].concat(_toConsumableArray(top10), [others]);
+    return [].concat(_toConsumableArray(top20), [others]);
   }, [scopedData, topShopsYearSeries, metricMode, topShopsComparisonMonthIndex]);
   var selectedDistrictFilters = useMemo(function () {
     return (filters.district || []).map(function (districtName) {
@@ -7771,44 +7926,44 @@ var App = function App() {
   }, !salesGuideSummary.supported ? /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-h-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-800"
   }, salesGuideSummary.message) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "mb-1.5 grid gap-1 text-[11px]",
+    className: "mb-1.5 grid gap-1 text-xs",
     style: {
       gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
       marginBottom: '0.875rem'
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 flex flex-col items-center justify-center text-center"
+    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-500"
-  }, "Target"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[12px] mt-0.5",
+    className: "text-[11px] text-slate-500"
+  }, "\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-[13px] mt-0.5",
     style: {
       color: '#f97316'
     }
   }, formatValue(salesGuideSummary.currentTarget || 0, metricMode, unitMode))), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 flex flex-col items-center justify-center text-center"
+    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-500"
-  }, "\u0E22\u0E2D\u0E14\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[12px] mt-0.5",
+    className: "text-[11px] text-slate-500"
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-[13px] mt-0.5",
     style: {
       color: '#3b82f6'
     }
   }, formatValue(salesGuideSummary.currentSales || 0, metricMode, unitMode))), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 flex flex-col items-center justify-center text-center"
+    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-500"
-  }, "\u0E15\u0E49\u0E2D\u0E07\u0E17\u0E33\u0E40\u0E1E\u0E34\u0E48\u0E21"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[12px] mt-0.5",
+    className: "text-[11px] text-slate-500"
+  }, "\u0E15\u0E49\u0E2D\u0E07\u0E02\u0E32\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-[13px] mt-0.5",
     style: {
       color: '#e11d48'
     }
   }, formatValue(salesGuideSummary.targetGap || 0, metricMode, unitMode))), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 flex flex-col items-center justify-center text-center"
+    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-500"
-  }, "\u0E41\u0E19\u0E30\u0E19\u0E33\u0E01\u0E32\u0E23\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[12px] mt-0.5",
+    className: "text-[11px] text-slate-500"
+  }, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E0B\u0E37\u0E49\u0E2D"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-[13px] mt-0.5",
     style: {
       color: '#059669'
     }
@@ -7970,7 +8125,7 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Store",
     className: "text-blue-500"
-  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E02\u0E32\u0E22\u0E14\u0E35 10 \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A + Others"), /*#__PURE__*/React.createElement("button", {
+  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 20 \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A + Others"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('shops');
     },
@@ -7996,7 +8151,7 @@ var App = function App() {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E23\u0E32\u0E22\u0E40\u0E02\u0E15"), /*#__PURE__*/React.createElement("button", {
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E23\u0E32\u0E22\u0E1B\u0E35"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('district');
     },
@@ -8080,16 +8235,6 @@ try {
       + '<h1 style="font-size:20px;line-height:1.4;margin:0 0 12px 0;font-weight:700;color:#1d4ed8;">เปิด Dashboard ไม่สำเร็จ</h1>'
       + '<p style="font-size:14px;line-height:1.7;margin:0 0 12px 0;color:#334155;">เกิดข้อผิดพลาดระหว่าง render หน้าแรก</p>'
       + '<ul style="padding-left:20px;margin:0 0 12px 0;font-size:14px;line-height:1.7;color:#475569;">'
-      + '<li style="margin:0 0 8px 0;">ข้อความผิดพลาด: ' + String(error && error.message ? error.message : error) + '</li>'
-      + '<li style="margin:0 0 8px 0;">ช่วงที่ระบบกำลังเริ่ม: app:root-render</li>'
-      + '</ul>'
-      + '</div></div>';
-  }
-}
-    </script>
-</body>
-</html>
-in:0 0 12px 0;font-size:14px;line-height:1.7;color:#475569;">'
       + '<li style="margin:0 0 8px 0;">ข้อความผิดพลาด: ' + String(error && error.message ? error.message : error) + '</li>'
       + '<li style="margin:0 0 8px 0;">ช่วงที่ระบบกำลังเริ่ม: app:root-render</li>'
       + '</ul>'
