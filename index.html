@@ -162,7 +162,7 @@
         .menu-btn { width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-sec);transition:all .2s;flex-shrink:0;font-size:18px; }
         .menu-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-soft); }
         .app-header-controls { display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:0; }
-        .filters-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px; }
+        .filters-grid { display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;align-items:start; }
         .trend-top-grid { display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:24px;align-items:stretch; }
         .action-gap-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start; }
         .responsive-card-fill { min-width:0;height:100%;display:flex;flex-direction:column; }
@@ -174,12 +174,44 @@
         .sales-guide-summary-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem; }
         .sales-guide-weight-row { display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap; }
         .top-brands-panel { min-height:42rem; }
+        .ai-launch-btn { min-width:44px;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(91,154,255,0.35);background:linear-gradient(135deg,rgba(91,154,255,0.18),rgba(59,130,246,0.1));color:var(--accent);font-weight:800;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s ease; }
+        .ai-launch-btn:hover { transform:translateY(-1px);box-shadow:0 10px 18px rgba(37,99,235,0.18);border-color:rgba(91,154,255,0.55); }
+        .ai-panel-overlay { position:fixed;inset:0;background:rgba(15,23,42,0.52);z-index:80;backdrop-filter:blur(2px); }
+        .ai-panel { position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:-18px 0 38px rgba(15,23,42,0.22);z-index:81;display:flex;flex-direction:column; }
+        .ai-panel-header { display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 14px;border-bottom:1px solid var(--border); }
+        .ai-panel-title { font-size:18px;font-weight:800;color:var(--text);line-height:1.3; }
+        .ai-panel-subtitle { font-size:12px;line-height:1.6;color:var(--text-muted);margin-top:4px; }
+        .ai-panel-body { flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 16px 16px;gap:12px; }
+        .ai-config-box { border:1px solid var(--border);border-radius:12px;background:var(--bg-soft);padding:12px; }
+        .ai-config-label { display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.02em; }
+        .ai-chat-list { flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px; }
+        .ai-msg { border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;border:1px solid var(--border); }
+        .ai-msg.assistant { background:rgba(91,154,255,0.08);border-color:rgba(91,154,255,0.18);color:var(--text); }
+        .ai-msg.user { background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.18);color:var(--text); }
+        .ai-msg.system { background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.18);color:var(--text); }
+        .ai-msg-label { font-size:10px;font-weight:800;letter-spacing:0.03em;text-transform:uppercase;margin-bottom:4px;color:var(--text-muted); }
+        .ai-quick-row { display:flex;flex-wrap:wrap;gap:8px; }
+        .ai-quick-btn { border:1px solid rgba(91,154,255,0.2);background:rgba(91,154,255,0.08);color:var(--accent);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s ease; }
+        .ai-quick-btn:hover { background:rgba(91,154,255,0.14); }
+        .ai-footer { display:flex;flex-direction:column;gap:8px; }
+        .ai-question-input { min-height:96px;resize:vertical;margin-bottom:0!important; }
+        .ai-footer-actions { display:flex;gap:8px;flex-wrap:wrap; }
+        .ai-action-btn { flex:1 1 140px;border-radius:10px;border:1px solid var(--border);padding:10px 12px;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s ease; }
+        .ai-action-btn.primary { background:var(--accent);border-color:var(--accent);color:#fff; }
+        .ai-action-btn.secondary { background:var(--bg-soft);color:var(--text); }
+        .ai-action-btn:disabled { opacity:.55;cursor:not-allowed; }
+        .ai-hint { font-size:11px;line-height:1.6;color:var(--text-muted); }
 
         /* ===== Responsive ===== */
+
+        @media(max-width:1500px) {
+            .filters-grid { grid-template-columns:repeat(4,minmax(180px,1fr)); }
+        }
 
         @media(max-width:1200px) {
             .trend-top-grid,
             .action-gap-grid { grid-template-columns:1fr; }
+            .filters-grid { grid-template-columns:repeat(3,minmax(180px,1fr)); }
             .top-brands-panel { min-height:34rem; }
         }
 
@@ -189,7 +221,7 @@
             .kpi-card { padding:14px 16px; }
             .dashboard-card { border-radius:12px!important; }
             .drawer-panel { width:400px; }
-            .filters-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+            .filters-grid { grid-template-columns:repeat(2,minmax(180px,1fr)); }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .top-brands-panel { min-height:36rem; }
         }
@@ -204,16 +236,19 @@
             .major-section-head { padding:8px 10px;flex-wrap:wrap;gap:8px; }
             .dashboard-header { flex-wrap:wrap;align-items:flex-start;gap:8px; }
             .app-header-controls { width:100%;justify-content:flex-start; }
-            .filters-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+            .filters-grid { grid-template-columns:repeat(2,minmax(160px,1fr));gap:10px; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .sales-guide-weight-row { gap:0.4rem; }
             .repeat-gap-list-inner { min-width:680px; }
             .sales-guide-list-inner { min-width:660px; }
             .top-brands-panel { min-height:32rem; }
+            .ai-panel { width:100vw; }
+            .ai-panel-header { padding:16px 14px 12px; }
+            .ai-panel-body { padding:12px; }
         }
 
         /* Mobile (max-width: 480px) */
-        @media(max-width:480px) {
+        @media(max-width:560px) {
             .dashboard-header { padding:10px 12px!important; }
             .dashboard-main { padding:8px!important; }
             .kpi-card { padding:12px 14px;border-radius:10px; }
@@ -231,6 +266,10 @@
             .repeat-gap-list-inner { min-width:600px; }
             .sales-guide-list-inner { min-width:580px; }
             .top-brands-panel { min-height:28rem; }
+            .ai-panel-title { font-size:16px; }
+            .ai-quick-row { gap:6px; }
+            .ai-quick-btn { width:100%;justify-content:center; }
+            .ai-footer-actions { flex-direction:column; }
         }
 
         /* Touch-friendly: ensure minimum tap target sizes */
@@ -261,6 +300,95 @@
     if (!Array.prototype.flatMap) {
         Array.prototype.flatMap = function (callback, thisArg) {
             return Array.prototype.concat.apply([], this.map(callback, thisArg));
+        };
+    }
+    if (!Object.assign) {
+        Object.assign = function (target) {
+            if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+            var to = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var nextSource = arguments[index];
+                if (nextSource != null) {
+                    for (var nextKey in nextSource) {
+                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                            to[nextKey] = nextSource[nextKey];
+                        }
+                    }
+                }
+            }
+            return to;
+        };
+    }
+    if (!Object.values) {
+        Object.values = function (obj) {
+            return Object.keys(obj).map(function (key) {
+                return obj[key];
+            });
+        };
+    }
+    if (!Object.entries) {
+        Object.entries = function (obj) {
+            return Object.keys(obj).map(function (key) {
+                return [key, obj[key]];
+            });
+        };
+    }
+    if (!Array.from) {
+        Array.from = function (arrayLike) {
+            return Array.prototype.slice.call(arrayLike);
+        };
+    }
+    if (!Array.prototype.includes) {
+        Array.prototype.includes = function (searchElement, fromIndex) {
+            var length = this.length >>> 0;
+            if (!length) return false;
+            var start = Math.max(fromIndex | 0, 0);
+            for (var i = start; i < length; i++) {
+                if (this[i] === searchElement || searchElement !== searchElement && this[i] !== this[i]) return true;
+            }
+            return false;
+        };
+    }
+    if (!String.prototype.includes) {
+        String.prototype.includes = function (search, start) {
+            return this.indexOf(search, start || 0) !== -1;
+        };
+    }
+    if (!String.prototype.startsWith) {
+        String.prototype.startsWith = function (search, pos) {
+            var position = pos || 0;
+            return this.substr(position, search.length) === search;
+        };
+    }
+    if (!String.prototype.endsWith) {
+        String.prototype.endsWith = function (search, thisLen) {
+            var length = thisLen === undefined || thisLen > this.length ? this.length : thisLen;
+            return this.substring(length - search.length, length) === search;
+        };
+    }
+    if (!String.prototype.padStart) {
+        String.prototype.padStart = function (targetLength, padString) {
+            var output = String(this);
+            var padding = padString !== undefined ? String(padString) : ' ';
+            while (output.length < targetLength) {
+                output = padding + output;
+            }
+            return output.slice(-targetLength);
+        };
+    }
+    if (!String.prototype.padEnd) {
+        String.prototype.padEnd = function (targetLength, padString) {
+            var output = String(this);
+            var padding = padString !== undefined ? String(padString) : ' ';
+            while (output.length < targetLength) {
+                output += padding;
+            }
+            return output.slice(0, targetLength);
+        };
+    }
+    if (!Number.isFinite) {
+        Number.isFinite = function (value) {
+            return typeof value === 'number' && isFinite(value);
         };
     }
 
@@ -300,6 +428,7 @@
         renderFallback('เปิด Dashboard ไม่สำเร็จ', [
             'เกิดข้อผิดพลาดระหว่างเริ่มระบบ: ' + message,
             'ช่วงที่ระบบกำลังเริ่ม: ' + String(bootState.phase || 'unknown'),
+            'ตัวช่วยระบบ: React=' + (!!window.React) + ', ReactDOM=' + (!!window.ReactDOM) + ', Recharts=' + (!!window.Recharts) + ', XLSX=' + (!!window.XLSX),
             'หากเปิดจากไฟล์ในเครื่อง ให้ปิดแท็บเดิมแล้วเปิดไฟล์นี้ใหม่อีกครั้ง'
         ]);
     });
@@ -322,7 +451,7 @@
                 'ลองรออีกเล็กน้อย หรือรีเฟรช Safari แล้วเปิดไฟล์นี้ใหม่'
             ]);
         }
-    }, 20000);
+    }, 45000);
 })();
     </script>
     <style data-embedded="tailwind-lite">
@@ -963,6 +1092,7 @@ var AUTO_SYNC_KEY = 'autoSyncEnabled';
 var SALES_FILE_NAME_KEY = 'salesUploadedFileName';
 var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
+var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
 var MAX_SIZE_MB = 200;
 var COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
 var OTHER_COLOR = '#94a3b8';
@@ -1005,6 +1135,7 @@ var DEFAULT_SALES_GUIDE_WEIGHTS = {
   month2: 30,
   month3: 20
 };
+var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
 var SALES_GUIDE_EXCLUDED_GROUPS = ['ลดหนี้ส่งเสริมการขาย - tax (ส่วนลดพิเศษ)'];
 var TARGET_RELAXED_FILTER_KEYS = ['province', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
 
@@ -1215,15 +1346,6 @@ var idb = {
     }
     return clear;
   }()
-};
-var formatCurrency = function formatCurrency(value) {
-  return new Intl.NumberFormat('th-TH', {
-    style: 'decimal',
-    minimumFractionDigits: 0
-  }).format(value);
-};
-var formatPercent = function formatPercent(value) {
-  return "".concat((value * 100).toFixed(0), "%");
 };
 var formatValue = function formatValue(value, metric, unit) {
   var finalValue = value;
@@ -1616,68 +1738,6 @@ var splitCSV = function splitCSV(str) {
   return result.map(function (s) {
     return s.trim().replace(/^"|"$/g, '').replace(/,/g, '');
   });
-};
-
-// --- Mock Data Generator ---
-var generateMockData = function generateMockData() {
-  var regions = ['เหนือ', 'อีสาน', 'กลาง', 'ใต้'];
-  var brands = ['Optimum', 'Sakura', 'Deep Insect', 'Kyoto', 'Fujisan'];
-  var shops = ['Shop A', 'Shop B', 'Shop C', 'Shop D', 'Shop E', 'Shop F', 'Shop G', 'Shop H', 'Shop I', 'Shop J', 'Shop K'];
-  var groups = ['ปลาสวยงาม', 'สุนัข', 'แมว', 'นก'];
-  var districts = ['NE.3/1', 'NE.3/2', 'NE.3/3', 'Van Sales NE 01', 'Laos', 'Other Dist'];
-  var currentYear = new Date().getFullYear();
-  var monthlyData = [],
-    yearlyData = [],
-    targetData = [];
-  for (var i = 0; i < 300; i++) {
-    var region = regions[Math.floor(Math.random() * regions.length)];
-    var brand = brands[Math.floor(Math.random() * brands.length)];
-    var shop = shops[Math.floor(Math.random() * shops.length)];
-    var group = groups[Math.floor(Math.random() * groups.length)];
-    var district = districts[Math.floor(Math.random() * districts.length)];
-    var sku = "".concat(brand, " Product ").concat(Math.floor(Math.random() * 20));
-    var size = '1kg';
-    var month = Math.floor(Math.random() * 12);
-    var sales = Math.floor(Math.random() * 50000);
-    var qty = Math.floor(sales / 200);
-    var ton = sales / 200 / 1000;
-    if (sales > 0) {
-      var date = new Date(currentYear, month, 1);
-      monthlyData.push({
-        id: "m-".concat(i),
-        date: toLocalISOString(date),
-        monthIndex: month,
-        region: region,
-        province: "Prov ".concat(region),
-        district: district,
-        cv: shop,
-        group: group,
-        brand: brand,
-        model: 'M',
-        size: size,
-        sku: sku,
-        sales: sales,
-        qty: qty,
-        ton: ton
-      });
-    }
-    var target = sales * 1.1;
-    var tDate = new Date(currentYear, month, 1);
-    // Correct target mapping for mock data
-    targetData.push({
-      id: "t-".concat(i),
-      date: toLocalISOString(tDate),
-      monthIndex: month,
-      district: district,
-      target: target,
-      region: getRegionFromDistrict(district)
-    });
-  }
-  return {
-    monthly: monthlyData,
-    yearly: yearlyData,
-    targets: targetData
-  };
 };
 
 // --- UI Components (Icons, MultiSelect, etc.) ---
@@ -2778,57 +2838,104 @@ var SalesGuideList = function SalesGuideList(_ref9) {
     });
   }))));
 };
-var BreakdownModal = function BreakdownModal(_ref7) {
-  var isOpen = _ref7.isOpen,
-    onClose = _ref7.onClose,
-    title = _ref7.title,
-    data = _ref7.data;
-  if (!isOpen) return null;
+var AIMessageBubble = function AIMessageBubble(props) {
+  var role = props.role,
+    text = props.text;
+  var roleLabel = role === 'user' ? 'คุณ' : role === 'system' ? 'ระบบ' : 'AI';
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] modal-overlay",
-    onClick: onClose
+    className: "ai-msg ".concat(role === 'user' ? 'user' : role === 'system' ? 'system' : 'assistant')
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-xl shadow-2xl p-6 w-full max-w-md m-4 relative animate-in fade-in zoom-in-95 duration-200",
-    onClick: function onClick(e) {
-      return e.stopPropagation();
-    }
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "ai-msg-label"
+  }, roleLabel), text || '-');
+};
+var AIPanel = function AIPanel(props) {
+  var isOpen = props.isOpen,
+    onClose = props.onClose,
+    webAppUrl = props.webAppUrl,
+    onWebAppUrlChange = props.onWebAppUrlChange,
+    messages = props.messages,
+    question = props.question,
+    onQuestionChange = props.onQuestionChange,
+    onAsk = props.onAsk,
+    onAction = props.onAction,
+    onQuickPrompt = props.onQuickPrompt,
+    isLoading = props.isLoading;
+  if (!isOpen) return null;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-overlay",
+    onClick: onClose
+  }), /*#__PURE__*/React.createElement("aside", {
+    className: "ai-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-header"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-title"
+  }, "AI ผู้ช่วยวิเคราะห์ยอดขาย"), /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-subtitle"
+  }, "ถามสรุปข้อมูล, ขอ insight, หรือให้ AI ช่วยตั้งตัวกรองจากหน้าปัจจุบันได้จากที่นี่")), /*#__PURE__*/React.createElement("button", {
+    className: "menu-btn",
     onClick: onClose,
-    className: "absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+    title: "ปิด AI"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "X",
-    size: 24
-  })), /*#__PURE__*/React.createElement("h3", {
-    className: "text-lg font-bold text-slate-800 mb-4 border-b pb-2 pr-8"
-  }, title), /*#__PURE__*/React.createElement("div", {
-    className: "max-h-[60vh] overflow-y-auto custom-scrollbar pr-2"
-  }, /*#__PURE__*/React.createElement("table", {
-    className: "w-full text-sm text-left"
-  }, /*#__PURE__*/React.createElement("thead", {
-    className: "text-xs text-slate-500 uppercase bg-slate-50 sticky top-0"
-  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
-    className: "px-2 py-2"
-  }, "\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"), /*#__PURE__*/React.createElement("th", {
-    className: "px-2 py-2 text-right"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("th", {
-    className: "px-2 py-2 text-right"
-  }, "\u0E2A\u0E31\u0E14\u0E2A\u0E48\u0E27\u0E19"))), /*#__PURE__*/React.createElement("tbody", null, data.map(function (item, idx) {
-    return /*#__PURE__*/React.createElement("tr", {
-      key: idx,
-      className: "border-b last:border-0 hover:bg-slate-50"
-    }, /*#__PURE__*/React.createElement("td", {
-      className: "px-2 py-2 font-medium text-slate-700"
-    }, item.name), /*#__PURE__*/React.createElement("td", {
-      className: "px-2 py-2 text-right text-slate-600"
-    }, formatCurrency(item.value)), /*#__PURE__*/React.createElement("td", {
-      className: "px-2 py-2 text-right text-blue-600 font-mono"
-    }, formatPercent(item.percent)));
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 pt-3 border-t text-right"
+    size: 18
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ai-config-box"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "ai-config-label"
+  }, "Apps Script Web App URL"), /*#__PURE__*/React.createElement("input", {
+    className: "drawer-input",
+    value: webAppUrl,
+    onChange: function onChange(e) {
+      return onWebAppUrlChange(e.target.value);
+    },
+    placeholder: "วาง Web App URL ของ Google Apps Script ที่นี่"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ai-hint"
+  }, "ใส่ URL ครั้งแรกครั้งเดียว ระบบจะจำไว้ในอุปกรณ์นี้ให้เอง")), /*#__PURE__*/React.createElement("div", {
+    className: "ai-quick-row"
+  }, AI_QUICK_PROMPTS.map(function (prompt) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: prompt,
+      type: "button",
+      className: "ai-quick-btn",
+      onClick: function onClick() {
+        return onQuickPrompt(prompt);
+      }
+    }, prompt);
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ai-chat-list custom-scrollbar"
+  }, (messages || []).map(function (message, index) {
+    return /*#__PURE__*/React.createElement(AIMessageBubble, {
+      key: "".concat(message.role, "-").concat(index),
+      role: message.role,
+      text: message.text
+    });
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ai-footer"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    className: "drawer-input ai-question-input",
+    value: question,
+    onChange: function onChange(e) {
+      return onQuestionChange(e.target.value);
+    },
+    placeholder: "พิมพ์คำถามหรือคำสั่ง เช่น สรุปภาพรวมเดือนนี้ / กรองเฉพาะ NE.3/1 / ร้านไหนควรเร่งขายเพิ่ม",
+    disabled: isLoading
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ai-footer-actions"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: onClose,
-    className: "px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
-  }, "\u0E1B\u0E34\u0E14\u0E2B\u0E19\u0E49\u0E32\u0E15\u0E48\u0E32\u0E07"))));
+    type: "button",
+    className: "ai-action-btn secondary",
+    onClick: onAction,
+    disabled: isLoading
+  }, isLoading ? 'กำลังประมวลผล...' : 'ให้ AI ช่วยตั้งตัวกรอง'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ai-action-btn primary",
+    onClick: onAsk,
+    disabled: isLoading
+  }, isLoading ? 'กำลังถาม AI...' : 'ถาม AI'))))));
 };
 // --- Menu Drawer Component ---
 var MenuDrawer = function MenuDrawer(_ref9) {
@@ -3120,6 +3227,10 @@ var TargetBarChart = function TargetBarChart(_ref10) {
 // --- Main App ---
 var App = function App() {
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:init';
+  if (window.__dashboardBoot && !window.__dashboardBoot.mounted) {
+    window.__dashboardBoot.phase = 'app:render:start';
+    window.__dashboardBoot.mounted = true;
+  }
   useEffect(function () {
     if (window.__dashboardBoot) {
       window.__dashboardBoot.phase = 'mounted';
@@ -3207,79 +3318,118 @@ var App = function App() {
     _useState24 = _slicedToArray(_useState23, 2),
     metricMode = _useState24[0],
     setMetricMode = _useState24[1];
-  var _useState25 = useState(null),
+  var _useState25 = useState(DEFAULT_SECTION_STATE),
     _useState26 = _slicedToArray(_useState25, 2),
-    modalData = _useState26[0],
-    setModalData = _useState26[1];
-  var _useState27 = useState(false),
-    _useState28 = _slicedToArray(_useState27, 2),
-    isModalOpen = _useState28[0],
-    setIsModalOpen = _useState28[1];
-  var _useState29 = useState(DEFAULT_SECTION_STATE),
-    _useState30 = _slicedToArray(_useState29, 2),
-    sectionOpen = _useState30[0],
-    setSectionOpen = _useState30[1];
-  var _useState31 = useState({
+    sectionOpen = _useState26[0],
+    setSectionOpen = _useState26[1];
+  var _useState27 = useState({
       type: '',
       message: ''
     }),
+    _useState28 = _slicedToArray(_useState27, 2),
+    statusInfo = _useState28[0],
+    setStatusInfo = _useState28[1];
+  var _useState29 = useState([]),
+    _useState30 = _slicedToArray(_useState29, 2),
+    selectedTrendYears = _useState30[0],
+    setSelectedTrendYears = _useState30[1];
+  var _useState31 = useState(createEmptyRepeatGapFilters),
     _useState32 = _slicedToArray(_useState31, 2),
-    statusInfo = _useState32[0],
-    setStatusInfo = _useState32[1];
-  var _useState33 = useState([]),
-    _useState34 = _slicedToArray(_useState33, 2),
-    selectedTrendYears = _useState34[0],
-    setSelectedTrendYears = _useState34[1];
-  var _useState35 = useState(createEmptyRepeatGapFilters),
-    _useState36 = _slicedToArray(_useState35, 2),
-    repeatGapFilters = _useState36[0],
-    setRepeatGapFilters = _useState36[1];
-  var _useState37 = useState(function () {
-      if (typeof localStorage !== 'undefined') {
-        var s = localStorage.getItem('dashTheme');
-        if (s) return s === 'dark';
-      }
+    repeatGapFilters = _useState32[0],
+    setRepeatGapFilters = _useState32[1];
+  var safeStorageGet = function safeStorageGet(key) {
+    try {
+      if (typeof localStorage === 'undefined') return null;
+      return localStorage.getItem(key);
+    } catch (_err) {
+      return null;
+    }
+  };
+  var safeStorageSet = function safeStorageSet(key, value) {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(key, value);
+    } catch (_err) {}
+  };
+  var safeStorageRemove = function safeStorageRemove(key) {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.removeItem(key);
+    } catch (_err) {}
+  };
+  var _useState33 = useState(function () {
+      var s = safeStorageGet('dashTheme');
+      if (s) return s === 'dark';
       return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
     }),
-    _useState38 = _slicedToArray(_useState37, 2),
-    isDarkMode = _useState38[0],
-    setIsDarkMode = _useState38[1];
-  var _useState39 = useState(false),
-    _useState40 = _slicedToArray(_useState39, 2),
-    isDrawerOpen = _useState40[0],
-    setIsDrawerOpen = _useState40[1];
-  var _useState41 = useState(function () {
-      if (typeof localStorage === 'undefined') return {
-        sales: '',
-        target: ''
-      };
+    _useState34 = _slicedToArray(_useState33, 2),
+    isDarkMode = _useState34[0],
+    setIsDarkMode = _useState34[1];
+  var _useState35 = useState(false),
+    _useState36 = _slicedToArray(_useState35, 2),
+    isDrawerOpen = _useState36[0],
+    setIsDrawerOpen = _useState36[1];
+  var _useState37 = useState(function () {
       return {
-        sales: localStorage.getItem(SALES_FILE_NAME_KEY) || '',
-        target: localStorage.getItem(TARGET_FILE_NAME_KEY) || ''
+        sales: safeStorageGet(SALES_FILE_NAME_KEY) || '',
+        target: safeStorageGet(TARGET_FILE_NAME_KEY) || ''
       };
     }),
-    _useState42 = _slicedToArray(_useState41, 2),
-    uploadedFileNames = _useState42[0],
-    setUploadedFileNames = _useState42[1];
-  var _useState43 = useState(function () {
-      if (typeof localStorage === 'undefined') return _objectSpread({}, DEFAULT_SALES_GUIDE_WEIGHTS);
+    _useState38 = _slicedToArray(_useState37, 2),
+    uploadedFileNames = _useState38[0],
+    setUploadedFileNames = _useState38[1];
+  var _useState39 = useState(function () {
       try {
-        return sanitizeSalesGuideWeights(JSON.parse(localStorage.getItem(SALES_GUIDE_WEIGHTS_KEY) || 'null'));
+        return sanitizeSalesGuideWeights(JSON.parse(safeStorageGet(SALES_GUIDE_WEIGHTS_KEY) || 'null'));
       } catch (_err) {
         return _objectSpread({}, DEFAULT_SALES_GUIDE_WEIGHTS);
       }
     }),
+    _useState40 = _slicedToArray(_useState39, 2),
+    salesGuideWeights = _useState40[0],
+    setSalesGuideWeights = _useState40[1];
+  var _useState41 = useState(false),
+    _useState42 = _slicedToArray(_useState41, 2),
+    isAIPanelOpen = _useState42[0],
+    setIsAIPanelOpen = _useState42[1];
+  var _useState43 = useState(function () {
+      return safeStorageGet(AI_WEB_APP_URL_KEY) || '';
+    }),
     _useState44 = _slicedToArray(_useState43, 2),
-    salesGuideWeights = _useState44[0],
-    setSalesGuideWeights = _useState44[1];
+    aiWebAppUrl = _useState44[0],
+    setAIWebAppUrl = _useState44[1];
+  var _useState45 = useState(''),
+    _useState46 = _slicedToArray(_useState45, 2),
+    aiQuestion = _useState46[0],
+    setAIQuestion = _useState46[1];
+  var _useState47 = useState([{
+      role: 'assistant',
+      text: 'พร้อมช่วยสรุปข้อมูลจากหน้าปัจจุบันแล้ว คุณสามารถถามเป็นภาษาปกติ หรือให้ AI ช่วยตั้งตัวกรองให้ได้'
+    }]),
+    _useState48 = _slicedToArray(_useState47, 2),
+    aiMessages = _useState48[0],
+    setAIMessages = _useState48[1];
+  var _useState49 = useState(false),
+    _useState50 = _slicedToArray(_useState49, 2),
+    isAskingAI = _useState50[0],
+    setIsAskingAI = _useState50[1];
   var salesInputRef = useRef(null);
   var targetInputRef = useRef(null);
   var didAutoSyncRef = useRef(false);
   var embeddedMode = useMemo(function () {
     if (typeof window === 'undefined') return false;
     try {
-      var params = new URLSearchParams(window.location.search || '');
-      return params.get('embedded') === '1';
+      var search = String(window.location.search || '').replace(/^\?/, '');
+      if (!search) return false;
+      var pairs = search.split('&');
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        var key = decodeURIComponent(pair[0] || '');
+        if (key === 'embedded') {
+          return decodeURIComponent(pair[1] || '') === '1';
+        }
+      }
+      return false;
     } catch (_err) {
       return false;
     }
@@ -3297,9 +3447,8 @@ var App = function App() {
     setUploadedFileNames(function (prev) {
       return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, type, safeName));
     });
-    if (typeof localStorage === 'undefined') return;
     var storageKey = type === 'sales' ? SALES_FILE_NAME_KEY : TARGET_FILE_NAME_KEY;
-    if (safeName) localStorage.setItem(storageKey, safeName);else localStorage.removeItem(storageKey);
+    if (safeName) safeStorageSet(storageKey, safeName);else safeStorageRemove(storageKey);
   };
   var postBridgeMessage = function postBridgeMessage() {
     var payload = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -3341,12 +3490,14 @@ var App = function App() {
   // --- Dark/Light theme sync ---
   useEffect(function () {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-    localStorage.setItem('dashTheme', isDarkMode ? 'dark' : 'light');
+    safeStorageSet('dashTheme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
   useEffect(function () {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(SALES_GUIDE_WEIGHTS_KEY, JSON.stringify(sanitizeSalesGuideWeights(salesGuideWeights)));
+    safeStorageSet(SALES_GUIDE_WEIGHTS_KEY, JSON.stringify(sanitizeSalesGuideWeights(salesGuideWeights)));
   }, [salesGuideWeights]);
+  useEffect(function () {
+    if (aiWebAppUrl) safeStorageSet(AI_WEB_APP_URL_KEY, aiWebAppUrl);else safeStorageRemove(AI_WEB_APP_URL_KEY);
+  }, [aiWebAppUrl]);
   useEffect(function () {
     var load = /*#__PURE__*/function () {
       var _ref11 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
@@ -4440,129 +4591,138 @@ var App = function App() {
                             return _ref26.apply(this, arguments);
                           };
                         }();
-                        parseDistrictTargetWorkbook = async function parseDistrictTargetWorkbook(workbook) {
+                        parseDistrictTargetWorkbook = function parseDistrictTargetWorkbook(workbook) {
                           var sheetName = (workbook.SheetNames || []).find(function (name) {
                             return String(name || '').toLowerCase().replace(/\s+/g, '') === 'nns';
                           }) || (workbook.SheetNames || [])[0];
                           var ws = workbook.Sheets[sheetName];
-                          if (!ws) return {
+                          if (!ws) return Promise.resolve({
                             monthly: [],
                             yearly: []
-                          };
-                          var rows = await sheetToRowsChunked(ws);
-                          var headerIdx = rows.findIndex(function (row) {
-                            return String((row || [])[0] || '').toLowerCase().includes('เขตการขาย');
                           });
-                          if (headerIdx < 0) return {
-                            monthly: [],
-                            yearly: []
-                          };
-                          var headerRow = rows[headerIdx] || [];
-                          var monthCols = headerRow.map(function (cell, index) {
-                            var parsed = parseHeaderToType(cell);
-                            return parsed && parsed.type === 'month' ? {
-                              index: index,
-                              monthIndex: parsed.value
-                            } : null;
-                          }).filter(Boolean);
-                          var tonCols = monthCols.slice(0, 12);
-                          var valueCols = monthCols.slice(12, 24);
-                          var yearLabelFromRows = extractYearLabelFromText(rows.slice(0, Math.max(0, headerIdx)).map(function (row) {
-                            return (row || []).join(' ');
-                          }).join(' '));
-                          var yearLabel = normalizeYearLabel(yearLabelFromRows || extractYearLabelFromText(sheetName) || currentYear);
-                          var normalizeNnsDistrictLabel = function normalizeNnsDistrictLabel(value) {
-                            var raw = String(value || '').trim();
-                            var lower = raw.toLowerCase().replace(/\s+/g, ' ').trim();
-                            if (/^ne\.3\/[1-8]$/i.test(raw)) return raw.toUpperCase();
-                            if (lower === 'van sales northeast' || lower === 'vansales northeast') return 'Van Sales NORTHEAST';
-                            return '';
-                          };
-                          var monthlyEntries = [];
-                          var yearlyEntries = [];
-                          for (var rowIndex = headerIdx + 1; rowIndex < rows.length; rowIndex++) {
-                            await maybeYield(rowIndex - headerIdx);
-                            var row = rows[rowIndex] || [];
-                            var rawDistrict = normalizeDimensionValue(row[0]);
-                            var districtName = normalizeNnsDistrictLabel(rawDistrict);
-                            if (!districtName) continue;
-                            var normalizedDistrictName = normalizeTargetDistrictFilterName(districtName);
-                            var regionName = normalizeRegionName(normalizedDistrictName === 'Van Sales NE' ? 'Van Sales NE' : getRegionFromDistrict(normalizedDistrictName), normalizedDistrictName);
-                            var baseDimensions = {
-                              region: regionName,
-                              province: normalizedDistrictName === 'Laos' ? 'Laos' : '-',
-                              district: normalizedDistrictName,
-                              cv: '-',
-                              group: 'Total Target',
-                              brand: 'Total Target',
-                              model: '-',
-                              size: '-',
-                              sku: '-'
+                          return sheetToRowsChunked(ws).then(function (rows) {
+                            var headerIdx = rows.findIndex(function (row) {
+                              return String((row || [])[0] || '').toLowerCase().includes('เขตการขาย');
+                            });
+                            if (headerIdx < 0) return {
+                              monthly: [],
+                              yearly: []
                             };
-                            var tonTotal = 0;
-                            var valueTotal = 0;
-                            var monthMap = {};
-                            tonCols.forEach(function (tonCol) {
-                              var tonValue = parseNumericValue(row[tonCol.index]);
-                              if (!monthMap[tonCol.monthIndex]) monthMap[tonCol.monthIndex] = {
-                                targetTon: 0,
-                                targetValue: 0
+                            var headerRow = rows[headerIdx] || [];
+                            var monthCols = headerRow.map(function (cell, index) {
+                              var parsed = parseHeaderToType(cell);
+                              return parsed && parsed.type === 'month' ? {
+                                index: index,
+                                monthIndex: parsed.value
+                              } : null;
+                            }).filter(Boolean);
+                            var tonCols = monthCols.slice(0, 12);
+                            var valueCols = monthCols.slice(12, 24);
+                            var yearLabelFromRows = extractYearLabelFromText(rows.slice(0, Math.max(0, headerIdx)).map(function (row) {
+                              return (row || []).join(' ');
+                            }).join(' '));
+                            var yearLabel = normalizeYearLabel(yearLabelFromRows || extractYearLabelFromText(sheetName) || currentYear);
+                            var normalizeNnsDistrictLabel = function normalizeNnsDistrictLabel(value) {
+                              var raw = String(value || '').trim();
+                              var lower = raw.toLowerCase().replace(/\s+/g, ' ').trim();
+                              if (/^ne\.3\/[1-8]$/i.test(raw)) return raw.toUpperCase();
+                              if (lower === 'van sales northeast' || lower === 'vansales northeast') return 'Van Sales NORTHEAST';
+                              return '';
+                            };
+                            var monthlyEntries = [];
+                            var yearlyEntries = [];
+                            var chain = Promise.resolve();
+                            for (var rowIndex = headerIdx + 1; rowIndex < rows.length; rowIndex++) {
+                              (function (currentRowIndex) {
+                                chain = chain.then(function () {
+                                  return maybeYield(currentRowIndex - headerIdx);
+                                }).then(function () {
+                                  var row = rows[currentRowIndex] || [];
+                                  var rawDistrict = normalizeDimensionValue(row[0]);
+                                  var districtName = normalizeNnsDistrictLabel(rawDistrict);
+                                  if (!districtName) return;
+                                  var normalizedDistrictName = normalizeTargetDistrictFilterName(districtName);
+                                  var regionName = normalizeRegionName(normalizedDistrictName === 'Van Sales NE' ? 'Van Sales NE' : getRegionFromDistrict(normalizedDistrictName), normalizedDistrictName);
+                                  var baseDimensions = {
+                                    region: regionName,
+                                    province: normalizedDistrictName === 'Laos' ? 'Laos' : '-',
+                                    district: normalizedDistrictName,
+                                    cv: '-',
+                                    group: 'Total Target',
+                                    brand: 'Total Target',
+                                    model: '-',
+                                    size: '-',
+                                    sku: '-'
+                                  };
+                                  var tonTotal = 0;
+                                  var valueTotal = 0;
+                                  var monthMap = {};
+                                  tonCols.forEach(function (tonCol) {
+                                    var tonValue = parseNumericValue(row[tonCol.index]);
+                                    if (!monthMap[tonCol.monthIndex]) monthMap[tonCol.monthIndex] = {
+                                      targetTon: 0,
+                                      targetValue: 0
+                                    };
+                                    monthMap[tonCol.monthIndex].targetTon += tonValue;
+                                    tonTotal += tonValue;
+                                  });
+                                  valueCols.forEach(function (valueCol) {
+                                    var valueValue = parseNumericValue(row[valueCol.index]) * 1000;
+                                    if (!monthMap[valueCol.monthIndex]) monthMap[valueCol.monthIndex] = {
+                                      targetTon: 0,
+                                      targetValue: 0
+                                    };
+                                    monthMap[valueCol.monthIndex].targetValue += valueValue;
+                                    valueTotal += valueValue;
+                                  });
+                                  Object.keys(monthMap).sort(function (a, b) {
+                                    return Number(a) - Number(b);
+                                  }).forEach(function (monthKey) {
+                                    var monthIndex = Number(monthKey);
+                                    var target = monthMap[monthKey];
+                                    var targetValue = target.targetValue || 0;
+                                    var targetTon = target.targetTon || 0;
+                                    if (targetValue === 0 && targetTon === 0) return;
+                                    var ceYear = toCEYear(yearLabel) || currentYear;
+                                    monthlyEntries.push(_objectSpread({
+                                      id: "nns-m-".concat(normalizedDistrictName, "-").concat(monthIndex),
+                                      date: toLocalISOString(new Date(ceYear, monthIndex, 1)),
+                                      monthIndex: monthIndex,
+                                      year: yearLabel,
+                                      target: targetValue,
+                                      targetValue: targetValue,
+                                      targetTon: targetTon,
+                                      targetLevel: 'district',
+                                      sales: 0,
+                                      qty: 0,
+                                      ton: 0
+                                    }, baseDimensions));
+                                  });
+                                  if (valueTotal === 0 && tonTotal === 0) return;
+                                  yearlyEntries.push(_objectSpread({
+                                    id: "nns-y-".concat(normalizedDistrictName),
+                                    year: yearLabel,
+                                    target: valueTotal,
+                                    targetValue: valueTotal,
+                                    targetTon: tonTotal,
+                                    targetLevel: 'district',
+                                    sales: 0,
+                                    qty: 0,
+                                    ton: 0
+                                  }, baseDimensions));
+                                });
+                              })(rowIndex);
+                            }
+                            return chain.then(function () {
+                              return {
+                                monthly: monthlyEntries,
+                                yearly: yearlyEntries
                               };
-                              monthMap[tonCol.monthIndex].targetTon += tonValue;
-                              tonTotal += tonValue;
                             });
-                            valueCols.forEach(function (valueCol) {
-                              var valueValue = parseNumericValue(row[valueCol.index]) * 1000;
-                              if (!monthMap[valueCol.monthIndex]) monthMap[valueCol.monthIndex] = {
-                                targetTon: 0,
-                                targetValue: 0
-                              };
-                              monthMap[valueCol.monthIndex].targetValue += valueValue;
-                              valueTotal += valueValue;
-                            });
-                            Object.keys(monthMap).sort(function (a, b) {
-                              return Number(a) - Number(b);
-                            }).forEach(function (monthKey) {
-                              var monthIndex = Number(monthKey);
-                              var target = monthMap[monthKey];
-                              var targetValue = target.targetValue || 0;
-                              var targetTon = target.targetTon || 0;
-                              if (targetValue === 0 && targetTon === 0) return;
-                              var ceYear = toCEYear(yearLabel) || currentYear;
-                              monthlyEntries.push(_objectSpread({
-                                id: "nns-m-".concat(normalizedDistrictName, "-").concat(monthIndex),
-                                date: toLocalISOString(new Date(ceYear, monthIndex, 1)),
-                                monthIndex: monthIndex,
-                                year: yearLabel,
-                                target: targetValue,
-                                targetValue: targetValue,
-                                targetTon: targetTon,
-                                targetLevel: 'district',
-                                sales: 0,
-                                qty: 0,
-                                ton: 0
-                              }, baseDimensions));
-                            });
-                            if (valueTotal === 0 && tonTotal === 0) continue;
-                            yearlyEntries.push(_objectSpread({
-                              id: "nns-y-".concat(normalizedDistrictName),
-                              year: yearLabel,
-                              target: valueTotal,
-                              targetValue: valueTotal,
-                              targetTon: tonTotal,
-                              targetLevel: 'district',
-                              sales: 0,
-                              qty: 0,
-                              ton: 0
-                            }, baseDimensions));
-                          }
-                          return {
-                            monthly: monthlyEntries,
-                            yearly: yearlyEntries
-                          };
+                          });
                         };
                         parseTargetWorkbook = function (originalParseTargetWorkbook) {
-                          return async function wrappedParseTargetWorkbook(workbook) {
+                          return function wrappedParseTargetWorkbook(workbook) {
                             var hasNnsSheet = (workbook.SheetNames || []).some(function (name) {
                               return String(name || '').toLowerCase().replace(/\s+/g, '') === 'nns';
                             });
@@ -6002,24 +6162,6 @@ var App = function App() {
     if (metricMode === 'value') return (item.targetValue !== undefined ? item.targetValue : item.target) || 0;
     return 0;
   };
-  var aggregateData = function aggregateData(data, field) {
-    var grouped = {};
-    data.forEach(function (item) {
-      var k = item[field] || 'Unknown';
-      grouped[k] = (grouped[k] || 0) + getValue(item);
-    });
-    return Object.entries(grouped).map(function (_ref44) {
-      var _ref45 = _slicedToArray(_ref44, 2),
-        name = _ref45[0],
-        value = _ref45[1];
-      return {
-        name: name,
-        value: value
-      };
-    }).sort(function (a, b) {
-      return b.value - a.value;
-    });
-  };
   var aggregateDistrictWithTarget = function aggregateDistrictWithTarget(sData, tData) {
     var grouped = {};
     var hasExplicitDistrictTargets = tData.some(function (item) {
@@ -6078,41 +6220,6 @@ var App = function App() {
       };
     }).sort(function (a, b) {
       return getDistrictSortIndex(a.name) - getDistrictSortIndex(b.name);
-    });
-  };
-  var processTopN = function processTopN(data) {
-    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 5;
-    if (data.length <= n) return data;
-    var top = data.slice(0, n);
-    var others = data.slice(n).reduce(function (s, i) {
-      return s + i.value;
-    }, 0);
-    return others > 0 ? [].concat(_toConsumableArray(top), [{
-      name: 'Others',
-      value: others
-    }]) : top;
-  };
-  var processTop20Shops = function processTop20Shops(data) {
-    var total = data.reduce(function (sum, item) {
-      return sum + item.value;
-    }, 0);
-    var result = [];
-    if (data.length <= 20) {
-      result = data;
-    } else {
-      var top20 = data.slice(0, 20);
-      var othersVal = data.slice(20).reduce(function (sum, item) {
-        return sum + item.value;
-      }, 0);
-      result = [].concat(_toConsumableArray(top20), [{
-        name: 'อื่นๆ (Others)',
-        value: othersVal
-      }]);
-    }
-    return result.map(function (d) {
-      return _objectSpread(_objectSpread({}, d), {}, {
-        percent: total ? d.value / total : 0
-      });
     });
   };
   var filteredMonthlyTrendData = useMemo(function () {
@@ -7111,11 +7218,13 @@ var App = function App() {
     }));
   }, [repeatGapItemsForBrandOptions]);
   var repeatGapSizeOptions = useMemo(function () {
-    return buildUniqueDimensionOptions(repeatGapItemsForSizeOptions.flatMap(function (item) {
-      return (item.breakdown || []).map(function (row) {
-        return row.name;
+    var names = [];
+    repeatGapItemsForSizeOptions.forEach(function (item) {
+      (item.breakdown || []).forEach(function (row) {
+        names.push(row.name);
       });
-    }));
+    });
+    return buildUniqueDimensionOptions(names);
   }, [repeatGapItemsForSizeOptions]);
   var repeatGapGapMonthOptions = useMemo(function () {
     return Array.from(new Set(repeatGapItemsForGapMonthOptions.map(function (item) {
@@ -7289,6 +7398,222 @@ var App = function App() {
       return Number((row === null || row === void 0 ? void 0 : row.value) || 0) > 0 || Number((row === null || row === void 0 ? void 0 : row.target) || 0) > 0;
     });
   }, [latestYearScopedData, latestYearScopedTargets, metricMode, selectedDistrictFilters]);
+  var dashboardContextSummary = useMemo(function () {
+    var activeFilters = {};
+    Object.keys(filters || {}).forEach(function (key) {
+      if (Array.isArray(filters[key]) && filters[key].length > 0) activeFilters[key] = filters[key];
+    });
+    var takeTop = function takeTop(rows, mapper) {
+      var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
+      return (rows || []).slice(0, limit).map(mapper);
+    };
+    var latestTrendRows = (chartData || []).map(function (row) {
+      var nextRow = {
+        month: row.name
+      };
+      selectedTrendYears.forEach(function (year) {
+        nextRow["sales_".concat(year)] = Number(row["value_".concat(year)] || 0);
+        nextRow["target_".concat(year)] = Number(row["target_".concat(year)] || 0);
+      });
+      return nextRow;
+    });
+    return {
+      generatedAt: new Date().toISOString(),
+      viewMode: viewMode,
+      timeView: timeView,
+      metricMode: metricMode,
+      unitMode: unitMode,
+      selectedTrendYears: selectedTrendYears,
+      uploadedFiles: uploadedFileNames,
+      filters: activeFilters,
+      overall: {
+        totalMetricValue: Number(totalMetricValue || 0),
+        salesGuide: {
+          focusMonthLabel: salesGuideSummary.focusMonthLabel || '-',
+          currentTarget: Number(salesGuideSummary.currentTarget || 0),
+          currentSales: Number(salesGuideSummary.currentSales || 0),
+          targetGap: Number(salesGuideSummary.targetGap || 0),
+          totalPotential: Number(salesGuideSummary.totalPotential || 0),
+          gapCoveragePct: Number(salesGuideSummary.gapCoveragePct || 0),
+          projectedClosePct: Number(salesGuideSummary.projectedClosePct || 0)
+        }
+      },
+      trend: latestTrendRows,
+      topBrands: takeTop(topBrandsData, function (item) {
+        return {
+          brand: item.name,
+          value: Number(item.value || 0)
+        };
+      }),
+      topStores: takeTop(topShopsData, function (item) {
+        var nextItem = {
+          cv: item.name
+        };
+        (topShopsYearSeries || []).forEach(function (series) {
+          nextItem["value_".concat(series.year)] = Number(item["value_".concat(series.year)] || 0);
+        });
+        return nextItem;
+      }),
+      districtSummary: takeTop(districtData, function (item) {
+        return {
+          district: item.name,
+          sales: Number(item.value || 0),
+          target: Number(item.target || 0)
+        };
+      }, 10),
+      repeatGapTop: takeTop(repeatPurchaseGapSummary.items || [], function (item) {
+        return {
+          cv: item.cv,
+          group: item.groupName,
+          brand: item.brand,
+          latestValue: Number(getRepeatGapMetricValue(item, metricMode) || 0),
+          monthsSinceLastOrder: Number(item.monthsSinceLastOrder || 0),
+          lastOrderLabel: item.lastOrderLabel || '-'
+        };
+      })
+    };
+  }, [filters, viewMode, timeView, metricMode, unitMode, selectedTrendYears, uploadedFileNames, totalMetricValue, salesGuideSummary, chartData, topBrandsData, topShopsData, topShopsYearSeries, districtData, repeatPurchaseGapSummary.items]);
+  var appendAIMessage = function appendAIMessage(role, text) {
+    var safeText = String(text || '').trim();
+    if (!safeText) return;
+    setAIMessages(function (prev) {
+      return [].concat(_toConsumableArray(prev), [{
+        role: role,
+        text: safeText
+      }]);
+    });
+  };
+  var normalizeAISelection = function normalizeAISelection(value) {
+    if (Array.isArray(value)) return value.map(function (item) {
+      return String(item || '').trim();
+    }).filter(Boolean);
+    var singleValue = String(value || '').trim();
+    return singleValue ? [singleValue] : [];
+  };
+  var applyAIAction = function applyAIAction(actionPayload) {
+    if (!actionPayload || _typeof(actionPayload) !== 'object') return;
+    var actionType = String(actionPayload.action || '').trim();
+    if (actionType === 'clear_filters') {
+      setFilters({});
+      return;
+    }
+    if (actionType === 'set_filters') {
+      var nextFilters = {};
+      var incomingFilters = actionPayload.filters && _typeof(actionPayload.filters) === 'object' ? actionPayload.filters : {};
+      ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'].forEach(function (key) {
+        if (!(key in incomingFilters)) return;
+        nextFilters[key] = normalizeAISelection(incomingFilters[key]);
+      });
+      setFilters(nextFilters);
+      if (actionPayload.viewMode && ['monthly', 'yearly'].includes(actionPayload.viewMode)) setViewMode(actionPayload.viewMode);
+      if (actionPayload.metricMode && ['value', 'qty', 'ton'].includes(actionPayload.metricMode)) setMetricMode(actionPayload.metricMode);
+      if (actionPayload.unitMode && ['baht', 'thousand'].includes(actionPayload.unitMode)) setUnitMode(actionPayload.unitMode);
+      if (actionPayload.sectionKey && Object.prototype.hasOwnProperty.call(DEFAULT_SECTION_STATE, actionPayload.sectionKey)) {
+        setSectionOpen(function (prev) {
+          return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, actionPayload.sectionKey, true));
+        });
+      }
+    }
+  };
+  var submitAIRequest = /*#__PURE__*/function () {
+    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(mode, presetQuestion) {
+      var questionText, response, responseText, result;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.p = _context12.n) {
+          case 0:
+            questionText = String(presetQuestion || aiQuestion || '').trim();
+            if (questionText) {
+              _context12.n = 2;
+              break;
+            }
+            showStatus('กรุณาพิมพ์คำถามหรือคำสั่งก่อนใช้งาน AI', 'error');
+            return _context12.a(2);
+          case 2:
+            if (aiWebAppUrl.trim()) {
+              _context12.n = 4;
+              break;
+            }
+            appendAIMessage('system', 'ยังไม่ได้ตั้งค่า Web App URL ของ Google Apps Script');
+            showStatus('กรุณาใส่ Web App URL ของ Google Apps Script ก่อนใช้งาน AI', 'error');
+            return _context12.a(2);
+          case 4:
+            if (typeof fetch === 'function') {
+              _context12.n = 6;
+              break;
+            }
+            appendAIMessage('system', 'อุปกรณ์นี้ไม่รองรับการเรียก AI ผ่าน fetch');
+            showStatus('อุปกรณ์นี้ไม่รองรับการเรียก AI ผ่าน fetch', 'error');
+            return _context12.a(2);
+          case 6:
+            if (!presetQuestion) {
+              appendAIMessage('user', questionText);
+              setAIQuestion('');
+            }
+            setIsAskingAI(true);
+            _context12.p = 7;
+            _context12.n = 8;
+            return fetch(aiWebAppUrl.trim(), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+              },
+              body: JSON.stringify({
+                mode: mode || 'ask',
+                question: questionText,
+                context: dashboardContextSummary
+              })
+            });
+          case 8:
+            response = _context12.v;
+            _context12.n = 9;
+            return response.text();
+          case 9:
+            responseText = _context12.v;
+            try {
+              result = responseText ? JSON.parse(responseText) : {};
+            } catch (_unused) {
+              result = {
+                ok: false,
+                error: responseText || 'AI ตอบกลับไม่เป็น JSON'
+              };
+            }
+            if (response.ok && result && result.ok) {
+              _context12.n = 11;
+              break;
+            }
+            throw new Error(result && result.error ? result.error : 'เรียก AI ไม่สำเร็จ');
+          case 11:
+            appendAIMessage('assistant', result.answer || 'AI ไม่ได้ส่งข้อความกลับมา');
+            if (result.actionPayload) {
+              applyAIAction(result.actionPayload);
+              showStatus(mode === 'action' ? 'AI ช่วยปรับตัวกรองให้แล้ว' : 'AI ตอบกลับแล้ว', 'success');
+            } else {
+              showStatus('AI ตอบกลับแล้ว', 'success');
+            }
+            _context12.n = 13;
+            break;
+          case 12:
+            _context12.p = 12;
+            _context12.v;
+            appendAIMessage('system', _context12.v && _context12.v.message ? _context12.v.message : String(_context12.v || 'เรียก AI ไม่สำเร็จ'));
+            showStatus(_context12.v && _context12.v.message ? _context12.v.message : 'เรียก AI ไม่สำเร็จ', 'error');
+          case 13:
+            _context12.p = 13;
+            setIsAskingAI(false);
+            return _context12.f(13);
+          case 14:
+            return _context12.a(2);
+        }
+      }, _callee12, null, [[7, 12, 13, 14]]);
+    }));
+    return function submitAIRequest(_x, _x2) {
+      return _ref12.apply(this, arguments);
+    };
+  }();
+  var handleAIQuickPrompt = function handleAIQuickPrompt(prompt) {
+    setAIQuestion(prompt);
+    submitAIRequest('ask', prompt);
+  };
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:render';
   var totalMetricValue = scopedData.reduce(function (acc, curr) {
     return acc + getValue(curr);
@@ -7337,16 +7662,6 @@ var App = function App() {
     label: 'SKU',
     isWide: viewMode !== 'monthly'
   }]);
-  var handleBrandClick = function handleBrandClick(data) {
-    if (data && data.activePayload && data.activePayload[0]) {
-      var brandData = data.activePayload[0].payload;
-      setModalData({
-        title: "\u0E23\u0E32\u0E22\u0E25\u0E30\u0E40\u0E2D\u0E35\u0E22\u0E14\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32: ".concat(brandData.name),
-        items: brandData.breakdown
-      });
-      setIsModalOpen(true);
-    }
-  };
   var handleViewModeChange = function handleViewModeChange(nextMode) {
     setViewMode(nextMode);
     if (nextMode === 'yearly' && (allData.yearly || []).length === 0) {
@@ -7460,6 +7775,12 @@ var App = function App() {
     size: 12,
     className: "mr-1"
   }), "Saved"), /*#__PURE__*/React.createElement("button", {
+    className: "ai-launch-btn",
+    onClick: function onClick() {
+      return setIsAIPanelOpen(true);
+    },
+    title: "เปิดผู้ช่วย AI"
+  }, "AI"), /*#__PURE__*/React.createElement("button", {
     className: "theme-toggle",
     onClick: function onClick() {
       return setIsDarkMode(!isDarkMode);
@@ -7473,7 +7794,25 @@ var App = function App() {
     title: "\u0E40\u0E21\u0E19\u0E39"
   }, "\u2630"))), statusInfo.message && /*#__PURE__*/React.createElement("div", {
     className: "status-bar ".concat(statusInfo.type === 'error' ? 's-err' : statusInfo.type === 'success' ? 's-ok' : 's-info')
-  }, statusInfo.message), /*#__PURE__*/React.createElement(MenuDrawer, {
+  }, statusInfo.message), /*#__PURE__*/React.createElement(AIPanel, {
+    isOpen: isAIPanelOpen,
+    onClose: function onClose() {
+      return setIsAIPanelOpen(false);
+    },
+    webAppUrl: aiWebAppUrl,
+    onWebAppUrlChange: setAIWebAppUrl,
+    messages: aiMessages,
+    question: aiQuestion,
+    onQuestionChange: setAIQuestion,
+    onAsk: function onAsk() {
+      return submitAIRequest('ask');
+    },
+    onAction: function onAction() {
+      return submitAIRequest('action');
+    },
+    onQuickPrompt: handleAIQuickPrompt,
+    isLoading: isAskingAI
+  }), /*#__PURE__*/React.createElement(MenuDrawer, {
     isOpen: isDrawerOpen,
     onClose: function onClose() {
       return setIsDrawerOpen(false);
@@ -8194,14 +8533,7 @@ var App = function App() {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  }))))), /*#__PURE__*/React.createElement(BreakdownModal, {
-    isOpen: isModalOpen,
-    onClose: function onClose() {
-      return setIsModalOpen(false);
-    },
-    title: modalData === null || modalData === void 0 ? void 0 : modalData.title,
-    data: (modalData === null || modalData === void 0 ? void 0 : modalData.items) || []
-  })));
+  })))))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
