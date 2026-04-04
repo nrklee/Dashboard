@@ -161,8 +161,27 @@
         /* ===== Menu Button ===== */
         .menu-btn { width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-sec);transition:all .2s;flex-shrink:0;font-size:18px; }
         .menu-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-soft); }
+        .app-header-controls { display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:0; }
+        .filters-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px; }
+        .trend-top-grid { display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:24px;align-items:stretch; }
+        .action-gap-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start; }
+        .responsive-card-fill { min-width:0;height:100%;display:flex;flex-direction:column; }
+        .responsive-scroll-x,
+        .repeat-gap-list-shell,
+        .sales-guide-list-shell { width:100%;overflow:auto;-webkit-overflow-scrolling:touch; }
+        .repeat-gap-list-inner { min-width:760px; }
+        .sales-guide-list-inner { min-width:720px; }
+        .sales-guide-summary-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem; }
+        .sales-guide-weight-row { display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap; }
+        .top-brands-panel { min-height:42rem; }
 
         /* ===== Responsive ===== */
+
+        @media(max-width:1200px) {
+            .trend-top-grid,
+            .action-gap-grid { grid-template-columns:1fr; }
+            .top-brands-panel { min-height:34rem; }
+        }
 
         /* Tablet landscape / iPad (768px - 1024px) */
         @media(min-width:768px) and (max-width:1024px) {
@@ -170,6 +189,9 @@
             .kpi-card { padding:14px 16px; }
             .dashboard-card { border-radius:12px!important; }
             .drawer-panel { width:400px; }
+            .filters-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+            .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .top-brands-panel { min-height:36rem; }
         }
 
         /* Tablet portrait / iPad mini (600px - 768px) */
@@ -180,6 +202,14 @@
             .kpi-card { padding:14px 16px; }
             .sec-title { font-size:14px; }
             .major-section-head { padding:8px 10px;flex-wrap:wrap;gap:8px; }
+            .dashboard-header { flex-wrap:wrap;align-items:flex-start;gap:8px; }
+            .app-header-controls { width:100%;justify-content:flex-start; }
+            .filters-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+            .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .sales-guide-weight-row { gap:0.4rem; }
+            .repeat-gap-list-inner { min-width:680px; }
+            .sales-guide-list-inner { min-width:660px; }
+            .top-brands-panel { min-height:32rem; }
         }
 
         /* Mobile (max-width: 480px) */
@@ -194,6 +224,13 @@
             .drawer-content { padding:12px 14px; }
             .major-section-head { flex-direction:column;align-items:flex-start;gap:6px; }
             .sec-head { flex-wrap:wrap;gap:6px; }
+            .app-header-controls { gap:6px; }
+            .filters-grid { grid-template-columns:1fr;gap:8px; }
+            .sales-guide-summary-grid { grid-template-columns:repeat(1,minmax(0,1fr)); }
+            .sales-guide-weight-row { gap:0.35rem; }
+            .repeat-gap-list-inner { min-width:600px; }
+            .sales-guide-list-inner { min-width:580px; }
+            .top-brands-panel { min-height:28rem; }
         }
 
         /* Touch-friendly: ensure minimum tap target sizes */
@@ -2542,7 +2579,9 @@ var RepeatPurchaseGapList = function RepeatPurchaseGapList(_ref6) {
     }, "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E02\u0E32\u0E14\u0E01\u0E32\u0E23\u0E0B\u0E37\u0E49\u0E2D\u0E0B\u0E49\u0E33\u0E43\u0E19\u0E0A\u0E48\u0E27\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07 12 \u0E40\u0E14\u0E37\u0E2D\u0E19");
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-h-0 overflow-y-auto custom-scrollbar border rounded-lg bg-white"
+    className: "repeat-gap-list-shell flex-1 min-h-0 custom-scrollbar border rounded-lg bg-white"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "repeat-gap-list-inner"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sticky top-0 z-10 grid grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto_18px] gap-2 px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase bg-slate-50 border-b border-slate-200"
   }, /*#__PURE__*/React.createElement("span", null, "CV \u0E25\u0E39\u0E01\u0E04\u0E49\u0E32"), /*#__PURE__*/React.createElement("span", null, "\u0E01\u0E25\u0E38\u0E48\u0E21"), /*#__PURE__*/React.createElement("span", null, "\u0E41\u0E1A\u0E23\u0E19\u0E14\u0E4C"), /*#__PURE__*/React.createElement("span", {
@@ -2557,7 +2596,7 @@ var RepeatPurchaseGapList = function RepeatPurchaseGapList(_ref6) {
       metric: metric,
       unit: unit
     });
-  })));
+  }))));
 };
 var SalesGuideSparkline = function SalesGuideSparkline(_ref7) {
   var values = _ref7.values;
@@ -2716,7 +2755,9 @@ var SalesGuideList = function SalesGuideList(_ref9) {
     }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E17\u0E35\u0E48\u0E21\u0E35\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E43\u0E19 scope \u0E19\u0E35\u0E49");
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-h-0 overflow-y-auto custom-scrollbar border rounded-lg bg-white"
+    className: "sales-guide-list-shell flex-1 min-h-0 custom-scrollbar border rounded-lg bg-white"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sales-guide-list-inner"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sticky top-0 z-10 grid gap-2 px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase bg-slate-50 border-b border-slate-200",
     style: {
@@ -2735,7 +2776,7 @@ var SalesGuideList = function SalesGuideList(_ref9) {
       unit: unit,
       weightSummaryLabel: weightSummaryLabel
     });
-  })));
+  }))));
 };
 var BreakdownModal = function BreakdownModal(_ref7) {
   var isOpen = _ref7.isOpen,
@@ -7361,7 +7402,7 @@ var App = function App() {
     name: "TrendingUp",
     className: "text-blue-600"
   }), " Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 flex-wrap justify-end"
+    className: "app-header-controls"
   }, /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
@@ -7607,7 +7648,7 @@ var App = function App() {
   }, uploadedSalesFileLabel), " (Sales) \u0E41\u0E25\u0E30 ", /*#__PURE__*/React.createElement("code", {
     className: "bg-slate-100 px-1 rounded"
   }, uploadedTargetFileLabel), " (Target)"), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-10 gap-3"
+    className: "filters-grid"
   }, filtersDef.map(function (f) {
     return /*#__PURE__*/React.createElement(MultiSelect, _extends({
       key: f.key
@@ -7686,9 +7727,9 @@ var App = function App() {
   })) : /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-bold whitespace-nowrap"
   }, totalCVCount.toLocaleString(), " CV"))), /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch"
+    className: "mb-6 trend-top-grid"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border lg:col-span-2"
+    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -7871,10 +7912,7 @@ var App = function App() {
   }, Number.isFinite(Number(latestMonthlyVsPrevYearAvgStats === null || latestMonthlyVsPrevYearAvgStats === void 0 ? void 0 : latestMonthlyVsPrevYearAvgStats.pct)) ? "".concat(Number(latestMonthlyVsPrevYearAvgStats.pct).toFixed(1), "%") : '-'), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] leading-tight text-slate-400 mt-0.5 text-center"
   }, latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.latestYear && latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.prevYear ? "".concat(latestMonthlyVsPrevYearAvgStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyVsPrevYearAvgStats.monthIndex], " ") : '').concat(latestMonthlyVsPrevYearAvgStats.latestYear, " / AVG ").concat(latestMonthlyVsPrevYearAvgStats.prevYear) : '-'))))), /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border lg:col-span-1 h-full flex flex-col",
-    style: {
-      minHeight: '42rem'
-    }
+    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill top-brands-panel"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -7903,9 +7941,9 @@ var App = function App() {
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 text-right mt-1"
   }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32")))), /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"
+    className: "mb-6 action-gap-grid"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border xl:order-2",
+    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-2",
     style: {
       order: 2
     }
@@ -7926,9 +7964,8 @@ var App = function App() {
   }, !salesGuideSummary.supported ? /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-h-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-800"
   }, salesGuideSummary.message) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "mb-1.5 grid gap-1 text-xs",
+    className: "sales-guide-summary-grid mb-1.5 text-xs",
     style: {
-      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
       marginBottom: '0.875rem'
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -7970,15 +8007,7 @@ var App = function App() {
   }, formatValue(salesGuideSummary.totalPotential || 0, metricMode, unitMode)))), /*#__PURE__*/React.createElement("div", {
     className: "mb-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px]",
-    style: {
-      display: 'flex',
-      flexWrap: 'nowrap',
-      alignItems: 'center',
-      gap: '0.5rem',
-      whiteSpace: 'nowrap',
-      overflowX: 'auto'
-    }
+    className: "sales-guide-weight-row text-[11px]"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-semibold text-slate-600"
   }, "\u0E19\u0E49\u0E33\u0E2B\u0E19\u0E31\u0E01\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07"), [['month1', '\u0E40\u0E14\u0E37\u0E2D\u0E19 1'], ['month2', '\u0E40\u0E14\u0E37\u0E2D\u0E19 2'], ['month3', '\u0E40\u0E14\u0E37\u0E2D\u0E19 3']].map(function (_ref53) {
@@ -8028,7 +8057,7 @@ var App = function App() {
     unit: unitMode,
     weightSummaryLabel: salesGuideSummary.weightSummaryLabel || salesGuideWeightSummaryLabel
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border xl:order-1",
+    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-1",
     style: {
       order: 1
     }
