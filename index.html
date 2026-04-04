@@ -1135,7 +1135,7 @@ var DEFAULT_SALES_GUIDE_WEIGHTS = {
   month2: 30,
   month3: 20
 };
-var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
+var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'ช่วยวิเคราะห์ 3 ประเด็นสำคัญจากข้อมูลปัจจุบัน', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
 var SALES_GUIDE_EXCLUDED_GROUPS = ['ลดหนี้ส่งเสริมการขาย - tax (ส่วนลดพิเศษ)'];
 var TARGET_RELAXED_FILTER_KEYS = ['province', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
 
@@ -2857,6 +2857,7 @@ var AIPanel = function AIPanel(props) {
     question = props.question,
     onQuestionChange = props.onQuestionChange,
     onAsk = props.onAsk,
+    onInsight = props.onInsight,
     onAction = props.onAction,
     onQuickPrompt = props.onQuickPrompt,
     isLoading = props.isLoading;
@@ -2872,7 +2873,7 @@ var AIPanel = function AIPanel(props) {
     className: "ai-panel-title"
   }, "AI ผู้ช่วยวิเคราะห์ยอดขาย"), /*#__PURE__*/React.createElement("div", {
     className: "ai-panel-subtitle"
-  }, "ถามสรุปข้อมูล, ขอ insight, หรือให้ AI ช่วยตั้งตัวกรองจากหน้าปัจจุบันได้จากที่นี่")), /*#__PURE__*/React.createElement("button", {
+  }, "ถามสรุปข้อมูล, ขอ insight, หรือให้ AI ช่วยตั้งตัวกรอง โดย AI จะอ่านทั้งข้อมูลสรุปและตัวอย่างข้อมูล input ที่อัปโหลดเข้ามา")), /*#__PURE__*/React.createElement("button", {
     className: "menu-btn",
     onClick: onClose,
     title: "ปิด AI"
@@ -2894,7 +2895,7 @@ var AIPanel = function AIPanel(props) {
     placeholder: "วาง Web App URL ของ Google Apps Script ที่นี่"
   }), /*#__PURE__*/React.createElement("div", {
     className: "ai-hint"
-  }, "ใส่ URL ครั้งแรกครั้งเดียว ระบบจะจำไว้ในอุปกรณ์นี้ให้เอง")), /*#__PURE__*/React.createElement("div", {
+  }, "ใส่ URL ครั้งแรกครั้งเดียว ระบบจะจำไว้ในอุปกรณ์นี้ให้เอง และ AI จะส่งคำถามพร้อมข้อมูลสรุปกับตัวอย่างแถวข้อมูล input ที่เกี่ยวข้องไปวิเคราะห์")), /*#__PURE__*/React.createElement("div", {
     className: "ai-quick-row"
   }, AI_QUICK_PROMPTS.map(function (prompt) {
     return /*#__PURE__*/React.createElement("button", {
@@ -2931,6 +2932,11 @@ var AIPanel = function AIPanel(props) {
     onClick: onAction,
     disabled: isLoading
   }, isLoading ? 'กำลังประมวลผล...' : 'ให้ AI ช่วยตั้งตัวกรอง'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ai-action-btn secondary",
+    onClick: onInsight,
+    disabled: isLoading
+  }, isLoading ? 'กำลังวิเคราะห์...' : 'ขอ insight'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "ai-action-btn primary",
     onClick: onAsk,
@@ -7407,6 +7413,77 @@ var App = function App() {
       var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
       return (rows || []).slice(0, limit).map(mapper);
     };
+    var safeText = function safeText(value) {
+      var normalized = normalizeDimensionValue(value);
+      return normalized === '-' ? '' : normalized;
+    };
+    var toMonthLabel = function toMonthLabel(item) {
+      var serial = getMonthSerialFromItem(item);
+      return serial === null ? '' : formatMonthSerialLabel(serial);
+    };
+    var sortRowsByRecentValue = function sortRowsByRecentValue(rows, valueGetter) {
+      return (rows || []).slice().sort(function (a, b) {
+        var serialA = getMonthSerialFromItem(a);
+        var serialB = getMonthSerialFromItem(b);
+        var safeSerialA = Number.isFinite(serialA) ? serialA : -1;
+        var safeSerialB = Number.isFinite(serialB) ? serialB : -1;
+        if (safeSerialB !== safeSerialA) return safeSerialB - safeSerialA;
+        return Number(valueGetter(b) || 0) - Number(valueGetter(a) || 0);
+      });
+    };
+    var mapSalesSample = function mapSalesSample(item) {
+      return {
+        year: getYearLabelFromItem(item, false) || '',
+        month: toMonthLabel(item),
+        region: safeText(item.region),
+        province: safeText(item.province),
+        district: safeText(item.district),
+        cv: safeText(item.cv),
+        group: safeText(item.group),
+        brand: safeText(item.brand),
+        model: safeText(item.model),
+        size: safeText(item.size),
+        sku: safeText(item.sku),
+        sales: Number(item.sales || 0),
+        qty: Number(item.qty || 0),
+        ton: Number(item.ton || 0),
+        metricValue: Number(getValue(item) || 0)
+      };
+    };
+    var mapTargetSample = function mapTargetSample(item) {
+      return {
+        year: getYearLabelFromItem(item, false) || '',
+        month: toMonthLabel(item),
+        region: safeText(item.region),
+        province: safeText(item.province),
+        district: safeText(item.district),
+        group: safeText(item.group),
+        brand: safeText(item.brand),
+        model: safeText(item.model),
+        size: safeText(item.size),
+        targetValue: Number((item.targetValue !== undefined ? item.targetValue : item.target) || 0),
+        targetTon: Number(item.targetTon || 0),
+        targetLevel: safeText(item.targetLevel || item.level)
+      };
+    };
+    var localTotalMetricValue = (scopedData || []).reduce(function (sum, item) {
+      return sum + Number(getValue(item) || 0);
+    }, 0);
+    var localTotalCVCount = Array.from(new Set((scopedData || []).map(function (item) {
+      return normalizeDimensionValue(item.cv);
+    }).filter(function (cvName) {
+      return cvName && cvName !== '-';
+    }))).length;
+    var localTotalSKUCount = Array.from(new Set((scopedData || []).map(function (item) {
+      return normalizeDimensionValue(item.sku);
+    }).filter(function (skuName) {
+      return skuName && skuName !== '-';
+    }))).length;
+    var scopedSalesYearsMap = {};
+    [].concat(_toConsumableArray(latestYearScopedData || []), _toConsumableArray(latestYearScopedTargets || [])).forEach(function (item) {
+      var yearLabel = getYearLabelFromItem(item, false);
+      if (yearLabel) scopedSalesYearsMap[yearLabel] = true;
+    });
     var latestTrendRows = (chartData || []).map(function (row) {
       var nextRow = {
         month: row.name
@@ -7417,6 +7494,12 @@ var App = function App() {
       });
       return nextRow;
     });
+    var salesSampleSource = sortRowsByRecentValue((latestYearScopedData || []).length > 0 ? latestYearScopedData : scopedData, function (item) {
+      return Number(getValue(item) || 0);
+    });
+    var targetSampleSource = sortRowsByRecentValue((latestYearScopedTargets || []).length > 0 ? latestYearScopedTargets : scopedTargets, function (item) {
+      return Number(getTarget(item) || 0);
+    });
     return {
       generatedAt: new Date().toISOString(),
       viewMode: viewMode,
@@ -7426,8 +7509,21 @@ var App = function App() {
       selectedTrendYears: selectedTrendYears,
       uploadedFiles: uploadedFileNames,
       filters: activeFilters,
+      datasetOverview: {
+        salesRowsInScope: Number((scopedData || []).length || 0),
+        targetRowsInScope: Number((scopedTargets || []).length || 0),
+        latestYearSalesRowsInScope: Number((latestYearScopedData || []).length || 0),
+        latestYearTargetRowsInScope: Number((latestYearScopedTargets || []).length || 0),
+        uploadedSalesRows: Number((allData.monthly || []).length + (effectiveYearlyData || []).length || 0),
+        uploadedTargetRows: Number((allData.targets || []).length || 0),
+        currentScopeYears: Object.keys(scopedSalesYearsMap).sort(function (a, b) {
+          return Number(b) - Number(a);
+        }),
+        currentScopeCVCount: localTotalCVCount,
+        currentScopeSKUCount: localTotalSKUCount
+      },
       overall: {
-        totalMetricValue: Number(totalMetricValue || 0),
+        totalMetricValue: Number(localTotalMetricValue || 0),
         salesGuide: {
           focusMonthLabel: salesGuideSummary.focusMonthLabel || '-',
           currentTarget: Number(salesGuideSummary.currentTarget || 0),
@@ -7435,7 +7531,8 @@ var App = function App() {
           targetGap: Number(salesGuideSummary.targetGap || 0),
           totalPotential: Number(salesGuideSummary.totalPotential || 0),
           gapCoveragePct: Number(salesGuideSummary.gapCoveragePct || 0),
-          projectedClosePct: Number(salesGuideSummary.projectedClosePct || 0)
+          projectedClosePct: Number(salesGuideSummary.projectedClosePct || 0),
+          totalStores: Number(salesGuideSummary.totalStores || 0)
         }
       },
       trend: latestTrendRows,
@@ -7444,7 +7541,7 @@ var App = function App() {
           brand: item.name,
           value: Number(item.value || 0)
         };
-      }),
+      }, 8),
       topStores: takeTop(topShopsData, function (item) {
         var nextItem = {
           cv: item.name
@@ -7453,7 +7550,7 @@ var App = function App() {
           nextItem["value_".concat(series.year)] = Number(item["value_".concat(series.year)] || 0);
         });
         return nextItem;
-      }),
+      }, 10),
       districtSummary: takeTop(districtData, function (item) {
         return {
           district: item.name,
@@ -7470,9 +7567,37 @@ var App = function App() {
           monthsSinceLastOrder: Number(item.monthsSinceLastOrder || 0),
           lastOrderLabel: item.lastOrderLabel || '-'
         };
-      })
+      }, 8),
+      salesGuideTop: takeTop(salesGuideSummary.visibleItems || [], function (item) {
+        return {
+          cv: item.cv,
+          currentMonthSales: Number(item.currentMonthSales || 0),
+          weightedExpectedSales: Number(item.weightedExpectedSales || 0),
+          recommendedUplift: Number(item.recommendedUplift || 0),
+          lastOrderLabel: item.lastOrderLabel || '-',
+          trendValues: Array.isArray(item.trendValues) ? item.trendValues.slice(0, 4).map(function (value) {
+            return Number(value || 0);
+          }) : [],
+          breakdown: takeTop(item.breakdown || [], function (row) {
+            return {
+              group: row.groupName,
+              brand: row.brand,
+              currentMonthSales: Number(row.currentMonthSales || 0),
+              weightedExpectedSales: Number(row.weightedExpectedSales || 0),
+              recommendedUplift: Number(row.recommendedUplift || 0),
+              trendValues: Array.isArray(row.trendValues) ? row.trendValues.slice(0, 4).map(function (value) {
+                return Number(value || 0);
+              }) : []
+            };
+          }, 3)
+        };
+      }, 8),
+      rawDataSamples: {
+        salesRows: takeTop(salesSampleSource, mapSalesSample, 24),
+        targetRows: takeTop(targetSampleSource, mapTargetSample, 18)
+      }
     };
-  }, [filters, viewMode, timeView, metricMode, unitMode, selectedTrendYears, uploadedFileNames, totalMetricValue, salesGuideSummary, chartData, topBrandsData, topShopsData, topShopsYearSeries, districtData, repeatPurchaseGapSummary.items]);
+  }, [filters, viewMode, timeView, metricMode, unitMode, selectedTrendYears, uploadedFileNames, allData.monthly, allData.targets, effectiveYearlyData, salesGuideSummary, chartData, topBrandsData, topShopsData, topShopsYearSeries, districtData, repeatPurchaseGapSummary.items, scopedData, scopedTargets, latestYearScopedData, latestYearScopedTargets]);
   var appendAIMessage = function appendAIMessage(role, text) {
     var safeText = String(text || '').trim();
     if (!safeText) return;
@@ -7611,8 +7736,10 @@ var App = function App() {
     };
   }();
   var handleAIQuickPrompt = function handleAIQuickPrompt(prompt) {
-    setAIQuestion(prompt);
-    submitAIRequest('ask', prompt);
+    var nextPrompt = String(prompt || '').trim();
+    var nextMode = /วิเคราะห์|insight/i.test(nextPrompt) ? 'insight' : 'ask';
+    setAIQuestion(nextPrompt);
+    submitAIRequest(nextMode, nextPrompt);
   };
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:render';
   var totalMetricValue = scopedData.reduce(function (acc, curr) {
@@ -7806,6 +7933,9 @@ var App = function App() {
     onQuestionChange: setAIQuestion,
     onAsk: function onAsk() {
       return submitAIRequest('ask');
+    },
+    onInsight: function onInsight() {
+      return submitAIRequest('insight');
     },
     onAction: function onAction() {
       return submitAIRequest('action');
