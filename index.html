@@ -168,9 +168,9 @@
         .responsive-card-fill { min-width:0;height:100%;display:flex;flex-direction:column; }
         .responsive-scroll-x,
         .repeat-gap-list-shell,
-        .sales-guide-list-shell { width:100%;overflow:auto;-webkit-overflow-scrolling:touch; }
-        .repeat-gap-list-inner { min-width:760px; }
-        .sales-guide-list-inner { min-width:720px; }
+        .sales-guide-list-shell { width:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch; }
+        .repeat-gap-list-inner,
+        .sales-guide-list-inner { width:100%;min-width:0; }
         .sales-guide-summary-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem; }
         .sales-guide-weight-row { display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap; }
         .top-brands-panel { min-height:42rem; }
@@ -239,8 +239,8 @@
             .filters-grid { grid-template-columns:repeat(2,minmax(160px,1fr));gap:10px; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .sales-guide-weight-row { gap:0.4rem; }
-            .repeat-gap-list-inner { min-width:680px; }
-            .sales-guide-list-inner { min-width:660px; }
+            .repeat-gap-list-inner,
+            .sales-guide-list-inner { min-width:0; }
             .top-brands-panel { min-height:32rem; }
             .ai-panel { width:100vw; }
             .ai-panel-header { padding:16px 14px 12px; }
@@ -263,8 +263,8 @@
             .filters-grid { grid-template-columns:1fr;gap:8px; }
             .sales-guide-summary-grid { grid-template-columns:repeat(1,minmax(0,1fr)); }
             .sales-guide-weight-row { gap:0.35rem; }
-            .repeat-gap-list-inner { min-width:600px; }
-            .sales-guide-list-inner { min-width:580px; }
+            .repeat-gap-list-inner,
+            .sales-guide-list-inner { min-width:0; }
             .top-brands-panel { min-height:28rem; }
             .ai-panel-title { font-size:16px; }
             .ai-quick-row { gap:6px; }
@@ -2718,7 +2718,7 @@ var SalesGuideItem = function SalesGuideItem(_ref8) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "grid gap-2 items-start px-3 py-2.5 text-xs cursor-pointer ".concat(isExpanded ? 'bg-emerald-50/70' : 'bg-white hover:bg-slate-50'),
     style: {
-      gridTemplateColumns: 'minmax(0,1fr) 96px 152px 18px'
+      gridTemplateColumns: 'minmax(0,1fr) 88px 128px 18px'
     },
     onClick: function onClick() {
       return setIsExpanded(!isExpanded);
@@ -2767,7 +2767,7 @@ var SalesGuideItem = function SalesGuideItem(_ref8) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "grid gap-2 text-[11px] font-semibold text-slate-500 mb-2 pb-1 border-b border-slate-200",
     style: {
-      gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 96px 152px'
+      gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 88px 128px'
     }
   }, /*#__PURE__*/React.createElement("span", null, "\u0E01\u0E25\u0E38\u0E48\u0E21"), /*#__PURE__*/React.createElement("span", null, "\u0E41\u0E1A\u0E23\u0E19\u0E14\u0E4C"), /*#__PURE__*/React.createElement("span", {
     className: "text-center"
@@ -2782,7 +2782,7 @@ var SalesGuideItem = function SalesGuideItem(_ref8) {
       key: "".concat(row.groupName, "-").concat(row.brand, "-").concat(idx),
       className: "grid gap-2 items-start text-xs px-2 py-1 bg-white rounded border border-slate-100",
       style: {
-        gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 96px 152px'
+        gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 88px 128px'
       }
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-slate-700 leading-tight",
@@ -2821,7 +2821,7 @@ var SalesGuideList = function SalesGuideList(_ref9) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "sticky top-0 z-10 grid gap-2 px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase bg-slate-50 border-b border-slate-200",
     style: {
-      gridTemplateColumns: 'minmax(0,1fr) 96px 152px 18px'
+      gridTemplateColumns: 'minmax(0,1fr) 88px 128px 18px'
     }
   }, /*#__PURE__*/React.createElement("span", null, "CV \u0E25\u0E39\u0E01\u0E04\u0E49\u0E32"), /*#__PURE__*/React.createElement("span", {
     className: "text-center"
@@ -7494,12 +7494,19 @@ var App = function App() {
       });
       return nextRow;
     });
+    var AI_FULL_SALES_ROWS_LIMIT = 240;
+    var AI_FULL_TARGET_ROWS_LIMIT = 120;
     var salesSampleSource = sortRowsByRecentValue((latestYearScopedData || []).length > 0 ? latestYearScopedData : scopedData, function (item) {
       return Number(getValue(item) || 0);
     });
     var targetSampleSource = sortRowsByRecentValue((latestYearScopedTargets || []).length > 0 ? latestYearScopedTargets : scopedTargets, function (item) {
       return Number(getTarget(item) || 0);
     });
+    var canSendFullSalesRows = salesSampleSource.length > 0 && salesSampleSource.length <= AI_FULL_SALES_ROWS_LIMIT;
+    var canSendFullTargetRows = targetSampleSource.length > 0 && targetSampleSource.length <= AI_FULL_TARGET_ROWS_LIMIT;
+    var rawDataMode = canSendFullSalesRows || canSendFullTargetRows ? 'full_rows' : 'sample_rows';
+    var rawSalesRows = canSendFullSalesRows ? salesSampleSource.map(mapSalesSample) : takeTop(salesSampleSource, mapSalesSample, 24);
+    var rawTargetRows = canSendFullTargetRows ? targetSampleSource.map(mapTargetSample) : takeTop(targetSampleSource, mapTargetSample, 18);
     return {
       generatedAt: new Date().toISOString(),
       viewMode: viewMode,
@@ -7520,7 +7527,10 @@ var App = function App() {
           return Number(b) - Number(a);
         }),
         currentScopeCVCount: localTotalCVCount,
-        currentScopeSKUCount: localTotalSKUCount
+        currentScopeSKUCount: localTotalSKUCount,
+        rawDataMode: rawDataMode,
+        rawSalesRowsSent: Number(rawSalesRows.length || 0),
+        rawTargetRowsSent: Number(rawTargetRows.length || 0)
       },
       overall: {
         totalMetricValue: Number(localTotalMetricValue || 0),
@@ -7592,6 +7602,11 @@ var App = function App() {
           }, 3)
         };
       }, 8),
+      rawDataContext: {
+        mode: rawDataMode,
+        salesRows: rawSalesRows,
+        targetRows: rawTargetRows
+      },
       rawDataSamples: {
         salesRows: takeTop(salesSampleSource, mapSalesSample, 24),
         targetRows: takeTop(targetSampleSource, mapTargetSample, 18)
