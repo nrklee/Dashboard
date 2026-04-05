@@ -174,6 +174,33 @@
         .sales-guide-summary-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem; }
         .sales-guide-weight-row { display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap; }
         .top-brands-panel { min-height:42rem; }
+        .ai-launch-btn { min-width:44px;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(91,154,255,0.35);background:linear-gradient(135deg,rgba(91,154,255,0.18),rgba(59,130,246,0.1));color:var(--accent);font-weight:800;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s ease; }
+        .ai-launch-btn:hover { transform:translateY(-1px);box-shadow:0 10px 18px rgba(37,99,235,0.18);border-color:rgba(91,154,255,0.55); }
+        .ai-panel-overlay { position:fixed;inset:0;background:rgba(15,23,42,0.52);z-index:80;backdrop-filter:blur(2px); }
+        .ai-panel { position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:-18px 0 38px rgba(15,23,42,0.22);z-index:81;display:flex;flex-direction:column; }
+        .ai-panel-header { display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 14px;border-bottom:1px solid var(--border); }
+        .ai-panel-title { font-size:18px;font-weight:800;color:var(--text);line-height:1.3; }
+        .ai-panel-subtitle { font-size:12px;line-height:1.6;color:var(--text-muted);margin-top:4px; }
+        .ai-panel-body { flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 16px 16px;gap:12px; }
+        .ai-config-box { border:1px solid var(--border);border-radius:12px;background:var(--bg-soft);padding:12px; }
+        .ai-config-label { display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.02em; }
+        .ai-chat-list { flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px; }
+        .ai-msg { border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;border:1px solid var(--border); }
+        .ai-msg.assistant { background:rgba(91,154,255,0.08);border-color:rgba(91,154,255,0.18);color:var(--text); }
+        .ai-msg.user { background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.18);color:var(--text); }
+        .ai-msg.system { background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.18);color:var(--text); }
+        .ai-msg-label { font-size:10px;font-weight:800;letter-spacing:0.03em;text-transform:uppercase;margin-bottom:4px;color:var(--text-muted); }
+        .ai-quick-row { display:flex;flex-wrap:wrap;gap:8px; }
+        .ai-quick-btn { border:1px solid rgba(91,154,255,0.2);background:rgba(91,154,255,0.08);color:var(--accent);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s ease; }
+        .ai-quick-btn:hover { background:rgba(91,154,255,0.14); }
+        .ai-footer { display:flex;flex-direction:column;gap:8px; }
+        .ai-question-input { min-height:96px;resize:vertical;margin-bottom:0!important; }
+        .ai-footer-actions { display:flex;gap:8px;flex-wrap:wrap; }
+        .ai-action-btn { flex:1 1 140px;border-radius:10px;border:1px solid var(--border);padding:10px 12px;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s ease; }
+        .ai-action-btn.primary { background:var(--accent);border-color:var(--accent);color:#fff; }
+        .ai-action-btn.secondary { background:var(--bg-soft);color:var(--text); }
+        .ai-action-btn:disabled { opacity:.55;cursor:not-allowed; }
+        .ai-hint { font-size:11px;line-height:1.6;color:var(--text-muted); }
 
         /* ===== Responsive ===== */
 
@@ -215,6 +242,9 @@
             .repeat-gap-list-inner { min-width:680px; }
             .sales-guide-list-inner { min-width:660px; }
             .top-brands-panel { min-height:32rem; }
+            .ai-panel { width:100vw; }
+            .ai-panel-header { padding:16px 14px 12px; }
+            .ai-panel-body { padding:12px; }
         }
 
         /* Mobile (max-width: 480px) */
@@ -236,6 +266,10 @@
             .repeat-gap-list-inner { min-width:600px; }
             .sales-guide-list-inner { min-width:580px; }
             .top-brands-panel { min-height:28rem; }
+            .ai-panel-title { font-size:16px; }
+            .ai-quick-row { gap:6px; }
+            .ai-quick-btn { width:100%;justify-content:center; }
+            .ai-footer-actions { flex-direction:column; }
         }
 
         /* Touch-friendly: ensure minimum tap target sizes */
@@ -1058,6 +1092,7 @@ var AUTO_SYNC_KEY = 'autoSyncEnabled';
 var SALES_FILE_NAME_KEY = 'salesUploadedFileName';
 var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
+var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
 var MAX_SIZE_MB = 200;
 var COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
 var OTHER_COLOR = '#94a3b8';
@@ -1100,6 +1135,7 @@ var DEFAULT_SALES_GUIDE_WEIGHTS = {
   month2: 30,
   month3: 20
 };
+var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'ช่วยวิเคราะห์ 3 ประเด็นสำคัญจากข้อมูลปัจจุบัน', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
 var SALES_GUIDE_EXCLUDED_GROUPS = ['ลดหนี้ส่งเสริมการขาย - tax (ส่วนลดพิเศษ)'];
 var TARGET_RELAXED_FILTER_KEYS = ['province', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
 
@@ -2802,6 +2838,111 @@ var SalesGuideList = function SalesGuideList(_ref9) {
     });
   }))));
 };
+var AIMessageBubble = function AIMessageBubble(props) {
+  var role = props.role,
+    text = props.text;
+  var roleLabel = role === 'user' ? 'คุณ' : role === 'system' ? 'ระบบ' : 'AI';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ai-msg ".concat(role === 'user' ? 'user' : role === 'system' ? 'system' : 'assistant')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ai-msg-label"
+  }, roleLabel), text || '-');
+};
+var AIPanel = function AIPanel(props) {
+  var isOpen = props.isOpen,
+    onClose = props.onClose,
+    webAppUrl = props.webAppUrl,
+    onWebAppUrlChange = props.onWebAppUrlChange,
+    messages = props.messages,
+    question = props.question,
+    onQuestionChange = props.onQuestionChange,
+    onAsk = props.onAsk,
+    onInsight = props.onInsight,
+    onAction = props.onAction,
+    onQuickPrompt = props.onQuickPrompt,
+    isLoading = props.isLoading;
+  if (!isOpen) return null;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-overlay",
+    onClick: onClose
+  }), /*#__PURE__*/React.createElement("aside", {
+    className: "ai-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-header"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-title"
+  }, "AI ผู้ช่วยวิเคราะห์ยอดขาย"), /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-subtitle"
+  }, "ถามสรุปข้อมูล, ขอ insight, หรือให้ AI ช่วยตั้งตัวกรอง โดย AI จะอ่านทั้งข้อมูลสรุปและตัวอย่างข้อมูล input ที่อัปโหลดเข้ามา")), /*#__PURE__*/React.createElement("button", {
+    className: "menu-btn",
+    onClick: onClose,
+    title: "ปิด AI"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "X",
+    size: 18
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ai-panel-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ai-config-box"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "ai-config-label"
+  }, "Apps Script Web App URL"), /*#__PURE__*/React.createElement("input", {
+    className: "drawer-input",
+    value: webAppUrl,
+    onChange: function onChange(e) {
+      return onWebAppUrlChange(e.target.value);
+    },
+    placeholder: "วาง Web App URL ของ Google Apps Script ที่นี่"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ai-hint"
+  }, "ใส่ URL ครั้งแรกครั้งเดียว ระบบจะจำไว้ในอุปกรณ์นี้ให้เอง และ AI จะส่งคำถามพร้อมข้อมูลสรุปกับตัวอย่างแถวข้อมูล input ที่เกี่ยวข้องไปวิเคราะห์")), /*#__PURE__*/React.createElement("div", {
+    className: "ai-quick-row"
+  }, AI_QUICK_PROMPTS.map(function (prompt) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: prompt,
+      type: "button",
+      className: "ai-quick-btn",
+      onClick: function onClick() {
+        return onQuickPrompt(prompt);
+      }
+    }, prompt);
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ai-chat-list custom-scrollbar"
+  }, (messages || []).map(function (message, index) {
+    return /*#__PURE__*/React.createElement(AIMessageBubble, {
+      key: "".concat(message.role, "-").concat(index),
+      role: message.role,
+      text: message.text
+    });
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ai-footer"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    className: "drawer-input ai-question-input",
+    value: question,
+    onChange: function onChange(e) {
+      return onQuestionChange(e.target.value);
+    },
+    placeholder: "พิมพ์คำถามหรือคำสั่ง เช่น สรุปภาพรวมเดือนนี้ / กรองเฉพาะ NE.3/1 / ร้านไหนควรเร่งขายเพิ่ม",
+    disabled: isLoading
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ai-footer-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ai-action-btn secondary",
+    onClick: onAction,
+    disabled: isLoading
+  }, isLoading ? 'กำลังประมวลผล...' : 'ให้ AI ช่วยตั้งตัวกรอง'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ai-action-btn secondary",
+    onClick: onInsight,
+    disabled: isLoading
+  }, isLoading ? 'กำลังวิเคราะห์...' : 'ขอ insight'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ai-action-btn primary",
+    onClick: onAsk,
+    disabled: isLoading
+  }, isLoading ? 'กำลังถาม AI...' : 'ถาม AI'))))));
+};
 // --- Menu Drawer Component ---
 var MenuDrawer = function MenuDrawer(_ref9) {
   var isOpen = _ref9.isOpen,
@@ -3253,6 +3394,31 @@ var App = function App() {
     _useState40 = _slicedToArray(_useState39, 2),
     salesGuideWeights = _useState40[0],
     setSalesGuideWeights = _useState40[1];
+  var _useState41 = useState(false),
+    _useState42 = _slicedToArray(_useState41, 2),
+    isAIPanelOpen = _useState42[0],
+    setIsAIPanelOpen = _useState42[1];
+  var _useState43 = useState(function () {
+      return safeStorageGet(AI_WEB_APP_URL_KEY) || '';
+    }),
+    _useState44 = _slicedToArray(_useState43, 2),
+    aiWebAppUrl = _useState44[0],
+    setAIWebAppUrl = _useState44[1];
+  var _useState45 = useState(''),
+    _useState46 = _slicedToArray(_useState45, 2),
+    aiQuestion = _useState46[0],
+    setAIQuestion = _useState46[1];
+  var _useState47 = useState([{
+      role: 'assistant',
+      text: 'พร้อมช่วยสรุปข้อมูลจากหน้าปัจจุบันแล้ว คุณสามารถถามเป็นภาษาปกติ หรือให้ AI ช่วยตั้งตัวกรองให้ได้'
+    }]),
+    _useState48 = _slicedToArray(_useState47, 2),
+    aiMessages = _useState48[0],
+    setAIMessages = _useState48[1];
+  var _useState49 = useState(false),
+    _useState50 = _slicedToArray(_useState49, 2),
+    isAskingAI = _useState50[0],
+    setIsAskingAI = _useState50[1];
   var salesInputRef = useRef(null);
   var targetInputRef = useRef(null);
   var didAutoSyncRef = useRef(false);
@@ -3335,6 +3501,9 @@ var App = function App() {
   useEffect(function () {
     safeStorageSet(SALES_GUIDE_WEIGHTS_KEY, JSON.stringify(sanitizeSalesGuideWeights(salesGuideWeights)));
   }, [salesGuideWeights]);
+  useEffect(function () {
+    if (aiWebAppUrl) safeStorageSet(AI_WEB_APP_URL_KEY, aiWebAppUrl);else safeStorageRemove(AI_WEB_APP_URL_KEY);
+  }, [aiWebAppUrl]);
   useEffect(function () {
     var load = /*#__PURE__*/function () {
       var _ref11 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
@@ -7235,6 +7404,343 @@ var App = function App() {
       return Number((row === null || row === void 0 ? void 0 : row.value) || 0) > 0 || Number((row === null || row === void 0 ? void 0 : row.target) || 0) > 0;
     });
   }, [latestYearScopedData, latestYearScopedTargets, metricMode, selectedDistrictFilters]);
+  var dashboardContextSummary = useMemo(function () {
+    var activeFilters = {};
+    Object.keys(filters || {}).forEach(function (key) {
+      if (Array.isArray(filters[key]) && filters[key].length > 0) activeFilters[key] = filters[key];
+    });
+    var takeTop = function takeTop(rows, mapper) {
+      var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
+      return (rows || []).slice(0, limit).map(mapper);
+    };
+    var safeText = function safeText(value) {
+      var normalized = normalizeDimensionValue(value);
+      return normalized === '-' ? '' : normalized;
+    };
+    var toMonthLabel = function toMonthLabel(item) {
+      var serial = getMonthSerialFromItem(item);
+      return serial === null ? '' : formatMonthSerialLabel(serial);
+    };
+    var sortRowsByRecentValue = function sortRowsByRecentValue(rows, valueGetter) {
+      return (rows || []).slice().sort(function (a, b) {
+        var serialA = getMonthSerialFromItem(a);
+        var serialB = getMonthSerialFromItem(b);
+        var safeSerialA = Number.isFinite(serialA) ? serialA : -1;
+        var safeSerialB = Number.isFinite(serialB) ? serialB : -1;
+        if (safeSerialB !== safeSerialA) return safeSerialB - safeSerialA;
+        return Number(valueGetter(b) || 0) - Number(valueGetter(a) || 0);
+      });
+    };
+    var mapSalesSample = function mapSalesSample(item) {
+      return {
+        year: getYearLabelFromItem(item, false) || '',
+        month: toMonthLabel(item),
+        region: safeText(item.region),
+        province: safeText(item.province),
+        district: safeText(item.district),
+        cv: safeText(item.cv),
+        group: safeText(item.group),
+        brand: safeText(item.brand),
+        model: safeText(item.model),
+        size: safeText(item.size),
+        sku: safeText(item.sku),
+        sales: Number(item.sales || 0),
+        qty: Number(item.qty || 0),
+        ton: Number(item.ton || 0),
+        metricValue: Number(getValue(item) || 0)
+      };
+    };
+    var mapTargetSample = function mapTargetSample(item) {
+      return {
+        year: getYearLabelFromItem(item, false) || '',
+        month: toMonthLabel(item),
+        region: safeText(item.region),
+        province: safeText(item.province),
+        district: safeText(item.district),
+        group: safeText(item.group),
+        brand: safeText(item.brand),
+        model: safeText(item.model),
+        size: safeText(item.size),
+        targetValue: Number((item.targetValue !== undefined ? item.targetValue : item.target) || 0),
+        targetTon: Number(item.targetTon || 0),
+        targetLevel: safeText(item.targetLevel || item.level)
+      };
+    };
+    var localTotalMetricValue = (scopedData || []).reduce(function (sum, item) {
+      return sum + Number(getValue(item) || 0);
+    }, 0);
+    var localTotalCVCount = Array.from(new Set((scopedData || []).map(function (item) {
+      return normalizeDimensionValue(item.cv);
+    }).filter(function (cvName) {
+      return cvName && cvName !== '-';
+    }))).length;
+    var localTotalSKUCount = Array.from(new Set((scopedData || []).map(function (item) {
+      return normalizeDimensionValue(item.sku);
+    }).filter(function (skuName) {
+      return skuName && skuName !== '-';
+    }))).length;
+    var scopedSalesYearsMap = {};
+    [].concat(_toConsumableArray(latestYearScopedData || []), _toConsumableArray(latestYearScopedTargets || [])).forEach(function (item) {
+      var yearLabel = getYearLabelFromItem(item, false);
+      if (yearLabel) scopedSalesYearsMap[yearLabel] = true;
+    });
+    var latestTrendRows = (chartData || []).map(function (row) {
+      var nextRow = {
+        month: row.name
+      };
+      selectedTrendYears.forEach(function (year) {
+        nextRow["sales_".concat(year)] = Number(row["value_".concat(year)] || 0);
+        nextRow["target_".concat(year)] = Number(row["target_".concat(year)] || 0);
+      });
+      return nextRow;
+    });
+    var salesSampleSource = sortRowsByRecentValue((latestYearScopedData || []).length > 0 ? latestYearScopedData : scopedData, function (item) {
+      return Number(getValue(item) || 0);
+    });
+    var targetSampleSource = sortRowsByRecentValue((latestYearScopedTargets || []).length > 0 ? latestYearScopedTargets : scopedTargets, function (item) {
+      return Number(getTarget(item) || 0);
+    });
+    return {
+      generatedAt: new Date().toISOString(),
+      viewMode: viewMode,
+      timeView: timeView,
+      metricMode: metricMode,
+      unitMode: unitMode,
+      selectedTrendYears: selectedTrendYears,
+      uploadedFiles: uploadedFileNames,
+      filters: activeFilters,
+      datasetOverview: {
+        salesRowsInScope: Number((scopedData || []).length || 0),
+        targetRowsInScope: Number((scopedTargets || []).length || 0),
+        latestYearSalesRowsInScope: Number((latestYearScopedData || []).length || 0),
+        latestYearTargetRowsInScope: Number((latestYearScopedTargets || []).length || 0),
+        uploadedSalesRows: Number((allData.monthly || []).length + (effectiveYearlyData || []).length || 0),
+        uploadedTargetRows: Number((allData.targets || []).length || 0),
+        currentScopeYears: Object.keys(scopedSalesYearsMap).sort(function (a, b) {
+          return Number(b) - Number(a);
+        }),
+        currentScopeCVCount: localTotalCVCount,
+        currentScopeSKUCount: localTotalSKUCount
+      },
+      overall: {
+        totalMetricValue: Number(localTotalMetricValue || 0),
+        salesGuide: {
+          focusMonthLabel: salesGuideSummary.focusMonthLabel || '-',
+          currentTarget: Number(salesGuideSummary.currentTarget || 0),
+          currentSales: Number(salesGuideSummary.currentSales || 0),
+          targetGap: Number(salesGuideSummary.targetGap || 0),
+          totalPotential: Number(salesGuideSummary.totalPotential || 0),
+          gapCoveragePct: Number(salesGuideSummary.gapCoveragePct || 0),
+          projectedClosePct: Number(salesGuideSummary.projectedClosePct || 0),
+          totalStores: Number(salesGuideSummary.totalStores || 0)
+        }
+      },
+      trend: latestTrendRows,
+      topBrands: takeTop(topBrandsData, function (item) {
+        return {
+          brand: item.name,
+          value: Number(item.value || 0)
+        };
+      }, 8),
+      topStores: takeTop(topShopsData, function (item) {
+        var nextItem = {
+          cv: item.name
+        };
+        (topShopsYearSeries || []).forEach(function (series) {
+          nextItem["value_".concat(series.year)] = Number(item["value_".concat(series.year)] || 0);
+        });
+        return nextItem;
+      }, 10),
+      districtSummary: takeTop(districtData, function (item) {
+        return {
+          district: item.name,
+          sales: Number(item.value || 0),
+          target: Number(item.target || 0)
+        };
+      }, 10),
+      repeatGapTop: takeTop(repeatPurchaseGapSummary.items || [], function (item) {
+        return {
+          cv: item.cv,
+          group: item.groupName,
+          brand: item.brand,
+          latestValue: Number(getRepeatGapMetricValue(item, metricMode) || 0),
+          monthsSinceLastOrder: Number(item.monthsSinceLastOrder || 0),
+          lastOrderLabel: item.lastOrderLabel || '-'
+        };
+      }, 8),
+      salesGuideTop: takeTop(salesGuideSummary.visibleItems || [], function (item) {
+        return {
+          cv: item.cv,
+          currentMonthSales: Number(item.currentMonthSales || 0),
+          weightedExpectedSales: Number(item.weightedExpectedSales || 0),
+          recommendedUplift: Number(item.recommendedUplift || 0),
+          lastOrderLabel: item.lastOrderLabel || '-',
+          trendValues: Array.isArray(item.trendValues) ? item.trendValues.slice(0, 4).map(function (value) {
+            return Number(value || 0);
+          }) : [],
+          breakdown: takeTop(item.breakdown || [], function (row) {
+            return {
+              group: row.groupName,
+              brand: row.brand,
+              currentMonthSales: Number(row.currentMonthSales || 0),
+              weightedExpectedSales: Number(row.weightedExpectedSales || 0),
+              recommendedUplift: Number(row.recommendedUplift || 0),
+              trendValues: Array.isArray(row.trendValues) ? row.trendValues.slice(0, 4).map(function (value) {
+                return Number(value || 0);
+              }) : []
+            };
+          }, 3)
+        };
+      }, 8),
+      rawDataSamples: {
+        salesRows: takeTop(salesSampleSource, mapSalesSample, 24),
+        targetRows: takeTop(targetSampleSource, mapTargetSample, 18)
+      }
+    };
+  }, [filters, viewMode, timeView, metricMode, unitMode, selectedTrendYears, uploadedFileNames, allData.monthly, allData.targets, effectiveYearlyData, salesGuideSummary, chartData, topBrandsData, topShopsData, topShopsYearSeries, districtData, repeatPurchaseGapSummary.items, scopedData, scopedTargets, latestYearScopedData, latestYearScopedTargets]);
+  var appendAIMessage = function appendAIMessage(role, text) {
+    var safeText = String(text || '').trim();
+    if (!safeText) return;
+    setAIMessages(function (prev) {
+      return [].concat(_toConsumableArray(prev), [{
+        role: role,
+        text: safeText
+      }]);
+    });
+  };
+  var normalizeAISelection = function normalizeAISelection(value) {
+    if (Array.isArray(value)) return value.map(function (item) {
+      return String(item || '').trim();
+    }).filter(Boolean);
+    var singleValue = String(value || '').trim();
+    return singleValue ? [singleValue] : [];
+  };
+  var applyAIAction = function applyAIAction(actionPayload) {
+    if (!actionPayload || _typeof(actionPayload) !== 'object') return;
+    var actionType = String(actionPayload.action || '').trim();
+    if (actionType === 'clear_filters') {
+      setFilters({});
+      return;
+    }
+    if (actionType === 'set_filters') {
+      var nextFilters = {};
+      var incomingFilters = actionPayload.filters && _typeof(actionPayload.filters) === 'object' ? actionPayload.filters : {};
+      ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'].forEach(function (key) {
+        if (!(key in incomingFilters)) return;
+        nextFilters[key] = normalizeAISelection(incomingFilters[key]);
+      });
+      setFilters(nextFilters);
+      if (actionPayload.viewMode && ['monthly', 'yearly'].includes(actionPayload.viewMode)) setViewMode(actionPayload.viewMode);
+      if (actionPayload.metricMode && ['value', 'qty', 'ton'].includes(actionPayload.metricMode)) setMetricMode(actionPayload.metricMode);
+      if (actionPayload.unitMode && ['baht', 'thousand'].includes(actionPayload.unitMode)) setUnitMode(actionPayload.unitMode);
+      if (actionPayload.sectionKey && Object.prototype.hasOwnProperty.call(DEFAULT_SECTION_STATE, actionPayload.sectionKey)) {
+        setSectionOpen(function (prev) {
+          return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, actionPayload.sectionKey, true));
+        });
+      }
+    }
+  };
+  var submitAIRequest = /*#__PURE__*/function () {
+    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(mode, presetQuestion) {
+      var questionText, response, responseText, result;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.p = _context12.n) {
+          case 0:
+            questionText = String(presetQuestion || aiQuestion || '').trim();
+            if (questionText) {
+              _context12.n = 2;
+              break;
+            }
+            showStatus('กรุณาพิมพ์คำถามหรือคำสั่งก่อนใช้งาน AI', 'error');
+            return _context12.a(2);
+          case 2:
+            if (aiWebAppUrl.trim()) {
+              _context12.n = 4;
+              break;
+            }
+            appendAIMessage('system', 'ยังไม่ได้ตั้งค่า Web App URL ของ Google Apps Script');
+            showStatus('กรุณาใส่ Web App URL ของ Google Apps Script ก่อนใช้งาน AI', 'error');
+            return _context12.a(2);
+          case 4:
+            if (typeof fetch === 'function') {
+              _context12.n = 6;
+              break;
+            }
+            appendAIMessage('system', 'อุปกรณ์นี้ไม่รองรับการเรียก AI ผ่าน fetch');
+            showStatus('อุปกรณ์นี้ไม่รองรับการเรียก AI ผ่าน fetch', 'error');
+            return _context12.a(2);
+          case 6:
+            if (!presetQuestion) {
+              appendAIMessage('user', questionText);
+              setAIQuestion('');
+            }
+            setIsAskingAI(true);
+            _context12.p = 7;
+            _context12.n = 8;
+            return fetch(aiWebAppUrl.trim(), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+              },
+              body: JSON.stringify({
+                mode: mode || 'ask',
+                question: questionText,
+                context: dashboardContextSummary
+              })
+            });
+          case 8:
+            response = _context12.v;
+            _context12.n = 9;
+            return response.text();
+          case 9:
+            responseText = _context12.v;
+            try {
+              result = responseText ? JSON.parse(responseText) : {};
+            } catch (_unused) {
+              result = {
+                ok: false,
+                error: responseText || 'AI ตอบกลับไม่เป็น JSON'
+              };
+            }
+            if (response.ok && result && result.ok) {
+              _context12.n = 11;
+              break;
+            }
+            throw new Error(result && result.error ? result.error : 'เรียก AI ไม่สำเร็จ');
+          case 11:
+            appendAIMessage('assistant', result.answer || 'AI ไม่ได้ส่งข้อความกลับมา');
+            if (result.actionPayload) {
+              applyAIAction(result.actionPayload);
+              showStatus(mode === 'action' ? 'AI ช่วยปรับตัวกรองให้แล้ว' : 'AI ตอบกลับแล้ว', 'success');
+            } else {
+              showStatus('AI ตอบกลับแล้ว', 'success');
+            }
+            _context12.n = 13;
+            break;
+          case 12:
+            _context12.p = 12;
+            _context12.v;
+            appendAIMessage('system', _context12.v && _context12.v.message ? _context12.v.message : String(_context12.v || 'เรียก AI ไม่สำเร็จ'));
+            showStatus(_context12.v && _context12.v.message ? _context12.v.message : 'เรียก AI ไม่สำเร็จ', 'error');
+          case 13:
+            _context12.p = 13;
+            setIsAskingAI(false);
+            return _context12.f(13);
+          case 14:
+            return _context12.a(2);
+        }
+      }, _callee12, null, [[7, 12, 13, 14]]);
+    }));
+    return function submitAIRequest(_x, _x2) {
+      return _ref12.apply(this, arguments);
+    };
+  }();
+  var handleAIQuickPrompt = function handleAIQuickPrompt(prompt) {
+    var nextPrompt = String(prompt || '').trim();
+    var nextMode = /วิเคราะห์|insight/i.test(nextPrompt) ? 'insight' : 'ask';
+    setAIQuestion(nextPrompt);
+    submitAIRequest(nextMode, nextPrompt);
+  };
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:render';
   var totalMetricValue = scopedData.reduce(function (acc, curr) {
     return acc + getValue(curr);
@@ -7396,6 +7902,12 @@ var App = function App() {
     size: 12,
     className: "mr-1"
   }), "Saved"), /*#__PURE__*/React.createElement("button", {
+    className: "ai-launch-btn",
+    onClick: function onClick() {
+      return setIsAIPanelOpen(true);
+    },
+    title: "เปิดผู้ช่วย AI"
+  }, "AI"), /*#__PURE__*/React.createElement("button", {
     className: "theme-toggle",
     onClick: function onClick() {
       return setIsDarkMode(!isDarkMode);
@@ -7409,7 +7921,28 @@ var App = function App() {
     title: "\u0E40\u0E21\u0E19\u0E39"
   }, "\u2630"))), statusInfo.message && /*#__PURE__*/React.createElement("div", {
     className: "status-bar ".concat(statusInfo.type === 'error' ? 's-err' : statusInfo.type === 'success' ? 's-ok' : 's-info')
-  }, statusInfo.message), /*#__PURE__*/React.createElement(MenuDrawer, {
+  }, statusInfo.message), /*#__PURE__*/React.createElement(AIPanel, {
+    isOpen: isAIPanelOpen,
+    onClose: function onClose() {
+      return setIsAIPanelOpen(false);
+    },
+    webAppUrl: aiWebAppUrl,
+    onWebAppUrlChange: setAIWebAppUrl,
+    messages: aiMessages,
+    question: aiQuestion,
+    onQuestionChange: setAIQuestion,
+    onAsk: function onAsk() {
+      return submitAIRequest('ask');
+    },
+    onInsight: function onInsight() {
+      return submitAIRequest('insight');
+    },
+    onAction: function onAction() {
+      return submitAIRequest('action');
+    },
+    onQuickPrompt: handleAIQuickPrompt,
+    isLoading: isAskingAI
+  }), /*#__PURE__*/React.createElement(MenuDrawer, {
     isOpen: isDrawerOpen,
     onClose: function onClose() {
       return setIsDrawerOpen(false);
