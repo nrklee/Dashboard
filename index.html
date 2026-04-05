@@ -7404,6 +7404,24 @@ var App = function App() {
       return Number((row === null || row === void 0 ? void 0 : row.value) || 0) > 0 || Number((row === null || row === void 0 ? void 0 : row.target) || 0) > 0;
     });
   }, [latestYearScopedData, latestYearScopedTargets, metricMode, selectedDistrictFilters]);
+  var provinceSummaryData = useMemo(function () {
+    var salesSource = (latestYearScopedData || []).length > 0 ? latestYearScopedData : scopedData;
+    var grouped = {};
+    (salesSource || []).forEach(function (item) {
+      var provinceName = normalizeDimensionValue(item === null || item === void 0 ? void 0 : item.province);
+      if (!provinceName || provinceName === '-') return;
+      if (!grouped[provinceName]) {
+        grouped[provinceName] = {
+          province: provinceName,
+          sales: 0
+        };
+      }
+      grouped[provinceName].sales += Number(getValue(item) || 0);
+    });
+    return Object.values(grouped).sort(function (a, b) {
+      return Number(b.sales || 0) - Number(a.sales || 0);
+    });
+  }, [latestYearScopedData, scopedData, metricMode]);
   var dashboardContextSummary = useMemo(function () {
     var activeFilters = {};
     Object.keys(filters || {}).forEach(function (key) {
@@ -7412,6 +7430,21 @@ var App = function App() {
     var takeTop = function takeTop(rows, mapper) {
       var limit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
       return (rows || []).slice(0, limit).map(mapper);
+    };
+    var trimOptionsForAI = function trimOptionsForAI(key, options) {
+      var limitMap = {
+        month: 24,
+        region: 20,
+        province: 80,
+        district: 30,
+        cv: 120,
+        group: 80,
+        brand: 120,
+        model: 120,
+        size: 80,
+        sku: 120
+      };
+      return (options || []).slice(0, limitMap[key] || 80);
     };
     var safeText = function safeText(value) {
       var normalized = normalizeDimensionValue(value);
@@ -7502,6 +7535,11 @@ var App = function App() {
     var targetSampleSource = sortRowsByRecentValue((latestYearScopedTargets || []).length > 0 ? latestYearScopedTargets : scopedTargets, function (item) {
       return Number(getTarget(item) || 0);
     });
+    var aiFilterKeys = viewMode === 'monthly' ? ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'] : ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
+    var filterOptionsForAI = {};
+    aiFilterKeys.forEach(function (key) {
+      filterOptionsForAI[key] = trimOptionsForAI(key, getUniqueValues(key));
+    });
     var canSendFullSalesRows = salesSampleSource.length > 0 && salesSampleSource.length <= AI_FULL_SALES_ROWS_LIMIT;
     var canSendFullTargetRows = targetSampleSource.length > 0 && targetSampleSource.length <= AI_FULL_TARGET_ROWS_LIMIT;
     var rawDataMode = canSendFullSalesRows || canSendFullTargetRows ? 'full_rows' : 'sample_rows';
@@ -7516,6 +7554,7 @@ var App = function App() {
       selectedTrendYears: selectedTrendYears,
       uploadedFiles: uploadedFileNames,
       filters: activeFilters,
+      filterOptions: filterOptionsForAI,
       datasetOverview: {
         salesRowsInScope: Number((scopedData || []).length || 0),
         targetRowsInScope: Number((scopedTargets || []).length || 0),
@@ -7561,6 +7600,12 @@ var App = function App() {
         });
         return nextItem;
       }, 10),
+      provinceSummary: provinceSummaryData.map(function (item) {
+        return {
+          province: item.province,
+          sales: Number(item.sales || 0)
+        };
+      }),
       districtSummary: takeTop(districtData, function (item) {
         return {
           district: item.name,
@@ -7612,7 +7657,7 @@ var App = function App() {
         targetRows: takeTop(targetSampleSource, mapTargetSample, 18)
       }
     };
-  }, [filters, viewMode, timeView, metricMode, unitMode, selectedTrendYears, uploadedFileNames, allData.monthly, allData.targets, effectiveYearlyData, salesGuideSummary, chartData, topBrandsData, topShopsData, topShopsYearSeries, districtData, repeatPurchaseGapSummary.items, scopedData, scopedTargets, latestYearScopedData, latestYearScopedTargets]);
+  }, [filters, viewMode, timeView, metricMode, unitMode, selectedTrendYears, uploadedFileNames, allData.monthly, allData.targets, effectiveYearlyData, salesGuideSummary, chartData, topBrandsData, topShopsData, topShopsYearSeries, provinceSummaryData, districtData, repeatPurchaseGapSummary.items, scopedData, scopedTargets, latestYearScopedData, latestYearScopedTargets]);
   var appendAIMessage = function appendAIMessage(role, text) {
     var safeText = String(text || '').trim();
     if (!safeText) return;
@@ -7630,6 +7675,39 @@ var App = function App() {
     var singleValue = String(value || '').trim();
     return singleValue ? [singleValue] : [];
   };
+  var normalizeAIFilterToken = function normalizeAIFilterToken(value) {
+    return String(value || '').trim().toLowerCase().replace(/[\s._\-\/(),]+/g, '').replace(/\u200b|\ufeff/g, '');
+  };
+  var resolveAISelectionAgainstOptions = function resolveAISelectionAgainstOptions(key, values) {
+    var options = getUniqueValues(key) || [];
+    var normalizedValues = normalizeAISelection(values);
+    if (normalizedValues.length === 0 || options.length === 0) return normalizedValues;
+    var seen = {};
+    var matched = [];
+    normalizedValues.forEach(function (selection) {
+      if (options.includes(selection)) {
+        if (!seen[selection]) {
+          seen[selection] = true;
+          matched.push(selection);
+        }
+        return;
+      }
+      var normalizedSelection = normalizeAIFilterToken(selection);
+      if (!normalizedSelection) return;
+      var exactMatch = options.find(function (option) {
+        return normalizeAIFilterToken(option) === normalizedSelection;
+      });
+      var looseMatch = exactMatch || options.find(function (option) {
+        var normalizedOption = normalizeAIFilterToken(option);
+        return normalizedOption.indexOf(normalizedSelection) >= 0 || normalizedSelection.indexOf(normalizedOption) >= 0;
+      });
+      if (looseMatch && !seen[looseMatch]) {
+        seen[looseMatch] = true;
+        matched.push(looseMatch);
+      }
+    });
+    return matched;
+  };
   var applyAIAction = function applyAIAction(actionPayload) {
     if (!actionPayload || _typeof(actionPayload) !== 'object') return;
     var actionType = String(actionPayload.action || '').trim();
@@ -7642,7 +7720,8 @@ var App = function App() {
       var incomingFilters = actionPayload.filters && _typeof(actionPayload.filters) === 'object' ? actionPayload.filters : {};
       ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'].forEach(function (key) {
         if (!(key in incomingFilters)) return;
-        nextFilters[key] = normalizeAISelection(incomingFilters[key]);
+        var resolvedValues = resolveAISelectionAgainstOptions(key, incomingFilters[key]);
+        if (resolvedValues.length > 0) nextFilters[key] = resolvedValues;
       });
       setFilters(nextFilters);
       if (actionPayload.viewMode && ['monthly', 'yearly'].includes(actionPayload.viewMode)) setViewMode(actionPayload.viewMode);
