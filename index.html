@@ -7682,7 +7682,10 @@ var App = function App() {
       trend: latestTrendRows,
       topBrands: takeTop(topBrandsData, function (item) {
         return {
-          brand: item.name,
+          label: item.name,
+          group: safeText(item.groupName),
+          brand: safeText(item.brandName),
+          combinedLabel: safeText(item.name),
           value: Number(item.value || 0)
         };
       }, 8),
@@ -7999,9 +8002,37 @@ var App = function App() {
     }
   };
   var submitAIRequest = function submitAIRequest(mode, presetQuestion) {
-    var questionText = String(presetQuestion || aiQuestion || '').trim();
     var requestMode = String(mode || 'ask').trim().toLowerCase() || 'ask';
+    var fallbackQuestion = requestMode === 'insight' ? 'ช่วยสรุป insight สำคัญ 3-5 ข้อจากข้อมูลหน้าปัจจุบัน โดยครอบคลุมภาพรวม จุดน่ากังวล โอกาส และข้อเสนอแนะ' : '';
+    var questionText = String(presetQuestion || aiQuestion || fallbackQuestion).trim();
     var requestContext = dashboardContextSummary;
+    var conversationHistory = [].concat(_toConsumableArray((aiMessages || []).slice(-6)), [{
+      role: 'user',
+      text: questionText
+    }]).map(function (message) {
+      return {
+        role: String(message.role || ''),
+        text: String(message.text || '')
+      };
+    }).filter(function (message) {
+      return message.text;
+    });
+    var lowerQuestionText = questionText.toLowerCase();
+    var currentQuestionMeta = {
+      asksForPercent: /(เปอร์|%|ร้อยละ|สัดส่วน|share|contribution|achievement)/i.test(questionText),
+      asksForRanking: /(เรียง|อันดับ|มากสุด|น้อยสุด|สูงสุด|ต่ำสุด|มากไปน้อย|น้อยไปมาก)/i.test(questionText),
+      asksForComparison: /(เทียบ|เปรียบเทียบ|vs|compare|growth|เติบโต)/i.test(questionText),
+      asksForProvince: /(จังหวัด|province)/i.test(questionText),
+      asksForDistrict: /(เขต|district|ne\\.?3|van\\s?sales|รายเขต)/i.test(questionText),
+      asksForStore: /(ร้าน|ลูกค้า|cv|ร้านค้า|customer)/i.test(questionText),
+      asksForBrand: /(แบรนด์|brand)/i.test(questionText),
+      asksForInsight: requestMode === 'insight',
+      prefersCurrentFilters: /(ตามตัวกรองปัจจุบัน|หน้าปัจจุบัน|current filter|current page)/i.test(lowerQuestionText)
+    };
+    requestContext = _objectSpread(_objectSpread({}, dashboardContextSummary), {}, {
+      conversationHistory: conversationHistory,
+      currentQuestionMeta: currentQuestionMeta
+    });
     if (!questionText) {
       showStatus('กรุณาพิมพ์คำถามหรือคำสั่งก่อนใช้งาน AI', 'error');
       return Promise.resolve(null);
@@ -8021,14 +8052,14 @@ var App = function App() {
       setAIQuestion('');
     }
     setIsAskingAI(true);
-    var queryPlanPromise = requestMode === 'ask' ? callAIWebApp('query_plan', questionText, dashboardContextSummary).catch(function () {
+    var queryPlanPromise = requestMode === 'ask' ? callAIWebApp('query_plan', questionText, requestContext).catch(function () {
       return null;
     }) : Promise.resolve(null);
     return queryPlanPromise.then(function (queryPlanResult) {
       if (requestMode === 'ask' && queryPlanResult && queryPlanResult.queryPlan) {
         var queryResultContext = executeAIQueryPlan(queryPlanResult.queryPlan);
         if (queryResultContext) {
-          requestContext = _objectSpread(_objectSpread({}, dashboardContextSummary), {}, {
+          requestContext = _objectSpread(_objectSpread({}, requestContext), {}, {
             queryResultContext: queryResultContext
           });
         }
