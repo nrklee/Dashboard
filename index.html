@@ -201,6 +201,15 @@
         .ai-action-btn.secondary { background:var(--bg-soft);color:var(--text); }
         .ai-action-btn:disabled { opacity:.55;cursor:not-allowed; }
         .ai-hint { font-size:11px;line-height:1.6;color:var(--text-muted); }
+        .login-shell { min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg); }
+        .login-card { width:min(460px,100%);background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);padding:22px;display:flex;flex-direction:column;gap:12px; }
+        .login-title { font-size:22px;font-weight:800;color:var(--text);line-height:1.3; }
+        .login-subtitle { font-size:13px;line-height:1.7;color:var(--text-sec); }
+        .login-error { border:1px solid rgba(248,113,113,0.35);background:rgba(248,113,113,0.08);color:var(--danger);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6; }
+        .login-meta { display:flex;flex-wrap:wrap;gap:8px; }
+        .login-chip { display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg-soft);font-size:12px;color:var(--text-sec); }
+        .logout-btn { min-width:96px;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(248,113,113,0.32);background:rgba(248,113,113,0.08);color:#fecaca!important;font-weight:800;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s ease; }
+        .logout-btn:hover { background:rgba(248,113,113,0.16)!important;border-color:rgba(248,113,113,0.45)!important; }
 
         /* ===== Responsive ===== */
 
@@ -258,6 +267,9 @@
             .drawer-header { padding:12px 14px; }
             .drawer-content { padding:12px 14px; }
             .major-section-head { flex-direction:column;align-items:flex-start;gap:6px; }
+            .login-shell { padding:14px; }
+            .login-card { padding:16px; border-radius:14px; }
+            .login-title { font-size:20px; }
             .sec-head { flex-wrap:wrap;gap:6px; }
             .app-header-controls { gap:6px; }
             .filters-grid { grid-template-columns:1fr;gap:8px; }
@@ -1093,6 +1105,13 @@ var SALES_FILE_NAME_KEY = 'salesUploadedFileName';
 var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
 var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
+var DEFAULT_BOUND_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwLJO_-D2AecG9ir22g4bRpC_C7JxUjNqNZDqQ9Fv4H41dftYJvPpgNsY-w72L0S-D8ZA/exec';
+var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
+var AUTH_USER_KEY = 'dashboardAuthUser';
+var GOOGLE_SHEET_LAST_SYNC_PREFIX = 'googleSheetLastSyncAt';
+var GOOGLE_SHEET_SOURCE_LABEL = 'Google Sheet Sales';
+var GOOGLE_TARGET_LAST_SYNC_PREFIX = 'googleTargetLastSyncAt';
+var GOOGLE_TARGET_SOURCE_LABEL = 'Google Sheet Target';
 var MAX_SIZE_MB = 200;
 var COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
 var OTHER_COLOR = '#94a3b8';
@@ -1138,8 +1157,42 @@ var DEFAULT_SALES_GUIDE_WEIGHTS = {
 var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'ช่วยวิเคราะห์ 3 ประเด็นสำคัญจากข้อมูลปัจจุบัน', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
 var SALES_GUIDE_EXCLUDED_GROUPS = ['ลดหนี้ส่งเสริมการขาย - tax (ส่วนลดพิเศษ)'];
 var TARGET_RELAXED_FILTER_KEYS = ['province', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
+var LOCKABLE_FILTER_KEYS = ['region', 'province', 'district', 'brand'];
 
 // --- Helper Functions ---
+var getScopedStorageKey = function getScopedStorageKey(prefix, username) {
+  var safeUser = String(username || 'guest').trim().toLowerCase() || 'guest';
+  return "".concat(prefix, ":").concat(safeUser);
+};
+var normalizeLockedFilters = function normalizeLockedFilters(lockedFilters) {
+  var source = lockedFilters && _typeof(lockedFilters) === 'object' ? lockedFilters : {};
+  var next = {};
+  LOCKABLE_FILTER_KEYS.forEach(function (key) {
+    var safeValue = String(source[key] || '').trim();
+    if (safeValue) next[key] = [safeValue];
+  });
+  return next;
+};
+var mergeFiltersWithLocks = function mergeFiltersWithLocks(filters, lockedFilters) {
+  var nextFilters = _objectSpread({}, filters && _typeof(filters) === 'object' ? filters : {});
+  var normalizedLocks = normalizeLockedFilters(lockedFilters);
+  Object.keys(normalizedLocks).forEach(function (key) {
+    nextFilters[key] = normalizedLocks[key];
+  });
+  return nextFilters;
+};
+var buildLockedFiltersState = function buildLockedFiltersState(lockedFilters) {
+  return mergeFiltersWithLocks({}, lockedFilters);
+};
+var formatLastSyncLabel = function formatLastSyncLabel(value) {
+  if (!value) return 'ยังไม่เคยรีเฟรช';
+  var parsed = new Date(value);
+  if (isNaN(parsed.getTime())) return 'ยังไม่เคยรีเฟรช';
+  return parsed.toLocaleString('th-TH', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  });
+};
 // NEW: Force Local Date String to prevent Timezone shift
 var toLocalISOString = function toLocalISOString(date) {
   var year = date.getFullYear();
@@ -2163,6 +2216,8 @@ var MultiSelect = function MultiSelect(_ref2) {
     _ref2$emptyText = _ref2.emptyText,
     emptyText = _ref2$emptyText === void 0 ? 'ทั้งหมด' : _ref2$emptyText,
     customSummaryText = _ref2.customSummaryText,
+    _ref2$disabled = _ref2.disabled,
+    disabled = _ref2$disabled === void 0 ? false : _ref2$disabled,
     _ref2$dropdownClassNa = _ref2.dropdownClassName,
     dropdownClassName = _ref2$dropdownClassNa === void 0 ? '' : _ref2$dropdownClassNa;
   var _useState = useState(false),
@@ -2236,7 +2291,11 @@ var MultiSelect = function MultiSelect(_ref2) {
       window.removeEventListener('orientationchange', updateDropdownLayout);
     };
   }, [isOpen, isWide]);
+  useEffect(function () {
+    if (disabled && isOpen) setIsOpen(false);
+  }, [disabled, isOpen]);
   var handleToggle = function handleToggle(option) {
+    if (disabled) return;
     var newSelected;
     if (selected.includes(option)) newSelected = selected.filter(function (item) {
       return item !== option;
@@ -2269,9 +2328,11 @@ var MultiSelect = function MultiSelect(_ref2) {
   }, label), /*#__PURE__*/React.createElement("button", {
     ref: buttonRef,
     onClick: function onClick() {
+      if (disabled) return;
       return setIsOpen(!isOpen);
     },
-    className: "w-full text-left p-2 border rounded-lg text-sm flex justify-between items-center transition-colors bg-white ".concat(isOpen ? 'border-blue-500 ring-1 ring-blue-100' : 'border-slate-300 hover:bg-slate-50')
+    disabled: disabled,
+    className: "w-full text-left p-2 border rounded-lg text-sm flex justify-between items-center transition-colors bg-white ".concat(disabled ? 'opacity-70 cursor-not-allowed' : '').concat(isOpen ? ' border-blue-500 ring-1 ring-blue-100' : ' border-slate-300 hover:bg-slate-50')
   }, /*#__PURE__*/React.createElement("span", {
     className: "truncate ".concat(selected.length === 0 ? 'text-slate-400' : 'text-blue-700 font-medium')
   }, summaryText), /*#__PURE__*/React.createElement(Icon, {
@@ -2848,11 +2909,59 @@ var AIMessageBubble = function AIMessageBubble(props) {
     className: "ai-msg-label"
   }, roleLabel), text || '-');
 };
+var LoginScreen = function LoginScreen(props) {
+  var webAppUrl = props.webAppUrl,
+    onWebAppUrlChange = props.onWebAppUrlChange,
+    username = props.username,
+    onUsernameChange = props.onUsernameChange,
+    password = props.password,
+    onPasswordChange = props.onPasswordChange,
+    onSubmit = props.onSubmit,
+    isLoading = props.isLoading,
+    errorMessage = props.errorMessage;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "login-shell"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "login-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "login-title"
+  }, "\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A Sales Dashboard"), /*#__PURE__*/React.createElement("label", {
+    className: "ai-config-label"
+  }, "\u0E0A\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49"), /*#__PURE__*/React.createElement("input", {
+    className: "drawer-input",
+    value: username,
+    onChange: function onChange(e) {
+      return onUsernameChange(e.target.value);
+    },
+    placeholder: "เช่น admin"
+  }), /*#__PURE__*/React.createElement("label", {
+    className: "ai-config-label"
+  }, "\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"), /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    className: "drawer-input",
+    value: password,
+    onChange: function onChange(e) {
+      return onPasswordChange(e.target.value);
+    },
+    onKeyDown: function onKeyDown(e) {
+      if (e.key === 'Enter') onSubmit();
+    },
+    placeholder: "กรอกรหัสผ่าน"
+  }), errorMessage && /*#__PURE__*/React.createElement("div", {
+    className: "login-error"
+  }, errorMessage), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ai-action-btn primary",
+    onClick: onSubmit,
+    disabled: isLoading
+  }, isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ')));
+};
 var AIPanel = function AIPanel(props) {
   var isOpen = props.isOpen,
     onClose = props.onClose,
     webAppUrl = props.webAppUrl,
     onWebAppUrlChange = props.onWebAppUrlChange,
+    canEditWebAppUrl = props.canEditWebAppUrl,
     messages = props.messages,
     question = props.question,
     onQuestionChange = props.onQuestionChange,
@@ -2884,18 +2993,29 @@ var AIPanel = function AIPanel(props) {
     className: "ai-panel-body"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ai-config-box"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "ai-config-label"
-  }, "Apps Script Web App URL"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ai-hint"
+  }, "\u0E23\u0E30\u0E1A\u0E1A AI \u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21 Google Apps Script \u0E44\u0E27\u0E49\u0E43\u0E2B\u0E49\u0E41\u0E25\u0E49\u0E27 \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E08\u0E32\u0E01\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E23\u0E38\u0E1B \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 input \u0E17\u0E35\u0E48\u0E40\u0E01\u0E35\u0E48\u0E22\u0E27\u0E02\u0E49\u0E2D\u0E07 \u0E41\u0E25\u0E30 raw data \u0E15\u0E32\u0E21\u0E04\u0E33\u0E16\u0E32\u0E21"), canEditWebAppUrl && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    className: "ai-config-label",
+    style: {
+      marginTop: '0.75rem'
+    }
+  }, "Apps Script Web App URL (Admin)"), /*#__PURE__*/React.createElement("input", {
     className: "drawer-input",
     value: webAppUrl,
     onChange: function onChange(e) {
       return onWebAppUrlChange(e.target.value);
     },
-    placeholder: "วาง Web App URL ของ Google Apps Script ที่นี่"
+    placeholder: "วางลิงก์ Web App URL",
+    spellCheck: false,
+    autoCapitalize: "none",
+    autoCorrect: "off"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "ai-hint"
-  }, "ใส่ URL ครั้งแรกครั้งเดียว ระบบจะจำไว้ในอุปกรณ์นี้ให้เอง และ AI จะส่งคำถามพร้อมข้อมูลสรุปกับข้อมูล input ที่เกี่ยวข้องไปวิเคราะห์"), /*#__PURE__*/React.createElement("div", {
+    className: "ai-hint",
+    style: {
+      marginTop: '0.35rem'
+    }
+  }, "บัญชี admin เท่านั้นที่จะปรับลิงก์ Apps Script ได้ ผู้ใช้คนอื่นจะใช้ URL ที่ผูกไว้")), /*#__PURE__*/React.createElement("div", {
     className: "ai-hint",
     style: {
       marginTop: '0.35rem'
@@ -3389,6 +3509,14 @@ var App = function App() {
     _useState38 = _slicedToArray(_useState37, 2),
     uploadedFileNames = _useState38[0],
     setUploadedFileNames = _useState38[1];
+  var _useStateSourceSync = useState(''),
+    _useStateSourceSync2 = _slicedToArray(_useStateSourceSync, 2),
+    lastGoogleSheetSyncAt = _useStateSourceSync2[0],
+    setLastGoogleSheetSyncAt = _useStateSourceSync2[1];
+  var _useStateTargetSourceSync = useState(''),
+    _useStateTargetSourceSync2 = _slicedToArray(_useStateTargetSourceSync, 2),
+    lastGoogleTargetSyncAt = _useStateTargetSourceSync2[0],
+    setLastGoogleTargetSyncAt = _useStateTargetSourceSync2[1];
   var _useState39 = useState(function () {
       try {
         return sanitizeSalesGuideWeights(JSON.parse(safeStorageGet(SALES_GUIDE_WEIGHTS_KEY) || 'null'));
@@ -3404,11 +3532,56 @@ var App = function App() {
     isAIPanelOpen = _useState42[0],
     setIsAIPanelOpen = _useState42[1];
   var _useState43 = useState(function () {
-      return safeStorageGet(AI_WEB_APP_URL_KEY) || '';
+      return safeStorageGet(AI_WEB_APP_URL_KEY) || DEFAULT_BOUND_WEB_APP_URL;
     }),
     _useState44 = _slicedToArray(_useState43, 2),
     aiWebAppUrl = _useState44[0],
     setAIWebAppUrl = _useState44[1];
+  var _useStateAuthToken = useState(function () {
+      return safeStorageGet(AUTH_SESSION_TOKEN_KEY) || '';
+    }),
+    _useStateAuthToken2 = _slicedToArray(_useStateAuthToken, 2),
+    authSessionToken = _useStateAuthToken2[0],
+    setAuthSessionToken = _useStateAuthToken2[1];
+  var _useStateAuthUser = useState(function () {
+      try {
+        var raw = safeStorageGet(AUTH_USER_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_err) {
+        return null;
+      }
+    }),
+    _useStateAuthUser2 = _slicedToArray(_useStateAuthUser, 2),
+    authUser = _useStateAuthUser2[0],
+    setAuthUser = _useStateAuthUser2[1];
+  var activeDataKey = useMemo(function () {
+    return getScopedStorageKey(DATA_KEY, authUser && authUser.username);
+  }, [authUser && authUser.username]);
+  var activeLastSyncKey = useMemo(function () {
+    return getScopedStorageKey(GOOGLE_SHEET_LAST_SYNC_PREFIX, authUser && authUser.username);
+  }, [authUser && authUser.username]);
+  var activeTargetLastSyncKey = useMemo(function () {
+    return getScopedStorageKey(GOOGLE_TARGET_LAST_SYNC_PREFIX, authUser && authUser.username);
+  }, [authUser && authUser.username]);
+  var lockedFilters = useMemo(function () {
+    return normalizeLockedFilters(authUser && authUser.lockedFilters ? authUser.lockedFilters : {});
+  }, [authUser && JSON.stringify(authUser.lockedFilters || {})]);
+  var _useStateAuthUsername = useState(''),
+    _useStateAuthUsername2 = _slicedToArray(_useStateAuthUsername, 2),
+    authUsername = _useStateAuthUsername2[0],
+    setAuthUsername = _useStateAuthUsername2[1];
+  var _useStateAuthPassword = useState(''),
+    _useStateAuthPassword2 = _slicedToArray(_useStateAuthPassword, 2),
+    authPassword = _useStateAuthPassword2[0],
+    setAuthPassword = _useStateAuthPassword2[1];
+  var _useStateAuthError = useState(''),
+    _useStateAuthError2 = _slicedToArray(_useStateAuthError, 2),
+    authError = _useStateAuthError2[0],
+    setAuthError = _useStateAuthError2[1];
+  var _useStateAuthChecking = useState(false),
+    _useStateAuthChecking2 = _slicedToArray(_useStateAuthChecking, 2),
+    isAuthChecking = _useStateAuthChecking2[0],
+    setIsAuthChecking = _useStateAuthChecking2[1];
   var _useState45 = useState(''),
     _useState46 = _slicedToArray(_useState45, 2),
     aiQuestion = _useState46[0],
@@ -3507,8 +3680,36 @@ var App = function App() {
     safeStorageSet(SALES_GUIDE_WEIGHTS_KEY, JSON.stringify(sanitizeSalesGuideWeights(salesGuideWeights)));
   }, [salesGuideWeights]);
   useEffect(function () {
-    if (aiWebAppUrl) safeStorageSet(AI_WEB_APP_URL_KEY, aiWebAppUrl);else safeStorageRemove(AI_WEB_APP_URL_KEY);
+    if (aiWebAppUrl && aiWebAppUrl !== DEFAULT_BOUND_WEB_APP_URL) safeStorageSet(AI_WEB_APP_URL_KEY, aiWebAppUrl);else safeStorageRemove(AI_WEB_APP_URL_KEY);
   }, [aiWebAppUrl]);
+  useEffect(function () {
+    if (!authUser || !authUser.username) return;
+    if (lastGoogleSheetSyncAt) safeStorageSet(activeLastSyncKey, lastGoogleSheetSyncAt);else safeStorageRemove(activeLastSyncKey);
+  }, [lastGoogleSheetSyncAt, activeLastSyncKey, authUser && authUser.username]);
+  useEffect(function () {
+    if (!authUser || !authUser.username) return;
+    if (lastGoogleTargetSyncAt) safeStorageSet(activeTargetLastSyncKey, lastGoogleTargetSyncAt);else safeStorageRemove(activeTargetLastSyncKey);
+  }, [lastGoogleTargetSyncAt, activeTargetLastSyncKey, authUser && authUser.username]);
+  useEffect(function () {
+    if (authSessionToken) safeStorageSet(AUTH_SESSION_TOKEN_KEY, authSessionToken);else safeStorageRemove(AUTH_SESSION_TOKEN_KEY);
+  }, [authSessionToken]);
+  useEffect(function () {
+    if (authUser) safeStorageSet(AUTH_USER_KEY, JSON.stringify(authUser));else safeStorageRemove(AUTH_USER_KEY);
+  }, [authUser]);
+  useEffect(function () {
+    if (!authUser || !authUser.username) {
+      setLastGoogleSheetSyncAt('');
+      return;
+    }
+    setLastGoogleSheetSyncAt(safeStorageGet(activeLastSyncKey) || '');
+  }, [authUser && authUser.username, activeLastSyncKey]);
+  useEffect(function () {
+    if (!authUser || !authUser.username) {
+      setLastGoogleTargetSyncAt('');
+      return;
+    }
+    setLastGoogleTargetSyncAt(safeStorageGet(activeTargetLastSyncKey) || '');
+  }, [authUser && authUser.username, activeTargetLastSyncKey]);
   useEffect(function () {
     var load = /*#__PURE__*/function () {
       var _ref11 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
@@ -3516,10 +3717,24 @@ var App = function App() {
         return _regenerator().w(function (_context6) {
           while (1) switch (_context6.p = _context6.n) {
             case 0:
-              _context6.p = 0;
-              _context6.n = 1;
-              return idb.load();
+              if (authUser && authUser.username) {
+                _context6.n = 1;
+                break;
+              }
+              setAllData({
+                monthly: [],
+                yearly: [],
+                targets: []
+              });
+              setIsUsingSavedData(false);
+              setIsLoading(false);
+              return _context6.a(2);
             case 1:
+              _context6.p = 0;
+              setIsLoading(true);
+              _context6.n = 2;
+              return idb.load(activeDataKey);
+            case 2:
               data = _context6.v;
               if (data) {
                 setAllData(data);
@@ -3534,10 +3749,10 @@ var App = function App() {
                 });
                 setIsLoading(false);
               }
-              _context6.n = 3;
+              _context6.n = 4;
               break;
-            case 2:
-              _context6.p = 2;
+            case 3:
+              _context6.p = 3;
               _t4 = _context6.v;
               console.error(_t4);
               setAllData({
@@ -3545,18 +3760,25 @@ var App = function App() {
                 yearly: [],
                 targets: []
               });
+              setIsUsingSavedData(false);
               setIsLoading(false);
-            case 3:
+            case 4:
               return _context6.a(2);
           }
-        }, _callee6, null, [[0, 2]]);
+        }, _callee6, null, [[0, 3]]);
       }));
       return function load() {
         return _ref11.apply(this, arguments);
       };
     }();
     load();
-  }, []);
+  }, [authUser && authUser.username, activeDataKey]);
+  useEffect(function () {
+    if (!authUser) return;
+    setFilters(function (prev) {
+      return mergeFiltersWithLocks(prev, lockedFilters);
+    });
+  }, [authUser && authUser.username, JSON.stringify(lockedFilters)]);
   useEffect(function () {
     if (!statusInfo.message) return undefined;
     var timer = setTimeout(function () {
@@ -3624,11 +3846,12 @@ var App = function App() {
   }, [allData.targets]);
   var saveToStorage = /*#__PURE__*/function () {
     var _ref13 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(data, key) {
-      var _t5;
+      var storageKey, _t5;
       return _regenerator().w(function (_context8) {
         while (1) switch (_context8.p = _context8.n) {
           case 0:
             _context8.p = 0;
+            storageKey = key || activeDataKey;
             setIsLoading(true);
             if (!isIOSDevice) {
               _context8.n = 1;
@@ -3638,7 +3861,7 @@ var App = function App() {
             return nextTick();
           case 1:
             _context8.n = 2;
-            return idb.save(data, key);
+            return idb.save(data, storageKey);
           case 2:
             setIsUsingSavedData(true);
             _context8.n = 5;
@@ -3678,7 +3901,7 @@ var App = function App() {
           case 0:
             _context9.p = 0;
             _context9.n = 1;
-            return idb.clear();
+            return idb.remove(activeDataKey);
           case 1:
             setAllData({
               monthly: [],
@@ -3688,9 +3911,10 @@ var App = function App() {
             setSelectedTrendYears([]);
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             setIsUsingSavedData(false);
-            setFilters({});
+            setFilters(buildLockedFiltersState(lockedFilters));
             persistUploadedFileName('sales', '');
             persistUploadedFileName('target', '');
+            setLastGoogleSheetSyncAt('');
             showStatus('ล้างข้อมูลทั้งหมดแล้ว', 'success');
             _context9.n = 3;
             break;
@@ -5059,7 +5283,7 @@ var App = function App() {
             break;
           case 4:
             _context19.n = 5;
-            return idb.load(DATA_KEY);
+            return idb.load(activeDataKey);
           case 5:
             _t17 = _context19.v;
             if (_t17) {
@@ -5074,7 +5298,7 @@ var App = function App() {
             mergedData = mergeParsedDataByType(latestStoredData, type, parsedData);
             setAllData(mergedData);
             persistUploadedFileName(type, file.name || '');
-            setFilters({});
+            setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
             _context19.n = 8;
             return saveToStorage(mergedData);
@@ -5231,10 +5455,10 @@ var App = function App() {
             return _context20.a(2, false);
           case 16:
             setAllData(nextData);
-            setFilters({});
+            setFilters(buildLockedFiltersState(lockedFilters));
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             _context20.n = 17;
-            return idb.save(nextData, DATA_KEY);
+            return idb.save(nextData, activeDataKey);
           case 17:
             setIsUsingSavedData(true);
             if (!silentStatus) showStatus('อัปเดตข้อมูลล่าสุดจากไฟล์ที่ผูกไว้แล้ว', 'success');
@@ -5822,7 +6046,8 @@ var App = function App() {
             });
             setAllData(newData);
             persistUploadedFileName('sales', '');
-            setFilters({});
+            setFilters(buildLockedFiltersState(lockedFilters));
+            setLastGoogleSheetSyncAt('');
             setSelectedTrendYears([]);
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             _context23.n = 1;
@@ -5856,7 +6081,8 @@ var App = function App() {
             });
             setAllData(newData);
             persistUploadedFileName('target', '');
-            setFilters({});
+            setFilters(buildLockedFiltersState(lockedFilters));
+            setLastGoogleTargetSyncAt('');
             _context24.n = 1;
             return idb.remove(TARGET_HANDLE_KEY);
           case 1:
@@ -5995,61 +6221,14 @@ var App = function App() {
     if (isLoading) return;
     if (didAutoSyncRef.current) return;
     didAutoSyncRef.current = true;
-    var runAutoSync = /*#__PURE__*/function () {
-      var _ref39 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee25() {
-        var autoSyncEnabled, synced, _t21;
-        return _regenerator().w(function (_context26) {
-          while (1) switch (_context26.p = _context26.n) {
-            case 0:
-              if (hasFileSystemAccess) {
-                _context26.n = 1;
-                break;
-              }
-              return _context26.a(2);
-            case 1:
-              _context26.n = 2;
-              return idb.load(AUTO_SYNC_KEY);
-            case 2:
-              autoSyncEnabled = _context26.v;
-              if (autoSyncEnabled) {
-                _context26.n = 3;
-                break;
-              }
-              return _context26.a(2);
-            case 3:
-              setIsLoading(true);
-              _context26.p = 4;
-              _context26.n = 5;
-              return syncFromBoundFiles(true);
-            case 5:
-              synced = _context26.v;
-              if (synced) showStatus('ตรวจพบไฟล์อัปเดตและซิงก์ข้อมูลอัตโนมัติแล้ว', 'success');
-              _context26.n = 7;
-              break;
-            case 6:
-              _context26.p = 6;
-              _t21 = _context26.v;
-              console.error(_t21);
-            case 7:
-              _context26.p = 7;
-              setIsLoading(false);
-              return _context26.f(7);
-            case 8:
-              return _context26.a(2);
-          }
-        }, _callee25, null, [[4, 6, 7, 8]]);
-      }));
-      return function runAutoSync() {
-        return _ref39.apply(this, arguments);
-      };
-    }();
-    runAutoSync();
+    return;
   }, [isLoading]);
   var handleFilterChange = function handleFilterChange(key, val) {
+    if (lockedFilters[key] && lockedFilters[key].length > 0) return;
     setFilters(function (prev) {
-      var n = _objectSpread({}, prev);
-      if (val.length === 0) delete n[key];else n[key] = val;
-      return n;
+      var next = _objectSpread({}, prev);
+      if (!val || val.length === 0) delete next[key];else next[key] = val;
+      return mergeFiltersWithLocks(next, lockedFilters);
     });
   };
   var handleRepeatGapFilterChange = function handleRepeatGapFilterChange(key, val) {
@@ -6151,6 +6330,7 @@ var App = function App() {
     });
   }, [filteredTargets]);
   var getUniqueValues = function getUniqueValues(key) {
+    if (lockedFilters[key] && lockedFilters[key].length > 0) return lockedFilters[key];
     var context = rawData.filter(function (item) {
       return item && _typeof(item) === 'object' && Object.entries(filters).every(function (_ref42) {
         var _ref43 = _slicedToArray(_ref42, 2),
@@ -7929,8 +8109,8 @@ var App = function App() {
       rows: rows
     };
   };
-  var callAIWebApp = /*#__PURE__*/function () {
-    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(mode, questionText, contextPayload) {
+  var callAuthWebApp = /*#__PURE__*/function () {
+    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(mode, extraPayload) {
       var response, responseText, result;
       return _regenerator().w(function (_context12) {
         while (1) switch (_context12.n) {
@@ -7941,11 +8121,9 @@ var App = function App() {
               headers: {
                 'Content-Type': 'text/plain;charset=utf-8'
               },
-              body: JSON.stringify({
-                mode: mode,
-                question: questionText,
-                context: contextPayload
-              })
+              body: JSON.stringify(_objectSpread({
+                mode: mode
+              }, extraPayload || {}))
             });
           case 1:
             response = _context12.v;
@@ -7958,28 +8136,271 @@ var App = function App() {
             } catch (_unused2) {
               result = {
                 ok: false,
-                error: responseText || 'AI ตอบกลับไม่เป็น JSON'
+                error: responseText || 'ระบบตอบกลับไม่เป็น JSON'
               };
             }
             if (response.ok && result && result.ok) {
               _context12.n = 4;
               break;
             }
-            throw new Error(result && result.error ? result.error : 'เรียก AI ไม่สำเร็จ');
+            throw new Error(result && result.error ? result.error : 'เรียกระบบล็อกอินไม่สำเร็จ');
           case 4:
             return _context12.a(2, result);
         }
       }, _callee12);
     }));
-    return function callAIWebApp(_x, _x2, _x3) {
+    return function callAuthWebApp(_x, _x2) {
       return _ref12.apply(this, arguments);
     };
   }();
+  var callAIWebApp = /*#__PURE__*/function () {
+    var _ref13 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(mode, questionText, contextPayload) {
+      var response, responseText, result;
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
+          case 0:
+            _context13.n = 1;
+            return fetch(aiWebAppUrl.trim(), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+              },
+              body: JSON.stringify({
+                mode: mode,
+                question: questionText,
+                context: contextPayload,
+                authToken: authSessionToken
+              })
+            });
+          case 1:
+            response = _context13.v;
+            _context13.n = 2;
+            return response.text();
+          case 2:
+            responseText = _context13.v;
+            try {
+              result = responseText ? JSON.parse(responseText) : {};
+            } catch (_unused3) {
+              result = {
+                ok: false,
+                error: responseText || 'AI ตอบกลับไม่เป็น JSON'
+              };
+            }
+            if (response.ok && result && result.ok) {
+              _context13.n = 4;
+              break;
+            }
+            throw new Error(result && result.error ? result.error : 'เรียก AI ไม่สำเร็จ');
+          case 4:
+            return _context13.a(2, result);
+        }
+      }, _callee13);
+    }));
+    return function callAIWebApp(_x, _x2, _x3) {
+      return _ref13.apply(this, arguments);
+    };
+  }();
+  useEffect(function () {
+    var cancelled = false;
+    if (!aiWebAppUrl.trim() || !authSessionToken) {
+      setIsAuthChecking(false);
+      return undefined;
+    }
+    setIsAuthChecking(true);
+    setAuthError('');
+    callAuthWebApp('verify_session', {
+      token: authSessionToken
+    }).then(function (result) {
+      if (cancelled) return;
+      var auth = result && result.auth ? result.auth : null;
+      if (auth && auth.user) {
+        setAuthUser(auth.user);
+        if (auth.token) setAuthSessionToken(auth.token);
+      }
+    }).catch(function (error) {
+      if (cancelled) return;
+      setAuthSessionToken('');
+      setAuthUser(null);
+      setAuthError(error && error.message ? error.message : 'session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+    }).then(function () {
+      if (!cancelled) setIsAuthChecking(false);
+    });
+    return function () {
+      cancelled = true;
+    };
+  }, [aiWebAppUrl, authSessionToken]);
+  var handleLoginSubmit = function handleLoginSubmit() {
+    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      setAuthError('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม');
+      return Promise.resolve(null);
+    }
+    if (!authUsername.trim() || !authPassword.trim()) {
+      setAuthError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
+      return Promise.resolve(null);
+    }
+    setIsAuthChecking(true);
+    setAuthError('');
+    return callAuthWebApp('login', {
+      username: authUsername,
+      password: authPassword
+    }).then(function (result) {
+      var auth = result && result.auth ? result.auth : null;
+      if (!auth || !auth.user || !auth.token) {
+        throw new Error('ระบบไม่ได้ส่งข้อมูล session กลับมา');
+      }
+      setAuthSessionToken(auth.token);
+      setAuthUser(auth.user);
+      setAuthPassword('');
+      setStatusInfo({
+        type: 'success',
+        message: 'เข้าสู่ระบบสำเร็จ'
+      });
+      return result;
+    }).catch(function (error) {
+      setAuthError(error && error.message ? error.message : 'เข้าสู่ระบบไม่สำเร็จ');
+      return null;
+    }).then(function (result) {
+      setIsAuthChecking(false);
+      return result;
+    }, function (error) {
+      setIsAuthChecking(false);
+      throw error;
+    });
+  };
+  var handleLogout = function handleLogout() {
+    var existingToken = authSessionToken;
+    setAuthSessionToken('');
+    setAuthUser(null);
+    setAuthPassword('');
+    setIsAIPanelOpen(false);
+    setAuthError('');
+    if (DEFAULT_BOUND_WEB_APP_URL.trim() && existingToken) {
+      callAuthWebApp('logout', {
+        token: existingToken
+      }).catch(function () {
+        return null;
+      });
+    }
+    setStatusInfo({
+      type: 'info',
+      message: 'ออกจากระบบแล้ว'
+    });
+  };
+  var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet() {
+    if (!authUser || !authSessionToken) {
+      showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูลยอดขาย', 'error');
+      return Promise.resolve(null);
+    }
+    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      showStatus('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม', 'error');
+      return Promise.resolve(null);
+    }
+    setIsLoading(true);
+    return callAIWebApp('sync_sales_source', '', {}).then(function (result) {
+      var csvText, csvBlob, salesFile, sourceInfo, displayName;
+      if (!result || !result.csv) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
+      csvText = String(result.csv || '');
+      csvBlob = new Blob([csvText], {
+        type: 'text/csv;charset=utf-8'
+      });
+      salesFile = new File([csvBlob], 'google-sheet-sales.csv', {
+        type: 'text/csv;charset=utf-8'
+      });
+      return processAndStoreFile(salesFile, 'sales', {
+        bindHandle: false,
+        silentStatus: true
+      }).then(function (ok) {
+        if (!ok) throw new Error('รีเฟรชข้อมูลยอดขายจาก Google Sheet ไม่สำเร็จ');
+        sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : GOOGLE_SHEET_SOURCE_LABEL;
+        persistUploadedFileName('sales', displayName);
+        setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
+        setStatusInfo({
+          type: 'success',
+          message: 'รีเฟรชข้อมูลยอดขายจาก Google Sheet แล้ว'
+        });
+        return result;
+      });
+    }).catch(function (error) {
+      showStatus(error && error.message ? error.message : 'ดึงข้อมูลยอดขายจาก Google Sheet ไม่สำเร็จ', 'error');
+      return null;
+    }).then(function (result) {
+      setIsLoading(false);
+      return result;
+    }, function (error) {
+      setIsLoading(false);
+      throw error;
+    });
+  };
+  var syncTargetFromGoogleSheet = function syncTargetFromGoogleSheet() {
+    if (!authUser || !authSessionToken) {
+      showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล Target', 'error');
+      return Promise.resolve(null);
+    }
+    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      showStatus('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม', 'error');
+      return Promise.resolve(null);
+    }
+    setIsLoading(true);
+    return callAIWebApp('sync_target_source', '', {}).then(function (result) {
+      var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName;
+      if (!result || !result.csv) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
+      csvText = String(result.csv || '');
+      csvRows = csvText.split(/\r?\n/).filter(function (row) {
+        return row !== '';
+      }).map(function (row) {
+        return splitCSV(row);
+      });
+      if (!csvRows.length) throw new Error('ข้อมูล Target จาก Google Sheet ว่างเปล่า');
+      normalizedRows = csvRows.map(function (row) {
+        return row.map(function (cell) {
+          return cell === undefined || cell === null ? '' : cell;
+        });
+      });
+      workbook = XLSX.utils.book_new();
+      worksheet = XLSX.utils.aoa_to_sheet(normalizedRows);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'NNS');
+      workbookArray = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array'
+      });
+      targetBlob = new Blob([workbookArray], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      targetFile = new File([targetBlob], 'google-sheet-target.xlsx', {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      return processAndStoreFile(targetFile, 'target', {
+        bindHandle: false,
+        silentStatus: true
+      }).then(function (ok) {
+        if (!ok) throw new Error('รีเฟรชข้อมูล Target จาก Google Sheet ไม่สำเร็จ');
+        sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : GOOGLE_TARGET_SOURCE_LABEL;
+        persistUploadedFileName('target', displayName);
+        setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
+        setStatusInfo({
+          type: 'success',
+          message: 'รีเฟรชข้อมูล Target จาก Google Sheet แล้ว'
+        });
+        return result;
+      });
+    }).catch(function (error) {
+      showStatus(error && error.message ? error.message : 'ดึงข้อมูล Target จาก Google Sheet ไม่สำเร็จ', 'error');
+      return null;
+    }).then(function (result) {
+      setIsLoading(false);
+      return result;
+    }, function (error) {
+      setIsLoading(false);
+      throw error;
+    });
+  };
   var applyAIAction = function applyAIAction(actionPayload) {
     if (!actionPayload || _typeof(actionPayload) !== 'object') return;
     var actionType = String(actionPayload.action || '').trim();
     if (actionType === 'clear_filters') {
-      setFilters({});
+      setFilters(buildLockedFiltersState(lockedFilters));
       return;
     }
     if (actionType === 'set_filters') {
@@ -7990,7 +8411,7 @@ var App = function App() {
         var resolvedValues = resolveAISelectionAgainstOptions(key, incomingFilters[key]);
         if (resolvedValues.length > 0) nextFilters[key] = resolvedValues;
       });
-      setFilters(nextFilters);
+      setFilters(mergeFiltersWithLocks(nextFilters, lockedFilters));
       if (actionPayload.viewMode && ['monthly', 'yearly'].includes(actionPayload.viewMode)) setViewMode(actionPayload.viewMode);
       if (actionPayload.metricMode && ['value', 'qty', 'ton'].includes(actionPayload.metricMode)) setMetricMode(actionPayload.metricMode);
       if (actionPayload.unitMode && ['baht', 'thousand'].includes(actionPayload.unitMode)) setUnitMode(actionPayload.unitMode);
@@ -8033,13 +8454,18 @@ var App = function App() {
       conversationHistory: conversationHistory,
       currentQuestionMeta: currentQuestionMeta
     });
+    if (!authUser || !authSessionToken) {
+      appendAIMessage('system', 'กรุณาเข้าสู่ระบบก่อนใช้งาน AI');
+      showStatus('กรุณาเข้าสู่ระบบก่อนใช้งาน AI', 'error');
+      return Promise.resolve(null);
+    }
     if (!questionText) {
       showStatus('กรุณาพิมพ์คำถามหรือคำสั่งก่อนใช้งาน AI', 'error');
       return Promise.resolve(null);
     }
-    if (!aiWebAppUrl.trim()) {
-      appendAIMessage('system', 'ยังไม่ได้ตั้งค่า Web App URL ของ Google Apps Script');
-      showStatus('กรุณาใส่ Web App URL ของ Google Apps Script ก่อนใช้งาน AI', 'error');
+    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      appendAIMessage('system', 'ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม');
+      showStatus('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม', 'error');
       return Promise.resolve(null);
     }
     if (typeof fetch !== 'function') {
@@ -8109,8 +8535,10 @@ var App = function App() {
   })).size;
   var salesDataRowsCount = (allData.monthly || []).length + (effectiveYearlyData || []).length;
   var targetDataRowsCount = (allData.targets || []).length;
-  var uploadedSalesFileLabel = uploadedFileNames.sales || 'ยังไม่ได้อัปโหลด';
-  var uploadedTargetFileLabel = uploadedFileNames.target || 'ยังไม่ได้อัปโหลด';
+  var uploadedSalesFileLabel = uploadedFileNames.sales || GOOGLE_SHEET_SOURCE_LABEL;
+  var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
+  var googleSheetSyncLabel = formatLastSyncLabel(lastGoogleSheetSyncAt);
+  var googleTargetSyncLabel = formatLastSyncLabel(lastGoogleTargetSyncAt);
   var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
     key: 'month',
     label: 'เดือน'
@@ -8178,6 +8606,32 @@ var App = function App() {
       color: 'var(--text)'
     }
   }, "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25..."));
+  if (isAuthChecking) return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col h-screen items-center justify-center",
+    style: {
+      background: 'var(--bg)'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Loader",
+    size: 48,
+    className: "text-blue-600 mb-4"
+  }), /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold",
+    style: {
+      color: 'var(--text)'
+    }
+  }, "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A session..."));
+  if (!authUser) return /*#__PURE__*/React.createElement(LoginScreen, {
+    webAppUrl: aiWebAppUrl,
+    onWebAppUrlChange: setAIWebAppUrl,
+    username: authUsername,
+    onUsernameChange: setAuthUsername,
+    password: authPassword,
+    onPasswordChange: setAuthPassword,
+    onSubmit: handleLoginSubmit,
+    isLoading: isAuthChecking,
+    errorMessage: authError
+  });
   return /*#__PURE__*/React.createElement("div", {
     className: "dashboard-shell flex flex-col h-screen text-slate-900 font-sans overflow-hidden",
     style: {
@@ -8200,6 +8654,14 @@ var App = function App() {
   }), " Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
     className: "app-header-controls"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
+    style: {
+      background: 'rgba(255,255,255,0.12)',
+      border: '1px solid rgba(255,255,255,0.2)',
+      color: '#fff',
+      fontWeight: 700
+    }
+  }, (authUser.displayName || authUser.username || '').trim() || 'ผู้ใช้'), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -8268,6 +8730,10 @@ var App = function App() {
     },
     title: isDarkMode ? 'สลับเป็น Light Mode' : 'สลับเป็น Dark Mode'
   }, isDarkMode ? '☀️' : '🌙'), /*#__PURE__*/React.createElement("button", {
+    className: "logout-btn",
+    onClick: handleLogout,
+    title: "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A"
+  }, "\u0E2D\u0E2D\u0E01\u0E23\u0E30\u0E1A\u0E1A"), /*#__PURE__*/React.createElement("button", {
     className: "menu-btn",
     onClick: function onClick() {
       return setIsDrawerOpen(true);
@@ -8295,7 +8761,8 @@ var App = function App() {
       return submitAIRequest('action');
     },
     onQuickPrompt: handleAIQuickPrompt,
-    isLoading: isAskingAI
+    isLoading: isAskingAI,
+    canEditWebAppUrl: String((authUser && authUser.role) || "").trim().toLowerCase() === "admin"
   }), /*#__PURE__*/React.createElement(MenuDrawer, {
     isOpen: isDrawerOpen,
     onClose: function onClose() {
@@ -8305,93 +8772,35 @@ var App = function App() {
     className: "drawer-section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "drawer-section-title"
-  }, "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C"), useDirectUploadInput ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs mb-2",
+    style: {
+      color: 'var(--text-muted)',
+      lineHeight: 1.5
+    }
+  }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", googleSheetSyncLabel), /*#__PURE__*/React.createElement("button", {
     className: "drawer-btn primary",
-    style: {
-      position: 'relative',
-      cursor: 'pointer'
-    }
+    onClick: syncSalesFromGoogleSheet
   }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Upload",
+    name: "RefreshCw",
     size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales", /*#__PURE__*/React.createElement("input", {
-    ref: salesInputRef,
-    type: "file",
-    accept: ".csv,.xlsx,.xls",
-    onChange: function onChange(e) {
-      return handleFileUpload(e, 'sales');
-    },
+  }), " \u0E23\u0E35\u0E40\u0E1F\u0E23\u0E0A\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E08\u0E32\u0E01 Google Sheet")), !embeddedMode && /*#__PURE__*/React.createElement("div", {
+    className: "drawer-section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "drawer-section-title"
+  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs mb-2",
     style: {
-      position: 'absolute',
-      inset: 0,
-      width: '100%',
-      height: '100%',
-      opacity: 0,
-      cursor: 'pointer'
+      color: 'var(--text-muted)',
+      lineHeight: 1.5
     }
-  })), /*#__PURE__*/React.createElement("label", {
-    className: "drawer-btn",
-    style: {
-      position: 'relative',
-      cursor: 'pointer',
-      borderColor: 'var(--accent)',
-      color: 'var(--accent)'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Upload",
-    size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target", /*#__PURE__*/React.createElement("input", {
-    ref: targetInputRef,
-    type: "file",
-    accept: ".csv,.xlsx,.xls",
-    onChange: function onChange(e) {
-      return handleFileUpload(e, 'target');
-    },
-    style: {
-      position: 'absolute',
-      inset: 0,
-      width: '100%',
-      height: '100%',
-      opacity: 0,
-      cursor: 'pointer'
-    }
-  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+  }, "\u0E14\u0E36\u0E07 Target \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", googleTargetSyncLabel), /*#__PURE__*/React.createElement("button", {
     className: "drawer-btn primary",
-    onClick: function onClick() {
-      return openFilePickerForType('sales');
-    }
+    onClick: syncTargetFromGoogleSheet
   }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Upload",
+    name: "RefreshCw",
     size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales"), /*#__PURE__*/React.createElement("input", {
-    ref: salesInputRef,
-    type: "file",
-    accept: ".csv,.xlsx,.xls",
-    onChange: function onChange(e) {
-      return handleFileUpload(e, 'sales');
-    },
-    className: "hidden"
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn",
-    onClick: function onClick() {
-      return openFilePickerForType('target');
-    },
-    style: {
-      borderColor: 'var(--accent)',
-      color: 'var(--accent)'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Upload",
-    size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target (NNS)"), /*#__PURE__*/React.createElement("input", {
-    ref: targetInputRef,
-    type: "file",
-    accept: ".xlsx,.xls",
-    onChange: function onChange(e) {
-      return handleFileUpload(e, 'target');
-    },
-    className: "hidden"
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), " \u0E23\u0E35\u0E40\u0E1F\u0E23\u0E0A Target \u0E08\u0E32\u0E01 Google Sheet")), /*#__PURE__*/React.createElement("div", {
     className: "drawer-section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "drawer-section-title"
@@ -8459,25 +8868,28 @@ var App = function App() {
     className: "text-xs text-blue-600 hover:underline"
   }, sectionOpen.filters ? 'ย่อ' : 'ขยาย'), Object.keys(filters).length > 0 && /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
-      return setFilters({});
+      return setFilters(buildLockedFiltersState(lockedFilters));
     },
     className: "text-xs text-red-500 hover:underline"
   }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))), sectionOpen.filters && /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex-1 min-h-0 flex flex-col"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mb-3"
-  }, "\u0E44\u0E1F\u0E25\u0E4C\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", /*#__PURE__*/React.createElement("code", {
+  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22: ", /*#__PURE__*/React.createElement("code", {
     className: "bg-slate-100 px-1 rounded"
-  }, uploadedSalesFileLabel), " (Sales) \u0E41\u0E25\u0E30 ", /*#__PURE__*/React.createElement("code", {
+  }, uploadedSalesFileLabel), " \u00B7 \u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14 ", googleSheetSyncLabel, " \u00B7 \u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 Target: ", /*#__PURE__*/React.createElement("code", {
     className: "bg-slate-100 px-1 rounded"
-  }, uploadedTargetFileLabel), " (Target)"), /*#__PURE__*/React.createElement("div", {
+  }, uploadedTargetFileLabel), " \u00B7 \u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14 ", googleTargetSyncLabel), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
+    var isLockedFilter = Boolean(lockedFilters[f.key] && lockedFilters[f.key].length);
     return /*#__PURE__*/React.createElement(MultiSelect, _extends({
       key: f.key
     }, f, {
       options: getUniqueValues(f.key),
       selected: filters[f.key] || [],
+      disabled: isLockedFilter,
+      customSummaryText: isLockedFilter ? "\u0E25\u0E47\u0E2D\u0E01: ".concat(lockedFilters[f.key].join(', ')) : undefined,
       onChange: function onChange(sel) {
         return handleFilterChange(f.key, sel);
       }
