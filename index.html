@@ -8226,6 +8226,16 @@ var App = function App() {
       }
     });
   };
+  var base64ToUint8Array = function base64ToUint8Array(base64Text) {
+    var cleanText = String(base64Text || '').replace(/\s+/g, '');
+    if (!cleanText) return new Uint8Array(0);
+    var binaryText = atob(cleanText);
+    var output = new Uint8Array(binaryText.length);
+    for (var i = 0; i < binaryText.length; i++) {
+      output[i] = binaryText.charCodeAt(i);
+    }
+    return output;
+  };
   useEffect(function () {
     var cancelled = false;
     if (!aiWebAppUrl.trim() || !authSessionToken) {
@@ -8323,9 +8333,20 @@ var App = function App() {
     }
     setIsLoading(true);
     return callAIWebApp('sync_sales_source', '', {}).then(function (result) {
-      var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob;
-      if (!result || !result.csv && !Array.isArray(result.rows)) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
+      var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob, binaryBytes, fileName, fileMimeType, fileBlob;
+      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
       sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+      if (result.fileBase64) {
+        binaryBytes = base64ToUint8Array(result.fileBase64);
+        fileName = String(result.fileName || sourceInfo.fileName || 'google-sheet-sales.xlsx');
+        fileMimeType = String(result.mimeType || sourceInfo.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        fileBlob = new Blob([binaryBytes], {
+          type: fileMimeType
+        });
+        salesFile = new File([fileBlob], fileName, {
+          type: fileMimeType
+        });
+      } else {
       rowMatrix = Array.isArray(result.rows) ? result.rows.map(function (row) {
         return (Array.isArray(row) ? row : []).map(function (cell) {
           return cell === undefined || cell === null ? '' : cell;
@@ -8354,12 +8375,13 @@ var App = function App() {
           type: 'text/csv;charset=utf-8'
         });
       }
+      }
       return processAndStoreFile(salesFile, 'sales', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
         if (!ok) throw new Error('โหลดข้อมูลยอดขายจาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบชื่อคอลัมน์ในชีต Sales');
-        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : GOOGLE_SHEET_SOURCE_LABEL;
+        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName) : GOOGLE_SHEET_SOURCE_LABEL;
         persistUploadedFileName('sales', displayName);
         setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
@@ -8390,9 +8412,20 @@ var App = function App() {
     }
     setIsLoading(true);
     return callAIWebApp('sync_target_source', '', {}).then(function (result) {
-      var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName;
-      if (!result || !result.csv && !Array.isArray(result.rows)) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
+      var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName, binaryBytes, fileName, fileMimeType;
+      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
       sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+      if (result.fileBase64) {
+        binaryBytes = base64ToUint8Array(result.fileBase64);
+        fileName = String(result.fileName || sourceInfo.fileName || 'google-sheet-target.xlsx');
+        fileMimeType = String(result.mimeType || sourceInfo.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        targetBlob = new Blob([binaryBytes], {
+          type: fileMimeType
+        });
+        targetFile = new File([targetBlob], fileName, {
+          type: fileMimeType
+        });
+      } else {
       csvRows = Array.isArray(result.rows) ? result.rows : String(result.csv || '').split(/\r?\n/).filter(function (row) {
         return row !== '';
       }).map(function (row) {
@@ -8417,12 +8450,13 @@ var App = function App() {
       targetFile = new File([targetBlob], 'google-sheet-target.xlsx', {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
+      }
       return processAndStoreFile(targetFile, 'target', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
         if (!ok) throw new Error('โหลดข้อมูล Target จาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบรูปแบบชีต Target');
-        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : GOOGLE_TARGET_SOURCE_LABEL;
+        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName) : GOOGLE_TARGET_SOURCE_LABEL;
         persistUploadedFileName('target', displayName);
         setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
