@@ -8244,7 +8244,7 @@ var App = function App() {
     }) : [];
   };
   var loadChunkedSheetRows = /*#__PURE__*/function () {
-    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode) {
+    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode, statusLabel) {
       var chunkSize,
         firstResult,
         sourceInfo,
@@ -8258,7 +8258,8 @@ var App = function App() {
       return _regenerator().w(function (_context14) {
         while (1) switch (_context14.n) {
           case 0:
-            chunkSize = 500;
+            chunkSize = 250;
+            showStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 'info');
             _context14.n = 1;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: 0,
@@ -8283,6 +8284,7 @@ var App = function App() {
               _context14.n = 6;
               break;
             }
+            showStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 'info');
             _context14.n = 3;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: _i3,
@@ -8305,7 +8307,7 @@ var App = function App() {
         }
       }, _callee14);
     }));
-    return function loadChunkedSheetRows(_x5) {
+    return function loadChunkedSheetRows(_x5, _x6) {
       return _ref14.apply(this, arguments);
     };
   }();
@@ -8405,7 +8407,7 @@ var App = function App() {
       return Promise.resolve(null);
     }
     setIsLoading(true);
-    return loadChunkedSheetRows('sync_sales_source').then(function (result) {
+    return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
       var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob, binaryBytes, fileName, fileMimeType, fileBlob;
       if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
       sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
@@ -8459,7 +8461,7 @@ var App = function App() {
         setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
           type: 'success',
-          message: 'รีเฟรชข้อมูลยอดขายจาก Google Sheet แล้ว'
+          message: "รีเฟรชข้อมูลยอดขายจาก Google Sheet แล้ว (".concat(Number(sourceInfo.filteredRows || 0).toLocaleString(), " \u0E41\u0E16\u0E27)")
         });
         return result;
       });
@@ -8484,7 +8486,7 @@ var App = function App() {
       return Promise.resolve(null);
     }
     setIsLoading(true);
-    return loadChunkedSheetRows('sync_target_source').then(function (result) {
+    return loadChunkedSheetRows('sync_target_source', 'ข้อมูล Target').then(function (result) {
       var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName, binaryBytes, fileName, fileMimeType;
       if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
       sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
@@ -8534,7 +8536,7 @@ var App = function App() {
         setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
           type: 'success',
-          message: 'รีเฟรชข้อมูล Target จาก Google Sheet แล้ว'
+          message: "รีเฟรชข้อมูล Target จาก Google Sheet แล้ว (".concat(Number(sourceInfo.filteredRows || 0).toLocaleString(), " \u0E41\u0E16\u0E27)")
         });
         return result;
       });
