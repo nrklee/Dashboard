@@ -5142,21 +5142,13 @@ var App = function App() {
                         return parseTargetWorkbook(workbook);
                       case 20:
                         parsed = _context16.v;
-                        if (((parsed && parsed.monthly) || []).length > 0 || ((parsed && parsed.yearly) || []).length > 0) {
-                          _context16.n = 23;
-                          break;
-                        }
-                        console.warn('Target parser returned empty data, fallback to generic parser');
-                        _context16.n = 22;
-                        return parseWorkbookGeneric(workbook);
+                        _context16.n = 23;
+                        break;
                       case 21:
                         _context16.p = 21;
                         _t14 = _context16.v;
-                        console.warn('Target parser failed, fallback to generic parser', _t14);
-                        _context16.n = 22;
-                        return parseWorkbookGeneric(workbook);
+                        throw _t14;
                       case 22:
-                        parsed = _context16.v;
                       case 23:
                         _context16.n = 26;
                         break;
@@ -8305,21 +8297,42 @@ var App = function App() {
     }
     setIsLoading(true);
     return callAIWebApp('sync_sales_source', '', {}).then(function (result) {
-      var csvText, csvBlob, salesFile, sourceInfo, displayName;
-      if (!result || !result.csv) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
-      csvText = String(result.csv || '');
-      csvBlob = new Blob([csvText], {
-        type: 'text/csv;charset=utf-8'
-      });
-      salesFile = new File([csvBlob], 'google-sheet-sales.csv', {
-        type: 'text/csv;charset=utf-8'
-      });
+      var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob;
+      if (!result || !result.csv && !Array.isArray(result.rows)) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
+      sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+      rowMatrix = Array.isArray(result.rows) ? result.rows.map(function (row) {
+        return (Array.isArray(row) ? row : []).map(function (cell) {
+          return cell === undefined || cell === null ? '' : cell;
+        });
+      }) : [];
+      if (rowMatrix.length > 0) {
+        workbook = XLSX.utils.book_new();
+        worksheet = XLSX.utils.aoa_to_sheet(rowMatrix);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sourceInfo.sheetName || 'Sales');
+        workbookArray = XLSX.write(workbook, {
+          bookType: 'xlsx',
+          type: 'array'
+        });
+        workbookBlob = new Blob([workbookArray], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        salesFile = new File([workbookBlob], 'google-sheet-sales.xlsx', {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+      } else {
+        csvText = String(result.csv || '');
+        csvBlob = new Blob([csvText], {
+          type: 'text/csv;charset=utf-8'
+        });
+        salesFile = new File([csvBlob], 'google-sheet-sales.csv', {
+          type: 'text/csv;charset=utf-8'
+        });
+      }
       return processAndStoreFile(salesFile, 'sales', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) throw new Error('รีเฟรชข้อมูลยอดขายจาก Google Sheet ไม่สำเร็จ');
-        sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+        if (!ok) throw new Error('โหลดข้อมูลยอดขายจาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบชื่อคอลัมน์ในชีต Sales');
         displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : GOOGLE_SHEET_SOURCE_LABEL;
         persistUploadedFileName('sales', displayName);
         setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
@@ -8352,9 +8365,9 @@ var App = function App() {
     setIsLoading(true);
     return callAIWebApp('sync_target_source', '', {}).then(function (result) {
       var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName;
-      if (!result || !result.csv) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
-      csvText = String(result.csv || '');
-      csvRows = csvText.split(/\r?\n/).filter(function (row) {
+      if (!result || !result.csv && !Array.isArray(result.rows)) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
+      sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+      csvRows = Array.isArray(result.rows) ? result.rows : String(result.csv || '').split(/\r?\n/).filter(function (row) {
         return row !== '';
       }).map(function (row) {
         return splitCSV(row);
@@ -8382,8 +8395,7 @@ var App = function App() {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) throw new Error('รีเฟรชข้อมูล Target จาก Google Sheet ไม่สำเร็จ');
-        sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+        if (!ok) throw new Error('โหลดข้อมูล Target จาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบรูปแบบชีต Target');
         displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : GOOGLE_TARGET_SOURCE_LABEL;
         persistUploadedFileName('target', displayName);
         setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
