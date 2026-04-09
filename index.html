@@ -8110,7 +8110,7 @@ var App = function App() {
             _context12.n = 1;
             return callAppsScriptBridge(_objectSpread({
               mode: mode
-            }, extraPayload || {}), 12000);
+            }, extraPayload || {}), 20000);
           case 1:
             result = _context12.v;
             if (result && result.ok) {
@@ -8139,7 +8139,7 @@ var App = function App() {
               question: questionText,
               context: contextPayload,
               authToken: authSessionToken
-            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 60000 : 25000);
+            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 120000 : 25000);
           case 1:
             result = _context13.v;
             if (result && result.ok) {
@@ -8422,7 +8422,7 @@ var App = function App() {
         silentStatus: true
       }).then(function (ok) {
         if (!ok) throw new Error('โหลดข้อมูลยอดขายจาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบชื่อคอลัมน์ในชีต Sales');
-        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName) : GOOGLE_SHEET_SOURCE_LABEL;
+        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName || result.fileName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName || result.fileName) : GOOGLE_SHEET_SOURCE_LABEL;
         persistUploadedFileName('sales', displayName);
         setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
@@ -8497,7 +8497,7 @@ var App = function App() {
         silentStatus: true
       }).then(function (ok) {
         if (!ok) throw new Error('โหลดข้อมูล Target จาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบรูปแบบชีต Target');
-        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName) : GOOGLE_TARGET_SOURCE_LABEL;
+        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName || result.fileName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName || result.fileName) : GOOGLE_TARGET_SOURCE_LABEL;
         persistUploadedFileName('target', displayName);
         setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
