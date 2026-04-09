@@ -201,13 +201,52 @@
         .ai-action-btn.secondary { background:var(--bg-soft);color:var(--text); }
         .ai-action-btn:disabled { opacity:.55;cursor:not-allowed; }
         .ai-hint { font-size:11px;line-height:1.6;color:var(--text-muted); }
-        .login-shell { min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg); }
-        .login-card { width:min(460px,100%);background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);padding:22px;display:flex;flex-direction:column;gap:12px; }
-        .login-title { font-size:22px;font-weight:800;color:var(--text);line-height:1.3; }
-        .login-subtitle { font-size:13px;line-height:1.7;color:var(--text-sec); }
-        .login-error { border:1px solid rgba(248,113,113,0.35);background:rgba(248,113,113,0.08);color:var(--danger);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6; }
-        .login-meta { display:flex;flex-wrap:wrap;gap:8px; }
-        .login-chip { display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg-soft);font-size:12px;color:var(--text-sec); }
+        .login-shell { min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;background:
+          radial-gradient(circle at 20% 18%, rgba(96,165,250,0.20) 0, rgba(96,165,250,0.03) 18%, transparent 36%),
+          radial-gradient(circle at 78% 22%, rgba(251,191,36,0.16) 0, rgba(251,191,36,0.03) 16%, transparent 34%),
+          radial-gradient(circle at 52% 76%, rgba(196,181,253,0.18) 0, rgba(196,181,253,0.03) 18%, transparent 36%),
+          linear-gradient(180deg,#0a1122 0%,#132348 52%,#0c1630 100%); }
+        .login-shell::before { content:'';position:absolute;inset:0;pointer-events:none;opacity:.92;background-image:
+          radial-gradient(2px 2px at 12% 18%, rgba(255,255,255,0.95) 0, transparent 58%),
+          radial-gradient(2px 2px at 23% 8%, rgba(255,255,255,0.85) 0, transparent 58%),
+          radial-gradient(1.5px 1.5px at 38% 12%, rgba(255,255,255,0.82) 0, transparent 58%),
+          radial-gradient(2px 2px at 56% 9%, rgba(255,255,255,0.88) 0, transparent 58%),
+          radial-gradient(2px 2px at 67% 17%, rgba(255,255,255,0.8) 0, transparent 58%),
+          radial-gradient(1.5px 1.5px at 79% 9%, rgba(255,255,255,0.86) 0, transparent 58%),
+          radial-gradient(2px 2px at 88% 14%, rgba(255,255,255,0.84) 0, transparent 58%),
+          radial-gradient(2px 2px at 9% 66%, rgba(255,255,255,0.8) 0, transparent 58%),
+          radial-gradient(1.5px 1.5px at 48% 74%, rgba(255,255,255,0.8) 0, transparent 58%),
+          radial-gradient(2px 2px at 91% 82%, rgba(255,255,255,0.8) 0, transparent 58%);
+        }
+        .login-scene { position:relative;z-index:1;width:min(1020px,100%);min-height:690px;display:flex;align-items:center;justify-content:center;padding:74px 24px 30px; }
+        .login-brand-badge { position:absolute;top:0;left:50%;transform:translateX(-50%);padding:16px 30px;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,0.15),rgba(255,255,255,0.08));border:2px solid rgba(226,232,240,0.72);box-shadow:0 16px 38px rgba(8,19,37,0.36), inset 0 0 0 3px rgba(255,255,255,0.08);font-size:58px;font-weight:900;letter-spacing:0.03em;color:#f8fafc;line-height:1;backdrop-filter:blur(10px); }
+        .login-card { position:relative;z-index:2;width:min(540px,100%);background:linear-gradient(180deg,rgba(28,45,83,0.94),rgba(24,38,74,0.94));border:1px solid rgba(148,163,184,0.34);border-radius:28px;box-shadow:0 36px 64px rgba(4,11,26,0.42);padding:34px 34px 28px;display:flex;flex-direction:column;gap:14px;backdrop-filter:blur(10px); }
+        .login-card::before { content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05);pointer-events:none; }
+        .login-card-eyebrow { font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(226,232,240,0.7);text-align:center; }
+        .login-title { font-size:48px;font-weight:900;color:#f8fafc;line-height:1.08;text-align:center;text-shadow:0 6px 18px rgba(15,23,42,0.35);margin-bottom:6px; }
+        .login-subtitle { font-size:14px;line-height:1.7;color:rgba(226,232,240,0.78);text-align:center;max-width:430px;margin:0 auto 4px; }
+        .login-card-divider { height:1px;background:linear-gradient(90deg,rgba(148,163,184,0),rgba(148,163,184,0.42),rgba(148,163,184,0));margin:4px 0 10px; }
+        .login-label { font-size:16px;font-weight:700;color:#dbe5f7;margin-top:2px; }
+        .login-input { width:100%;padding:15px 18px;border:1px solid rgba(148,163,184,0.28);border-radius:16px;background:rgba(15,23,42,0.22);color:#f8fafc;font-size:16px;font-family:inherit;outline:none;transition:border-color .15s, box-shadow .15s, background .15s; }
+        .login-input::placeholder { color:rgba(203,213,225,0.58); }
+        .login-input:focus { border-color:rgba(147,197,253,0.68);box-shadow:0 0 0 4px rgba(96,165,250,0.15);background:rgba(15,23,42,0.34); }
+        .login-submit-row { display:flex;justify-content:flex-end;margin-top:10px; }
+        .login-submit-btn { min-width:170px;border:none;border-radius:14px;background:linear-gradient(180deg,#426eb7,#2f5cac);color:#fff;padding:14px 22px;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 10px 22px rgba(37,99,235,0.22);transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease; }
+        .login-submit-btn:hover { transform:translateY(-1px);box-shadow:0 14px 26px rgba(37,99,235,0.28); }
+        .login-submit-btn:disabled { opacity:.7;cursor:not-allowed;transform:none;box-shadow:none; }
+        .login-error { border:1px solid rgba(248,113,113,0.38);background:rgba(127,29,29,0.22);color:#fecaca;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.6; }
+        .login-decor { position:absolute;z-index:1;display:flex;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.08));border:1px solid rgba(226,232,240,0.42);box-shadow:0 18px 36px rgba(8,19,37,0.28);backdrop-filter:blur(8px);color:#fff;text-shadow:0 4px 10px rgba(15,23,42,0.42); }
+        .login-decor.bird { top:150px;left:180px;width:84px;height:84px;font-size:38px; }
+        .login-decor.rabbit { top:258px;right:150px;width:110px;height:110px;font-size:52px; }
+        .login-decor.dog { left:80px;bottom:60px;width:138px;height:138px;font-size:64px; }
+        .login-decor.cat { left:52%;bottom:36px;width:110px;height:110px;font-size:54px;transform:translateX(-50%); }
+        .login-decor.mice { right:116px;bottom:48px;width:128px;height:96px;font-size:40px;gap:2px; }
+        .login-decor.capy { top:78px;right:124px;width:120px;height:88px;font-size:18px;font-weight:900;letter-spacing:0.08em; }
+        .login-decor.capy::before { content:'CAPY'; }
+        .login-cloud { position:absolute;top:128px;right:76px;width:182px;height:54px;background:linear-gradient(180deg,rgba(226,232,240,0.95),rgba(191,219,254,0.92));border-radius:999px;box-shadow:0 10px 24px rgba(8,19,37,0.24);opacity:.96; }
+        .login-cloud::before, .login-cloud::after { content:'';position:absolute;background:inherit;border-radius:999px; }
+        .login-cloud::before { width:74px;height:74px;left:18px;top:-28px; }
+        .login-cloud::after { width:92px;height:92px;right:22px;top:-34px; }
         .logout-btn { min-width:96px;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(248,113,113,0.32);background:rgba(248,113,113,0.08);color:#fecaca!important;font-weight:800;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s ease; }
         .logout-btn:hover { background:rgba(248,113,113,0.16)!important;border-color:rgba(248,113,113,0.45)!important; }
 
@@ -268,8 +307,21 @@
             .drawer-content { padding:12px 14px; }
             .major-section-head { flex-direction:column;align-items:flex-start;gap:6px; }
             .login-shell { padding:14px; }
-            .login-card { padding:16px; border-radius:14px; }
-            .login-title { font-size:20px; }
+            .login-scene { min-height:unset;padding:88px 8px 14px; }
+            .login-brand-badge { top:6px;font-size:34px;padding:10px 20px;border-radius:18px; }
+            .login-card { padding:22px 18px 18px; border-radius:18px; width:min(100%,420px); }
+            .login-title { font-size:34px; }
+            .login-subtitle { font-size:13px; }
+            .login-label { font-size:15px; }
+            .login-input { font-size:15px;padding:13px 15px;border-radius:14px; }
+            .login-submit-row { justify-content:stretch; }
+            .login-submit-btn { width:100%;min-width:0;font-size:17px; }
+            .login-decor.bird { top:136px;left:12px;width:56px;height:56px;font-size:28px; }
+            .login-decor.rabbit { top:242px;right:6px;width:74px;height:74px;font-size:34px; }
+            .login-decor.dog { left:6px;bottom:24px;width:86px;height:86px;font-size:38px; }
+            .login-decor.cat { width:72px;height:72px;font-size:34px;bottom:10px; }
+            .login-decor.mice { right:6px;bottom:14px;width:86px;height:62px;font-size:26px; }
+            .login-decor.capy, .login-cloud { display:none; }
             .sec-head { flex-wrap:wrap;gap:6px; }
             .app-header-controls { gap:6px; }
             .filters-grid { grid-template-columns:1fr;gap:8px; }
@@ -2922,23 +2974,47 @@ var LoginScreen = function LoginScreen(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "login-shell"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "login-scene"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "login-brand-badge"
+  }, "PCG"), /*#__PURE__*/React.createElement("div", {
+    className: "login-cloud"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "login-decor capy"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "login-decor bird"
+  }, "\uD83D\uDC26"), /*#__PURE__*/React.createElement("div", {
+    className: "login-decor rabbit"
+  }, "\uD83D\uDC30"), /*#__PURE__*/React.createElement("div", {
+    className: "login-decor dog"
+  }, "\uD83D\uDC36"), /*#__PURE__*/React.createElement("div", {
+    className: "login-decor cat"
+  }, "\uD83D\uDC31"), /*#__PURE__*/React.createElement("div", {
+    className: "login-decor mice"
+  }, "\uD83D\uDC2D\uD83D\uDC2D"), /*#__PURE__*/React.createElement("div", {
     className: "login-card"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "login-card-eyebrow"
+  }, "\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A"), /*#__PURE__*/React.createElement("div", {
     className: "login-title"
-  }, "\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A Sales Dashboard"), /*#__PURE__*/React.createElement("label", {
-    className: "ai-config-label"
+  }, "Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
+    className: "login-subtitle"
+  }, "\u0E43\u0E0A\u0E49 username \u0E41\u0E25\u0E30 password \u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E40\u0E02\u0E49\u0E32\u0E14\u0E39\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 \u0E42\u0E14\u0E22\u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E14\u0E36\u0E07 filter \u0E41\u0E25\u0E30 source \u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30 user \u0E43\u0E2B\u0E49\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34"), /*#__PURE__*/React.createElement("div", {
+    className: "login-card-divider"
+  }), /*#__PURE__*/React.createElement("label", {
+    className: "login-label"
   }, "\u0E0A\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49"), /*#__PURE__*/React.createElement("input", {
-    className: "drawer-input",
+    className: "login-input",
     value: username,
     onChange: function onChange(e) {
       return onUsernameChange(e.target.value);
     },
     placeholder: "กรอกชื่อผู้ใช้"
   }), /*#__PURE__*/React.createElement("label", {
-    className: "ai-config-label"
+    className: "login-label"
   }, "\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"), /*#__PURE__*/React.createElement("input", {
     type: "password",
-    className: "drawer-input",
+    className: "login-input",
     value: password,
     onChange: function onChange(e) {
       return onPasswordChange(e.target.value);
@@ -2949,12 +3025,14 @@ var LoginScreen = function LoginScreen(props) {
     placeholder: "กรอกรหัสผ่าน"
   }), errorMessage && /*#__PURE__*/React.createElement("div", {
     className: "login-error"
-  }, errorMessage), /*#__PURE__*/React.createElement("button", {
+  }, errorMessage), /*#__PURE__*/React.createElement("div", {
+    className: "login-submit-row"
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "ai-action-btn primary",
+    className: "login-submit-btn",
     onClick: onSubmit,
     disabled: isLoading
-  }, isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ')));
+  }, isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'))));
 };
 var AIPanel = function AIPanel(props) {
   var isOpen = props.isOpen,
@@ -2987,39 +3065,12 @@ var AIPanel = function AIPanel(props) {
     title: "ปิด AI"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "X",
-    size: 18
+  size: 18
   }))), /*#__PURE__*/React.createElement("div", {
     className: "ai-panel-body"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ai-config-box"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ai-hint"
-  }, "\u0E23\u0E30\u0E1A\u0E1A AI \u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21 Google Apps Script \u0E44\u0E27\u0E49\u0E43\u0E2B\u0E49\u0E41\u0E25\u0E49\u0E27 \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E08\u0E32\u0E01\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E23\u0E38\u0E1B \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 input \u0E17\u0E35\u0E48\u0E40\u0E01\u0E35\u0E48\u0E22\u0E27\u0E02\u0E49\u0E2D\u0E07 \u0E41\u0E25\u0E30 raw data \u0E15\u0E32\u0E21\u0E04\u0E33\u0E16\u0E32\u0E21"), canEditWebAppUrl && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
-    className: "ai-config-label",
-    style: {
-      marginTop: '0.75rem'
-    }
-  }, "Apps Script Web App URL (Admin)"), /*#__PURE__*/React.createElement("input", {
-    className: "drawer-input",
-    value: webAppUrl,
-    onChange: function onChange(e) {
-      return onWebAppUrlChange(e.target.value);
-    },
-    placeholder: "วางลิงก์ Web App URL",
-    spellCheck: false,
-    autoCapitalize: "none",
-    autoCorrect: "off"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "ai-hint",
-    style: {
-      marginTop: '0.35rem'
-    }
-  }, "บัญชี admin เท่านั้นที่จะปรับลิงก์ Apps Script ได้ ผู้ใช้คนอื่นจะใช้ URL ที่ผูกไว้")), /*#__PURE__*/React.createElement("div", {
-    className: "ai-hint",
-    style: {
-      marginTop: '0.35rem'
-    }
-  }, /*#__PURE__*/React.createElement("strong", null, "ถาม AI"), " เหมาะกับคำถามเฉพาะเจาะจง เช่น เรียงยอดขาย, หาร้านหรือจังหวัด, หรือเจาะปี/เดือน/เขตจาก raw data จริง ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "ตั้งตัวกรอง"), " เหมาะกับการให้ AI ช่วยตีความคำสั่งแล้วเลือกตัวกรองให้")), /*#__PURE__*/React.createElement("div", {
     className: "ai-quick-row"
   }, AI_QUICK_PROMPTS.map(function (prompt) {
     return /*#__PURE__*/React.createElement("button", {
@@ -8249,16 +8300,18 @@ var App = function App() {
     return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/export?format=xlsx");
   };
   var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
+    var userSourceConfig = authUser && authUser.sourceConfig && _typeof(authUser.sourceConfig) === 'object' ? authUser.sourceConfig : {};
+    var fallbackUrl = String(mode === 'sync_target_source' ? userSourceConfig.targetUrl || defaultUrl || '' : userSourceConfig.salesUrl || defaultUrl || '').trim();
     if (!authUser || !authSessionToken || !DEFAULT_BOUND_WEB_APP_URL.trim()) {
-      return Promise.resolve(String(defaultUrl || '').trim());
+      return Promise.resolve(fallbackUrl);
     }
     return callAIWebApp(mode, '', {}, {
       resolveOnly: true
     }).then(function (result) {
       var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-      return String(sourceInfo.spreadsheetUrl || defaultUrl || '').trim();
+      return String(sourceInfo.spreadsheetUrl || fallbackUrl || '').trim();
     }).catch(function () {
-      return String(defaultUrl || '').trim();
+      return fallbackUrl;
     });
   };
   var parseFileNameFromDisposition = function parseFileNameFromDisposition(dispositionValue) {
