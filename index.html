@@ -1154,7 +1154,7 @@ var DEFAULT_SALES_GUIDE_WEIGHTS = {
   month2: 30,
   month3: 20
 };
-var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'ช่วยวิเคราะห์ 3 ประเด็นสำคัญจากข้อมูลปัจจุบัน', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
+var AI_QUICK_PROMPTS = ['สรุปภาพรวมจากตัวกรองปัจจุบันให้หน่อย', 'เขตไหนต่ำกว่าเป้ามากที่สุด', 'ร้านไหนควรเร่งขายเพิ่มก่อน 3 อันดับแรก', 'สรุปแบรนด์ที่ยอดขายสูงสุดตอนนี้'];
 var SALES_GUIDE_EXCLUDED_GROUPS = ['ลดหนี้ส่งเสริมการขาย - tax (ส่วนลดพิเศษ)'];
 var TARGET_RELAXED_FILTER_KEYS = ['province', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
 var LOCKABLE_FILTER_KEYS = ['region', 'province', 'district', 'brand'];
@@ -2910,9 +2910,7 @@ var AIMessageBubble = function AIMessageBubble(props) {
   }, roleLabel), text || '-');
 };
 var LoginScreen = function LoginScreen(props) {
-  var webAppUrl = props.webAppUrl,
-    onWebAppUrlChange = props.onWebAppUrlChange,
-    username = props.username,
+  var username = props.username,
     onUsernameChange = props.onUsernameChange,
     password = props.password,
     onPasswordChange = props.onPasswordChange,
@@ -2933,7 +2931,7 @@ var LoginScreen = function LoginScreen(props) {
     onChange: function onChange(e) {
       return onUsernameChange(e.target.value);
     },
-    placeholder: "เช่น admin"
+    placeholder: "กรอกชื่อผู้ใช้"
   }), /*#__PURE__*/React.createElement("label", {
     className: "ai-config-label"
   }, "\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"), /*#__PURE__*/React.createElement("input", {
@@ -2966,7 +2964,6 @@ var AIPanel = function AIPanel(props) {
     question = props.question,
     onQuestionChange = props.onQuestionChange,
     onAsk = props.onAsk,
-    onInsight = props.onInsight,
     onAction = props.onAction,
     onQuickPrompt = props.onQuickPrompt,
     isLoading = props.isLoading;
@@ -2982,7 +2979,7 @@ var AIPanel = function AIPanel(props) {
     className: "ai-panel-title"
   }, "AI ผู้ช่วยวิเคราะห์ยอดขาย"), /*#__PURE__*/React.createElement("div", {
     className: "ai-panel-subtitle"
-  }, "ถามสรุปข้อมูล, ขอ insight, หรือให้ AI ช่วยตั้งตัวกรอง โดย AI จะอ่านทั้งข้อมูลสรุป, ข้อมูล input ที่อยู่ในตัวกรองปัจจุบัน และจะ query raw data เพิ่มเมื่อคำถามต้องเจาะลึก")), /*#__PURE__*/React.createElement("button", {
+  }, "ถามสรุปข้อมูลหรือให้ AI ช่วยตั้งตัวกรอง โดย AI จะอ่านทั้งข้อมูลสรุป, ข้อมูล input ที่อยู่ในตัวกรองปัจจุบัน และจะ query raw data เพิ่มเมื่อคำถามต้องเจาะลึก")), /*#__PURE__*/React.createElement("button", {
     className: "menu-btn",
     onClick: onClose,
     title: "ปิด AI"
@@ -3020,7 +3017,7 @@ var AIPanel = function AIPanel(props) {
     style: {
       marginTop: '0.35rem'
     }
-  }, /*#__PURE__*/React.createElement("strong", null, "ถาม AI"), " เหมาะกับคำถามเฉพาะเจาะจง เช่น เรียงยอดขาย, หาร้านหรือจังหวัด, หรือเจาะปี/เดือน/เขตจาก raw data จริง ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "ขอ insight"), " เหมาะกับการให้ระบบสรุปประเด็นสำคัญจากหน้าปัจจุบันแบบภาพรวม")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, "ถาม AI"), " เหมาะกับคำถามเฉพาะเจาะจง เช่น เรียงยอดขาย, หาร้านหรือจังหวัด, หรือเจาะปี/เดือน/เขตจาก raw data จริง ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "ตั้งตัวกรอง"), " เหมาะกับการให้ AI ช่วยตีความคำสั่งแล้วเลือกตัวกรองให้")), /*#__PURE__*/React.createElement("div", {
     className: "ai-quick-row"
   }, AI_QUICK_PROMPTS.map(function (prompt) {
     return /*#__PURE__*/React.createElement("button", {
@@ -3057,11 +3054,6 @@ var AIPanel = function AIPanel(props) {
     onClick: onAction,
     disabled: isLoading
   }, isLoading ? 'กำลังประมวลผล...' : 'ให้ AI ช่วยตั้งตัวกรอง'), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "ai-action-btn secondary",
-    onClick: onInsight,
-    disabled: isLoading
-  }, isLoading ? 'กำลังวิเคราะห์...' : 'ขอ insight'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "ai-action-btn primary",
     onClick: onAsk,
@@ -8118,7 +8110,7 @@ var App = function App() {
             _context12.n = 1;
             return callAppsScriptBridge(_objectSpread({
               mode: mode
-            }, extraPayload || {}));
+            }, extraPayload || {}), 12000);
           case 1:
             result = _context12.v;
             if (result && result.ok) {
@@ -8147,7 +8139,7 @@ var App = function App() {
               question: questionText,
               context: contextPayload,
               authToken: authSessionToken
-            }, extraPayload || {}));
+            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 60000 : 25000);
           case 1:
             result = _context13.v;
             if (result && result.ok) {
@@ -8164,7 +8156,7 @@ var App = function App() {
       return _ref13.apply(this, arguments);
     };
   }();
-  var callAppsScriptBridge = function callAppsScriptBridge(payload) {
+  var callAppsScriptBridge = function callAppsScriptBridge(payload, timeoutMs) {
     return new Promise(function (resolve, reject) {
       var targetUrl = String(aiWebAppUrl || '').trim();
       if (!targetUrl) {
@@ -8216,7 +8208,7 @@ var App = function App() {
       window.addEventListener('message', handleMessage);
       timeoutId = window.setTimeout(function () {
         finish(reject, new Error('เชื่อมต่อ Google Apps Script ไม่สำเร็จหรือใช้เวลานานเกินไป'));
-      }, 45000);
+      }, Number(timeoutMs || 25000));
       document.body.appendChild(iframe);
       document.body.appendChild(form);
       try {
@@ -8312,34 +8304,8 @@ var App = function App() {
     };
   }();
   useEffect(function () {
-    var cancelled = false;
-    if (!aiWebAppUrl.trim() || !authSessionToken) {
-      setIsAuthChecking(false);
-      return undefined;
-    }
-    setIsAuthChecking(true);
-    setAuthError('');
-    callAuthWebApp('verify_session', {
-      token: authSessionToken
-    }).then(function (result) {
-      if (cancelled) return;
-      var auth = result && result.auth ? result.auth : null;
-      if (auth && auth.user) {
-        setAuthUser(auth.user);
-        if (auth.token) setAuthSessionToken(auth.token);
-      }
-    }).catch(function (error) {
-      if (cancelled) return;
-      setAuthSessionToken('');
-      setAuthUser(null);
-      setAuthError(error && error.message ? error.message : 'session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
-    }).then(function () {
-      if (!cancelled) setIsAuthChecking(false);
-    });
-    return function () {
-      cancelled = true;
-    };
-  }, [aiWebAppUrl, authSessionToken]);
+    setIsAuthChecking(false);
+  }, []);
   var handleLoginSubmit = function handleLoginSubmit() {
     if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
       setAuthError('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม');
@@ -8579,7 +8545,7 @@ var App = function App() {
   };
   var submitAIRequest = function submitAIRequest(mode, presetQuestion) {
     var requestMode = String(mode || 'ask').trim().toLowerCase() || 'ask';
-    var fallbackQuestion = requestMode === 'insight' ? 'ช่วยสรุป insight สำคัญ 3-5 ข้อจากข้อมูลหน้าปัจจุบัน โดยครอบคลุมภาพรวม จุดน่ากังวล โอกาส และข้อเสนอแนะ' : '';
+    var fallbackQuestion = '';
     var questionText = String(presetQuestion || aiQuestion || fallbackQuestion).trim();
     var requestContext = dashboardContextSummary;
     var conversationHistory = [].concat(_toConsumableArray((aiMessages || []).slice(-6)), [{
@@ -8602,7 +8568,6 @@ var App = function App() {
       asksForDistrict: /(เขต|district|ne\\.?3|van\\s?sales|รายเขต)/i.test(questionText),
       asksForStore: /(ร้าน|ลูกค้า|cv|ร้านค้า|customer)/i.test(questionText),
       asksForBrand: /(แบรนด์|brand)/i.test(questionText),
-      asksForInsight: requestMode === 'insight',
       prefersCurrentFilters: /(ตามตัวกรองปัจจุบัน|หน้าปัจจุบัน|current filter|current page)/i.test(lowerQuestionText)
     };
     requestContext = _objectSpread(_objectSpread({}, dashboardContextSummary), {}, {
@@ -8672,9 +8637,8 @@ var App = function App() {
   };
   var handleAIQuickPrompt = function handleAIQuickPrompt(prompt) {
     var nextPrompt = String(prompt || '').trim();
-    var nextMode = /วิเคราะห์|insight/i.test(nextPrompt) ? 'insight' : 'ask';
     setAIQuestion(nextPrompt);
-    submitAIRequest(nextMode, nextPrompt);
+    submitAIRequest('ask', nextPrompt);
   };
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:render';
   var totalMetricValue = scopedData.reduce(function (acc, curr) {
@@ -8909,9 +8873,6 @@ var App = function App() {
     onAsk: function onAsk() {
       return submitAIRequest('ask');
     },
-    onInsight: function onInsight() {
-      return submitAIRequest('insight');
-    },
     onAction: function onAction() {
       return submitAIRequest('action');
     },
@@ -8947,7 +8908,7 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Upload",
     size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales \u0E41\u0E1A\u0E1A\u0E40\u0E14\u0E34\u0E21")), !embeddedMode && /*#__PURE__*/React.createElement("div", {
+  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales")), !embeddedMode && /*#__PURE__*/React.createElement("div", {
     className: "drawer-section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "drawer-section-title"
@@ -8971,7 +8932,7 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Upload",
     size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target \u0E41\u0E1A\u0E1A\u0E40\u0E14\u0E34\u0E21")), /*#__PURE__*/React.createElement("div", {
+  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target")), /*#__PURE__*/React.createElement("div", {
     className: "drawer-section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "drawer-section-title"
