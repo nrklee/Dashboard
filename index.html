@@ -8403,9 +8403,12 @@ var App = function App() {
     }
     setIsLoading(true);
     return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
-      var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob, binaryBytes, fileName, fileMimeType, fileBlob;
+      var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob, binaryBytes, fileName, fileMimeType, fileBlob, sourceDisplayName, transportLabel;
       if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
       sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+      sourceDisplayName = String(sourceInfo.fileName || sourceInfo.sheetName || sourceInfo.spreadsheetName || 'Sales link');
+      transportLabel = sourceInfo.transport === 'file' || sourceInfo.transport === 'file-chunk' ? 'ไฟล์' : 'ตารางข้อมูล';
+      showStatus("โหลด".concat(transportLabel, "ยอดขายจากลิงก์สำเร็จ: ").concat(sourceDisplayName, " \u0E01\u0E33\u0E25\u0E31\u0E07\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C..."), 'info');
       if (result.fileBase64) {
         binaryBytes = base64ToUint8Array(result.fileBase64);
         fileName = String(result.fileName || sourceInfo.fileName || 'google-sheet-sales.xlsx');
@@ -8446,17 +8449,18 @@ var App = function App() {
         });
       }
       }
+      showStatus("\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E01\u0E33\u0E25\u0E31\u0E07\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C...", 'info');
       return processAndStoreFile(salesFile, 'sales', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) throw new Error('โหลดข้อมูลยอดขายจาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบชื่อคอลัมน์ในชีต Sales');
+        if (!ok) throw new Error("โหลดไฟล์ยอดขายจากลิงก์สำเร็จแล้ว แต่ parser \u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (".concat(sourceDisplayName, ") \u0E01\u0E23\u0E38\u0E13\u0E32\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E0A\u0E35\u0E15 Sales \u0E43\u0E2B\u0E49\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E44\u0E1F\u0E25\u0E4C Excel \u0E15\u0E49\u0E19\u0E09\u0E1A\u0E31\u0E1A"));
         displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName || result.fileName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName || result.fileName) : GOOGLE_SHEET_SOURCE_LABEL;
         persistUploadedFileName('sales', displayName);
         setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
           type: 'success',
-          message: "รีเฟรชข้อมูลยอดขายจาก Google Sheet แล้ว (".concat(Number(sourceInfo.filteredRows || 0).toLocaleString(), " \u0E41\u0E16\u0E27)")
+          message: "โหลดและแปลงข้อมูลยอดขายจากลิงก์สำเร็จ (".concat(sourceDisplayName, ")")
         });
         return result;
       });
@@ -8482,9 +8486,12 @@ var App = function App() {
     }
     setIsLoading(true);
     return loadChunkedSheetRows('sync_target_source', 'ข้อมูล Target').then(function (result) {
-      var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName, binaryBytes, fileName, fileMimeType;
+      var csvText, csvRows, normalizedRows, workbook, worksheet, workbookArray, targetBlob, targetFile, sourceInfo, displayName, binaryBytes, fileName, fileMimeType, sourceDisplayName, transportLabel;
       if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
       sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
+      sourceDisplayName = String(sourceInfo.fileName || sourceInfo.sheetName || sourceInfo.spreadsheetName || 'Target link');
+      transportLabel = sourceInfo.transport === 'file' || sourceInfo.transport === 'file-chunk' ? 'ไฟล์' : 'ตารางข้อมูล';
+      showStatus("โหลด".concat(transportLabel, " Target \u0E08\u0E32\u0E01\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ").concat(sourceDisplayName, " \u0E01\u0E33\u0E25\u0E31\u0E07\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C..."), 'info');
       if (result.fileBase64) {
         binaryBytes = base64ToUint8Array(result.fileBase64);
         fileName = String(result.fileName || sourceInfo.fileName || 'google-sheet-target.xlsx');
@@ -8517,21 +8524,22 @@ var App = function App() {
       targetBlob = new Blob([workbookArray], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
-      targetFile = new File([targetBlob], 'google-sheet-target.xlsx', {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+        targetFile = new File([targetBlob], 'google-sheet-target.xlsx', {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
       }
+      showStatus("\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C Target \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E01\u0E33\u0E25\u0E31\u0E07\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C...", 'info');
       return processAndStoreFile(targetFile, 'target', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) throw new Error('โหลดข้อมูล Target จาก Google Sheet ได้แล้ว แต่แปลงข้อมูลไม่สำเร็จ กรุณาตรวจสอบรูปแบบชีต Target');
+        if (!ok) throw new Error("โหลดไฟล์ Target จากลิงก์สำเร็จแล้ว แต่ parser \u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (".concat(sourceDisplayName, ") \u0E01\u0E23\u0E38\u0E13\u0E32\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E0A\u0E35\u0E15 Target \u0E43\u0E2B\u0E49\u0E15\u0E23\u0E07\u0E01\u0E31\u0E1A\u0E15\u0E49\u0E19\u0E09\u0E1A\u0E31\u0E1A"));
         displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName || result.fileName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName || result.fileName) : GOOGLE_TARGET_SOURCE_LABEL;
         persistUploadedFileName('target', displayName);
         setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
         setStatusInfo({
           type: 'success',
-          message: "รีเฟรชข้อมูล Target จาก Google Sheet แล้ว (".concat(Number(sourceInfo.filteredRows || 0).toLocaleString(), " \u0E41\u0E16\u0E27)")
+          message: "โหลดและแปลงข้อมูล Target จากลิงก์สำเร็จ (".concat(sourceDisplayName, ")")
         });
         return result;
       });
