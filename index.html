@@ -3048,6 +3048,23 @@ var AIPanel = function AIPanel(props) {
     onQuickPrompt = props.onQuickPrompt,
     isLoading = props.isLoading;
   if (!isOpen) return null;
+  var quickPromptButtons = AI_QUICK_PROMPTS.map(function (prompt) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: prompt,
+      type: "button",
+      className: "ai-quick-btn",
+      onClick: function onClick() {
+        return onQuickPrompt(prompt);
+      }
+    }, prompt);
+  });
+  var messageNodes = (messages || []).map(function (message, index) {
+    return /*#__PURE__*/React.createElement(AIMessageBubble, {
+      key: "".concat(message.role, "-").concat(index),
+      role: message.role,
+      text: message.text
+    });
+  });
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "ai-panel-overlay",
     onClick: onClose
@@ -3065,31 +3082,16 @@ var AIPanel = function AIPanel(props) {
     title: "ปิด AI"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "X",
-  size: 18
+    size: 18
   }))), /*#__PURE__*/React.createElement("div", {
     className: "ai-panel-body"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ai-config-box"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ai-quick-row"
-  }, AI_QUICK_PROMPTS.map(function (prompt) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: prompt,
-      type: "button",
-      className: "ai-quick-btn",
-      onClick: function onClick() {
-        return onQuickPrompt(prompt);
-      }
-    }, prompt);
-  })), /*#__PURE__*/React.createElement("div", {
+  }, quickPromptButtons), /*#__PURE__*/React.createElement("div", {
     className: "ai-chat-list custom-scrollbar"
-  }, (messages || []).map(function (message, index) {
-    return /*#__PURE__*/React.createElement(AIMessageBubble, {
-      key: "".concat(message.role, "-").concat(index),
-      role: message.role,
-      text: message.text
-    });
-  })), /*#__PURE__*/React.createElement("div", {
+  }, messageNodes), /*#__PURE__*/React.createElement("div", {
     className: "ai-footer"
   }, /*#__PURE__*/React.createElement("textarea", {
     className: "drawer-input ai-question-input",
