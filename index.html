@@ -8139,7 +8139,7 @@ var App = function App() {
               question: questionText,
               context: contextPayload,
               authToken: authSessionToken
-            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 120000 : 25000);
+            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 180000 : 25000);
           case 1:
             result = _context13.v;
             if (result && result.ok) {
@@ -8241,6 +8241,7 @@ var App = function App() {
         firstResult,
         sourceInfo,
         totalChunks,
+        aggregatedFileBase64,
         headerRow,
         aggregatedRows,
         initialRows,
@@ -8255,15 +8256,43 @@ var App = function App() {
             _context14.n = 1;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: 0,
-              chunkSize: chunkSize
+              chunkSize: 180000
             });
           case 1:
             firstResult = _context14.v;
             sourceInfo = firstResult && firstResult.source && _typeof(firstResult.source) === 'object' ? firstResult.source : {};
             totalChunks = Number(sourceInfo.totalChunks || 1);
+            if (!(sourceInfo.transport === 'file-chunk' || !firstResult.fileBase64 && firstResult.fileChunkBase64 && totalChunks > 1)) {
+              _context14.n = 6;
+              break;
+            }
+            aggregatedFileBase64 = String(firstResult.fileChunkBase64 || '');
+            _i3 = 1;
+          case 2:
+            if (!(_i3 < totalChunks)) {
+              _context14.n = 5;
+              break;
+            }
+            showStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 'info');
+            _context14.n = 3;
+            return callAIWebApp(mode, '', {}, {
+              chunkIndex: _i3,
+              chunkSize: 180000
+            });
+          case 3:
+            chunkResult = _context14.v;
+            aggregatedFileBase64 += String(chunkResult.fileChunkBase64 || '');
+          case 4:
+            _i3++;
+            _context14.n = 2;
+            break;
+          case 5:
+            firstResult.fileBase64 = aggregatedFileBase64;
+            return _context14.a(2, firstResult);
+          case 6:
             initialRows = normalizeBridgeRowMatrix(firstResult.rows);
             if (!(sourceInfo.transport === 'rows-chunk' || totalChunks > 1)) {
-              _context14.n = 7;
+              _context14.n = 12;
               break;
             }
             headerRow = Array.isArray(firstResult.header) ? firstResult.header.map(function (cell) {
@@ -8271,30 +8300,30 @@ var App = function App() {
             }) : initialRows.length > 0 ? initialRows[0] : [];
             aggregatedRows = initialRows.length > 0 ? initialRows.slice(1) : [];
             _i3 = 1;
-          case 2:
+          case 7:
             if (!(_i3 < totalChunks)) {
-              _context14.n = 6;
+              _context14.n = 11;
               break;
             }
             showStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 'info');
-            _context14.n = 3;
+            _context14.n = 8;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: _i3,
               chunkSize: chunkSize
             });
-          case 3:
+          case 8:
             chunkResult = _context14.v;
             chunkRows = normalizeBridgeRowMatrix(chunkResult.rows);
             if (chunkRows.length > 0) aggregatedRows = aggregatedRows.concat(chunkRows);
-          case 4:
+          case 9:
             _i3++;
-            _context14.n = 2;
+            _context14.n = 7;
             break;
-          case 5:
+          case 10:
             break;
-          case 6:
+          case 11:
             firstResult.rows = [headerRow].concat(aggregatedRows);
-          case 7:
+          case 12:
             return _context14.a(2, firstResult);
         }
       }, _callee14);
@@ -8897,10 +8926,10 @@ var App = function App() {
   }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", googleSheetSyncLabel), /*#__PURE__*/React.createElement("button", {
     className: "drawer-btn primary",
     onClick: syncSalesFromGoogleSheet
-  }, /*#__PURE__*/React.createElement(Icon, {
+      }, /*#__PURE__*/React.createElement(Icon, {
     name: "RefreshCw",
     size: 14
-  }), " \u0E23\u0E35\u0E40\u0E1F\u0E23\u0E0A\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E08\u0E32\u0E01 Google Sheet"), /*#__PURE__*/React.createElement("button", {
+  }), " Refresh Sales Data Link"), /*#__PURE__*/React.createElement("button", {
     className: "drawer-btn",
     onClick: function onClick() {
       return openFilePickerForType('sales');
@@ -8924,7 +8953,7 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "RefreshCw",
     size: 14
-  }), " \u0E23\u0E35\u0E40\u0E1F\u0E23\u0E0A Target \u0E08\u0E32\u0E01 Google Sheet"), /*#__PURE__*/React.createElement("button", {
+  }), " Refresh Target Data Link"), /*#__PURE__*/React.createElement("button", {
     className: "drawer-btn",
     onClick: function onClick() {
       return openFilePickerForType('target');
