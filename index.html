@@ -1106,6 +1106,8 @@ var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
 var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
 var DEFAULT_BOUND_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwLJO_-D2AecG9ir22g4bRpC_C7JxUjNqNZDqQ9Fv4H41dftYJvPpgNsY-w72L0S-D8ZA/exec';
+var DEFAULT_SOURCE_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1cqfgdhAn6Ge2J9usZRem1Ow14ari6Rt58sUyFCymxtg/edit?usp=drive_link';
+var DEFAULT_TARGET_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1aEHVntnPpCp_wLadkGTVSrHm8gVl9a5T4sNuAz4jaNQ/edit?usp=drive_link';
 var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
 var AUTH_USER_KEY = 'dashboardAuthUser';
 var GOOGLE_SHEET_LAST_SYNC_PREFIX = 'googleSheetLastSyncAt';
@@ -8235,6 +8237,117 @@ var App = function App() {
       });
     }) : [];
   };
+  var extractSpreadsheetIdFromUrl = function extractSpreadsheetIdFromUrl(sourceUrl) {
+    var match = String(sourceUrl || '').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/i);
+    return match ? match[1] : '';
+  };
+  var buildGoogleSheetExportUrl = function buildGoogleSheetExportUrl(sourceUrl) {
+    var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
+    if (!spreadsheetId) {
+      throw new Error('ไม่พบ Spreadsheet ID จากลิงก์ต้นทาง');
+    }
+    return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/export?format=xlsx");
+  };
+  var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
+    if (!authUser || !authSessionToken || !DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      return Promise.resolve(String(defaultUrl || '').trim());
+    }
+    return callAIWebApp(mode, '', {}, {
+      resolveOnly: true
+    }).then(function (result) {
+      var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
+      return String(sourceInfo.spreadsheetUrl || defaultUrl || '').trim();
+    }).catch(function () {
+      return String(defaultUrl || '').trim();
+    });
+  };
+  var parseFileNameFromDisposition = function parseFileNameFromDisposition(dispositionValue) {
+    var safeValue = String(dispositionValue || '');
+    if (!safeValue) return '';
+    var utfMatch = safeValue.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utfMatch && utfMatch[1]) {
+      try {
+        return decodeURIComponent(utfMatch[1]).trim();
+      } catch (_error) {}
+    }
+    var basicMatch = safeValue.match(/filename=\"?([^\";]+)\"?/i);
+    return basicMatch && basicMatch[1] ? String(basicMatch[1]).trim() : '';
+  };
+  var fetchGoogleSheetExportFile = function fetchGoogleSheetExportFile(sourceUrl, fallbackFileName, statusLabel) {
+    var exportUrl = buildGoogleSheetExportUrl(sourceUrl);
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timeoutId = controller ? window.setTimeout(function () {
+      return controller.abort();
+    }, 240000) : null;
+    return fetch(exportUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      cache: 'no-store',
+      signal: controller ? controller.signal : undefined
+    }).then(function (response) {
+      var dispositionName = parseFileNameFromDisposition(response.headers.get('content-disposition'));
+      if (!response.ok) {
+        throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ (HTTP ").concat(response.status, ")"));
+      }
+      return response.blob().then(function (blob) {
+        if (!blob || !blob.size) {
+          throw new Error("ไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ว่างเปล่าหรือไม่มีข้อมูล"));
+        }
+        return new File([blob], dispositionName || fallbackFileName || 'source.xlsx', {
+          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+      });
+    }).catch(function (error) {
+      if (error && error.name === 'AbortError') {
+        throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ใช้เวลานานเกินไป"));
+      }
+      throw error;
+    }).finally(function () {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    });
+  };
+  var buildFileFromSyncResult = function buildFileFromSyncResult(result, defaultFileName) {
+    var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
+    var rowMatrix, workbook, worksheet, workbookArray, workbookBlob, csvText, csvBlob, binaryBytes, fileName, fileMimeType, fileBlob;
+    if (result && result.fileBase64) {
+      binaryBytes = base64ToUint8Array(result.fileBase64);
+      fileName = String(result.fileName || sourceInfo.fileName || defaultFileName || 'source.xlsx');
+      fileMimeType = String(result.mimeType || sourceInfo.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      fileBlob = new Blob([binaryBytes], {
+        type: fileMimeType
+      });
+      return new File([fileBlob], fileName, {
+        type: fileMimeType
+      });
+    }
+    rowMatrix = Array.isArray(result && result.rows) ? result.rows.map(function (row) {
+      return (Array.isArray(row) ? row : []).map(function (cell) {
+        return cell === undefined || cell === null ? '' : cell;
+      });
+    }) : [];
+    if (rowMatrix.length > 0) {
+      workbook = XLSX.utils.book_new();
+      worksheet = XLSX.utils.aoa_to_sheet(rowMatrix);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sourceInfo.sheetName || 'Sheet1');
+      workbookArray = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array'
+      });
+      workbookBlob = new Blob([workbookArray], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      return new File([workbookBlob], defaultFileName || 'source.xlsx', {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+    }
+    csvText = String(result && result.csv || '');
+    csvBlob = new Blob([csvText], {
+      type: 'text/csv;charset=utf-8'
+    });
+    return new File([csvBlob], (defaultFileName || 'source').replace(/\.xlsx$/i, '.csv'), {
+      type: 'text/csv;charset=utf-8'
+    });
+  };
   var loadChunkedSheetRows = /*#__PURE__*/function () {
     var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode, statusLabel) {
       var chunkSize,
@@ -8397,75 +8510,42 @@ var App = function App() {
       showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูลยอดขาย', 'error');
       return Promise.resolve(null);
     }
-    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
-      showStatus('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม', 'error');
-      return Promise.resolve(null);
-    }
     setIsLoading(true);
-    return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
-      var csvText, csvBlob, salesFile, sourceInfo, displayName, rowMatrix, workbook, worksheet, workbookArray, workbookBlob, binaryBytes, fileName, fileMimeType, fileBlob, sourceDisplayName, transportLabel;
-      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
-      sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
-      sourceDisplayName = String(sourceInfo.fileName || sourceInfo.sheetName || sourceInfo.spreadsheetName || 'Sales link');
-      transportLabel = sourceInfo.transport === 'file' || sourceInfo.transport === 'file-chunk' ? 'ไฟล์' : 'ตารางข้อมูล';
-      showStatus("โหลด".concat(transportLabel, "ยอดขายจากลิงก์สำเร็จ: ").concat(sourceDisplayName, " \u0E01\u0E33\u0E25\u0E31\u0E07\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C..."), 'info');
-      if (result.fileBase64) {
-        binaryBytes = base64ToUint8Array(result.fileBase64);
-        fileName = String(result.fileName || sourceInfo.fileName || 'google-sheet-sales.xlsx');
-        fileMimeType = String(result.mimeType || sourceInfo.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        fileBlob = new Blob([binaryBytes], {
-          type: fileMimeType
-        });
-        salesFile = new File([fileBlob], fileName, {
-          type: fileMimeType
-        });
-      } else {
-      rowMatrix = Array.isArray(result.rows) ? result.rows.map(function (row) {
-        return (Array.isArray(row) ? row : []).map(function (cell) {
-          return cell === undefined || cell === null ? '' : cell;
-        });
-      }) : [];
-      if (rowMatrix.length > 0) {
-        workbook = XLSX.utils.book_new();
-        worksheet = XLSX.utils.aoa_to_sheet(rowMatrix);
-        XLSX.utils.book_append_sheet(workbook, worksheet, sourceInfo.sheetName || 'Sales');
-        workbookArray = XLSX.write(workbook, {
-          bookType: 'xlsx',
-          type: 'array'
-        });
-        workbookBlob = new Blob([workbookArray], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        salesFile = new File([workbookBlob], 'google-sheet-sales.xlsx', {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-      } else {
-        csvText = String(result.csv || '');
-        csvBlob = new Blob([csvText], {
-          type: 'text/csv;charset=utf-8'
-        });
-        salesFile = new File([csvBlob], 'google-sheet-sales.csv', {
-          type: 'text/csv;charset=utf-8'
-        });
+    showStatus('กำลังโหลดไฟล์ยอดขายจากลิงก์...', 'info');
+    return resolveConfiguredSourceUrl('sync_sales_source', DEFAULT_SOURCE_SPREADSHEET_URL).then(function (resolvedSourceUrl) {
+      return fetchGoogleSheetExportFile(resolvedSourceUrl, 'google-sheet-sales.xlsx', 'ยอดขาย');
+    }).catch(function (directError) {
+      console.warn('Direct sales link fetch failed, fallback to Apps Script transport:', directError);
+      if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+        throw directError;
       }
-      }
-      showStatus("\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E01\u0E33\u0E25\u0E31\u0E07\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C...", 'info');
+      showStatus('โหลดตรงจากลิงก์ไม่สำเร็จ กำลังลองผ่าน Google Apps Script...', 'info');
+      return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
+        if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) {
+          throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
+        }
+        return buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
+      });
+    }).then(function (salesFile) {
+      var sourceDisplayName, displayName;
+      sourceDisplayName = salesFile && salesFile.name ? salesFile.name : 'google-sheet-sales.xlsx';
+      showStatus("เตรียมไฟล์ยอดขายสำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...", 'info');
       return processAndStoreFile(salesFile, 'sales', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) throw new Error("โหลดไฟล์ยอดขายจากลิงก์สำเร็จแล้ว แต่ parser \u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (".concat(sourceDisplayName, ") \u0E01\u0E23\u0E38\u0E13\u0E32\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E0A\u0E35\u0E15 Sales \u0E43\u0E2B\u0E49\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E44\u0E1F\u0E25\u0E4C Excel \u0E15\u0E49\u0E19\u0E09\u0E1A\u0E31\u0E1A"));
-        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName || result.fileName ? "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName || result.fileName) : GOOGLE_SHEET_SOURCE_LABEL;
+        if (!ok) throw new Error("โหลดไฟล์ยอดขายจากลิงก์สำเร็จแล้ว แต่ parser อ่านข้อมูลไม่สำเร็จ (".concat(sourceDisplayName, ")"));
+        displayName = "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceDisplayName);
         persistUploadedFileName('sales', displayName);
-        setLastGoogleSheetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
+        setLastGoogleSheetSyncAt(new Date().toISOString());
         setStatusInfo({
           type: 'success',
           message: "โหลดและแปลงข้อมูลยอดขายจากลิงก์สำเร็จ (".concat(sourceDisplayName, ")")
         });
-        return result;
+        return salesFile;
       });
     }).catch(function (error) {
-      showStatus(error && error.message ? error.message : 'ดึงข้อมูลยอดขายจาก Google Sheet ไม่สำเร็จ', 'error');
+      showStatus(error && error.message ? error.message : 'ดึงข้อมูลยอดขายจากลิงก์ไม่สำเร็จ', 'error');
       return null;
     }).then(function (result) {
       setIsLoading(false);
