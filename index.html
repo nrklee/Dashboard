@@ -92,7 +92,7 @@
         .dashboard-header .theme-toggle, .dashboard-header .menu-btn { background:rgba(255,255,255,0.12)!important; border-color:rgba(255,255,255,0.2)!important; color:#fff!important; }
         .dashboard-header .theme-toggle:hover, .dashboard-header .menu-btn:hover { background:rgba(255,255,255,0.22)!important; }
         .dashboard-filters { background:var(--surface)!important; border-color:var(--border)!important; }
-        .dashboard-main { background:transparent!important; }
+        .dashboard-main { background:transparent!important; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain; }
         .dashboard-card { background:var(--surface)!important; border:1px solid var(--border)!important; border-radius:var(--radius)!important; box-shadow:var(--shadow-sm)!important; transition:box-shadow .25s,border-color .25s,transform .25s; }
         .dashboard-card:hover { border-color:var(--accent-border)!important; box-shadow:var(--shadow)!important; transform:translateY(-2px); }
 
@@ -141,7 +141,7 @@
         @keyframes slideIn { from{transform:translateX(100%)}to{transform:translateX(0)} }
         .fade-in { animation:fadeIn .3s ease-in-out; }
         .modal-overlay { animation:fadeIn .2s ease-out forwards; }
-        .dropdown-content { z-index:50!important; }
+        .dropdown-content { z-index:50!important; touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
 
         /* ===== Section Header ===== */
         .sec-head { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
@@ -342,9 +342,10 @@
 
         /* Tablet portrait / iPad mini (600px - 768px) */
         @media(max-width:768px) {
+            .dashboard-shell { height:auto!important; min-height:100dvh!important; overflow:visible!important; }
             .drawer-panel { width:100%;max-width:100%; }
             .toggle-btn { padding:6px 12px;font-size:11px;min-height:36px; }
-            .dashboard-main { padding:12px!important; }
+            .dashboard-main { padding:12px!important; overflow-y:visible!important; padding-bottom:calc(112px + env(safe-area-inset-bottom)); }
             .kpi-card { padding:14px 16px; }
             .sec-title { font-size:14px; }
             .major-section-head { padding:8px 10px;flex-wrap:wrap;gap:8px; }
@@ -364,7 +365,7 @@
         /* Mobile (max-width: 480px) */
         @media(max-width:560px) {
             .dashboard-header { padding:10px 12px!important; }
-            .dashboard-main { padding:8px!important; }
+            .dashboard-main { padding:8px!important; overflow-y:visible!important; padding-bottom:calc(124px + env(safe-area-inset-bottom)); }
             .kpi-card { padding:12px 14px;border-radius:10px; }
             .dashboard-card { border-radius:10px!important; }
             .toggle-btn { padding:6px 10px;font-size:10px;min-height:34px; }
@@ -2499,7 +2500,10 @@ var MultiSelect = function MultiSelect(_ref2) {
   })), isAllSelected ? "ไม่เลือกทั้งหมด" : "เลือกทั้งหมด")), /*#__PURE__*/React.createElement("div", {
     className: "overflow-y-auto custom-scrollbar",
     style: {
-      maxHeight: 'min(52vh, 320px)'
+      maxHeight: 'min(52vh, 320px)',
+      WebkitOverflowScrolling: 'touch',
+      touchAction: 'pan-y',
+      overscrollBehavior: 'contain'
     }
   }, filteredOptions.length > 0 ? filteredOptions.map(function (opt) {
     return /*#__PURE__*/React.createElement("div", {
@@ -9304,7 +9308,7 @@ var App = function App() {
     style: {
       width: "".concat(Math.max(statusInfo.indeterminate ? 34 : 4, Math.round(statusInfo.progress || 0)), "%")
     }
-  })))), /*#__PURE__*/React.createElement(AIPanel, {
+  }))))), /*#__PURE__*/React.createElement(AIPanel, {
     isOpen: isAIPanelOpen,
     onClose: function onClose() {
       return setIsAIPanelOpen(false);
