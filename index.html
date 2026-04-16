@@ -3672,7 +3672,8 @@ var App = function App() {
     isAIPanelOpen = _useState42[0],
     setIsAIPanelOpen = _useState42[1];
   var _useState43 = useState(function () {
-      return safeStorageGet(AI_WEB_APP_URL_KEY) || DEFAULT_BOUND_WEB_APP_URL;
+      safeStorageRemove(AI_WEB_APP_URL_KEY);
+      return DEFAULT_BOUND_WEB_APP_URL;
     }),
     _useState44 = _slicedToArray(_useState43, 2),
     aiWebAppUrl = _useState44[0],
@@ -8484,25 +8485,31 @@ var App = function App() {
       iframe.name = requestId;
       iframe.style.display = 'none';
       iframe.setAttribute('aria-hidden', 'true');
-      var form = document.createElement('form');
-      form.method = 'POST';
-      form.action = targetUrl;
-      form.target = requestId;
-      form.style.display = 'none';
-      var input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'payload';
-      input.value = JSON.stringify(_objectSpread(_objectSpread({}, payload || {}), {}, {
+      var bridgePayload = _objectSpread(_objectSpread({}, payload || {}), {}, {
         __transport: 'iframe',
         requestId: requestId
-      }));
-      form.appendChild(input);
+      });
+      var payloadText = JSON.stringify(bridgePayload);
+      var useGetBridge = /^(login|verify_session|logout)$/i.test(String(payload && payload.mode || '')) && payloadText.length < 14000;
+      var form = null;
+      if (!useGetBridge) {
+        form = document.createElement('form');
+        form.method = 'POST';
+        form.action = targetUrl;
+        form.target = requestId;
+        form.style.display = 'none';
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = payloadText;
+        form.appendChild(input);
+      }
       var settled = false;
       var timeoutId = null;
       var cleanup = function cleanup() {
         if (timeoutId) clearTimeout(timeoutId);
         window.removeEventListener('message', handleMessage);
-        if (form.parentNode) form.parentNode.removeChild(form);
+        if (form && form.parentNode) form.parentNode.removeChild(form);
         if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
       };
       var finish = function finish(fn, value) {
@@ -8522,9 +8529,14 @@ var App = function App() {
         finish(reject, new Error('เชื่อมต่อ Google Apps Script ไม่สำเร็จหรือใช้เวลานานเกินไป'));
       }, Number(timeoutMs || 25000));
       document.body.appendChild(iframe);
-      document.body.appendChild(form);
       try {
-        form.submit();
+        if (useGetBridge) {
+          var joiner = targetUrl.indexOf('?') >= 0 ? '&' : '?';
+          iframe.src = "".concat(targetUrl).concat(joiner, "payload=").concat(encodeURIComponent(payloadText), "&_=").concat(Date.now());
+        } else {
+          document.body.appendChild(form);
+          form.submit();
+        }
       } catch (error) {
         finish(reject, error instanceof Error ? error : new Error(String(error || 'ส่งคำขอไม่สำเร็จ')));
       }
