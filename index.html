@@ -3876,6 +3876,8 @@ var App = function App() {
   var lockedFilters = useMemo(function () {
     return normalizeLockedFilters(authUser && authUser.lockedFilters ? authUser.lockedFilters : {});
   }, [authUser && JSON.stringify(authUser.lockedFilters || {})]);
+  var currentUserRole = String(authUser && authUser.role || '').trim().toLowerCase();
+  var isSalesRestrictedUser = currentUserRole === 'super_admin' || currentUserRole === 'admin';
   var _useStateAuthUsername = useState(''),
     _useStateAuthUsername2 = _slicedToArray(_useStateAuthUsername, 2),
     authUsername = _useStateAuthUsername2[0],
@@ -4148,6 +4150,18 @@ var App = function App() {
     }();
     load();
   }, [authUser && authUser.username, activeDataKey]);
+  useEffect(function () {
+    if (!isSalesRestrictedUser) return;
+    setAllData({
+      monthly: [],
+      yearly: [],
+      targets: []
+    });
+    setIsUsingSavedData(false);
+    setLastGoogleSheetSyncAt('');
+    setLastGoogleTargetSyncAt('');
+    setFilters({});
+  }, [isSalesRestrictedUser, authUser && authUser.username]);
   useEffect(function () {
     if (!authUser) return;
     setFilters(function (prev) {
@@ -9102,6 +9116,10 @@ var App = function App() {
       showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูลยอดขาย', 'error');
       return Promise.resolve(null);
     }
+    if (isSalesRestrictedUser) {
+      showStatus('บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดูยอดขาย', 'error');
+      return Promise.resolve(null);
+    }
     setIsLoading(true);
     startLoadingStatus('กำลังเตรียมลิงก์ยอดขาย...', 4, true);
     return resolveConfiguredSourceUrl('sync_sales_source', DEFAULT_SOURCE_SPREADSHEET_URL).then(function (resolvedSourceUrl) {
@@ -9148,6 +9166,10 @@ var App = function App() {
   var syncTargetFromGoogleSheet = function syncTargetFromGoogleSheet() {
     if (!authUser || !authSessionToken) {
       showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล Target', 'error');
+      return Promise.resolve(null);
+    }
+    if (isSalesRestrictedUser) {
+      showStatus('บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดู Target', 'error');
       return Promise.resolve(null);
     }
     if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
@@ -9471,6 +9493,93 @@ var App = function App() {
     errorMessage: authError,
     noticeMessage: authNotice
   });
+  if (isSalesRestrictedUser) return /*#__PURE__*/React.createElement("div", {
+    className: "dashboard-shell flex flex-col h-screen text-slate-900 font-sans overflow-hidden",
+    style: {
+      background: 'var(--bg)'
+    }
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "dashboard-header border-b p-3 flex items-center justify-between shadow-sm z-20 shrink-0",
+    style: {
+      background: 'var(--surface)',
+      borderColor: 'var(--border)'
+    }
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-lg font-bold flex items-center gap-2",
+    style: {
+      color: 'var(--text)'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "TrendingUp",
+    size: 22
+  }), "Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "px-3 py-2 rounded-xl text-sm font-bold border",
+    style: {
+      color: 'var(--text)',
+      borderColor: 'var(--border)',
+      background: 'var(--bg-soft)'
+    }
+  }, authUser && (authUser.displayName || authUser.username) ? authUser.displayName || authUser.username : 'Admin'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      return setIsDarkMode(!isDarkMode);
+    },
+    className: "px-3 py-2 rounded-xl border font-bold",
+    style: {
+      color: 'var(--text)',
+      borderColor: 'var(--border)',
+      background: 'var(--surface-2)'
+    }
+  }, isDarkMode ? "\u2600" : "\u263E"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleLogout,
+    className: "px-4 py-2 rounded-xl border font-bold",
+    style: {
+      color: '#fca5a5',
+      borderColor: 'rgba(248,113,113,.45)',
+      background: 'rgba(127,29,29,.16)'
+    }
+  }, "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A"))), /*#__PURE__*/React.createElement("main", {
+    className: "dashboard-main flex-1 overflow-y-auto p-6",
+    style: {
+      background: 'var(--bg)'
+    }
+  }, /*#__PURE__*/React.createElement("section", {
+    className: "dashboard-card",
+    style: {
+      maxWidth: 820,
+      margin: '48px auto',
+      padding: 28,
+      background: 'var(--surface)',
+      borderColor: 'var(--border)',
+      color: 'var(--text)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
+    style: {
+      background: 'rgba(59,130,246,.16)',
+      color: 'var(--accent)'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Shield",
+    size: 24
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-black mb-3"
+  }, "\u0E42\u0E2B\u0E21\u0E14\u0E1C\u0E39\u0E49\u0E14\u0E39\u0E41\u0E25\u0E2A\u0E48\u0E27\u0E19\u0E01\u0E25\u0E32\u0E07"), /*#__PURE__*/React.createElement("p", {
+    className: "text-base leading-8",
+    style: {
+      color: 'var(--muted)'
+    }
+  }, "\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E19\u0E35\u0E49\u0E43\u0E0A\u0E49\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32 ADMIN_AREA / AREA_SHEETS \u0E41\u0E25\u0E30\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49 \u0E08\u0E36\u0E07\u0E16\u0E39\u0E01\u0E25\u0E47\u0E2D\u0E01\u0E44\u0E21\u0E48\u0E43\u0E2B\u0E49\u0E14\u0E39 \u0E42\u0E2B\u0E25\u0E14 \u0E2B\u0E23\u0E37\u0E2D\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("p", {
+    className: "text-base leading-8 mt-3",
+    style: {
+      color: 'var(--muted)'
+    }
+  }, "\u0E2B\u0E32\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E14\u0E39\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 \u0E43\u0E2B\u0E49\u0E40\u0E02\u0E49\u0E32\u0E14\u0E49\u0E27\u0E22\u0E1A\u0E31\u0E0D\u0E0A\u0E35 area_admin \u0E2B\u0E23\u0E37\u0E2D user \u0E02\u0E2D\u0E07\u0E20\u0E32\u0E04/\u0E40\u0E02\u0E15\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E44\u0E27\u0E49\u0E43\u0E19\u0E0A\u0E35\u0E15 USERS"))))));
   return /*#__PURE__*/React.createElement("div", {
     className: "dashboard-shell flex flex-col h-screen text-slate-900 font-sans overflow-hidden",
     style: {
