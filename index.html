@@ -282,6 +282,15 @@
           box-shadow:0 0 0 4px rgba(96,165,250,0.12),0 0 20px rgba(96,165,250,0.08);
           background:rgba(8,16,38,0.7); }
 
+        .login-mode-row { display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 6px; }
+        .login-mode-btn { border:1px solid rgba(148,163,184,0.26);border-radius:999px;background:rgba(15,23,42,0.36);
+          color:rgba(226,232,240,0.78);padding:8px 13px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;
+          transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease; }
+        .login-mode-btn:hover { transform:translateY(-1px);border-color:rgba(96,165,250,0.48);color:#dbeafe; }
+        .login-mode-btn.active { background:rgba(96,165,250,0.18);border-color:rgba(96,165,250,0.55);color:#eff6ff;
+          box-shadow:0 0 0 1px rgba(96,165,250,0.12) inset; }
+        .login-mode-btn:disabled { opacity:.55;cursor:not-allowed;transform:none; }
+        .login-help-text { color:rgba(203,213,225,0.68);font-size:12px;line-height:1.55;text-align:center;margin:-2px 0 2px; }
         .login-submit-row { display:flex;justify-content:flex-end;margin-top:12px; }
         .login-submit-btn { min-width:180px;border:none;border-radius:14px;position:relative;overflow:hidden;
           background:linear-gradient(135deg,#2563eb 0%,#3b82f6 40%,#6366f1 100%);
@@ -297,6 +306,11 @@
         .login-submit-btn:disabled { opacity:.6;cursor:not-allowed;transform:none;box-shadow:0 4px 16px rgba(37,99,235,0.15); }
 
         .login-error { border:1px solid rgba(248,113,113,0.3);background:rgba(127,29,29,0.2);color:#fecaca;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.6;backdrop-filter:blur(8px); }
+        .login-notice { border:1px solid rgba(74,222,128,0.3);background:rgba(20,83,45,0.22);color:#bbf7d0;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.6;backdrop-filter:blur(8px); }
+        .login-action-links { display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px; }
+        .login-link-btn { border:0;background:transparent;color:#93c5fd;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;padding:4px 6px; }
+        .login-link-btn:hover { color:#dbeafe;text-decoration:underline; }
+        .login-link-btn:disabled { opacity:.55;cursor:not-allowed;text-decoration:none; }
 
         .login-decor { position:absolute;z-index:10;display:flex;align-items:center;justify-content:center;border-radius:999px;
           background:linear-gradient(160deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03));
@@ -380,6 +394,8 @@
             .login-title { font-size:32px; }
             .login-label { font-size:15px; }
             .login-input { font-size:15px;padding:13px 15px;border-radius:14px; }
+            .login-mode-row { gap:6px; }
+            .login-mode-btn { flex:1 1 120px;padding:8px 8px;font-size:11px; }
             .login-submit-row { justify-content:stretch; }
             .login-submit-btn { width:100%;min-width:0;font-size:17px; }
             .login-decor { width:52px!important;height:52px!important;font-size:24px!important; }
@@ -1225,7 +1241,7 @@ var SALES_FILE_NAME_KEY = 'salesUploadedFileName';
 var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
 var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
-var DEFAULT_BOUND_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwLJO_-D2AecG9ir22g4bRpC_C7JxUjNqNZDqQ9Fv4H41dftYJvPpgNsY-w72L0S-D8ZA/exec';
+var DEFAULT_BOUND_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhAn0-3sErT9EE9JmCgnngTDYVeqKvgW4_XNFz8Nd_6I_wpHZpKl_xJpColSp56rHP/exec';
 var DEFAULT_SOURCE_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1cqfgdhAn6Ge2J9usZRem1Ow14ari6Rt58sUyFCymxtg/edit?usp=drive_link';
 var DEFAULT_TARGET_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1aEHVntnPpCp_wLadkGTVSrHm8gVl9a5T4sNuAz4jaNQ/edit?usp=drive_link';
 var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
@@ -3040,46 +3056,189 @@ var LoginScreen = function LoginScreen(props) {
     password = props.password,
     onPasswordChange = props.onPasswordChange,
     onSubmit = props.onSubmit,
+    onChangePasswordSubmit = props.onChangePasswordSubmit,
+    onForgotPasswordSubmit = props.onForgotPasswordSubmit,
     isLoading = props.isLoading,
-    errorMessage = props.errorMessage;
+    errorMessage = props.errorMessage,
+    noticeMessage = props.noticeMessage;
+  var loginModeState = React.useState('login');
+  var loginMode = loginModeState[0];
+  var setLoginMode = loginModeState[1];
+  var newPasswordState = React.useState('');
+  var newPassword = newPasswordState[0];
+  var setNewPassword = newPasswordState[1];
+  var confirmPasswordState = React.useState('');
+  var confirmPassword = confirmPasswordState[0];
+  var setConfirmPassword = confirmPasswordState[1];
+  var resetCodeState = React.useState('');
+  var resetCode = resetCodeState[0];
+  var setResetCode = resetCodeState[1];
+  var switchLoginMode = function switchLoginMode(nextMode) {
+    if (isLoading) return;
+    setLoginMode(nextMode);
+    setNewPassword('');
+    setConfirmPassword('');
+    setResetCode('');
+    onPasswordChange('');
+  };
+  var handlePrimaryAction = function handlePrimaryAction() {
+    if (isLoading) return;
+    if (loginMode === 'change') {
+      return (onChangePasswordSubmit || function () {})({
+        username: username,
+        currentPassword: password,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword
+      });
+    }
+    if (loginMode === 'forgot') {
+      return (onForgotPasswordSubmit || function () {})({
+        username: username,
+        resetCode: resetCode,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword
+      });
+    }
+    return onSubmit();
+  };
+  var primaryLabel = loginMode === 'change' ? 'Change password' : loginMode === 'forgot' ? 'Reset password' : 'Sign in';
+  var helpText = loginMode === 'change' ? 'Enter your current password, then set a new password.' : loginMode === 'forgot' ? 'Enter the reset code from your admin, then set a new password.' : '';
   var loginCardChildren = [/*#__PURE__*/React.createElement("div", {
     key: "title",
     className: "login-title"
   }, "Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
     key: "divider",
     className: "login-card-divider"
-  }), /*#__PURE__*/React.createElement("label", {
+  }), /*#__PURE__*/React.createElement("div", {
+    key: "mode-row",
+    className: "login-mode-row"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "login-mode-btn ".concat(loginMode === 'login' ? 'active' : ''),
+    onClick: function onClick() {
+      return switchLoginMode('login');
+    },
+    disabled: isLoading
+  }, "Sign in"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "login-mode-btn ".concat(loginMode === 'change' ? 'active' : ''),
+    onClick: function onClick() {
+      return switchLoginMode('change');
+    },
+    disabled: isLoading
+  }, "Change password"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "login-mode-btn ".concat(loginMode === 'forgot' ? 'active' : ''),
+    onClick: function onClick() {
+      return switchLoginMode('forgot');
+    },
+    disabled: isLoading
+  }, "Forgot password"))];
+  if (helpText) {
+    loginCardChildren.push(/*#__PURE__*/React.createElement("div", {
+      key: "help",
+      className: "login-help-text"
+    }, helpText));
+  }
+  loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
     key: "label-user",
     className: "login-label"
-  }, "\u0E0A\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49"), /*#__PURE__*/React.createElement("input", {
+  }, "Username"), /*#__PURE__*/React.createElement("input", {
     key: "input-user",
     className: "login-input",
     value: username,
     onChange: function onChange(e) {
       return onUsernameChange(e.target.value);
     },
-    placeholder: "กรอกชื่อผู้ใช้"
-  }), /*#__PURE__*/React.createElement("label", {
-    key: "label-pass",
-    className: "login-label"
-  }, "\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"), /*#__PURE__*/React.createElement("input", {
-    key: "input-pass",
-    type: "password",
-    className: "login-input",
-    value: password,
-    onChange: function onChange(e) {
-      return onPasswordChange(e.target.value);
-    },
     onKeyDown: function onKeyDown(e) {
-      if (e.key === 'Enter') onSubmit();
+      if (e.key === 'Enter') handlePrimaryAction();
     },
-    placeholder: "กรอกรหัสผ่าน"
-  })];
+    placeholder: "Enter username",
+    autoComplete: "username"
+  }));
+  if (loginMode !== 'forgot') {
+    loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
+      key: "label-pass",
+      className: "login-label"
+    }, loginMode === 'change' ? "Current password" : "Password"), /*#__PURE__*/React.createElement("input", {
+      key: "input-pass",
+      type: "password",
+      className: "login-input",
+      value: password,
+      onChange: function onChange(e) {
+        return onPasswordChange(e.target.value);
+      },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
+      placeholder: loginMode === 'change' ? "Enter current password" : "Enter password",
+      autoComplete: loginMode === 'change' ? "current-password" : "current-password"
+    }));
+  }
+  if (loginMode === 'forgot') {
+    loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
+      key: "label-reset-code",
+      className: "login-label"
+    }, "Reset code"), /*#__PURE__*/React.createElement("input", {
+      key: "input-reset-code",
+      className: "login-input",
+      value: resetCode,
+      onChange: function onChange(e) {
+        return setResetCode(e.target.value);
+      },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
+      placeholder: "Enter reset code",
+      autoComplete: "one-time-code"
+    }));
+  }
+  if (loginMode !== 'login') {
+    loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
+      key: "label-new-pass",
+      className: "login-label"
+    }, "New password"), /*#__PURE__*/React.createElement("input", {
+      key: "input-new-pass",
+      type: "password",
+      className: "login-input",
+      value: newPassword,
+      onChange: function onChange(e) {
+        return setNewPassword(e.target.value);
+      },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
+      placeholder: "Enter new password",
+      autoComplete: "new-password"
+    }), /*#__PURE__*/React.createElement("label", {
+      key: "label-confirm-pass",
+      className: "login-label"
+    }, "Confirm new password"), /*#__PURE__*/React.createElement("input", {
+      key: "input-confirm-pass",
+      type: "password",
+      className: "login-input",
+      value: confirmPassword,
+      onChange: function onChange(e) {
+        return setConfirmPassword(e.target.value);
+      },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
+      placeholder: "Confirm new password",
+      autoComplete: "new-password"
+    }));
+  }
   if (errorMessage) {
     loginCardChildren.push(/*#__PURE__*/React.createElement("div", {
       key: "error",
       className: "login-error"
     }, errorMessage));
+  }
+  if (noticeMessage) {
+    loginCardChildren.push(/*#__PURE__*/React.createElement("div", {
+      key: "notice",
+      className: "login-notice"
+    }, noticeMessage));
   }
   loginCardChildren.push(/*#__PURE__*/React.createElement("div", {
     key: "submit-row",
@@ -3087,9 +3246,19 @@ var LoginScreen = function LoginScreen(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "login-submit-btn",
-    onClick: onSubmit,
+    onClick: handlePrimaryAction,
     disabled: isLoading
-  }, isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ')));
+  }, isLoading ? 'Please wait...' : primaryLabel)), /*#__PURE__*/React.createElement("div", {
+    key: "action-links",
+    className: "login-action-links"
+  }, loginMode !== 'login' ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "login-link-btn",
+    onClick: function onClick() {
+      return switchLoginMode('login');
+    },
+    disabled: isLoading
+  }, "Back to sign in") : null));
   return /*#__PURE__*/React.createElement("div", {
     className: "login-shell"
   }, /*#__PURE__*/React.createElement("div", {
@@ -3719,6 +3888,10 @@ var App = function App() {
     _useStateAuthError2 = _slicedToArray(_useStateAuthError, 2),
     authError = _useStateAuthError2[0],
     setAuthError = _useStateAuthError2[1];
+  var _useStateAuthNotice = useState(''),
+    _useStateAuthNotice2 = _slicedToArray(_useStateAuthNotice, 2),
+    authNotice = _useStateAuthNotice2[0],
+    setAuthNotice = _useStateAuthNotice2[1];
   var _useStateAuthChecking = useState(false),
     _useStateAuthChecking2 = _slicedToArray(_useStateAuthChecking, 2),
     isAuthChecking = _useStateAuthChecking2[0],
@@ -8490,7 +8663,7 @@ var App = function App() {
         requestId: requestId
       });
       var payloadText = JSON.stringify(bridgePayload);
-      var useGetBridge = /^(login|verify_session|logout)$/i.test(String(payload && payload.mode || '')) && payloadText.length < 14000;
+      var useGetBridge = /^(login|verify_session|logout|reset_password|change_password_public)$/i.test(String(payload && payload.mode || '')) && payloadText.length < 14000;
       var form = null;
       if (!useGetBridge) {
         form = document.createElement('form');
@@ -8783,6 +8956,7 @@ var App = function App() {
     }
     setIsAuthChecking(true);
     setAuthError('');
+    setAuthNotice('');
     return callAuthWebApp('login', {
       username: authUsername,
       password: authPassword
@@ -8801,6 +8975,100 @@ var App = function App() {
       return result;
     }).catch(function (error) {
       setAuthError(error && error.message ? error.message : 'เข้าสู่ระบบไม่สำเร็จ');
+      return null;
+    }).then(function (result) {
+      setIsAuthChecking(false);
+      return result;
+    }, function (error) {
+      setIsAuthChecking(false);
+      throw error;
+    });
+  };
+  var handleLoginChangePasswordSubmit = function handleLoginChangePasswordSubmit(payload) {
+    var username = String(payload && payload.username || '').trim();
+    var currentPassword = String(payload && payload.currentPassword || '').trim();
+    var newPassword = String(payload && payload.newPassword || '').trim();
+    var confirmPassword = String(payload && payload.confirmPassword || '').trim();
+    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      setAuthError('Google Apps Script is not ready.');
+      return Promise.resolve(null);
+    }
+    if (!username || !currentPassword || !newPassword || !confirmPassword) {
+      setAuthError('Please enter username, current password, new password and confirmation.');
+      setAuthNotice('');
+      return Promise.resolve(null);
+    }
+    if (newPassword.length < 6) {
+      setAuthError('New password must be at least 6 characters.');
+      setAuthNotice('');
+      return Promise.resolve(null);
+    }
+    if (newPassword !== confirmPassword) {
+      setAuthError('New password and confirmation do not match.');
+      setAuthNotice('');
+      return Promise.resolve(null);
+    }
+    setIsAuthChecking(true);
+    setAuthError('');
+    setAuthNotice('');
+    return callAuthWebApp('change_password_public', {
+      username: username,
+      oldPassword: currentPassword,
+      newPassword: newPassword
+    }).then(function () {
+      setAuthUsername(username);
+      setAuthPassword('');
+      setAuthNotice('Password changed successfully. Please sign in with your new password.');
+      return true;
+    }).catch(function (error) {
+      setAuthError(error && error.message ? error.message : 'Change password failed.');
+      return null;
+    }).then(function (result) {
+      setIsAuthChecking(false);
+      return result;
+    }, function (error) {
+      setIsAuthChecking(false);
+      throw error;
+    });
+  };
+  var handleLoginForgotPasswordSubmit = function handleLoginForgotPasswordSubmit(payload) {
+    var username = String(payload && payload.username || '').trim();
+    var resetCode = String(payload && payload.resetCode || '').trim();
+    var newPassword = String(payload && payload.newPassword || '').trim();
+    var confirmPassword = String(payload && payload.confirmPassword || '').trim();
+    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      setAuthError('Google Apps Script is not ready.');
+      return Promise.resolve(null);
+    }
+    if (!username || !resetCode || !newPassword || !confirmPassword) {
+      setAuthError('Please enter username, reset code, new password and confirmation.');
+      setAuthNotice('');
+      return Promise.resolve(null);
+    }
+    if (newPassword.length < 6) {
+      setAuthError('New password must be at least 6 characters.');
+      setAuthNotice('');
+      return Promise.resolve(null);
+    }
+    if (newPassword !== confirmPassword) {
+      setAuthError('New password and confirmation do not match.');
+      setAuthNotice('');
+      return Promise.resolve(null);
+    }
+    setIsAuthChecking(true);
+    setAuthError('');
+    setAuthNotice('');
+    return callAuthWebApp('reset_password', {
+      username: username,
+      resetCode: resetCode,
+      newPassword: newPassword
+    }).then(function () {
+      setAuthUsername(username);
+      setAuthPassword('');
+      setAuthNotice('Password reset successfully. Please sign in with your new password.');
+      return true;
+    }).catch(function (error) {
+      setAuthError(error && error.message ? error.message : 'Reset password failed.');
       return null;
     }).then(function (result) {
       setIsAuthChecking(false);
@@ -9197,8 +9465,11 @@ var App = function App() {
     password: authPassword,
     onPasswordChange: setAuthPassword,
     onSubmit: handleLoginSubmit,
+    onChangePasswordSubmit: handleLoginChangePasswordSubmit,
+    onForgotPasswordSubmit: handleLoginForgotPasswordSubmit,
     isLoading: isAuthChecking,
-    errorMessage: authError
+    errorMessage: authError,
+    noticeMessage: authNotice
   });
   return /*#__PURE__*/React.createElement("div", {
     className: "dashboard-shell flex flex-col h-screen text-slate-900 font-sans overflow-hidden",
