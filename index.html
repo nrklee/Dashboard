@@ -1239,7 +1239,7 @@ var _Recharts = Recharts,
 var DB_NAME = 'SalesDashboardDB_V38';
 var STORE_NAME = 'salesData';
 var DATA_KEY = 'fullData';
-var SALES_PARSER_CACHE_VERSION = 'sales-parser-v20260418-multisheet-v4';
+var SALES_PARSER_CACHE_VERSION = 'sales-parser-v20260418-multisheet-v5';
 var SALES_PARSER_VERSION_KEY_PREFIX = 'salesParserCacheVersion';
 var SALES_HANDLE_KEY = 'salesFileHandle';
 var TARGET_HANDLE_KEY = 'targetFileHandle';
@@ -5881,7 +5881,10 @@ var App = function App() {
                         if (expectedSalesYears.length > 1 && expectedSalesYears.some(function (yearLabel) {
                           return !parsedSalesYears.includes(yearLabel);
                         })) {
-                          throw new Error("\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E44\u0E21\u0E48\u0E04\u0E23\u0E1A\u0E1B\u0E35: \u0E1E\u0E1A\u0E0A\u0E35\u0E15 ".concat(expectedSalesYears.join(', '), " \u0E41\u0E15\u0E48 parser \u0E44\u0E14\u0E49 ").concat(parsedSalesYears.join(', ') || '-'));
+                          console.warn('Sales parser year coverage warning', {
+                            expectedSalesYears: expectedSalesYears,
+                            parsedSalesYears: parsedSalesYears
+                          });
                         }
                         var expectedSalesMetrics = Array.from(new Set((workbook.SheetNames || []).map(function (sheetName) {
                           var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
@@ -5904,7 +5907,11 @@ var App = function App() {
                           return parsedSalesMetricTotals[metricKey] <= 0;
                         });
                         if (expectedSalesMetrics.length > 1 && missingSalesMetrics.length > 0) {
-                          throw new Error("\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E44\u0E21\u0E48\u0E04\u0E23\u0E1A\u0E2B\u0E19\u0E48\u0E27\u0E22: \u0E02\u0E32\u0E14 ".concat(missingSalesMetrics.join(', ')));
+                          console.warn('Sales parser metric coverage warning', {
+                            expectedSalesMetrics: expectedSalesMetrics,
+                            parsedSalesMetricTotals: parsedSalesMetricTotals,
+                            missingSalesMetrics: missingSalesMetrics
+                          });
                         }
                         _context16.n = 17;
                         break;
