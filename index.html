@@ -4761,6 +4761,75 @@ var App = function App() {
                             }
                           };
                         };
+                        var getParsedSalesRowCount = function getParsedSalesRowCount(data) {
+                          if (!data || _typeof(data) !== 'object') return 0;
+                          return (Array.isArray(data.monthly) ? data.monthly.length : 0) + (Array.isArray(data.yearly) ? data.yearly.length : 0);
+                        };
+                        var getParsedSalesYearCount = function getParsedSalesYearCount(data) {
+                          var years = new Set();
+                          if (!data || _typeof(data) !== 'object') return 0;
+                          [].concat(_toConsumableArray(Array.isArray(data.monthly) ? data.monthly : []), _toConsumableArray(Array.isArray(data.yearly) ? data.yearly : [])).forEach(function (row) {
+                            var yearLabel = getYearLabelFromItem(row, false);
+                            if (yearLabel && isReasonableYearLabel(yearLabel)) years.add(yearLabel);
+                          });
+                          return years.size;
+                        };
+                        var getParsedSalesMetricCount = function getParsedSalesMetricCount(data) {
+                          var metrics = new Set();
+                          if (!data || _typeof(data) !== 'object') return 0;
+                          [].concat(_toConsumableArray(Array.isArray(data.monthly) ? data.monthly : []), _toConsumableArray(Array.isArray(data.yearly) ? data.yearly : [])).forEach(function (row) {
+                            if (Number(row && row.sales || 0) > 0) metrics.add('sales');
+                            if (Number(row && row.qty || 0) > 0) metrics.add('qty');
+                            if (Number(row && row.ton || 0) > 0) metrics.add('ton');
+                          });
+                          return metrics.size;
+                        };
+                        var getParsedSalesMergeKey = function getParsedSalesMergeKey(row, timeType) {
+                          var dimensions = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'].map(function (key) {
+                            return normalizeDimensionValue(row && row[key]);
+                          }).join('||');
+                          var yearLabel = getYearLabelFromItem(row, false);
+                          var timeKey = timeType === 'month' ? "".concat(yearLabel, "-").concat(getMonthIndexFromItem(row)) : yearLabel;
+                          return "".concat(timeType, "||").concat(timeKey, "||").concat(dimensions);
+                        };
+                        var mergeParsedSalesRows = function mergeParsedSalesRows(primaryRows, genericRows, timeType) {
+                          var merged = {};
+                          [].concat(_toConsumableArray(Array.isArray(primaryRows) ? primaryRows : []), _toConsumableArray(Array.isArray(genericRows) ? genericRows : [])).forEach(function (row) {
+                            if (!row || _typeof(row) !== 'object') return;
+                            var key = getParsedSalesMergeKey(row, timeType);
+                            if (!merged[key]) {
+                              merged[key] = _objectSpread({}, row);
+                              ['sales', 'qty', 'ton'].forEach(function (metric) {
+                                merged[key][metric] = Number(row[metric] || 0);
+                              });
+                              return;
+                            }
+                            ['sales', 'qty', 'ton'].forEach(function (metric) {
+                              var currentValue = Number(merged[key][metric] || 0);
+                              var nextValue = Number(row[metric] || 0);
+                              if (nextValue > 0) merged[key][metric] = currentValue > 0 ? Math.max(currentValue, nextValue) : nextValue;
+                            });
+                          });
+                          return Object.values(merged);
+                        };
+                        var chooseSalesParsedData = function chooseSalesParsedData(primaryData, genericData) {
+                          var primaryRows = getParsedSalesRowCount(primaryData);
+                          var genericRows = getParsedSalesRowCount(genericData);
+                          if (!primaryRows) return genericData || primaryData;
+                          if (!genericRows) return primaryData;
+                          var primaryYears = getParsedSalesYearCount(primaryData);
+                          var genericYears = getParsedSalesYearCount(genericData);
+                          var primaryMetrics = getParsedSalesMetricCount(primaryData);
+                          var genericMetrics = getParsedSalesMetricCount(genericData);
+                          if (genericYears > primaryYears || genericRows > primaryRows * 1.25 && genericMetrics >= primaryMetrics) {
+                            return {
+                              monthly: mergeParsedSalesRows(primaryData.monthly, genericData.monthly, 'month'),
+                              yearly: mergeParsedSalesRows(primaryData.yearly, genericData.yearly, 'year'),
+                              meta: primaryData.meta || genericData.meta || {}
+                            };
+                          }
+                          return primaryData;
+                        };
                         normalizeRecordDimensions = function normalizeRecordDimensions(dimensions) {
                           var normalized = {};
                           Object.keys(COLUMN_KEYWORDS).forEach(function (key) {
@@ -5839,16 +5908,18 @@ var App = function App() {
                         return parseSalesWorkbook(workbook);
                       case 12:
                         parsed = _context16.v;
+                        _context16.n = 13;
+                        return parseWorkbookGeneric(workbook);
+                      case 13:
+                        var genericParsedForSales = _context16.v;
+                        parsed = chooseSalesParsedData(parsed, genericParsedForSales);
                         monthlyCount = (((_parsed = parsed) === null || _parsed === void 0 ? void 0 : _parsed.monthly) || []).length;
                         yearlyCount = (((_parsed2 = parsed) === null || _parsed2 === void 0 ? void 0 : _parsed2.yearly) || []).length;
                         if (!(monthlyCount === 0 && yearlyCount === 0)) {
                           _context16.n = 14;
                           break;
                         }
-                        _context16.n = 13;
-                        return parseWorkbookGeneric(workbook);
-                      case 13:
-                        parsed = _context16.v;
+                        parsed = genericParsedForSales;
                       case 14:
                         _context16.n = 17;
                         break;
