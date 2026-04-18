@@ -281,11 +281,6 @@
         .login-input:focus { border-color:rgba(96,165,250,0.6);
           box-shadow:0 0 0 4px rgba(96,165,250,0.12),0 0 20px rgba(96,165,250,0.08);
           background:rgba(8,16,38,0.7); }
-        .login-password-wrap { position:relative;width:100%; }
-        .login-password-input { padding-right:52px; }
-        .login-password-eye { position:absolute;right:10px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1px solid rgba(148,163,184,0.22);border-radius:12px;background:rgba(15,23,42,0.36);color:rgba(226,232,240,0.78);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease; }
-        .login-password-eye:hover { background:rgba(96,165,250,0.16);border-color:rgba(96,165,250,0.42);color:#eff6ff; }
-        .login-password-eye:disabled { opacity:.55;cursor:not-allowed; }
 
         .login-mode-row { display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 6px; }
         .login-mode-btn { border:1px solid rgba(148,163,184,0.26);border-radius:999px;background:rgba(15,23,42,0.36);
@@ -1239,8 +1234,6 @@ var _Recharts = Recharts,
 var DB_NAME = 'SalesDashboardDB_V38';
 var STORE_NAME = 'salesData';
 var DATA_KEY = 'fullData';
-var SALES_PARSER_CACHE_VERSION = 'sales-parser-v20260418-direct-xlsx-link-v2';
-var SALES_PARSER_VERSION_KEY_PREFIX = 'salesParserCacheVersion';
 var SALES_HANDLE_KEY = 'salesFileHandle';
 var TARGET_HANDLE_KEY = 'targetFileHandle';
 var AUTO_SYNC_KEY = 'autoSyncEnabled';
@@ -1337,124 +1330,6 @@ var formatLastSyncLabel = function formatLastSyncLabel(value) {
     dateStyle: 'medium',
     timeStyle: 'short'
   });
-};
-var buildSalesUpdateSummaryText = function buildSalesUpdateSummaryText(metaText) {
-  var text = String(metaText || '').replace(/\s+/g, ' ').trim();
-  return text;
-};
-var SALES_UPDATE_MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-var SALES_UPDATE_MONTH_LOOKUP = {
-  jan: 0,
-  january: 0,
-  feb: 1,
-  february: 1,
-  mar: 2,
-  march: 2,
-  apr: 3,
-  april: 3,
-  may: 4,
-  jun: 5,
-  june: 5,
-  jul: 6,
-  july: 6,
-  aug: 7,
-  august: 7,
-  sep: 8,
-  sept: 8,
-  september: 8,
-  oct: 9,
-  october: 9,
-  nov: 10,
-  november: 10,
-  dec: 11,
-  december: 11,
-  'ม.ค.': 0,
-  'ม.ค': 0,
-  'ก.พ.': 1,
-  'ก.พ': 1,
-  'มี.ค.': 2,
-  'มี.ค': 2,
-  'เม.ย.': 3,
-  'เม.ย': 3,
-  'พ.ค.': 4,
-  'พ.ค': 4,
-  'มิ.ย.': 5,
-  'มิ.ย': 5,
-  'ก.ค.': 6,
-  'ก.ค': 6,
-  'ส.ค.': 7,
-  'ส.ค': 7,
-  'ก.ย.': 8,
-  'ก.ย': 8,
-  'ต.ค.': 9,
-  'ต.ค': 9,
-  'พ.ย.': 10,
-  'พ.ย': 10,
-  'ธ.ค.': 11,
-  'ธ.ค': 11
-};
-var excelSerialToUTCDate = function excelSerialToUTCDate(value) {
-  var numeric = Number(String(value || '').replace(/,/g, '').trim());
-  if (!Number.isFinite(numeric) || numeric < 25000 || numeric > 80000) return null;
-  var millis = Math.round((numeric - 25569) * 86400 * 1000);
-  var date = new Date(millis);
-  return isNaN(date.getTime()) ? null : date;
-};
-var formatSalesUpdateDateFromSerial = function formatSalesUpdateDateFromSerial(date) {
-  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
-  return "".concat(date.getUTCDate(), " ").concat(SALES_UPDATE_MONTH_LABELS[date.getUTCMonth()]);
-};
-var normalizeSalesUpdateSuffix = function normalizeSalesUpdateSuffix(suffix) {
-  var text = String(suffix || '').replace(/\s+/g, ' ').trim();
-  if (!text) return '';
-  var exactSerial = text.match(/^(\d{4,6})(?:\.0+)?$/);
-  if (exactSerial) {
-    var exactDate = excelSerialToUTCDate(exactSerial[1]);
-    if (exactDate) return formatSalesUpdateDateFromSerial(exactDate);
-  }
-  var leadingSerial = text.match(/^(\d{4,6})(?:\.0+)?(\s+.*)?$/);
-  if (leadingSerial) {
-    var leadingDate = excelSerialToUTCDate(leadingSerial[1]);
-    if (leadingDate) return "".concat(formatSalesUpdateDateFromSerial(leadingDate)).concat(leadingSerial[2] || '').trim();
-  }
-  return text;
-};
-var getSalesUpdateDateOrder = function getSalesUpdateDateOrder(text, fallbackYearCe) {
-  var raw = String(text || '').replace(/\s+/g, ' ').trim();
-  if (!raw) return 0;
-  var serialTokens = raw.match(/\b\d{4,6}(?:\.0+)?\b/g) || [];
-  for (var i = 0; i < serialTokens.length; i++) {
-    var serialDate = excelSerialToUTCDate(serialTokens[i]);
-    if (serialDate) {
-      return serialDate.getUTCFullYear() * 10000 + (serialDate.getUTCMonth() + 1) * 100 + serialDate.getUTCDate();
-    }
-  }
-  var lower = raw.toLowerCase();
-  var monthKeys = Object.keys(SALES_UPDATE_MONTH_LOOKUP).sort(function (a, b) {
-    return b.length - a.length;
-  });
-  for (var _i = 0; _i < monthKeys.length; _i++) {
-    var key = monthKeys[_i];
-    var monthIndex = SALES_UPDATE_MONTH_LOOKUP[key];
-    var foundAt = lower.indexOf(key.toLowerCase());
-    if (foundAt < 0) continue;
-    var beforeMatch = lower.slice(0, foundAt).match(/(\d{1,2})\s*$/);
-    var afterMatch = lower.slice(foundAt + key.length).match(/^\s*(\d{1,2})/);
-    var day = Number(beforeMatch && beforeMatch[1] || afterMatch && afterMatch[1] || 1);
-    if (!Number.isFinite(day) || day < 1 || day > 31) day = 1;
-    var yearCe = Number(fallbackYearCe || 0);
-    if (!yearCe && typeof toCEYear === 'function' && typeof extractYearLabelFromText === 'function') yearCe = toCEYear(extractYearLabelFromText(raw)) || 0;
-    if (!yearCe) yearCe = new Date().getFullYear();
-    return yearCe * 10000 + (monthIndex + 1) * 100 + day;
-  }
-  var fallbackYear = Number(fallbackYearCe || 0);
-  return fallbackYear ? fallbackYear * 10000 : 0;
-};
-var pickSalesUpdateTextForMetric = function pickSalesUpdateTextForMetric(meta, metricMode) {
-  var safeMeta = meta && _typeof(meta) === 'object' ? meta : {};
-  var byMetric = safeMeta.salesUpdateByMetric && _typeof(safeMeta.salesUpdateByMetric) === 'object' ? safeMeta.salesUpdateByMetric : {};
-  var normalizedMetric = metricMode === 'qty' || metricMode === 'ton' ? metricMode : 'value';
-  return byMetric[normalizedMetric] || safeMeta.salesUpdateText || '';
 };
 // NEW: Force Local Date String to prevent Timezone shift
 var toLocalISOString = function toLocalISOString(date) {
@@ -2460,46 +2335,6 @@ var Icon = function Icon(_ref) {
       d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
     }), /*#__PURE__*/React.createElement("path", {
       d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-    })),
-    Eye: /*#__PURE__*/React.createElement("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      width: size,
-      height: size,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      className: className
-    }, /*#__PURE__*/React.createElement("path", {
-      d: "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
-    }), /*#__PURE__*/React.createElement("circle", {
-      cx: "12",
-      cy: "12",
-      r: "3"
-    })),
-    EyeOff: /*#__PURE__*/React.createElement("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      width: size,
-      height: size,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      className: className
-    }, /*#__PURE__*/React.createElement("path", {
-      d: "m15 18-.722-3.25"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "M2 8a10.645 10.645 0 0 0 20 0"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "m20 15-1.726-2.05"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "m4 15 1.726-2.05"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "m9 18 .722-3.25"
     }))
   };
   return icons[name] || /*#__PURE__*/React.createElement("span", null);
@@ -3238,24 +3073,12 @@ var LoginScreen = function LoginScreen(props) {
   var resetCodeState = React.useState('');
   var resetCode = resetCodeState[0];
   var setResetCode = resetCodeState[1];
-  var showPasswordState = React.useState(false);
-  var showPassword = showPasswordState[0];
-  var setShowPassword = showPasswordState[1];
-  var showNewPasswordState = React.useState(false);
-  var showNewPassword = showNewPasswordState[0];
-  var setShowNewPassword = showNewPasswordState[1];
-  var showConfirmPasswordState = React.useState(false);
-  var showConfirmPassword = showConfirmPasswordState[0];
-  var setShowConfirmPassword = showConfirmPasswordState[1];
   var switchLoginMode = function switchLoginMode(nextMode) {
     if (isLoading) return;
     setLoginMode(nextMode);
     setNewPassword('');
     setConfirmPassword('');
     setResetCode('');
-    setShowPassword(false);
-    setShowNewPassword(false);
-    setShowConfirmPassword(false);
     onPasswordChange('');
   };
   var handlePrimaryAction = function handlePrimaryAction() {
@@ -3277,32 +3100,6 @@ var LoginScreen = function LoginScreen(props) {
       });
     }
     return onSubmit();
-  };
-  var renderPasswordField = function renderPasswordField(config) {
-    var visible = !!config.visible;
-    return /*#__PURE__*/React.createElement("div", {
-      key: config.key,
-      className: "login-password-wrap"
-    }, /*#__PURE__*/React.createElement("input", {
-      type: visible ? "text" : "password",
-      className: "login-input login-password-input",
-      value: config.value,
-      onChange: config.onChange,
-      onKeyDown: function onKeyDown(e) {
-        if (e.key === 'Enter') handlePrimaryAction();
-      },
-      placeholder: config.placeholder,
-      autoComplete: config.autoComplete
-    }), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "login-password-eye",
-      onClick: config.onToggle,
-      disabled: isLoading,
-      "aria-label": visible ? "Hide password" : "Show password"
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: visible ? "EyeOff" : "Eye",
-      size: 18
-    })));
   };
   var primaryLabel = loginMode === 'change' ? 'Change password' : loginMode === 'forgot' ? 'Reset password' : 'Sign in';
   var helpText = loginMode === 'change' ? 'Enter your current password, then set a new password.' : loginMode === 'forgot' ? 'Enter the reset code from your admin, then set a new password.' : '';
@@ -3363,18 +3160,19 @@ var LoginScreen = function LoginScreen(props) {
     loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
       key: "label-pass",
       className: "login-label"
-    }, loginMode === 'change' ? "Current password" : "Password"), renderPasswordField({
+    }, loginMode === 'change' ? "Current password" : "Password"), /*#__PURE__*/React.createElement("input", {
       key: "input-pass",
+      type: "password",
+      className: "login-input",
       value: password,
       onChange: function onChange(e) {
         return onPasswordChange(e.target.value);
       },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
       placeholder: loginMode === 'change' ? "Enter current password" : "Enter password",
-      autoComplete: "current-password",
-      visible: showPassword,
-      onToggle: function onToggle() {
-        return setShowPassword(!showPassword);
-      }
+      autoComplete: loginMode === 'change' ? "current-password" : "current-password"
     }));
   }
   if (loginMode === 'forgot') {
@@ -3399,33 +3197,35 @@ var LoginScreen = function LoginScreen(props) {
     loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
       key: "label-new-pass",
       className: "login-label"
-    }, "New password"), renderPasswordField({
+    }, "New password"), /*#__PURE__*/React.createElement("input", {
       key: "input-new-pass",
+      type: "password",
+      className: "login-input",
       value: newPassword,
       onChange: function onChange(e) {
         return setNewPassword(e.target.value);
       },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
       placeholder: "Enter new password",
-      autoComplete: "new-password",
-      visible: showNewPassword,
-      onToggle: function onToggle() {
-        return setShowNewPassword(!showNewPassword);
-      }
+      autoComplete: "new-password"
     }), /*#__PURE__*/React.createElement("label", {
       key: "label-confirm-pass",
       className: "login-label"
-    }, "Confirm new password"), renderPasswordField({
+    }, "Confirm new password"), /*#__PURE__*/React.createElement("input", {
       key: "input-confirm-pass",
+      type: "password",
+      className: "login-input",
       value: confirmPassword,
       onChange: function onChange(e) {
         return setConfirmPassword(e.target.value);
       },
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
       placeholder: "Confirm new password",
-      autoComplete: "new-password",
-      visible: showConfirmPassword,
-      onToggle: function onToggle() {
-        return setShowConfirmPassword(!showConfirmPassword);
-      }
+      autoComplete: "new-password"
     }));
   }
   if (errorMessage) {
@@ -4067,9 +3867,6 @@ var App = function App() {
   var activeDataKey = useMemo(function () {
     return getScopedStorageKey(DATA_KEY, authUser && authUser.username);
   }, [authUser && authUser.username]);
-  var activeSalesParserVersionKey = useMemo(function () {
-    return getScopedStorageKey(SALES_PARSER_VERSION_KEY_PREFIX, authUser && authUser.username);
-  }, [authUser && authUser.username]);
   var activeLastSyncKey = useMemo(function () {
     return getScopedStorageKey(GOOGLE_SHEET_LAST_SYNC_PREFIX, authUser && authUser.username);
   }, [authUser && authUser.username]);
@@ -4243,7 +4040,6 @@ var App = function App() {
     } else {
       nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
     }
-    nextData.meta = _objectSpread(_objectSpread({}, nextData.meta || {}), parsedData.meta || {});
     return nextData;
   };
   useEffect(function () {
@@ -4314,35 +4110,13 @@ var App = function App() {
               _context6.p = 0;
               setIsLoading(true);
               _context6.n = 2;
-            return idb.load(activeDataKey);
-          case 2:
-            data = _context6.v;
-            var shouldAutoRefreshSalesCache = false;
-            if (data && !isSalesRestrictedUser) {
-              var hasCachedSalesRows = (Array.isArray(data.monthly) ? data.monthly.length : 0) + (Array.isArray(data.yearly) ? data.yearly.length : 0) > 0;
-              var cachedParserVersion = safeStorageGet(activeSalesParserVersionKey);
-              if (hasCachedSalesRows && cachedParserVersion !== SALES_PARSER_CACHE_VERSION) {
-                shouldAutoRefreshSalesCache = true;
-                data = _objectSpread(_objectSpread({}, data), {}, {
-                  monthly: [],
-                  yearly: [],
-                  meta: _objectSpread(_objectSpread({}, data.meta || {}), {}, {
-                    salesUpdateText: '',
-                    salesUpdateByMetric: {}
-                  })
-                });
-                setSelectedTrendYears([]);
-                setRepeatGapFilters(createEmptyRepeatGapFilters());
-                showStatus('พบ cache ยอดขายเก่าที่อ่านปี/หน่วยไม่ครบ กำลังโหลดข้อมูลยอดขายใหม่...', 'info');
-                window.setTimeout(function () {
-                  if (typeof syncSalesFromGoogleSheet === 'function') syncSalesFromGoogleSheet();
-                }, 0);
-              }
-            }
-            if (data) {
+              return idb.load(activeDataKey);
+            case 2:
+              data = _context6.v;
+              if (data) {
                 setAllData(data);
                 setIsUsingSavedData(true);
-                if (!shouldAutoRefreshSalesCache) showStatus('โหลดข้อมูลล่าสุดจากเครื่องแล้ว', 'success');
+                showStatus('โหลดข้อมูลล่าสุดจากเครื่องแล้ว', 'success');
                 setIsLoading(false);
               } else {
                 setAllData({
@@ -4375,7 +4149,7 @@ var App = function App() {
       };
     }();
     load();
-  }, [authUser && authUser.username, activeDataKey, activeSalesParserVersionKey, isSalesRestrictedUser]);
+  }, [authUser && authUser.username, activeDataKey]);
   useEffect(function () {
     if (!isSalesRestrictedUser) return;
     setAllData({
@@ -4530,7 +4304,6 @@ var App = function App() {
             persistUploadedFileName('sales', '');
             persistUploadedFileName('target', '');
             setLastGoogleSheetSyncAt('');
-            safeStorageRemove(activeSalesParserVersionKey);
             showStatus('ล้างข้อมูลทั้งหมดแล้ว', 'success');
             _context9.n = 3;
             break;
@@ -4661,134 +4434,6 @@ var App = function App() {
                             return _ref18.apply(this, arguments);
                           };
                         }();
-                        var sheetToPreviewRows = function sheetToPreviewRows(sheet) {
-                          var maxRows = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 40;
-                          if (!sheet || !sheet['!ref']) return [];
-                          try {
-                            var decodedRange = XLSX.utils.decode_range(sheet['!ref']);
-                            decodedRange.e.r = Math.min(decodedRange.e.r, decodedRange.s.r + Math.max(1, maxRows) - 1);
-                            return XLSX.utils.sheet_to_json(sheet, {
-                              header: 1,
-                              blankrows: false,
-                              raw: false,
-                              dateNF: 'd mmm',
-                              range: decodedRange
-                            });
-                          } catch (err) {
-                            try {
-                              return XLSX.utils.sheet_to_json(sheet, {
-                                header: 1,
-                                blankrows: false,
-                                raw: false,
-                                dateNF: 'd mmm'
-                              }).slice(0, maxRows);
-                            } catch (_) {
-                              return [];
-                            }
-                          }
-                        };
-                        var extractSalesUpdateTextFromString = function extractSalesUpdateTextFromString(value) {
-                          var raw = String(value || '').replace(/\s+/g, ' ').trim();
-                          if (!raw) return '';
-                          var match = raw.match(/ยอดขาย\s*อัปเดต\s*[:：-]?\s*(.*)$/i);
-                          if (!match) return '';
-                          var suffix = normalizeSalesUpdateSuffix(match[1] || '');
-                          return suffix ? "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ".concat(suffix) : 'ยอดขายอัปเดต';
-                        };
-                        var detectSalesUpdateMetricContext = function detectSalesUpdateMetricContext(sheetName, row, text) {
-                          var values = [sheetName || '', text || ''];
-                          if (Array.isArray(row)) {
-                            row.forEach(function (item) {
-                              values.push(item === undefined || item === null ? '' : item);
-                            });
-                          }
-                          var context = values.join(' ').toLowerCase();
-                          if (/ชิ้น|qty|quantity/.test(context)) return 'qty';
-                          if (/ตัน|ton/.test(context)) return 'ton';
-                          if (/บาท|baht|ยอดขาย|sales?/.test(context)) return 'value';
-                          return '';
-                        };
-                        var collectSalesUpdateMetaFromRows = function collectSalesUpdateMetaFromRows(rows, sheetName) {
-                          var candidates = [];
-                          if (!Array.isArray(rows)) return candidates;
-                          var fallbackYear = normalizeYearLabel(extractYearLabelFromText(sheetName) || '');
-                          rows.forEach(function (row, rowIndex) {
-                            if (!Array.isArray(row)) return;
-                            var rowMatched = false;
-                            row.forEach(function (cell, colIndex) {
-                              var cellText = String(cell || '').trim();
-                              if (!/ยอดขาย\s*อัปเดต/i.test(cellText)) return;
-                              rowMatched = true;
-                              var windowText = row.slice(colIndex, colIndex + 3).map(function (item) {
-                                return String(item || '').trim();
-                              }).filter(Boolean).join(' ');
-                              var text = extractSalesUpdateTextFromString(cellText);
-                              if (text === 'ยอดขายอัปเดต') text = extractSalesUpdateTextFromString(windowText || cellText);
-                              if (!text) return;
-                              var yearLabel = normalizeYearLabel(extractYearLabelFromText(text) || fallbackYear);
-                              candidates.push({
-                                text: text,
-                                metric: detectSalesUpdateMetricContext(sheetName, row, text),
-                                year: yearLabel,
-                                yearCe: toCEYear(yearLabel) || 0,
-                                dateOrder: getSalesUpdateDateOrder(text, toCEYear(yearLabel) || 0),
-                                rowIndex: rowIndex,
-                                colIndex: colIndex
-                              });
-                            });
-                            if (!rowMatched) {
-                              var joined = row.map(function (item) {
-                                return String(item || '').trim();
-                              }).filter(Boolean).join(' ');
-                              var text = extractSalesUpdateTextFromString(joined);
-                              if (!text) return;
-                              var yearLabel = normalizeYearLabel(extractYearLabelFromText(text) || fallbackYear);
-                              candidates.push({
-                                text: text,
-                                metric: detectSalesUpdateMetricContext(sheetName, row, text),
-                                year: yearLabel,
-                                yearCe: toCEYear(yearLabel) || 0,
-                                dateOrder: getSalesUpdateDateOrder(text, toCEYear(yearLabel) || 0),
-                                rowIndex: rowIndex,
-                                colIndex: 0
-                              });
-                            }
-                          });
-                          return candidates;
-                        };
-                        var pickLatestSalesUpdateText = function pickLatestSalesUpdateText(candidates, metricMode) {
-                          var safeCandidates = Array.isArray(candidates) ? candidates.filter(function (item) {
-                            return item && item.text;
-                          }) : [];
-                          if (!safeCandidates.length) return '';
-                          var normalizedMetric = metricMode === 'qty' || metricMode === 'ton' ? metricMode : metricMode === 'value' ? 'value' : '';
-                          if (normalizedMetric) {
-                            var metricCandidates = safeCandidates.filter(function (item) {
-                              return item.metric === normalizedMetric;
-                            });
-                            if (metricCandidates.length) safeCandidates = metricCandidates;
-                          }
-                          safeCandidates.sort(function (a, b) {
-                            var yearDiff = Number(b.yearCe || 0) - Number(a.yearCe || 0);
-                            if (yearDiff !== 0) return yearDiff;
-                            var dateDiff = Number(b.dateOrder || 0) - Number(a.dateOrder || 0);
-                            if (dateDiff !== 0) return dateDiff;
-                            var rowDiff = Number(a.rowIndex || 0) - Number(b.rowIndex || 0);
-                            if (rowDiff !== 0) return rowDiff;
-                            return Number(a.colIndex || 0) - Number(b.colIndex || 0);
-                          });
-                          return safeCandidates[0].text;
-                        };
-                        var buildSalesUpdateMeta = function buildSalesUpdateMeta(candidates) {
-                          return {
-                            salesUpdateText: pickLatestSalesUpdateText(candidates),
-                            salesUpdateByMetric: {
-                              value: pickLatestSalesUpdateText(candidates, 'value'),
-                              qty: pickLatestSalesUpdateText(candidates, 'qty'),
-                              ton: pickLatestSalesUpdateText(candidates, 'ton')
-                            }
-                          };
-                        };
                         normalizeRecordDimensions = function normalizeRecordDimensions(dimensions) {
                           var normalized = {};
                           Object.keys(COLUMN_KEYWORDS).forEach(function (key) {
@@ -5155,10 +4800,6 @@ var App = function App() {
                                   }];
                                   monthlySheetTasks = [];
                                   yearlySheetTasks = [];
-                                  var salesUpdateCandidates = [];
-                                  sheetNames.forEach(function (sheetName) {
-                                    appendRows(salesUpdateCandidates, collectSalesUpdateMetaFromRows(sheetToPreviewRows(workbook.Sheets[sheetName]), sheetName));
-                                  });
                                   explicitYearlySheetByMetric = {
                                     sales: '',
                                     qty: '',
@@ -5241,7 +4882,6 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[cfg.sheetName]);
                                 case 3:
                                   rows = _context12.v;
-                                  appendRows(salesUpdateCandidates, collectSalesUpdateMetaFromRows(rows, cfg.sheetName));
                                   _t8 = appendRows;
                                   _t9 = monthlyEntries;
                                   _context12.n = 4;
@@ -5275,7 +4915,6 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[_cfg.sheetName]);
                                 case 9:
                                   _rows = _context12.v;
-                                  appendRows(salesUpdateCandidates, collectSalesUpdateMetaFromRows(_rows, _cfg.sheetName));
                                   _t0 = appendRows;
                                   _t1 = yearlyEntries;
                                   _context12.n = 10;
@@ -5291,8 +4930,7 @@ var App = function App() {
                                 case 12:
                                   return _context12.a(2, {
                                     monthly: mergeMetricEntries(monthlyEntries, 'month'),
-                                    yearly: mergeMetricEntries(yearlyEntries, 'year'),
-                                    meta: buildSalesUpdateMeta(salesUpdateCandidates)
+                                    yearly: mergeMetricEntries(yearlyEntries, 'year')
                                   });
                               }
                             }, _callee12);
@@ -5729,7 +5367,7 @@ var App = function App() {
                         };
                         parseWorkbookGeneric = /*#__PURE__*/function () {
                           var _ref30 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(workbook) {
-                            var genericParsed, genericSalesUpdateCandidates, sheetIndex, name, rows, sheetRes;
+                            var genericParsed, sheetIndex, name, rows, sheetRes;
                             return _regenerator().w(function (_context15) {
                               while (1) switch (_context15.n) {
                                 case 0:
@@ -5737,7 +5375,6 @@ var App = function App() {
                                     monthly: [],
                                     yearly: []
                                   };
-                                  genericSalesUpdateCandidates = [];
                                   sheetIndex = 0;
                                 case 1:
                                   if (!(sheetIndex < workbook.SheetNames.length)) {
@@ -5749,7 +5386,6 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[name]);
                                 case 2:
                                   rows = _context15.v;
-                                  if (type === 'sales') appendRows(genericSalesUpdateCandidates, collectSalesUpdateMetaFromRows(rows, name));
                                   _context15.n = 3;
                                   return parseGenericRows(rows, {
                                     sheetName: name
@@ -5765,9 +5401,6 @@ var App = function App() {
                                   _context15.n = 1;
                                   break;
                                 case 5:
-                                  if (type === 'sales') {
-                                    genericParsed.meta = buildSalesUpdateMeta(genericSalesUpdateCandidates);
-                                  }
                                   return _context15.a(2, genericParsed);
                               }
                             }, _callee14);
@@ -5790,9 +5423,6 @@ var App = function App() {
                         });
                       case 1:
                         parsed = _context16.v;
-                        if (type === 'sales') {
-                          parsed.meta = buildSalesUpdateMeta(collectSalesUpdateMetaFromRows(rows, file.name));
-                        }
                         _context16.n = 27;
                         break;
                       case 2:
@@ -5802,7 +5432,7 @@ var App = function App() {
                         _context16.p = 3;
                         workbook = XLSX.read(data, {
                           type: 'array',
-                          dense: type === 'sales' ? false : !isIOSDevice,
+                          dense: !isIOSDevice,
                           cellFormula: false,
                           cellStyles: false,
                           cellNF: false,
@@ -5867,64 +5497,23 @@ var App = function App() {
                         return parseSalesWorkbook(workbook);
                       case 12:
                         parsed = _context16.v;
-                        var expectedSalesYears = Array.from(new Set((workbook.SheetNames || []).filter(function (sheetName) {
-                          var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
-                          return normalized.includes('เดือน') && extractYearLabelFromText(sheetName);
-                        }).map(function (sheetName) {
-                          return normalizeYearLabel(extractYearLabelFromText(sheetName));
-                        }).filter(Boolean))).sort(sortYearLabels);
-                        var parsedSalesYears = Array.from(new Set((parsed.monthly || []).map(function (row) {
-                          return getYearLabelFromItem(row, false);
-                        }).filter(function (yearLabel) {
-                          return yearLabel && isReasonableYearLabel(yearLabel);
-                        }))).sort(sortYearLabels);
-                        if (expectedSalesYears.length > 1 && expectedSalesYears.some(function (yearLabel) {
-                          return !parsedSalesYears.includes(yearLabel);
-                        })) {
-                          console.warn('Sales parser year coverage warning', {
-                            expectedSalesYears: expectedSalesYears,
-                            parsedSalesYears: parsedSalesYears
-                          });
+                        monthlyCount = (((_parsed = parsed) === null || _parsed === void 0 ? void 0 : _parsed.monthly) || []).length;
+                        yearlyCount = (((_parsed2 = parsed) === null || _parsed2 === void 0 ? void 0 : _parsed2.yearly) || []).length;
+                        if (!(monthlyCount === 0 && yearlyCount === 0)) {
+                          _context16.n = 14;
+                          break;
                         }
-                        var expectedSalesMetrics = Array.from(new Set((workbook.SheetNames || []).map(function (sheetName) {
-                          var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
-                          if (normalized.includes('บาท')) return 'sales';
-                          if (normalized.includes('ชิ้น') || normalized.includes('qty')) return 'qty';
-                          if (normalized.includes('ตัน')) return 'ton';
-                          return '';
-                        }).filter(Boolean)));
-                        var parsedSalesMetricTotals = (parsed.monthly || []).reduce(function (acc, row) {
-                          acc.sales += parseNumericValue(row.sales);
-                          acc.qty += parseNumericValue(row.qty);
-                          acc.ton += parseNumericValue(row.ton);
-                          return acc;
-                        }, {
-                          sales: 0,
-                          qty: 0,
-                          ton: 0
-                        });
-                        var missingSalesMetrics = expectedSalesMetrics.filter(function (metricKey) {
-                          return parsedSalesMetricTotals[metricKey] <= 0;
-                        });
-                        if (expectedSalesMetrics.length > 1 && missingSalesMetrics.length > 0) {
-                          console.warn('Sales parser metric coverage warning', {
-                            expectedSalesMetrics: expectedSalesMetrics,
-                            parsedSalesMetricTotals: parsedSalesMetricTotals,
-                            missingSalesMetrics: missingSalesMetrics
-                          });
-                        }
+                        _context16.n = 13;
+                        return parseWorkbookGeneric(workbook);
+                      case 13:
+                        parsed = _context16.v;
+                      case 14:
                         _context16.n = 17;
                         break;
                       case 15:
                         _context16.p = 15;
                         _t13 = _context16.v;
-                        if ((workbook.SheetNames || []).some(function (sheetName) {
-                          var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
-                          return normalized.includes('เดือน') && extractYearLabelFromText(sheetName);
-                        })) {
-                          throw _t13;
-                        }
-                        console.warn('Sales parser failed, retrying generic parser', _t13);
+                        console.warn('Raw sales parser failed, fallback to generic parser', _t13);
                         _context16.n = 16;
                         return parseWorkbookGeneric(workbook);
                       case 16:
@@ -5973,7 +5562,6 @@ var App = function App() {
                         _t15 = _context16.v;
                         console.error(_t15);
                         fallbackMsg = _t15 && _t15.message ? "\u0E2D\u0E48\u0E32\u0E19\u0E44\u0E1F\u0E25\u0E4C\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ".concat(_t15.message) : 'อ่านไฟล์ไม่สำเร็จ กรุณาตรวจสอบรูปแบบไฟล์';
-                        if (typeof window !== 'undefined') window.__lastDashboardFileReadError = fallbackMsg;
                         showStatus(fallbackMsg, 'error');
                         resolve(null);
                       case 29:
@@ -6074,7 +5662,6 @@ var App = function App() {
           case 1:
             setIsLoading(true);
             if (statusInfo.loading) updateLoadingStatus(type === 'sales' ? 'กำลังอ่านไฟล์ยอดขาย...' : 'กำลังอ่านไฟล์เป้าหมาย...', Math.max(Number(statusInfo.progress || 0), 62), true);else startLoadingStatus(type === 'sales' ? 'กำลังเตรียมอ่านไฟล์ยอดขาย...' : 'กำลังเตรียมอ่านไฟล์เป้าหมาย...', 12, true);
-            if (typeof window !== 'undefined') window.__lastDashboardFileReadError = '';
             _context19.n = 2;
             return processFile(file, type);
           case 2:
@@ -6126,7 +5713,6 @@ var App = function App() {
             setIsLoading(false);
             return _context19.a(2, false);
           case 9:
-            if (type === 'sales') safeStorageSet(activeSalesParserVersionKey, SALES_PARSER_CACHE_VERSION);
             if (!(bindHandle && fileHandle)) {
               _context19.n = 14;
               break;
@@ -6444,7 +6030,10 @@ var App = function App() {
       }).filter(Boolean))).sort(sortYearLabels);
       if (monthlyYearKeys.length === 0) monthlyYearKeys.push(normalizeYearLabel(new Date().getFullYear()));
       var latestMonthlyYear = monthlyYearKeys[monthlyYearKeys.length - 1];
-      var exportMonthlyYears = monthlyYearKeys.slice();
+      var latestMonthlyYearNum = Number(latestMonthlyYear);
+      var extraMonthlyYear = Number.isFinite(latestMonthlyYearNum) ? String(latestMonthlyYearNum + 1) : normalizeYearLabel((toCEYear(latestMonthlyYear) || new Date().getFullYear()) + 1);
+      var exportMonthlyYears = Array.from(new Set([].concat(_toConsumableArray(monthlyYearKeys), [extraMonthlyYear]))).sort(sortYearLabels);
+      if (!yearKeys.includes(extraMonthlyYear)) yearKeys.push(extraMonthlyYear);
       yearKeys.sort(sortYearLabels);
       var formatYearHeader = function formatYearHeader(yearValue) {
         var style = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'full';
@@ -6642,7 +6231,7 @@ var App = function App() {
         compression: true,
         bookSST: true
       });
-      showStatus('Export ไฟล์ฐานข้อมูล Sales แล้ว', 'success');
+      showStatus("Export \u0E44\u0E1F\u0E25\u0E4C\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 Sales \u0E41\u0E25\u0E49\u0E27 (\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E0A\u0E35\u0E15\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E16\u0E36\u0E07\u0E1B\u0E35 ".concat(extraMonthlyYear, ")"), 'success');
     } catch (err) {
       console.error(err);
       showStatus('Export ข้อมูล Sales ไม่สำเร็จ', 'error');
@@ -6861,7 +6450,6 @@ var App = function App() {
             persistUploadedFileName('sales', '');
             setFilters(buildLockedFiltersState(lockedFilters));
             setLastGoogleSheetSyncAt('');
-            safeStorageRemove(activeSalesParserVersionKey);
             setSelectedTrendYears([]);
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             _context23.n = 1;
@@ -9022,7 +8610,7 @@ var App = function App() {
             _context12.n = 1;
             return callAppsScriptBridge(_objectSpread({
               mode: mode
-            }, extraPayload || {}), 90000);
+            }, extraPayload || {}), 20000);
           case 1:
             result = _context12.v;
             if (result && result.ok) {
@@ -9051,7 +8639,7 @@ var App = function App() {
               question: questionText,
               context: contextPayload,
               authToken: authSessionToken
-            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 300000 : 25000);
+            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 180000 : 25000);
           case 1:
             result = _context13.v;
             if (result && result.ok) {
@@ -9158,60 +8746,80 @@ var App = function App() {
       });
     }) : [];
   };
+  var extractSpreadsheetIdFromUrl = function extractSpreadsheetIdFromUrl(sourceUrl) {
+    var match = String(sourceUrl || '').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/i);
+    return match ? match[1] : '';
+  };
+  var buildGoogleSheetExportUrl = function buildGoogleSheetExportUrl(sourceUrl) {
+    var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
+    if (!spreadsheetId) {
+      throw new Error('ไม่พบ Spreadsheet ID จากลิงก์ต้นทาง');
+    }
+    return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/export?format=xlsx");
+  };
+  var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
+    var userSourceConfig = authUser && authUser.sourceConfig && _typeof(authUser.sourceConfig) === 'object' ? authUser.sourceConfig : {};
+    var fallbackUrl = String(mode === 'sync_target_source' ? userSourceConfig.targetUrl || defaultUrl || '' : userSourceConfig.salesUrl || defaultUrl || '').trim();
+    if (!authUser || !authSessionToken || !DEFAULT_BOUND_WEB_APP_URL.trim()) {
+      return Promise.resolve(fallbackUrl);
+    }
+    return callAIWebApp(mode, '', {}, {
+      resolveOnly: true
+    }).then(function (result) {
+      var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
+      return String(sourceInfo.spreadsheetUrl || fallbackUrl || '').trim();
+    }).catch(function () {
+      return fallbackUrl;
+    });
+  };
+  var parseFileNameFromDisposition = function parseFileNameFromDisposition(dispositionValue) {
+    var safeValue = String(dispositionValue || '');
+    if (!safeValue) return '';
+    var utfMatch = safeValue.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utfMatch && utfMatch[1]) {
+      try {
+        return decodeURIComponent(utfMatch[1]).trim();
+      } catch (_error) {}
+    }
+    var basicMatch = safeValue.match(/filename=\"?([^\";]+)\"?/i);
+    return basicMatch && basicMatch[1] ? String(basicMatch[1]).trim() : '';
+  };
+  var fetchGoogleSheetExportFile = function fetchGoogleSheetExportFile(sourceUrl, fallbackFileName, statusLabel) {
+    var exportUrl = buildGoogleSheetExportUrl(sourceUrl);
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timeoutId = controller ? window.setTimeout(function () {
+      return controller.abort();
+    }, 240000) : null;
+    return fetch(exportUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      cache: 'no-store',
+      signal: controller ? controller.signal : undefined
+    }).then(function (response) {
+      var dispositionName = parseFileNameFromDisposition(response.headers.get('content-disposition'));
+      if (!response.ok) {
+        throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ (HTTP ").concat(response.status, ")"));
+      }
+      return response.blob().then(function (blob) {
+        if (!blob || !blob.size) {
+          throw new Error("ไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ว่างเปล่าหรือไม่มีข้อมูล"));
+        }
+        return new File([blob], dispositionName || fallbackFileName || 'source.xlsx', {
+          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+      });
+    }).catch(function (error) {
+      if (error && error.name === 'AbortError') {
+        throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ใช้เวลานานเกินไป"));
+      }
+      throw error;
+    }).finally(function () {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    });
+  };
   var buildFileFromSyncResult = function buildFileFromSyncResult(result, defaultFileName) {
     var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-    var rowMatrix, workbook, worksheet, workbookArray, workbookBlob, csvText, csvBlob, binaryBytes, fileName, fileMimeType, fileBlob, workbookSheets, sheetGroups, sheetOrder, usedSheetNames, sheetChunk, sheetKey, sheetRows, sheetRowOffset, safeSheetName, chunkIndex, sheetIndex, sheetName, outputSheetName, outputRows, duplicateIndex, duplicateSuffix;
-    workbookSheets = Array.isArray(result && result.workbookSheets) ? result.workbookSheets : [];
-    if (workbookSheets.length > 0) {
-      sheetGroups = {};
-      sheetOrder = [];
-      for (chunkIndex = 0; chunkIndex < workbookSheets.length; chunkIndex++) {
-        sheetChunk = workbookSheets[chunkIndex] || {};
-        sheetKey = String(sheetChunk.name || sheetChunk.sheetName || 'Sheet' + (sheetOrder.length + 1));
-        if (!sheetGroups[sheetKey]) {
-          sheetGroups[sheetKey] = [];
-          sheetOrder.push(sheetKey);
-        }
-        sheetRows = normalizeBridgeRowMatrix(sheetChunk.rows);
-        sheetRowOffset = Number(sheetChunk.rowOffset || 0);
-        if (sheetRowOffset === 0 && sheetGroups[sheetKey].length > 0) sheetGroups[sheetKey] = [];
-        if (sheetRows.length > 0) sheetGroups[sheetKey] = sheetGroups[sheetKey].concat(sheetRows);
-      }
-      safeSheetName = function safeSheetName(name, index) {
-        var text = String(name || 'Sheet' + (index + 1)).replace(/[\\\/\?\*\[\]\:]/g, ' ').replace(/\s+/g, ' ').trim();
-        if (!text) text = 'Sheet' + (index + 1);
-        return text.slice(0, 31);
-      };
-      workbook = XLSX.utils.book_new();
-      usedSheetNames = {};
-      for (sheetIndex = 0; sheetIndex < sheetOrder.length; sheetIndex++) {
-        sheetName = sheetOrder[sheetIndex];
-        outputRows = sheetGroups[sheetName] || [];
-        if (outputRows.length <= 0) continue;
-        outputSheetName = safeSheetName(sheetName, sheetIndex);
-        duplicateIndex = 2;
-        while (usedSheetNames[outputSheetName]) {
-          duplicateSuffix = ' ' + duplicateIndex;
-          outputSheetName = safeSheetName(sheetName, sheetIndex).slice(0, Math.max(1, 31 - duplicateSuffix.length)) + duplicateSuffix;
-          duplicateIndex++;
-        }
-        usedSheetNames[outputSheetName] = true;
-        worksheet = XLSX.utils.aoa_to_sheet(outputRows);
-        XLSX.utils.book_append_sheet(workbook, worksheet, outputSheetName);
-      }
-      if (workbook.SheetNames && workbook.SheetNames.length > 0) {
-        workbookArray = XLSX.write(workbook, {
-          bookType: 'xlsx',
-          type: 'array'
-        });
-        workbookBlob = new Blob([workbookArray], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        return new File([workbookBlob], defaultFileName || 'source.xlsx', {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-      }
-    }
+    var rowMatrix, workbook, worksheet, workbookArray, workbookBlob, csvText, csvBlob, binaryBytes, fileName, fileMimeType, fileBlob;
     if (result && result.fileBase64) {
       binaryBytes = base64ToUint8Array(result.fileBase64);
       fileName = String(result.fileName || sourceInfo.fileName || defaultFileName || 'source.xlsx');
@@ -9254,12 +8862,10 @@ var App = function App() {
   var loadChunkedSheetRows = /*#__PURE__*/function () {
     var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode, statusLabel) {
       var chunkSize,
-        fileChunkSize,
         firstResult,
         sourceInfo,
         totalChunks,
         aggregatedFileBase64,
-        chunkFileIds,
         headerRow,
         aggregatedRows,
         initialRows,
@@ -9270,19 +8876,16 @@ var App = function App() {
         while (1) switch (_context14.n) {
           case 0:
             chunkSize = 250;
-            fileChunkSize = 1500000;
             startLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 12, true);
             _context14.n = 1;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: 0,
-              chunkSize: fileChunkSize,
-              forceFile: mode === 'sync_sales_source'
+              chunkSize: 180000
             });
           case 1:
             firstResult = _context14.v;
             sourceInfo = firstResult && firstResult.source && _typeof(firstResult.source) === 'object' ? firstResult.source : {};
             totalChunks = Number(sourceInfo.totalChunks || 1);
-            chunkFileIds = Array.isArray(sourceInfo.chunkFileIds) ? sourceInfo.chunkFileIds : [];
             if (!(sourceInfo.transport === 'file-chunk' || !firstResult.fileBase64 && firstResult.fileChunkBase64 && totalChunks > 1)) {
               _context14.n = 6;
               break;
@@ -9298,17 +8901,10 @@ var App = function App() {
             _context14.n = 3;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: _i3,
-              chunkSize: fileChunkSize,
-              forceFile: mode === 'sync_sales_source',
-              chunkFileId: chunkFileIds[_i3] || '',
-              chunkFileIds: chunkFileIds,
-              totalChunks: totalChunks,
-              fileName: sourceInfo.fileName || firstResult.fileName || '',
-              mimeType: sourceInfo.mimeType || firstResult.mimeType || ''
+              chunkSize: 180000
             });
           case 3:
             chunkResult = _context14.v;
-            if (chunkResult && chunkResult.source && Array.isArray(chunkResult.source.chunkFileIds)) chunkFileIds = chunkResult.source.chunkFileIds;
             aggregatedFileBase64 += String(chunkResult.fileChunkBase64 || '');
           case 4:
             _i3++;
@@ -9337,8 +8933,7 @@ var App = function App() {
             _context14.n = 8;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: _i3,
-              chunkSize: chunkSize,
-              forceFile: mode === 'sync_sales_source'
+              chunkSize: chunkSize
             });
           case 8:
             chunkResult = _context14.v;
@@ -9361,36 +8956,6 @@ var App = function App() {
       return _ref14.apply(this, arguments);
     };
   }();
-  var loadWorkbookSheetRows = function loadWorkbookSheetRows(mode, statusLabel) {
-    var chunkSize = 700;
-    var workbookSheets = [];
-    var fetchWorkbookChunk = function fetchWorkbookChunk(sheetIndex, rowOffset) {
-      return callAIWebApp(mode, '', {}, {
-        workbookRows: true,
-        forceFile: false,
-        workbookSheetIndex: Number(sheetIndex || 0),
-        workbookRowOffset: Number(rowOffset || 0),
-        chunkSize: chunkSize
-      }).then(function (result) {
-        var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-        var totalRows = Number(sourceInfo.totalRows || 0);
-        var processedRows = Number(sourceInfo.processedRows || 0);
-        var progress = totalRows > 0 ? 10 + Math.round(Math.min(processedRows / totalRows, 1) * 44) : 20;
-        if (sourceInfo.transport !== 'workbook-rows-chunk') {
-          return loadChunkedSheetRows(mode, statusLabel);
-        }
-        if (Array.isArray(result.workbookSheets)) workbookSheets = workbookSheets.concat(result.workbookSheets);
-        updateLoadingStatus("กำลังอ่าน".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet ").concat(sourceInfo.sheetName ? '(' + sourceInfo.sheetName + ') ' : '').concat(processedRows || 0, "/").concat(totalRows || '?', " แถว"), progress, !!sourceInfo.hasMore);
-        if (sourceInfo.hasMore) {
-          return fetchWorkbookChunk(Number(sourceInfo.nextSheetIndex || 0), Number(sourceInfo.nextRowOffset || 0));
-        }
-        result.workbookSheets = workbookSheets;
-        return result;
-      });
-    };
-    startLoadingStatus("กำลังอ่านทุกชีตของ".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 8, true);
-    return fetchWorkbookChunk(0, 0);
-  };
   useEffect(function () {
     setIsAuthChecking(false);
   }, []);
@@ -9556,20 +9121,31 @@ var App = function App() {
       return Promise.resolve(null);
     }
     setIsLoading(true);
-    startLoadingStatus('กำลังแปลง Google Sheet เป็น Excel...', 4, true);
-    return loadWorkbookSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
-      var salesFile, sourceDisplayName, displayName;
-      salesFile = buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
+    startLoadingStatus('กำลังเตรียมลิงก์ยอดขาย...', 4, true);
+    return resolveConfiguredSourceUrl('sync_sales_source', DEFAULT_SOURCE_SPREADSHEET_URL).then(function (resolvedSourceUrl) {
+      updateLoadingStatus('กำลังดาวน์โหลดไฟล์ยอดขายจากลิงก์...', 18, true);
+      return fetchGoogleSheetExportFile(resolvedSourceUrl, 'google-sheet-sales.xlsx', 'ยอดขาย');
+    }).catch(function (directError) {
+      console.warn('Direct sales link fetch failed, fallback to Apps Script transport:', directError);
+      if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
+        throw directError;
+      }
+      updateLoadingStatus('โหลดตรงจากลิงก์ไม่สำเร็จ กำลังลองผ่าน Google Apps Script...', 24, true);
+      return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
+        if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) {
+          throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
+        }
+        return buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
+      });
+    }).then(function (salesFile) {
+      var sourceDisplayName, displayName;
       sourceDisplayName = salesFile && salesFile.name ? salesFile.name : 'google-sheet-sales.xlsx';
-      updateLoadingStatus("แปลงเป็น Excel สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...", 58, false);
+      updateLoadingStatus("เตรียมไฟล์ยอดขายสำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...", 58, false);
       return processAndStoreFile(salesFile, 'sales', {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) {
-          var readErrorMessage = typeof window !== 'undefined' ? String(window.__lastDashboardFileReadError || '').trim() : '';
-          throw new Error(readErrorMessage || "โหลดไฟล์ยอดขายจากลิงก์สำเร็จแล้ว แต่ parser อ่านข้อมูลไม่สำเร็จ (".concat(sourceDisplayName, ")"));
-        }
+        if (!ok) throw new Error("โหลดไฟล์ยอดขายจากลิงก์สำเร็จแล้ว แต่ parser อ่านข้อมูลไม่สำเร็จ (".concat(sourceDisplayName, ")"));
         displayName = "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceDisplayName);
         persistUploadedFileName('sales', displayName);
         setLastGoogleSheetSyncAt(new Date().toISOString());
@@ -9821,7 +9397,6 @@ var App = function App() {
   var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
   var googleSheetSyncLabel = formatLastSyncLabel(lastGoogleSheetSyncAt);
   var googleTargetSyncLabel = formatLastSyncLabel(lastGoogleTargetSyncAt);
-  var salesUpdateSummaryText = buildSalesUpdateSummaryText(pickSalesUpdateTextForMetric(allData && allData.meta ? allData.meta : {}, metricMode));
   var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
     key: 'month',
     label: 'เดือน'
@@ -10318,10 +9893,8 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-sm font-bold text-slate-700 flex flex-wrap items-center gap-2"
-  }, "\u0E2A\u0E23\u0E38\u0E1B\u0E20\u0E32\u0E1E\u0E23\u0E27\u0E21", salesUpdateSummaryText ? /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-semibold text-blue-600"
-  }, salesUpdateSummaryText) : null), /*#__PURE__*/React.createElement("button", {
+    className: "text-sm font-bold text-slate-700"
+  }, "\u0E2A\u0E23\u0E38\u0E1B\u0E20\u0E32\u0E1E\u0E23\u0E27\u0E21"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('kpi');
     },
