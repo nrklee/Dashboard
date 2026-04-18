@@ -9051,7 +9051,7 @@ var App = function App() {
               question: questionText,
               context: contextPayload,
               authToken: authSessionToken
-            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 180000 : 25000);
+            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 300000 : 25000);
           case 1:
             result = _context13.v;
             if (result && result.ok) {
@@ -9198,6 +9198,125 @@ var App = function App() {
     });
     return new File([csvBlob], (defaultFileName || 'source').replace(/\.xlsx$/i, '.csv'), {
       type: 'text/csv;charset=utf-8'
+    });
+  };
+  var makeSafeWorkbookSheetName = function makeSafeWorkbookSheetName(name, index, usedNames) {
+    var baseName = String(name || "Sheet".concat(index + 1)).replace(/[:\\/?*\[\]]/g, ' ').trim() || "Sheet".concat(index + 1);
+    baseName = baseName.slice(0, 31);
+    var outputName = baseName;
+    var suffixIndex = 2;
+    while (usedNames[outputName]) {
+      var suffix = " ".concat(suffixIndex++);
+      outputName = baseName.slice(0, Math.max(1, 31 - suffix.length)) + suffix;
+    }
+    usedNames[outputName] = true;
+    return outputName;
+  };
+  var buildWorkbookFileFromSheetEntries = function buildWorkbookFileFromSheetEntries(sheetEntries, defaultFileName) {
+    var workbook = XLSX.utils.book_new();
+    var usedSheetNames = {};
+    var appendedCount = 0;
+    (sheetEntries || []).filter(Boolean).sort(function (a, b) {
+      return Number(a.sheetIndex || 0) - Number(b.sheetIndex || 0);
+    }).forEach(function (entry, entryIndex) {
+      var rows = normalizeBridgeRowMatrix(entry.rows);
+      if (!rows.length) return;
+      var worksheet = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(workbook, worksheet, makeSafeWorkbookSheetName(entry.sheetName, entryIndex, usedSheetNames));
+      appendedCount++;
+    });
+    if (!appendedCount) {
+      throw new Error('ไม่พบข้อมูลยอดขายจาก Google Sheet');
+    }
+    var workbookArray = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+    var workbookBlob = new Blob([workbookArray], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    return new File([workbookBlob], defaultFileName || 'google-sheet-sales.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+  };
+  var loadSalesWorkbookRowsFile = function loadSalesWorkbookRowsFile(statusLabel) {
+    var rowChunkSize = 5000;
+    var sheetEntries = [];
+    var sourceName = 'Google Sheet Sales';
+    var appendWorkbookRowsResult = function appendWorkbookRowsResult(result) {
+      var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
+      var sheetIndex = Number(sourceInfo.sheetIndex || 0);
+      var sheetName = String(sourceInfo.sheetName || "Sheet".concat(sheetIndex + 1));
+      var chunkRows = normalizeBridgeRowMatrix(result && result.rows);
+      if (!sheetEntries[sheetIndex]) {
+        sheetEntries[sheetIndex] = {
+          sheetIndex: sheetIndex,
+          sheetName: sheetName,
+          rows: []
+        };
+      }
+      if (Number(sourceInfo.chunkIndex || 0) === 0) sheetEntries[sheetIndex].rows = [];
+      sheetEntries[sheetIndex].rows = sheetEntries[sheetIndex].rows.concat(chunkRows);
+      sourceName = String(sourceInfo.spreadsheetName || sourceName || 'Google Sheet Sales');
+      if (sourceInfo.progressTotal) {
+        updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูลยอดขาย', " จาก Google Sheet (").concat(Number(sourceInfo.progressIndex || 0), "/").concat(Number(sourceInfo.progressTotal || 0), ")"), 10 + Math.round(Number(sourceInfo.progressIndex || 0) / Math.max(Number(sourceInfo.progressTotal || 1), 1) * 42), false);
+      }
+      return sourceInfo;
+    };
+    var loadSheet = function loadSheet(sheetIndex, initialResult) {
+      return Promise.resolve(initialResult || callAIWebApp('sync_sales_source', '', {}, {
+        transport: 'workbook_rows',
+        sheetIndex: sheetIndex,
+        chunkIndex: 0,
+        rowChunkSize: rowChunkSize,
+        forceFile: false
+      })).then(function (firstSheetResult) {
+        var sourceInfo = appendWorkbookRowsResult(firstSheetResult);
+        var sheetTotalChunks = Math.max(1, Number(sourceInfo.totalChunks || 1));
+        var chunkChain = Promise.resolve();
+        for (var chunkIndex = 1; chunkIndex < sheetTotalChunks; chunkIndex++) {
+          (function (safeChunkIndex) {
+            chunkChain = chunkChain.then(function () {
+              return callAIWebApp('sync_sales_source', '', {}, {
+                transport: 'workbook_rows',
+                sheetIndex: sheetIndex,
+                chunkIndex: safeChunkIndex,
+                rowChunkSize: rowChunkSize,
+                forceFile: false
+              }).then(appendWorkbookRowsResult);
+            });
+          })(chunkIndex);
+        }
+        return chunkChain.then(function () {
+          return sourceInfo;
+        });
+      });
+    };
+    startLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูลยอดขาย', " จาก Google Sheet..."), 8, true);
+    return callAIWebApp('sync_sales_source', '', {}, {
+      transport: 'workbook_rows',
+      sheetIndex: 0,
+      chunkIndex: 0,
+      rowChunkSize: rowChunkSize,
+      forceFile: false
+    }).then(function (firstResult) {
+      var firstSourceInfo = firstResult && firstResult.source && _typeof(firstResult.source) === 'object' ? firstResult.source : {};
+      if (firstSourceInfo.transport !== 'workbook-rows-chunk') {
+        return buildFileFromSyncResult(firstResult, 'google-sheet-sales.xlsx');
+      }
+      var totalSheets = Math.max(1, Number(firstSourceInfo.totalSheets || 1));
+      var sheetChain = loadSheet(0, firstResult);
+      for (var sheetIndex = 1; sheetIndex < totalSheets; sheetIndex++) {
+        (function (safeSheetIndex) {
+          sheetChain = sheetChain.then(function () {
+            return loadSheet(safeSheetIndex, null);
+          });
+        })(sheetIndex);
+      }
+      return sheetChain.then(function () {
+        updateLoadingStatus('โหลดข้อมูลครบแล้ว กำลังประกอบไฟล์ยอดขาย...', 56, false);
+        return buildWorkbookFileFromSheetEntries(sheetEntries, "".concat(sourceName || 'Google Sheet Sales', ".xlsx"));
+      });
     });
   };
   var loadChunkedSheetRows = /*#__PURE__*/function () {
@@ -9466,13 +9585,7 @@ var App = function App() {
     }
     setIsLoading(true);
     startLoadingStatus('กำลังเตรียมไฟล์ยอดขายจากลิงก์...', 4, true);
-    return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
-      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64 && !result.fileChunkBase64) {
-        throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
-      }
-      updateLoadingStatus('ดาวน์โหลดไฟล์ยอดขายจากลิงก์สำเร็จ กำลังแปลงเป็นไฟล์อัปโหลด...', 52, false);
-      return buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
-    }).then(function (salesFile) {
+    return loadSalesWorkbookRowsFile('ข้อมูลยอดขาย').then(function (salesFile) {
       var sourceDisplayName, displayName;
       sourceDisplayName = salesFile && salesFile.name ? salesFile.name : 'google-sheet-sales.xlsx';
       updateLoadingStatus("เตรียมไฟล์ยอดขายสำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...", 58, false);
