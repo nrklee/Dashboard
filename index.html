@@ -1239,6 +1239,8 @@ var _Recharts = Recharts,
 var DB_NAME = 'SalesDashboardDB_V38';
 var STORE_NAME = 'salesData';
 var DATA_KEY = 'fullData';
+var SALES_PARSER_CACHE_VERSION = 'sales-parser-v20260418-multisheet-v4';
+var SALES_PARSER_VERSION_KEY_PREFIX = 'salesParserCacheVersion';
 var SALES_HANDLE_KEY = 'salesFileHandle';
 var TARGET_HANDLE_KEY = 'targetFileHandle';
 var AUTO_SYNC_KEY = 'autoSyncEnabled';
@@ -4065,6 +4067,9 @@ var App = function App() {
   var activeDataKey = useMemo(function () {
     return getScopedStorageKey(DATA_KEY, authUser && authUser.username);
   }, [authUser && authUser.username]);
+  var activeSalesParserVersionKey = useMemo(function () {
+    return getScopedStorageKey(SALES_PARSER_VERSION_KEY_PREFIX, authUser && authUser.username);
+  }, [authUser && authUser.username]);
   var activeLastSyncKey = useMemo(function () {
     return getScopedStorageKey(GOOGLE_SHEET_LAST_SYNC_PREFIX, authUser && authUser.username);
   }, [authUser && authUser.username]);
@@ -4309,13 +4314,35 @@ var App = function App() {
               _context6.p = 0;
               setIsLoading(true);
               _context6.n = 2;
-              return idb.load(activeDataKey);
-            case 2:
-              data = _context6.v;
-              if (data) {
+            return idb.load(activeDataKey);
+          case 2:
+            data = _context6.v;
+            var shouldAutoRefreshSalesCache = false;
+            if (data && !isSalesRestrictedUser) {
+              var hasCachedSalesRows = (Array.isArray(data.monthly) ? data.monthly.length : 0) + (Array.isArray(data.yearly) ? data.yearly.length : 0) > 0;
+              var cachedParserVersion = safeStorageGet(activeSalesParserVersionKey);
+              if (hasCachedSalesRows && cachedParserVersion !== SALES_PARSER_CACHE_VERSION) {
+                shouldAutoRefreshSalesCache = true;
+                data = _objectSpread(_objectSpread({}, data), {}, {
+                  monthly: [],
+                  yearly: [],
+                  meta: _objectSpread(_objectSpread({}, data.meta || {}), {}, {
+                    salesUpdateText: '',
+                    salesUpdateByMetric: {}
+                  })
+                });
+                setSelectedTrendYears([]);
+                setRepeatGapFilters(createEmptyRepeatGapFilters());
+                showStatus('พบ cache ยอดขายเก่าที่อ่านปี/หน่วยไม่ครบ กำลังโหลดข้อมูลยอดขายใหม่...', 'info');
+                window.setTimeout(function () {
+                  if (typeof syncSalesFromGoogleSheet === 'function') syncSalesFromGoogleSheet();
+                }, 0);
+              }
+            }
+            if (data) {
                 setAllData(data);
                 setIsUsingSavedData(true);
-                showStatus('โหลดข้อมูลล่าสุดจากเครื่องแล้ว', 'success');
+                if (!shouldAutoRefreshSalesCache) showStatus('โหลดข้อมูลล่าสุดจากเครื่องแล้ว', 'success');
                 setIsLoading(false);
               } else {
                 setAllData({
@@ -4348,7 +4375,7 @@ var App = function App() {
       };
     }();
     load();
-  }, [authUser && authUser.username, activeDataKey]);
+  }, [authUser && authUser.username, activeDataKey, activeSalesParserVersionKey, isSalesRestrictedUser]);
   useEffect(function () {
     if (!isSalesRestrictedUser) return;
     setAllData({
@@ -4503,6 +4530,7 @@ var App = function App() {
             persistUploadedFileName('sales', '');
             persistUploadedFileName('target', '');
             setLastGoogleSheetSyncAt('');
+            safeStorageRemove(activeSalesParserVersionKey);
             showStatus('ล้างข้อมูลทั้งหมดแล้ว', 'success');
             _context9.n = 3;
             break;
@@ -5839,11 +5867,56 @@ var App = function App() {
                         return parseSalesWorkbook(workbook);
                       case 12:
                         parsed = _context16.v;
+                        var expectedSalesYears = Array.from(new Set((workbook.SheetNames || []).filter(function (sheetName) {
+                          var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
+                          return normalized.includes('เดือน') && extractYearLabelFromText(sheetName);
+                        }).map(function (sheetName) {
+                          return normalizeYearLabel(extractYearLabelFromText(sheetName));
+                        }).filter(Boolean))).sort(sortYearLabels);
+                        var parsedSalesYears = Array.from(new Set((parsed.monthly || []).map(function (row) {
+                          return getYearLabelFromItem(row, false);
+                        }).filter(function (yearLabel) {
+                          return yearLabel && isReasonableYearLabel(yearLabel);
+                        }))).sort(sortYearLabels);
+                        if (expectedSalesYears.length > 1 && expectedSalesYears.some(function (yearLabel) {
+                          return !parsedSalesYears.includes(yearLabel);
+                        })) {
+                          throw new Error("\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E44\u0E21\u0E48\u0E04\u0E23\u0E1A\u0E1B\u0E35: \u0E1E\u0E1A\u0E0A\u0E35\u0E15 ".concat(expectedSalesYears.join(', '), " \u0E41\u0E15\u0E48 parser \u0E44\u0E14\u0E49 ").concat(parsedSalesYears.join(', ') || '-'));
+                        }
+                        var expectedSalesMetrics = Array.from(new Set((workbook.SheetNames || []).map(function (sheetName) {
+                          var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
+                          if (normalized.includes('บาท')) return 'sales';
+                          if (normalized.includes('ชิ้น') || normalized.includes('qty')) return 'qty';
+                          if (normalized.includes('ตัน')) return 'ton';
+                          return '';
+                        }).filter(Boolean)));
+                        var parsedSalesMetricTotals = (parsed.monthly || []).reduce(function (acc, row) {
+                          acc.sales += parseNumericValue(row.sales);
+                          acc.qty += parseNumericValue(row.qty);
+                          acc.ton += parseNumericValue(row.ton);
+                          return acc;
+                        }, {
+                          sales: 0,
+                          qty: 0,
+                          ton: 0
+                        });
+                        var missingSalesMetrics = expectedSalesMetrics.filter(function (metricKey) {
+                          return parsedSalesMetricTotals[metricKey] <= 0;
+                        });
+                        if (expectedSalesMetrics.length > 1 && missingSalesMetrics.length > 0) {
+                          throw new Error("\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E44\u0E21\u0E48\u0E04\u0E23\u0E1A\u0E2B\u0E19\u0E48\u0E27\u0E22: \u0E02\u0E32\u0E14 ".concat(missingSalesMetrics.join(', ')));
+                        }
                         _context16.n = 17;
                         break;
                       case 15:
                         _context16.p = 15;
                         _t13 = _context16.v;
+                        if ((workbook.SheetNames || []).some(function (sheetName) {
+                          var normalized = String(sheetName || '').toLowerCase().replace(/\s+/g, '');
+                          return normalized.includes('เดือน') && extractYearLabelFromText(sheetName);
+                        })) {
+                          throw _t13;
+                        }
                         console.warn('Sales parser failed, retrying generic parser', _t13);
                         _context16.n = 16;
                         return parseWorkbookGeneric(workbook);
@@ -6044,6 +6117,7 @@ var App = function App() {
             setIsLoading(false);
             return _context19.a(2, false);
           case 9:
+            if (type === 'sales') safeStorageSet(activeSalesParserVersionKey, SALES_PARSER_CACHE_VERSION);
             if (!(bindHandle && fileHandle)) {
               _context19.n = 14;
               break;
@@ -6778,6 +6852,7 @@ var App = function App() {
             persistUploadedFileName('sales', '');
             setFilters(buildLockedFiltersState(lockedFilters));
             setLastGoogleSheetSyncAt('');
+            safeStorageRemove(activeSalesParserVersionKey);
             setSelectedTrendYears([]);
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             _context23.n = 1;
