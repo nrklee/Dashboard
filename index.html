@@ -9160,7 +9160,58 @@ var App = function App() {
   };
   var buildFileFromSyncResult = function buildFileFromSyncResult(result, defaultFileName) {
     var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-    var rowMatrix, workbook, worksheet, workbookArray, workbookBlob, csvText, csvBlob, binaryBytes, fileName, fileMimeType, fileBlob;
+    var rowMatrix, workbook, worksheet, workbookArray, workbookBlob, csvText, csvBlob, binaryBytes, fileName, fileMimeType, fileBlob, workbookSheets, sheetGroups, sheetOrder, usedSheetNames, sheetChunk, sheetKey, sheetRows, sheetRowOffset, safeSheetName, chunkIndex, sheetIndex, sheetName, outputSheetName, outputRows, duplicateIndex, duplicateSuffix;
+    workbookSheets = Array.isArray(result && result.workbookSheets) ? result.workbookSheets : [];
+    if (workbookSheets.length > 0) {
+      sheetGroups = {};
+      sheetOrder = [];
+      for (chunkIndex = 0; chunkIndex < workbookSheets.length; chunkIndex++) {
+        sheetChunk = workbookSheets[chunkIndex] || {};
+        sheetKey = String(sheetChunk.name || sheetChunk.sheetName || 'Sheet' + (sheetOrder.length + 1));
+        if (!sheetGroups[sheetKey]) {
+          sheetGroups[sheetKey] = [];
+          sheetOrder.push(sheetKey);
+        }
+        sheetRows = normalizeBridgeRowMatrix(sheetChunk.rows);
+        sheetRowOffset = Number(sheetChunk.rowOffset || 0);
+        if (sheetRowOffset === 0 && sheetGroups[sheetKey].length > 0) sheetGroups[sheetKey] = [];
+        if (sheetRows.length > 0) sheetGroups[sheetKey] = sheetGroups[sheetKey].concat(sheetRows);
+      }
+      safeSheetName = function safeSheetName(name, index) {
+        var text = String(name || 'Sheet' + (index + 1)).replace(/[\\\/\?\*\[\]\:]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!text) text = 'Sheet' + (index + 1);
+        return text.slice(0, 31);
+      };
+      workbook = XLSX.utils.book_new();
+      usedSheetNames = {};
+      for (sheetIndex = 0; sheetIndex < sheetOrder.length; sheetIndex++) {
+        sheetName = sheetOrder[sheetIndex];
+        outputRows = sheetGroups[sheetName] || [];
+        if (outputRows.length <= 0) continue;
+        outputSheetName = safeSheetName(sheetName, sheetIndex);
+        duplicateIndex = 2;
+        while (usedSheetNames[outputSheetName]) {
+          duplicateSuffix = ' ' + duplicateIndex;
+          outputSheetName = safeSheetName(sheetName, sheetIndex).slice(0, Math.max(1, 31 - duplicateSuffix.length)) + duplicateSuffix;
+          duplicateIndex++;
+        }
+        usedSheetNames[outputSheetName] = true;
+        worksheet = XLSX.utils.aoa_to_sheet(outputRows);
+        XLSX.utils.book_append_sheet(workbook, worksheet, outputSheetName);
+      }
+      if (workbook.SheetNames && workbook.SheetNames.length > 0) {
+        workbookArray = XLSX.write(workbook, {
+          bookType: 'xlsx',
+          type: 'array'
+        });
+        workbookBlob = new Blob([workbookArray], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        return new File([workbookBlob], defaultFileName || 'source.xlsx', {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+      }
+    }
     if (result && result.fileBase64) {
       binaryBytes = base64ToUint8Array(result.fileBase64);
       fileName = String(result.fileName || sourceInfo.fileName || defaultFileName || 'source.xlsx');
@@ -9310,6 +9361,36 @@ var App = function App() {
       return _ref14.apply(this, arguments);
     };
   }();
+  var loadWorkbookSheetRows = function loadWorkbookSheetRows(mode, statusLabel) {
+    var chunkSize = 700;
+    var workbookSheets = [];
+    var fetchWorkbookChunk = function fetchWorkbookChunk(sheetIndex, rowOffset) {
+      return callAIWebApp(mode, '', {}, {
+        workbookRows: true,
+        forceFile: false,
+        workbookSheetIndex: Number(sheetIndex || 0),
+        workbookRowOffset: Number(rowOffset || 0),
+        chunkSize: chunkSize
+      }).then(function (result) {
+        var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
+        var totalRows = Number(sourceInfo.totalRows || 0);
+        var processedRows = Number(sourceInfo.processedRows || 0);
+        var progress = totalRows > 0 ? 10 + Math.round(Math.min(processedRows / totalRows, 1) * 44) : 20;
+        if (sourceInfo.transport !== 'workbook-rows-chunk') {
+          return loadChunkedSheetRows(mode, statusLabel);
+        }
+        if (Array.isArray(result.workbookSheets)) workbookSheets = workbookSheets.concat(result.workbookSheets);
+        updateLoadingStatus("กำลังอ่าน".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet ").concat(sourceInfo.sheetName ? '(' + sourceInfo.sheetName + ') ' : '').concat(processedRows || 0, "/").concat(totalRows || '?', " แถว"), progress, !!sourceInfo.hasMore);
+        if (sourceInfo.hasMore) {
+          return fetchWorkbookChunk(Number(sourceInfo.nextSheetIndex || 0), Number(sourceInfo.nextRowOffset || 0));
+        }
+        result.workbookSheets = workbookSheets;
+        return result;
+      });
+    };
+    startLoadingStatus("กำลังอ่านทุกชีตของ".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 8, true);
+    return fetchWorkbookChunk(0, 0);
+  };
   useEffect(function () {
     setIsAuthChecking(false);
   }, []);
@@ -9476,7 +9557,7 @@ var App = function App() {
     }
     setIsLoading(true);
     startLoadingStatus('กำลังแปลง Google Sheet เป็น Excel...', 4, true);
-    return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
+    return loadWorkbookSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
       var salesFile, sourceDisplayName, displayName;
       salesFile = buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
       sourceDisplayName = salesFile && salesFile.name ? salesFile.name : 'google-sheet-sales.xlsx';
