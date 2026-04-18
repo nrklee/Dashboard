@@ -1340,6 +1340,120 @@ var buildSalesUpdateSummaryText = function buildSalesUpdateSummaryText(metaText)
   var text = String(metaText || '').replace(/\s+/g, ' ').trim();
   return text;
 };
+var SALES_UPDATE_MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var SALES_UPDATE_MONTH_LOOKUP = {
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  may: 4,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  sept: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
+  'ม.ค.': 0,
+  'ม.ค': 0,
+  'ก.พ.': 1,
+  'ก.พ': 1,
+  'มี.ค.': 2,
+  'มี.ค': 2,
+  'เม.ย.': 3,
+  'เม.ย': 3,
+  'พ.ค.': 4,
+  'พ.ค': 4,
+  'มิ.ย.': 5,
+  'มิ.ย': 5,
+  'ก.ค.': 6,
+  'ก.ค': 6,
+  'ส.ค.': 7,
+  'ส.ค': 7,
+  'ก.ย.': 8,
+  'ก.ย': 8,
+  'ต.ค.': 9,
+  'ต.ค': 9,
+  'พ.ย.': 10,
+  'พ.ย': 10,
+  'ธ.ค.': 11,
+  'ธ.ค': 11
+};
+var excelSerialToUTCDate = function excelSerialToUTCDate(value) {
+  var numeric = Number(String(value || '').replace(/,/g, '').trim());
+  if (!Number.isFinite(numeric) || numeric < 25000 || numeric > 80000) return null;
+  var millis = Math.round((numeric - 25569) * 86400 * 1000);
+  var date = new Date(millis);
+  return isNaN(date.getTime()) ? null : date;
+};
+var formatSalesUpdateDateFromSerial = function formatSalesUpdateDateFromSerial(date) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
+  return "".concat(date.getUTCDate(), " ").concat(SALES_UPDATE_MONTH_LABELS[date.getUTCMonth()]);
+};
+var normalizeSalesUpdateSuffix = function normalizeSalesUpdateSuffix(suffix) {
+  var text = String(suffix || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  var exactSerial = text.match(/^(\d{4,6})(?:\.0+)?$/);
+  if (exactSerial) {
+    var exactDate = excelSerialToUTCDate(exactSerial[1]);
+    if (exactDate) return formatSalesUpdateDateFromSerial(exactDate);
+  }
+  var leadingSerial = text.match(/^(\d{4,6})(?:\.0+)?(\s+.*)?$/);
+  if (leadingSerial) {
+    var leadingDate = excelSerialToUTCDate(leadingSerial[1]);
+    if (leadingDate) return "".concat(formatSalesUpdateDateFromSerial(leadingDate)).concat(leadingSerial[2] || '').trim();
+  }
+  return text;
+};
+var getSalesUpdateDateOrder = function getSalesUpdateDateOrder(text, fallbackYearCe) {
+  var raw = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!raw) return 0;
+  var serialTokens = raw.match(/\b\d{4,6}(?:\.0+)?\b/g) || [];
+  for (var i = 0; i < serialTokens.length; i++) {
+    var serialDate = excelSerialToUTCDate(serialTokens[i]);
+    if (serialDate) {
+      return serialDate.getUTCFullYear() * 10000 + (serialDate.getUTCMonth() + 1) * 100 + serialDate.getUTCDate();
+    }
+  }
+  var lower = raw.toLowerCase();
+  var monthKeys = Object.keys(SALES_UPDATE_MONTH_LOOKUP).sort(function (a, b) {
+    return b.length - a.length;
+  });
+  for (var _i = 0; _i < monthKeys.length; _i++) {
+    var key = monthKeys[_i];
+    var monthIndex = SALES_UPDATE_MONTH_LOOKUP[key];
+    var foundAt = lower.indexOf(key.toLowerCase());
+    if (foundAt < 0) continue;
+    var beforeMatch = lower.slice(0, foundAt).match(/(\d{1,2})\s*$/);
+    var afterMatch = lower.slice(foundAt + key.length).match(/^\s*(\d{1,2})/);
+    var day = Number(beforeMatch && beforeMatch[1] || afterMatch && afterMatch[1] || 1);
+    if (!Number.isFinite(day) || day < 1 || day > 31) day = 1;
+    var yearCe = Number(fallbackYearCe || 0);
+    if (!yearCe && typeof toCEYear === 'function' && typeof extractYearLabelFromText === 'function') yearCe = toCEYear(extractYearLabelFromText(raw)) || 0;
+    if (!yearCe) yearCe = new Date().getFullYear();
+    return yearCe * 10000 + (monthIndex + 1) * 100 + day;
+  }
+  var fallbackYear = Number(fallbackYearCe || 0);
+  return fallbackYear ? fallbackYear * 10000 : 0;
+};
+var pickSalesUpdateTextForMetric = function pickSalesUpdateTextForMetric(meta, metricMode) {
+  var safeMeta = meta && _typeof(meta) === 'object' ? meta : {};
+  var byMetric = safeMeta.salesUpdateByMetric && _typeof(safeMeta.salesUpdateByMetric) === 'object' ? safeMeta.salesUpdateByMetric : {};
+  var normalizedMetric = metricMode === 'qty' || metricMode === 'ton' ? metricMode : 'value';
+  return byMetric[normalizedMetric] || safeMeta.salesUpdateText || '';
+};
 // NEW: Force Local Date String to prevent Timezone shift
 var toLocalISOString = function toLocalISOString(date) {
   var year = date.getFullYear();
@@ -4528,7 +4642,8 @@ var App = function App() {
                             return XLSX.utils.sheet_to_json(sheet, {
                               header: 1,
                               blankrows: false,
-                              raw: true,
+                              raw: false,
+                              dateNF: 'd mmm',
                               range: decodedRange
                             });
                           } catch (err) {
@@ -4536,7 +4651,8 @@ var App = function App() {
                               return XLSX.utils.sheet_to_json(sheet, {
                                 header: 1,
                                 blankrows: false,
-                                raw: true
+                                raw: false,
+                                dateNF: 'd mmm'
                               }).slice(0, maxRows);
                             } catch (_) {
                               return [];
@@ -4548,8 +4664,21 @@ var App = function App() {
                           if (!raw) return '';
                           var match = raw.match(/ยอดขาย\s*อัปเดต\s*[:：-]?\s*(.*)$/i);
                           if (!match) return '';
-                          var suffix = String(match[1] || '').trim();
+                          var suffix = normalizeSalesUpdateSuffix(match[1] || '');
                           return suffix ? "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ".concat(suffix) : 'ยอดขายอัปเดต';
+                        };
+                        var detectSalesUpdateMetricContext = function detectSalesUpdateMetricContext(sheetName, row, text) {
+                          var values = [sheetName || '', text || ''];
+                          if (Array.isArray(row)) {
+                            row.forEach(function (item) {
+                              values.push(item === undefined || item === null ? '' : item);
+                            });
+                          }
+                          var context = values.join(' ').toLowerCase();
+                          if (/ชิ้น|qty|quantity/.test(context)) return 'qty';
+                          if (/ตัน|ton/.test(context)) return 'ton';
+                          if (/บาท|baht|ยอดขาย|sales?/.test(context)) return 'value';
+                          return '';
                         };
                         var collectSalesUpdateMetaFromRows = function collectSalesUpdateMetaFromRows(rows, sheetName) {
                           var candidates = [];
@@ -4571,8 +4700,10 @@ var App = function App() {
                               var yearLabel = normalizeYearLabel(extractYearLabelFromText(text) || fallbackYear);
                               candidates.push({
                                 text: text,
+                                metric: detectSalesUpdateMetricContext(sheetName, row, text),
                                 year: yearLabel,
                                 yearCe: toCEYear(yearLabel) || 0,
+                                dateOrder: getSalesUpdateDateOrder(text, toCEYear(yearLabel) || 0),
                                 rowIndex: rowIndex,
                                 colIndex: colIndex
                               });
@@ -4586,8 +4717,10 @@ var App = function App() {
                               var yearLabel = normalizeYearLabel(extractYearLabelFromText(text) || fallbackYear);
                               candidates.push({
                                 text: text,
+                                metric: detectSalesUpdateMetricContext(sheetName, row, text),
                                 year: yearLabel,
                                 yearCe: toCEYear(yearLabel) || 0,
+                                dateOrder: getSalesUpdateDateOrder(text, toCEYear(yearLabel) || 0),
                                 rowIndex: rowIndex,
                                 colIndex: 0
                               });
@@ -4595,19 +4728,38 @@ var App = function App() {
                           });
                           return candidates;
                         };
-                        var pickLatestSalesUpdateText = function pickLatestSalesUpdateText(candidates) {
+                        var pickLatestSalesUpdateText = function pickLatestSalesUpdateText(candidates, metricMode) {
                           var safeCandidates = Array.isArray(candidates) ? candidates.filter(function (item) {
                             return item && item.text;
                           }) : [];
                           if (!safeCandidates.length) return '';
+                          var normalizedMetric = metricMode === 'qty' || metricMode === 'ton' ? metricMode : metricMode === 'value' ? 'value' : '';
+                          if (normalizedMetric) {
+                            var metricCandidates = safeCandidates.filter(function (item) {
+                              return item.metric === normalizedMetric;
+                            });
+                            if (metricCandidates.length) safeCandidates = metricCandidates;
+                          }
                           safeCandidates.sort(function (a, b) {
                             var yearDiff = Number(b.yearCe || 0) - Number(a.yearCe || 0);
                             if (yearDiff !== 0) return yearDiff;
+                            var dateDiff = Number(b.dateOrder || 0) - Number(a.dateOrder || 0);
+                            if (dateDiff !== 0) return dateDiff;
                             var rowDiff = Number(a.rowIndex || 0) - Number(b.rowIndex || 0);
                             if (rowDiff !== 0) return rowDiff;
                             return Number(a.colIndex || 0) - Number(b.colIndex || 0);
                           });
                           return safeCandidates[0].text;
+                        };
+                        var buildSalesUpdateMeta = function buildSalesUpdateMeta(candidates) {
+                          return {
+                            salesUpdateText: pickLatestSalesUpdateText(candidates),
+                            salesUpdateByMetric: {
+                              value: pickLatestSalesUpdateText(candidates, 'value'),
+                              qty: pickLatestSalesUpdateText(candidates, 'qty'),
+                              ton: pickLatestSalesUpdateText(candidates, 'ton')
+                            }
+                          };
                         };
                         normalizeRecordDimensions = function normalizeRecordDimensions(dimensions) {
                           var normalized = {};
@@ -5112,9 +5264,7 @@ var App = function App() {
                                   return _context12.a(2, {
                                     monthly: mergeMetricEntries(monthlyEntries, 'month'),
                                     yearly: mergeMetricEntries(yearlyEntries, 'year'),
-                                    meta: {
-                                      salesUpdateText: pickLatestSalesUpdateText(salesUpdateCandidates)
-                                    }
+                                    meta: buildSalesUpdateMeta(salesUpdateCandidates)
                                   });
                               }
                             }, _callee12);
@@ -5588,9 +5738,7 @@ var App = function App() {
                                   break;
                                 case 5:
                                   if (type === 'sales') {
-                                    genericParsed.meta = {
-                                      salesUpdateText: pickLatestSalesUpdateText(genericSalesUpdateCandidates)
-                                    };
+                                    genericParsed.meta = buildSalesUpdateMeta(genericSalesUpdateCandidates);
                                   }
                                   return _context15.a(2, genericParsed);
                               }
@@ -5615,9 +5763,7 @@ var App = function App() {
                       case 1:
                         parsed = _context16.v;
                         if (type === 'sales') {
-                          parsed.meta = {
-                            salesUpdateText: pickLatestSalesUpdateText(collectSalesUpdateMetaFromRows(rows, file.name))
-                          };
+                          parsed.meta = buildSalesUpdateMeta(collectSalesUpdateMetaFromRows(rows, file.name));
                         }
                         _context16.n = 27;
                         break;
@@ -9073,7 +9219,8 @@ var App = function App() {
             _context14.n = 1;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: 0,
-              chunkSize: 180000
+              chunkSize: 180000,
+              forceFile: mode === 'sync_sales_source'
             });
           case 1:
             firstResult = _context14.v;
@@ -9094,7 +9241,8 @@ var App = function App() {
             _context14.n = 3;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: _i3,
-              chunkSize: 180000
+              chunkSize: 180000,
+              forceFile: mode === 'sync_sales_source'
             });
           case 3:
             chunkResult = _context14.v;
@@ -9126,7 +9274,8 @@ var App = function App() {
             _context14.n = 8;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: _i3,
-              chunkSize: chunkSize
+              chunkSize: chunkSize,
+              forceFile: mode === 'sync_sales_source'
             });
           case 8:
             chunkResult = _context14.v;
@@ -9590,7 +9739,7 @@ var App = function App() {
   var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
   var googleSheetSyncLabel = formatLastSyncLabel(lastGoogleSheetSyncAt);
   var googleTargetSyncLabel = formatLastSyncLabel(lastGoogleTargetSyncAt);
-  var salesUpdateSummaryText = buildSalesUpdateSummaryText(allData && allData.meta ? allData.meta.salesUpdateText : '');
+  var salesUpdateSummaryText = buildSalesUpdateSummaryText(pickSalesUpdateTextForMetric(allData && allData.meta ? allData.meta : {}, metricMode));
   var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
     key: 'month',
     label: 'เดือน'
