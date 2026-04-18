@@ -1239,7 +1239,7 @@ var _Recharts = Recharts,
 var DB_NAME = 'SalesDashboardDB_V38';
 var STORE_NAME = 'salesData';
 var DATA_KEY = 'fullData';
-var SALES_PARSER_CACHE_VERSION = 'sales-parser-v20260418-direct-xlsx-link-v1';
+var SALES_PARSER_CACHE_VERSION = 'sales-parser-v20260418-direct-xlsx-link-v2';
 var SALES_PARSER_VERSION_KEY_PREFIX = 'salesParserCacheVersion';
 var SALES_HANDLE_KEY = 'salesFileHandle';
 var TARGET_HANDLE_KEY = 'targetFileHandle';
@@ -9208,7 +9208,7 @@ var App = function App() {
         sourceInfo,
         totalChunks,
         aggregatedFileBase64,
-        exportFileId,
+        chunkFileIds,
         headerRow,
         aggregatedRows,
         initialRows,
@@ -9231,7 +9231,7 @@ var App = function App() {
             firstResult = _context14.v;
             sourceInfo = firstResult && firstResult.source && _typeof(firstResult.source) === 'object' ? firstResult.source : {};
             totalChunks = Number(sourceInfo.totalChunks || 1);
-            exportFileId = String(sourceInfo.exportFileId || '');
+            chunkFileIds = Array.isArray(sourceInfo.chunkFileIds) ? sourceInfo.chunkFileIds : [];
             if (!(sourceInfo.transport === 'file-chunk' || !firstResult.fileBase64 && firstResult.fileChunkBase64 && totalChunks > 1)) {
               _context14.n = 6;
               break;
@@ -9249,11 +9249,15 @@ var App = function App() {
               chunkIndex: _i3,
               chunkSize: fileChunkSize,
               forceFile: mode === 'sync_sales_source',
-              exportFileId: exportFileId
+              chunkFileId: chunkFileIds[_i3] || '',
+              chunkFileIds: chunkFileIds,
+              totalChunks: totalChunks,
+              fileName: sourceInfo.fileName || firstResult.fileName || '',
+              mimeType: sourceInfo.mimeType || firstResult.mimeType || ''
             });
           case 3:
             chunkResult = _context14.v;
-            if (chunkResult && chunkResult.source && chunkResult.source.exportFileId) exportFileId = String(chunkResult.source.exportFileId || exportFileId);
+            if (chunkResult && chunkResult.source && Array.isArray(chunkResult.source.chunkFileIds)) chunkFileIds = chunkResult.source.chunkFileIds;
             aggregatedFileBase64 += String(chunkResult.fileChunkBase64 || '');
           case 4:
             _i3++;
