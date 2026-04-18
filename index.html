@@ -1254,7 +1254,6 @@ var MAX_SIZE_MB = 200;
 var COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
 var OTHER_COLOR = '#94a3b8';
 var THAI_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-var EN_SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 var DISTRICT_ORDER = ['NE.3/1', 'NE.3/2', 'NE.3/3', 'NE.3/4', 'NE.3/5', 'NE.3/6', 'NE.3/7', 'NE.3/8', 'NORTHEAST', 'Van Sales NE', 'Laos'];
 var COLUMN_KEYWORDS = {
   region: ['ภาค', 'region', 'zone'],
@@ -1332,115 +1331,9 @@ var formatLastSyncLabel = function formatLastSyncLabel(value) {
     timeStyle: 'short'
   });
 };
-var parseDashboardDateValue = function parseDashboardDateValue(value) {
-  if (value === undefined || value === null || value === '') return null;
-  if (value instanceof Date) return Number.isFinite(value.getTime()) ? value : null;
-  if (typeof value === 'number') {
-    if (!Number.isFinite(value)) return null;
-    if (value > 20000 && value < 80000) return new Date(Math.round((value - 25569) * 86400 * 1000));
-    if (value > 100000000000) return new Date(value);
-    return null;
-  }
-  var raw = String(value).trim();
-  if (!raw || raw === '-' || raw === '—') return null;
-  var isoMatch = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (isoMatch) return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
-  var numericMatch = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
-  if (numericMatch) {
-    var numericYear = Number(numericMatch[3]);
-    if (numericYear < 100) numericYear += 2500;
-    if (numericYear > 2400) numericYear -= 543;
-    return new Date(numericYear, Number(numericMatch[2]) - 1, Number(numericMatch[1]));
-  }
-  var monthTokens = {
-    jan: 0,
-    january: 0,
-    feb: 1,
-    february: 1,
-    mar: 2,
-    march: 2,
-    apr: 3,
-    april: 3,
-    may: 4,
-    jun: 5,
-    june: 5,
-    jul: 6,
-    july: 6,
-    aug: 7,
-    august: 7,
-    sep: 8,
-    sept: 8,
-    september: 8,
-    oct: 9,
-    october: 9,
-    nov: 10,
-    november: 10,
-    dec: 11,
-    december: 11,
-    'ม.ค.': 0,
-    'ก.พ.': 1,
-    'มี.ค.': 2,
-    'เม.ย.': 3,
-    'พ.ค.': 4,
-    'มิ.ย.': 5,
-    'ก.ค.': 6,
-    'ส.ค.': 7,
-    'ก.ย.': 8,
-    'ต.ค.': 9,
-    'พ.ย.': 10,
-    'ธ.ค.': 11
-  };
-  var textMatch = raw.match(/(\d{1,2})\s*(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t)?(?:ember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)(?:\s*(\d{2,4}))?/i);
-  if (textMatch) {
-    var token = String(textMatch[2] || '').trim();
-    var monthIndex = monthTokens[token.toLowerCase()];
-    if (monthIndex === undefined) monthIndex = monthTokens[token];
-    var textYear = textMatch[3] ? Number(textMatch[3]) : new Date().getFullYear();
-    if (textYear < 100) textYear += 2500;
-    if (textYear > 2400) textYear -= 543;
-    if (monthIndex !== undefined) return new Date(textYear, monthIndex, Number(textMatch[1]));
-  }
-  var parsed = new Date(raw);
-  return Number.isFinite(parsed.getTime()) ? parsed : null;
-};
-var formatShortDayMonth = function formatShortDayMonth(date) {
-  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) return '';
-  return "".concat(date.getDate(), " ").concat(EN_SHORT_MONTHS[date.getMonth()] || '');
-};
-var buildSalesUpdateDateLabel = function buildSalesUpdateDateLabel(rows, sourceText, fallbackSyncAt) {
-  var sourceRows = Array.isArray(rows) ? rows : [];
-  var explicitCandidates = [];
-  var generatedCandidates = [];
-  var updateKeys = ['salesUpdatedAt', 'updatedAt', 'updateDate', 'dataDate', 'asOfDate', 'lastSalesDate', 'lastDate', 'sourceDate', 'latestDate', 'วันที่อัปเดต', 'วันที่ขาย', 'วันที่'];
-  sourceRows.forEach(function (row) {
-    if (!row || _typeof(row) !== 'object') return;
-    updateKeys.forEach(function (key) {
-      if (!Object.prototype.hasOwnProperty.call(row, key)) return;
-      var candidate = parseDashboardDateValue(row[key]);
-      if (!candidate) return;
-      if (key === 'date' && row.monthIndex !== undefined && candidate.getDate() === 1) {
-        generatedCandidates.push(candidate);
-      } else {
-        explicitCandidates.push(candidate);
-      }
-    });
-    var rowDate = parseDashboardDateValue(row.date);
-    if (rowDate) {
-      if (row.monthIndex !== undefined && rowDate.getDate() === 1) generatedCandidates.push(rowDate);else explicitCandidates.push(rowDate);
-    }
-  });
-  var pickLatest = function pickLatest(candidates) {
-    if (!candidates.length) return null;
-    return candidates.reduce(function (latest, candidate) {
-      return candidate.getTime() > latest.getTime() ? candidate : latest;
-    }, candidates[0]);
-  };
-  var selectedDate = pickLatest(explicitCandidates) || pickLatest(generatedCandidates);
-  if (selectedDate) return formatShortDayMonth(selectedDate);
-  var fromSourceText = parseDashboardDateValue(sourceText);
-  if (fromSourceText) return formatShortDayMonth(fromSourceText);
-  var fromSync = parseDashboardDateValue(fallbackSyncAt);
-  return fromSync ? formatShortDayMonth(fromSync) : '';
+var buildSalesUpdateSummaryText = function buildSalesUpdateSummaryText(metaText) {
+  var text = String(metaText || '').replace(/\s+/g, ' ').trim();
+  return text;
 };
 // NEW: Force Local Date String to prevent Timezone shift
 var toLocalISOString = function toLocalISOString(date) {
@@ -4151,6 +4044,7 @@ var App = function App() {
     } else {
       nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
     }
+    nextData.meta = _objectSpread(_objectSpread({}, nextData.meta || {}), parsedData.meta || {});
     return nextData;
   };
   useEffect(function () {
@@ -4545,6 +4439,96 @@ var App = function App() {
                             return _ref18.apply(this, arguments);
                           };
                         }();
+                        var sheetToPreviewRows = function sheetToPreviewRows(sheet) {
+                          var maxRows = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 40;
+                          if (!sheet || !sheet['!ref']) return [];
+                          try {
+                            var decodedRange = XLSX.utils.decode_range(sheet['!ref']);
+                            decodedRange.e.r = Math.min(decodedRange.e.r, decodedRange.s.r + Math.max(1, maxRows) - 1);
+                            return XLSX.utils.sheet_to_json(sheet, {
+                              header: 1,
+                              blankrows: false,
+                              raw: true,
+                              range: decodedRange
+                            });
+                          } catch (err) {
+                            try {
+                              return XLSX.utils.sheet_to_json(sheet, {
+                                header: 1,
+                                blankrows: false,
+                                raw: true
+                              }).slice(0, maxRows);
+                            } catch (_) {
+                              return [];
+                            }
+                          }
+                        };
+                        var extractSalesUpdateTextFromString = function extractSalesUpdateTextFromString(value) {
+                          var raw = String(value || '').replace(/\s+/g, ' ').trim();
+                          if (!raw) return '';
+                          var match = raw.match(/ยอดขาย\s*อัปเดต\s*[:：-]?\s*(.*)$/i);
+                          if (!match) return '';
+                          var suffix = String(match[1] || '').trim();
+                          return suffix ? "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ".concat(suffix) : 'ยอดขายอัปเดต';
+                        };
+                        var collectSalesUpdateMetaFromRows = function collectSalesUpdateMetaFromRows(rows, sheetName) {
+                          var candidates = [];
+                          if (!Array.isArray(rows)) return candidates;
+                          var fallbackYear = normalizeYearLabel(extractYearLabelFromText(sheetName) || '');
+                          rows.forEach(function (row, rowIndex) {
+                            if (!Array.isArray(row)) return;
+                            var rowMatched = false;
+                            row.forEach(function (cell, colIndex) {
+                              var cellText = String(cell || '').trim();
+                              if (!/ยอดขาย\s*อัปเดต/i.test(cellText)) return;
+                              rowMatched = true;
+                              var windowText = row.slice(colIndex, colIndex + 3).map(function (item) {
+                                return String(item || '').trim();
+                              }).filter(Boolean).join(' ');
+                              var text = extractSalesUpdateTextFromString(cellText);
+                              if (text === 'ยอดขายอัปเดต') text = extractSalesUpdateTextFromString(windowText || cellText);
+                              if (!text) return;
+                              var yearLabel = normalizeYearLabel(extractYearLabelFromText(text) || fallbackYear);
+                              candidates.push({
+                                text: text,
+                                year: yearLabel,
+                                yearCe: toCEYear(yearLabel) || 0,
+                                rowIndex: rowIndex,
+                                colIndex: colIndex
+                              });
+                            });
+                            if (!rowMatched) {
+                              var joined = row.map(function (item) {
+                                return String(item || '').trim();
+                              }).filter(Boolean).join(' ');
+                              var text = extractSalesUpdateTextFromString(joined);
+                              if (!text) return;
+                              var yearLabel = normalizeYearLabel(extractYearLabelFromText(text) || fallbackYear);
+                              candidates.push({
+                                text: text,
+                                year: yearLabel,
+                                yearCe: toCEYear(yearLabel) || 0,
+                                rowIndex: rowIndex,
+                                colIndex: 0
+                              });
+                            }
+                          });
+                          return candidates;
+                        };
+                        var pickLatestSalesUpdateText = function pickLatestSalesUpdateText(candidates) {
+                          var safeCandidates = Array.isArray(candidates) ? candidates.filter(function (item) {
+                            return item && item.text;
+                          }) : [];
+                          if (!safeCandidates.length) return '';
+                          safeCandidates.sort(function (a, b) {
+                            var yearDiff = Number(b.yearCe || 0) - Number(a.yearCe || 0);
+                            if (yearDiff !== 0) return yearDiff;
+                            var rowDiff = Number(a.rowIndex || 0) - Number(b.rowIndex || 0);
+                            if (rowDiff !== 0) return rowDiff;
+                            return Number(a.colIndex || 0) - Number(b.colIndex || 0);
+                          });
+                          return safeCandidates[0].text;
+                        };
                         normalizeRecordDimensions = function normalizeRecordDimensions(dimensions) {
                           var normalized = {};
                           Object.keys(COLUMN_KEYWORDS).forEach(function (key) {
@@ -4911,6 +4895,10 @@ var App = function App() {
                                   }];
                                   monthlySheetTasks = [];
                                   yearlySheetTasks = [];
+                                  var salesUpdateCandidates = [];
+                                  sheetNames.forEach(function (sheetName) {
+                                    appendRows(salesUpdateCandidates, collectSalesUpdateMetaFromRows(sheetToPreviewRows(workbook.Sheets[sheetName]), sheetName));
+                                  });
                                   explicitYearlySheetByMetric = {
                                     sales: '',
                                     qty: '',
@@ -4993,6 +4981,7 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[cfg.sheetName]);
                                 case 3:
                                   rows = _context12.v;
+                                  appendRows(salesUpdateCandidates, collectSalesUpdateMetaFromRows(rows, cfg.sheetName));
                                   _t8 = appendRows;
                                   _t9 = monthlyEntries;
                                   _context12.n = 4;
@@ -5026,6 +5015,7 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[_cfg.sheetName]);
                                 case 9:
                                   _rows = _context12.v;
+                                  appendRows(salesUpdateCandidates, collectSalesUpdateMetaFromRows(_rows, _cfg.sheetName));
                                   _t0 = appendRows;
                                   _t1 = yearlyEntries;
                                   _context12.n = 10;
@@ -5041,7 +5031,10 @@ var App = function App() {
                                 case 12:
                                   return _context12.a(2, {
                                     monthly: mergeMetricEntries(monthlyEntries, 'month'),
-                                    yearly: mergeMetricEntries(yearlyEntries, 'year')
+                                    yearly: mergeMetricEntries(yearlyEntries, 'year'),
+                                    meta: {
+                                      salesUpdateText: pickLatestSalesUpdateText(salesUpdateCandidates)
+                                    }
                                   });
                               }
                             }, _callee12);
@@ -5478,7 +5471,7 @@ var App = function App() {
                         };
                         parseWorkbookGeneric = /*#__PURE__*/function () {
                           var _ref30 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(workbook) {
-                            var genericParsed, sheetIndex, name, rows, sheetRes;
+                            var genericParsed, genericSalesUpdateCandidates, sheetIndex, name, rows, sheetRes;
                             return _regenerator().w(function (_context15) {
                               while (1) switch (_context15.n) {
                                 case 0:
@@ -5486,6 +5479,7 @@ var App = function App() {
                                     monthly: [],
                                     yearly: []
                                   };
+                                  genericSalesUpdateCandidates = [];
                                   sheetIndex = 0;
                                 case 1:
                                   if (!(sheetIndex < workbook.SheetNames.length)) {
@@ -5497,6 +5491,7 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[name]);
                                 case 2:
                                   rows = _context15.v;
+                                  if (type === 'sales') appendRows(genericSalesUpdateCandidates, collectSalesUpdateMetaFromRows(rows, name));
                                   _context15.n = 3;
                                   return parseGenericRows(rows, {
                                     sheetName: name
@@ -5512,6 +5507,11 @@ var App = function App() {
                                   _context15.n = 1;
                                   break;
                                 case 5:
+                                  if (type === 'sales') {
+                                    genericParsed.meta = {
+                                      salesUpdateText: pickLatestSalesUpdateText(genericSalesUpdateCandidates)
+                                    };
+                                  }
                                   return _context15.a(2, genericParsed);
                               }
                             }, _callee14);
@@ -5534,6 +5534,11 @@ var App = function App() {
                         });
                       case 1:
                         parsed = _context16.v;
+                        if (type === 'sales') {
+                          parsed.meta = {
+                            salesUpdateText: pickLatestSalesUpdateText(collectSalesUpdateMetaFromRows(rows, file.name))
+                          };
+                        }
                         _context16.n = 27;
                         break;
                       case 2:
@@ -6141,10 +6146,7 @@ var App = function App() {
       }).filter(Boolean))).sort(sortYearLabels);
       if (monthlyYearKeys.length === 0) monthlyYearKeys.push(normalizeYearLabel(new Date().getFullYear()));
       var latestMonthlyYear = monthlyYearKeys[monthlyYearKeys.length - 1];
-      var latestMonthlyYearNum = Number(latestMonthlyYear);
-      var extraMonthlyYear = Number.isFinite(latestMonthlyYearNum) ? String(latestMonthlyYearNum + 1) : normalizeYearLabel((toCEYear(latestMonthlyYear) || new Date().getFullYear()) + 1);
-      var exportMonthlyYears = Array.from(new Set([].concat(_toConsumableArray(monthlyYearKeys), [extraMonthlyYear]))).sort(sortYearLabels);
-      if (!yearKeys.includes(extraMonthlyYear)) yearKeys.push(extraMonthlyYear);
+      var exportMonthlyYears = monthlyYearKeys.slice();
       yearKeys.sort(sortYearLabels);
       var formatYearHeader = function formatYearHeader(yearValue) {
         var style = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'full';
@@ -6342,7 +6344,7 @@ var App = function App() {
         compression: true,
         bookSST: true
       });
-      showStatus("Export \u0E44\u0E1F\u0E25\u0E4C\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 Sales \u0E41\u0E25\u0E49\u0E27 (\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E0A\u0E35\u0E15\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E16\u0E36\u0E07\u0E1B\u0E35 ".concat(extraMonthlyYear, ")"), 'success');
+      showStatus('Export ไฟล์ฐานข้อมูล Sales แล้ว', 'success');
     } catch (err) {
       console.error(err);
       showStatus('Export ข้อมูล Sales ไม่สำเร็จ', 'error');
@@ -9508,7 +9510,7 @@ var App = function App() {
   var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
   var googleSheetSyncLabel = formatLastSyncLabel(lastGoogleSheetSyncAt);
   var googleTargetSyncLabel = formatLastSyncLabel(lastGoogleTargetSyncAt);
-  var salesUpdateDateLabel = buildSalesUpdateDateLabel((allData.monthly || []).length ? allData.monthly || [] : effectiveYearlyData || [], uploadedSalesFileLabel, lastGoogleSheetSyncAt);
+  var salesUpdateSummaryText = buildSalesUpdateSummaryText(allData && allData.meta ? allData.meta.salesUpdateText : '');
   var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
     key: 'month',
     label: 'เดือน'
@@ -10006,9 +10008,9 @@ var App = function App() {
     className: "flex items-center justify-between mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-sm font-bold text-slate-700 flex flex-wrap items-center gap-2"
-  }, "\u0E2A\u0E23\u0E38\u0E1B\u0E20\u0E32\u0E1E\u0E23\u0E27\u0E21", salesUpdateDateLabel ? /*#__PURE__*/React.createElement("span", {
+  }, "\u0E2A\u0E23\u0E38\u0E1B\u0E20\u0E32\u0E1E\u0E23\u0E27\u0E21", salesUpdateSummaryText ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-semibold text-blue-600"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ", salesUpdateDateLabel) : null), /*#__PURE__*/React.createElement("button", {
+  }, salesUpdateSummaryText) : null), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('kpi');
     },
