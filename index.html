@@ -281,6 +281,11 @@
         .login-input:focus { border-color:rgba(96,165,250,0.6);
           box-shadow:0 0 0 4px rgba(96,165,250,0.12),0 0 20px rgba(96,165,250,0.08);
           background:rgba(8,16,38,0.7); }
+        .login-password-wrap { position:relative;width:100%; }
+        .login-password-input { padding-right:52px; }
+        .login-password-eye { position:absolute;right:10px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1px solid rgba(148,163,184,0.22);border-radius:12px;background:rgba(15,23,42,0.36);color:rgba(226,232,240,0.78);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease; }
+        .login-password-eye:hover { background:rgba(96,165,250,0.16);border-color:rgba(96,165,250,0.42);color:#eff6ff; }
+        .login-password-eye:disabled { opacity:.55;cursor:not-allowed; }
 
         .login-mode-row { display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 6px; }
         .login-mode-btn { border:1px solid rgba(148,163,184,0.26);border-radius:999px;background:rgba(15,23,42,0.36);
@@ -2339,6 +2344,46 @@ var Icon = function Icon(_ref) {
       d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
     }), /*#__PURE__*/React.createElement("path", {
       d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+    })),
+    Eye: /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: size,
+      height: size,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: className
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: "12",
+      cy: "12",
+      r: "3"
+    })),
+    EyeOff: /*#__PURE__*/React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: size,
+      height: size,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: className
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "m15 18-.722-3.25"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "M2 8a10.645 10.645 0 0 0 20 0"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "m20 15-1.726-2.05"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "m4 15 1.726-2.05"
+    }), /*#__PURE__*/React.createElement("path", {
+      d: "m9 18 .722-3.25"
     }))
   };
   return icons[name] || /*#__PURE__*/React.createElement("span", null);
@@ -3077,12 +3122,24 @@ var LoginScreen = function LoginScreen(props) {
   var resetCodeState = React.useState('');
   var resetCode = resetCodeState[0];
   var setResetCode = resetCodeState[1];
+  var showPasswordState = React.useState(false);
+  var showPassword = showPasswordState[0];
+  var setShowPassword = showPasswordState[1];
+  var showNewPasswordState = React.useState(false);
+  var showNewPassword = showNewPasswordState[0];
+  var setShowNewPassword = showNewPasswordState[1];
+  var showConfirmPasswordState = React.useState(false);
+  var showConfirmPassword = showConfirmPasswordState[0];
+  var setShowConfirmPassword = showConfirmPasswordState[1];
   var switchLoginMode = function switchLoginMode(nextMode) {
     if (isLoading) return;
     setLoginMode(nextMode);
     setNewPassword('');
     setConfirmPassword('');
     setResetCode('');
+    setShowPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
     onPasswordChange('');
   };
   var handlePrimaryAction = function handlePrimaryAction() {
@@ -3104,6 +3161,32 @@ var LoginScreen = function LoginScreen(props) {
       });
     }
     return onSubmit();
+  };
+  var renderPasswordField = function renderPasswordField(config) {
+    var visible = !!config.visible;
+    return /*#__PURE__*/React.createElement("div", {
+      key: config.key,
+      className: "login-password-wrap"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: visible ? "text" : "password",
+      className: "login-input login-password-input",
+      value: config.value,
+      onChange: config.onChange,
+      onKeyDown: function onKeyDown(e) {
+        if (e.key === 'Enter') handlePrimaryAction();
+      },
+      placeholder: config.placeholder,
+      autoComplete: config.autoComplete
+    }), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "login-password-eye",
+      onClick: config.onToggle,
+      disabled: isLoading,
+      "aria-label": visible ? "Hide password" : "Show password"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: visible ? "EyeOff" : "Eye",
+      size: 18
+    })));
   };
   var primaryLabel = loginMode === 'change' ? 'Change password' : loginMode === 'forgot' ? 'Reset password' : 'Sign in';
   var helpText = loginMode === 'change' ? 'Enter your current password, then set a new password.' : loginMode === 'forgot' ? 'Enter the reset code from your admin, then set a new password.' : '';
@@ -3164,19 +3247,18 @@ var LoginScreen = function LoginScreen(props) {
     loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
       key: "label-pass",
       className: "login-label"
-    }, loginMode === 'change' ? "Current password" : "Password"), /*#__PURE__*/React.createElement("input", {
+    }, loginMode === 'change' ? "Current password" : "Password"), renderPasswordField({
       key: "input-pass",
-      type: "password",
-      className: "login-input",
       value: password,
       onChange: function onChange(e) {
         return onPasswordChange(e.target.value);
       },
-      onKeyDown: function onKeyDown(e) {
-        if (e.key === 'Enter') handlePrimaryAction();
-      },
       placeholder: loginMode === 'change' ? "Enter current password" : "Enter password",
-      autoComplete: loginMode === 'change' ? "current-password" : "current-password"
+      autoComplete: "current-password",
+      visible: showPassword,
+      onToggle: function onToggle() {
+        return setShowPassword(!showPassword);
+      }
     }));
   }
   if (loginMode === 'forgot') {
@@ -3201,35 +3283,33 @@ var LoginScreen = function LoginScreen(props) {
     loginCardChildren.push(/*#__PURE__*/React.createElement("label", {
       key: "label-new-pass",
       className: "login-label"
-    }, "New password"), /*#__PURE__*/React.createElement("input", {
+    }, "New password"), renderPasswordField({
       key: "input-new-pass",
-      type: "password",
-      className: "login-input",
       value: newPassword,
       onChange: function onChange(e) {
         return setNewPassword(e.target.value);
       },
-      onKeyDown: function onKeyDown(e) {
-        if (e.key === 'Enter') handlePrimaryAction();
-      },
       placeholder: "Enter new password",
-      autoComplete: "new-password"
+      autoComplete: "new-password",
+      visible: showNewPassword,
+      onToggle: function onToggle() {
+        return setShowNewPassword(!showNewPassword);
+      }
     }), /*#__PURE__*/React.createElement("label", {
       key: "label-confirm-pass",
       className: "login-label"
-    }, "Confirm new password"), /*#__PURE__*/React.createElement("input", {
+    }, "Confirm new password"), renderPasswordField({
       key: "input-confirm-pass",
-      type: "password",
-      className: "login-input",
       value: confirmPassword,
       onChange: function onChange(e) {
         return setConfirmPassword(e.target.value);
       },
-      onKeyDown: function onKeyDown(e) {
-        if (e.key === 'Enter') handlePrimaryAction();
-      },
       placeholder: "Confirm new password",
-      autoComplete: "new-password"
+      autoComplete: "new-password",
+      visible: showConfirmPassword,
+      onToggle: function onToggle() {
+        return setShowConfirmPassword(!showConfirmPassword);
+      }
     }));
   }
   if (errorMessage) {
