@@ -1474,7 +1474,7 @@ var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
 var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
 var DEFAULT_BOUND_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhAn0-3sErT9EE9JmCgnngTDYVeqKvgW4_XNFz8Nd_6I_wpHZpKl_xJpColSp56rHP/exec';
-var EXPECTED_APP_SCRIPT_VERSION = '2026-04-20-clean-v5';
+var EXPECTED_APP_SCRIPT_VERSION = '2026-04-20-clean-v6';
 var DEFAULT_SOURCE_SPREADSHEET_URL = '';
 var DEFAULT_TARGET_SPREADSHEET_URL = '';
 var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
@@ -8844,9 +8844,9 @@ var App = function App() {
               mode: mode
             }, extraPayload || {});
             _context12.n = 1;
-            return callAppsScriptJsonp(payload, 90000).catch(function (jsonpError) {
+            return callAppsScriptJsonp(payload, 30000).catch(function (jsonpError) {
               console.warn('JSONP Apps Script auth failed, fallback to iframe bridge:', jsonpError);
-              return callAppsScriptBridge(payload, 90000).catch(function (bridgeError) {
+              return callAppsScriptBridge(payload, 30000).catch(function (bridgeError) {
                 console.warn('Iframe Apps Script auth failed:', bridgeError);
                 throw bridgeError && bridgeError.message ? bridgeError : jsonpError;
               });
@@ -9075,9 +9075,9 @@ var App = function App() {
     });
   };
   var verifyAppsScriptDeployment = function verifyAppsScriptDeployment() {
-    return callAppsScriptBridge({
+    return callAppsScriptJsonp({
       mode: 'health'
-    }, 30000).then(function (health) {
+    }, 15000).then(function (health) {
       var liveVersion = String(health && health.version || '').trim();
       if (liveVersion !== EXPECTED_APP_SCRIPT_VERSION) {
         throw new Error("Apps Script ยังไม่ใช่เวอร์ชันล่าสุด หรือ URL ไม่ตรงกัน (ต้องเป็น ".concat(EXPECTED_APP_SCRIPT_VERSION, " แต่ตอนนี้เป็น ").concat(liveVersion || 'ไม่พบ version', ")"));
