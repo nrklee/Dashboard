@@ -1474,9 +1474,9 @@ var TARGET_FILE_NAME_KEY = 'targetUploadedFileName';
 var SALES_GUIDE_WEIGHTS_KEY = 'salesGuideWeights';
 var AI_WEB_APP_URL_KEY = 'aiWebAppUrl';
 var DEFAULT_BOUND_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhAn0-3sErT9EE9JmCgnngTDYVeqKvgW4_XNFz8Nd_6I_wpHZpKl_xJpColSp56rHP/exec';
-var EXPECTED_APP_SCRIPT_VERSION = '2026-04-20-center-lock-v3';
-var DEFAULT_SOURCE_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1cqfgdhAn6Ge2J9usZRem1Ow14ari6Rt58sUyFCymxtg/edit?usp=drive_link';
-var DEFAULT_TARGET_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1aEHVntnPpCp_wLadkGTVSrHm8gVl9a5T4sNuAz4jaNQ/edit?usp=drive_link';
+var EXPECTED_APP_SCRIPT_VERSION = '2026-04-20-clean-v5';
+var DEFAULT_SOURCE_SPREADSHEET_URL = '';
+var DEFAULT_TARGET_SPREADSHEET_URL = '';
 var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
 var AUTH_USER_KEY = 'dashboardAuthUser';
 var GOOGLE_SHEET_LAST_SYNC_PREFIX = 'googleSheetLastSyncAt';
@@ -8844,9 +8844,12 @@ var App = function App() {
               mode: mode
             }, extraPayload || {});
             _context12.n = 1;
-            return callAppsScriptBridge(payload, 90000).catch(function (bridgeError) {
-              console.warn('Iframe Apps Script auth failed, fallback to direct JSON:', bridgeError);
-              return callAppsScriptJson(payload, 90000);
+            return callAppsScriptJsonp(payload, 90000).catch(function (jsonpError) {
+              console.warn('JSONP Apps Script auth failed, fallback to iframe bridge:', jsonpError);
+              return callAppsScriptBridge(payload, 90000).catch(function (bridgeError) {
+                console.warn('Iframe Apps Script auth failed:', bridgeError);
+                throw bridgeError && bridgeError.message ? bridgeError : jsonpError;
+              });
             });
           case 1:
             result = _context12.v;
@@ -8945,6 +8948,57 @@ var App = function App() {
         }
         reject(error instanceof Error ? error : new Error(String(error || 'เรียก Google Apps Script ไม่สำเร็จ')));
       });
+    });
+  };
+  var callAppsScriptJsonp = function callAppsScriptJsonp(payload, timeoutMs) {
+    return new Promise(function (resolve, reject) {
+      var targetUrl = String(aiWebAppUrl || '').trim();
+      if (!targetUrl) {
+        reject(new Error('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม'));
+        return;
+      }
+      if (typeof document === 'undefined' || typeof window === 'undefined') {
+        reject(new Error('อุปกรณ์นี้ไม่รองรับการเชื่อมต่อ Apps Script แบบ JSONP'));
+        return;
+      }
+      var payloadText = JSON.stringify(payload || {});
+      if (payloadText.length > 14000) {
+        reject(new Error('payload ใหญ่เกินไปสำหรับ JSONP'));
+        return;
+      }
+      var requestId = "jsonp-".concat(Date.now(), "-").concat(Math.random().toString(36).slice(2));
+      var callbackName = "__pcgGasJsonp_".concat(requestId.replace(/[^A-Za-z0-9_$]/g, '_'));
+      var script = document.createElement('script');
+      var timeoutId = null;
+      var settled = false;
+      var cleanup = function cleanup() {
+        if (timeoutId) window.clearTimeout(timeoutId);
+        try {
+          delete window[callbackName];
+        } catch (_err) {
+          window[callbackName] = undefined;
+        }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
+      var finish = function finish(fn, value) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        fn(value);
+      };
+      window[callbackName] = function (result) {
+        finish(resolve, result || {});
+      };
+      script.async = true;
+      script.onerror = function () {
+        finish(reject, new Error('เชื่อมต่อ Google Apps Script ผ่าน JSONP ไม่สำเร็จ'));
+      };
+      var joiner = targetUrl.indexOf('?') >= 0 ? '&' : '?';
+      script.src = "".concat(targetUrl).concat(joiner, "payload=").concat(encodeURIComponent(payloadText), "&callback=").concat(encodeURIComponent(callbackName), "&_=").concat(Date.now());
+      timeoutId = window.setTimeout(function () {
+        finish(reject, new Error('เชื่อมต่อ Google Apps Script ไม่สำเร็จหรือใช้เวลานานเกินไป'));
+      }, Number(timeoutMs || 90000));
+      document.head.appendChild(script);
     });
   };
   var callAppsScriptBridge = function callAppsScriptBridge(payload, timeoutMs) {
@@ -9191,7 +9245,8 @@ var App = function App() {
             _context14.n = 1;
             return callAIWebApp(mode, '', {}, {
               chunkIndex: 0,
-              chunkSize: 900000
+              chunkSize: 900000,
+              forceFile: true
             });
           case 1:
             firstResult = _context14.v;
@@ -9436,22 +9491,13 @@ var App = function App() {
       return Promise.resolve(null);
     }
     setIsLoading(true);
-    startLoadingStatus('กำลังเตรียมลิงก์ยอดขาย...', 4, true);
-    return resolveConfiguredSourceUrl('sync_sales_source', DEFAULT_SOURCE_SPREADSHEET_URL).then(function (resolvedSourceUrl) {
-      updateLoadingStatus('กำลังดาวน์โหลดไฟล์ยอดขายจากลิงก์...', 18, true);
-      return fetchGoogleSheetExportFile(resolvedSourceUrl, 'google-sheet-sales.xlsx', 'ยอดขาย');
-    }).catch(function (directError) {
-      console.warn('Direct sales link fetch failed, fallback to Apps Script transport:', directError);
-      if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
-        throw directError;
+    startLoadingStatus('กำลังโหลดข้อมูลยอดขายผ่าน Google Apps Script...', 6, true);
+    return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
+      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64 && !result.fileChunkBase64) {
+        throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
       }
-      updateLoadingStatus('โหลดตรงจากลิงก์ไม่สำเร็จ กำลังลองผ่าน Google Apps Script...', 24, true);
-      return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
-        if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64) {
-          throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
-        }
-        return buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
-      });
+      updateLoadingStatus('โหลดไฟล์ยอดขายจาก Apps Script สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...', 52, false);
+      return buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
     }).then(function (salesFile) {
       var sourceDisplayName, displayName;
       sourceDisplayName = salesFile && salesFile.name ? salesFile.name : 'google-sheet-sales.xlsx';
