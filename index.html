@@ -9613,40 +9613,95 @@ var App = function App() {
       message: 'ออกจากระบบแล้ว'
     });
   };
-  var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet() {
+  var syncGoogleSheetSourceAsUpload = function syncGoogleSheetSourceAsUpload(options) {
+    var mode = String(options && options.mode || '').trim();
+    var type = String(options && options.type || '').trim();
+    var statusLabel = String(options && options.statusLabel || 'ข้อมูล').trim();
+    var defaultFileName = String(options && options.defaultFileName || 'source.xlsx').trim() || 'source.xlsx';
+    var sourceLabel = String(options && options.sourceLabel || 'Google Sheet').trim() || 'Google Sheet';
+    var notReadyMessage = String(options && options.notReadyMessage || 'กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล').trim();
+    var restrictedMessage = String(options && options.restrictedMessage || 'บัญชีนี้ไม่มีสิทธิ์โหลดข้อมูล').trim();
+    var missingSourceMessage = String(options && options.missingSourceMessage || 'ยังไม่ได้ตั้งค่าลิงก์ข้อมูล').trim();
+    var syncedAtSetter = options && typeof options.syncedAtSetter === 'function' ? options.syncedAtSetter : null;
+    var resolvedSourceUrl = '';
+    var directFetchError = null;
     if (!authUser || !authSessionToken) {
-      showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูลยอดขาย', 'error');
+      showStatus(notReadyMessage, 'error');
       return Promise.resolve(null);
     }
     if (isSalesRestrictedUser) {
-      showStatus('บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดูยอดขาย', 'error');
+      showStatus(restrictedMessage, 'error');
       return Promise.resolve(null);
     }
     setIsLoading(true);
-    startLoadingStatus('กำลังโหลดข้อมูลยอดขายผ่าน Google Apps Script...', 6, true);
-    return loadChunkedSheetRows('sync_sales_source', 'ข้อมูลยอดขาย').then(function (result) {
-      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64 && !result.fileChunkBase64 && !(Array.isArray(result.workbookSheets) && result.workbookSheets.length > 0)) {
-        throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูลยอดขายจาก Google Sheet');
+    startLoadingStatus("กำลังเตรียมลิงก์".concat(statusLabel, "..."), 6, true);
+    return resolveConfiguredSourceUrl(mode, '').then(function (sourceUrl) {
+      resolvedSourceUrl = String(sourceUrl || '').trim();
+      if (!resolvedSourceUrl) {
+        throw new Error(missingSourceMessage);
       }
-      updateLoadingStatus('โหลดไฟล์ยอดขายจาก Apps Script สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...', 52, false);
-      return buildFileFromSyncResult(result, 'google-sheet-sales.xlsx');
-    }).then(function (salesFile) {
-      var sourceDisplayName, displayName;
-      sourceDisplayName = salesFile && salesFile.name ? salesFile.name : 'google-sheet-sales.xlsx';
-      updateLoadingStatus("เตรียมไฟล์ยอดขายสำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์...", 58, false);
-      return processAndStoreFile(salesFile, 'sales', {
+      if (!extractSpreadsheetIdFromUrl(resolvedSourceUrl)) {
+        return null;
+      }
+      updateLoadingStatus("กำลังดึงไฟล์".concat(statusLabel, " จาก Google Sheet..."), 18, false);
+      return fetchGoogleSheetExportFile(resolvedSourceUrl, defaultFileName, statusLabel).then(function (directFile) {
+        return {
+          file: directFile,
+          sourceDisplayName: directFile && directFile.name ? directFile.name : defaultFileName,
+          syncedAt: new Date().toISOString(),
+          transport: 'direct-file'
+        };
+      }).catch(function (error) {
+        directFetchError = error;
+        return null;
+      });
+    }).then(function (directPayload) {
+      if (directPayload) {
+        return directPayload;
+      }
+      if (resolvedSourceUrl && directFetchError) {
+        updateLoadingStatus("ดึงไฟล์".concat(statusLabel, " ตรงไม่สำเร็จ กำลังสลับไปโหลดผ่าน Google Apps Script..."), 28, false);
+      } else {
+        updateLoadingStatus("กำลังโหลด".concat(statusLabel, " ผ่าน Google Apps Script..."), 20, true);
+      }
+      return loadChunkedSheetRows(mode, statusLabel).then(function (result) {
+        var sourceInfo, builtFile, sourceDisplayName;
+        if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64 && !result.fileChunkBase64 && !(Array.isArray(result.workbookSheets) && result.workbookSheets.length > 0)) {
+          throw new Error(result && result.error ? result.error : "ไม่พบ".concat(statusLabel, " จาก Google Sheet"));
+        }
+        sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
+        builtFile = buildFileFromSyncResult(result, defaultFileName);
+        if (!builtFile) {
+          throw new Error("ไม่สามารถเตรียมไฟล์".concat(statusLabel, " จาก Google Apps Script ได้"));
+        }
+        sourceDisplayName = String(sourceInfo.fileName || sourceInfo.sheetName || sourceInfo.spreadsheetName || builtFile.name || defaultFileName).trim() || defaultFileName;
+        updateLoadingStatus("โหลด".concat(statusLabel, " ผ่าน Google Apps Script สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์..."), 56, false);
+        return {
+          file: builtFile,
+          sourceDisplayName: sourceDisplayName,
+          syncedAt: sourceInfo.syncedAt || new Date().toISOString(),
+          transport: sourceInfo.transport || 'apps-script'
+        };
+      });
+    }).then(function (payload) {
+      var sourceDisplayName = String(payload && payload.sourceDisplayName || payload && payload.file && payload.file.name || defaultFileName).trim() || defaultFileName;
+      updateLoadingStatus("เตรียมไฟล์".concat(statusLabel, " สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์..."), 62, false);
+      return processAndStoreFile(payload.file, type, {
         bindHandle: false,
         silentStatus: true
       }).then(function (ok) {
-        if (!ok) throw new Error("โหลดไฟล์ยอดขายจากลิงก์สำเร็จแล้ว แต่ parser อ่านข้อมูลไม่สำเร็จ (".concat(sourceDisplayName, ")"));
-        displayName = "".concat(GOOGLE_SHEET_SOURCE_LABEL, " \u00B7 ").concat(sourceDisplayName);
-        persistUploadedFileName('sales', displayName);
-        setLastGoogleSheetSyncAt(new Date().toISOString());
-        finishLoadingStatus("โหลดและแปลงข้อมูลยอดขายจากลิงก์สำเร็จ (".concat(sourceDisplayName, ")"), 'success');
-        return salesFile;
+        var displayName;
+        if (!ok) {
+          throw new Error("โหลดไฟล์".concat(statusLabel, " สำเร็จแล้ว แต่ parser อ่านข้อมูลไม่สำเร็จ (").concat(sourceDisplayName, ")"));
+        }
+        displayName = "".concat(sourceLabel, " \u00B7 ").concat(sourceDisplayName);
+        persistUploadedFileName(type, displayName);
+        if (syncedAtSetter) syncedAtSetter(payload && payload.syncedAt ? payload.syncedAt : new Date().toISOString());
+        finishLoadingStatus("โหลดและแปลง".concat(statusLabel, " สำเร็จ (").concat(sourceDisplayName, ")"), 'success');
+        return payload.file;
       });
     }).catch(function (error) {
-      finishLoadingStatus(error && error.message ? error.message : 'ดึงข้อมูลยอดขายจากลิงก์ไม่สำเร็จ', 'error');
+      finishLoadingStatus(error && error.message ? error.message : "ดึง".concat(statusLabel, " จากลิงก์ไม่สำเร็จ"), 'error');
       return null;
     }).then(function (result) {
       setIsLoading(false);
@@ -9656,51 +9711,30 @@ var App = function App() {
       throw error;
     });
   };
+  var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet() {
+    return syncGoogleSheetSourceAsUpload({
+      mode: 'sync_sales_source',
+      type: 'sales',
+      statusLabel: 'ข้อมูลยอดขาย',
+      defaultFileName: 'google-sheet-sales.xlsx',
+      sourceLabel: GOOGLE_SHEET_SOURCE_LABEL,
+      notReadyMessage: 'กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูลยอดขาย',
+      restrictedMessage: 'บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดูยอดขาย',
+      missingSourceMessage: 'ยังไม่ได้ตั้งค่าลิงก์ยอดขายสำหรับผู้ใช้นี้',
+      syncedAtSetter: setLastGoogleSheetSyncAt
+    });
+  };
   var syncTargetFromGoogleSheet = function syncTargetFromGoogleSheet() {
-    if (!authUser || !authSessionToken) {
-      showStatus('กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล Target', 'error');
-      return Promise.resolve(null);
-    }
-    if (isSalesRestrictedUser) {
-      showStatus('บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดู Target', 'error');
-      return Promise.resolve(null);
-    }
-    if (!DEFAULT_BOUND_WEB_APP_URL.trim()) {
-      showStatus('ระบบเชื่อมต่อ Google Apps Script ยังไม่พร้อม', 'error');
-      return Promise.resolve(null);
-    }
-    setIsLoading(true);
-    startLoadingStatus('กำลังเตรียมลิงก์เป้าหมาย...', 4, true);
-    return loadChunkedSheetRows('sync_target_source', 'ข้อมูล Target').then(function (result) {
-      var sourceInfo, displayName, sourceDisplayName, transportLabel, targetFile;
-      if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64 && !result.fileChunkBase64 && !(Array.isArray(result.workbookSheets) && result.workbookSheets.length > 0)) throw new Error(result && result.error ? result.error : 'ไม่พบข้อมูล Target จาก Google Sheet');
-      sourceInfo = result.source && _typeof(result.source) === 'object' ? result.source : {};
-      sourceDisplayName = String(sourceInfo.fileName || sourceInfo.sheetName || sourceInfo.spreadsheetName || 'Target link');
-      transportLabel = sourceInfo.transport === 'file' || sourceInfo.transport === 'file-chunk' ? 'ไฟล์' : sourceInfo.transport === 'workbook-rows-chunk' ? 'หลายชีต' : 'ตารางข้อมูล';
-      updateLoadingStatus("โหลด".concat(transportLabel, " Target \u0E08\u0E32\u0E01\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ").concat(sourceDisplayName, " \u0E01\u0E33\u0E25\u0E31\u0E07\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C..."), 52, false);
-      targetFile = buildFileFromSyncResult(result, 'google-sheet-target.xlsx');
-      if (!targetFile) throw new Error('ไม่สามารถเตรียมไฟล์ Target จากข้อมูลที่โหลดมาได้');
-      updateLoadingStatus("\u0E40\u0E15\u0E23\u0E35\u0E22\u0E21\u0E44\u0E1F\u0E25\u0E4C Target \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E01\u0E33\u0E25\u0E31\u0E07\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C...", 60, false);
-      return processAndStoreFile(targetFile, 'target', {
-        bindHandle: false,
-        silentStatus: true
-      }).then(function (ok) {
-        if (!ok) throw new Error("โหลดไฟล์ Target จากลิงก์สำเร็จแล้ว แต่ parser \u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (".concat(sourceDisplayName, ") \u0E01\u0E23\u0E38\u0E13\u0E32\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E0A\u0E35\u0E15 Target \u0E43\u0E2B\u0E49\u0E15\u0E23\u0E07\u0E01\u0E31\u0E1A\u0E15\u0E49\u0E19\u0E09\u0E1A\u0E31\u0E1A"));
-        displayName = sourceInfo.sheetName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.sheetName) : sourceInfo.fileName || result.fileName ? "".concat(GOOGLE_TARGET_SOURCE_LABEL, " \u00B7 ").concat(sourceInfo.fileName || result.fileName) : GOOGLE_TARGET_SOURCE_LABEL;
-        persistUploadedFileName('target', displayName);
-        setLastGoogleTargetSyncAt(sourceInfo.syncedAt || new Date().toISOString());
-        finishLoadingStatus("โหลดและแปลงข้อมูล Target จากลิงก์สำเร็จ (".concat(sourceDisplayName, ")"), 'success');
-        return result;
-      });
-    }).catch(function (error) {
-      finishLoadingStatus(error && error.message ? error.message : 'ดึงข้อมูล Target จาก Google Sheet ไม่สำเร็จ', 'error');
-      return null;
-    }).then(function (result) {
-      setIsLoading(false);
-      return result;
-    }, function (error) {
-      setIsLoading(false);
-      throw error;
+    return syncGoogleSheetSourceAsUpload({
+      mode: 'sync_target_source',
+      type: 'target',
+      statusLabel: 'ข้อมูล Target',
+      defaultFileName: 'google-sheet-target.xlsx',
+      sourceLabel: GOOGLE_TARGET_SOURCE_LABEL,
+      notReadyMessage: 'กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล Target',
+      restrictedMessage: 'บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดู Target',
+      missingSourceMessage: 'ยังไม่ได้ตั้งค่าลิงก์ Target สำหรับผู้ใช้นี้',
+      syncedAtSetter: setLastGoogleTargetSyncAt
     });
   };
   var applyAIAction = function applyAIAction(actionPayload) {
