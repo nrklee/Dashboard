@@ -9331,12 +9331,73 @@ var App = function App() {
     var match = String(sourceUrl || '').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/i);
     return match ? match[1] : '';
   };
+  var extractDriveFileIdFromUrl = function extractDriveFileIdFromUrl(sourceUrl) {
+    var text = String(sourceUrl || '').trim();
+    if (!text) return '';
+    var spreadsheetId = extractSpreadsheetIdFromUrl(text);
+    if (spreadsheetId) return spreadsheetId;
+    var fileMatch = text.match(/\/file\/d\/([a-zA-Z0-9-_]+)/i);
+    if (fileMatch && fileMatch[1]) return fileMatch[1];
+    var idMatch = text.match(/[?&]id=([a-zA-Z0-9-_]+)/i);
+    if (idMatch && idMatch[1]) return idMatch[1];
+    if (/^[a-zA-Z0-9-_]{20,}$/.test(text) && text.indexOf('/') < 0) return text;
+    return '';
+  };
   var buildGoogleSheetExportUrl = function buildGoogleSheetExportUrl(sourceUrl) {
     var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
     if (!spreadsheetId) {
       throw new Error('ไม่พบ Spreadsheet ID จากลิงก์ต้นทาง');
     }
     return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/export?format=xlsx");
+  };
+  var isLikelyDirectSourceFileUrl = function isLikelyDirectSourceFileUrl(sourceUrl) {
+    var safeUrl = String(sourceUrl || '').trim();
+    if (!safeUrl) return false;
+    if (extractSpreadsheetIdFromUrl(safeUrl)) return true;
+    if (extractDriveFileIdFromUrl(safeUrl)) return true;
+    if (/\.xlsx(?:[?#].*)?$/i.test(safeUrl) || /\.xlsm?(?:[?#].*)?$/i.test(safeUrl) || /\.csv(?:[?#].*)?$/i.test(safeUrl)) return true;
+    if (/\/export\?/i.test(safeUrl) || /[?&]export=download/i.test(safeUrl) || /\/uc\?/i.test(safeUrl)) return true;
+    return /^https?:\/\//i.test(safeUrl);
+  };
+  var inferFileNameFromSourceUrl = function inferFileNameFromSourceUrl(sourceUrl, fallbackFileName) {
+    var safeUrl = String(sourceUrl || '').trim();
+    if (!safeUrl) return String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx';
+    var fileNameMatch = safeUrl.match(/\/([^/?#]+?\.(?:xlsx|xlsm|xls|csv))(?:[?#]|$)/i);
+    if (fileNameMatch && fileNameMatch[1]) {
+      try {
+        return decodeURIComponent(fileNameMatch[1]).trim();
+      } catch (_error2) {
+        return String(fileNameMatch[1]).trim();
+      }
+    }
+    return String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx';
+  };
+  var buildDirectSourceFetchInfo = function buildDirectSourceFetchInfo(sourceUrl, fallbackFileName) {
+    var safeUrl = String(sourceUrl || '').trim();
+    var spreadsheetId = extractSpreadsheetIdFromUrl(safeUrl);
+    if (spreadsheetId) {
+      return {
+        requestUrl: buildGoogleSheetExportUrl(safeUrl),
+        kind: 'google-sheet-export',
+        fileName: String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx'
+      };
+    }
+    var driveFileId = extractDriveFileIdFromUrl(safeUrl);
+    if (driveFileId) {
+      return {
+        requestUrl: "https://drive.google.com/uc?export=download&id=".concat(encodeURIComponent(driveFileId)),
+        kind: 'drive-file',
+        fileName: inferFileNameFromSourceUrl(safeUrl, fallbackFileName)
+      };
+    }
+    if (!/^https?:\/\//i.test(safeUrl)) {
+      throw new Error('ลิงก์ต้นทางไม่ถูกต้อง');
+    }
+    return {
+      requestUrl: safeUrl,
+      kind: 'direct-file',
+      fileName: inferFileNameFromSourceUrl(safeUrl, fallbackFileName)
+    };
   };
   var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
     var userSourceConfig = authUser && authUser.sourceConfig && _typeof(authUser.sourceConfig) === 'object' ? authUser.sourceConfig : {};
@@ -9365,13 +9426,13 @@ var App = function App() {
     var basicMatch = safeValue.match(/filename=\"?([^\";]+)\"?/i);
     return basicMatch && basicMatch[1] ? String(basicMatch[1]).trim() : '';
   };
-  var fetchGoogleSheetExportFile = function fetchGoogleSheetExportFile(sourceUrl, fallbackFileName, statusLabel) {
-    var exportUrl = buildGoogleSheetExportUrl(sourceUrl);
+  var fetchSourceLinkFile = function fetchSourceLinkFile(sourceUrl, fallbackFileName, statusLabel) {
+    var fetchInfo = buildDirectSourceFetchInfo(sourceUrl, fallbackFileName);
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timeoutId = controller ? window.setTimeout(function () {
       return controller.abort();
     }, 240000) : null;
-    return fetch(exportUrl, {
+    return fetch(fetchInfo.requestUrl, {
       method: 'GET',
       redirect: 'follow',
       cache: 'no-store',
@@ -9385,7 +9446,7 @@ var App = function App() {
         if (!blob || !blob.size) {
           throw new Error("ไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ว่างเปล่าหรือไม่มีข้อมูล"));
         }
-        return new File([blob], dispositionName || fallbackFileName || 'source.xlsx', {
+        return new File([blob], dispositionName || fetchInfo.fileName || fallbackFileName || 'source.xlsx', {
           type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
       });
@@ -9818,11 +9879,11 @@ var App = function App() {
       if (!resolvedSourceUrl) {
         throw new Error(missingSourceMessage);
       }
-      if (!extractSpreadsheetIdFromUrl(resolvedSourceUrl)) {
+      if (!isLikelyDirectSourceFileUrl(resolvedSourceUrl)) {
         return null;
       }
-      updateLoadingStatus("กำลังดึงไฟล์".concat(statusLabel, " จาก Google Sheet..."), 18, false);
-      return fetchGoogleSheetExportFile(resolvedSourceUrl, defaultFileName, statusLabel).then(function (directFile) {
+      updateLoadingStatus("กำลังดึงไฟล์".concat(statusLabel, " จากลิงก์ต้นทาง..."), 18, false);
+      return fetchSourceLinkFile(resolvedSourceUrl, defaultFileName, statusLabel).then(function (directFile) {
         return {
           file: directFile,
           sourceDisplayName: directFile && directFile.name ? directFile.name : defaultFileName,
