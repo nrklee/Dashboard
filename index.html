@@ -168,6 +168,11 @@
         .menu-btn { width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-sec);transition:all .2s;flex-shrink:0;font-size:18px; }
         .menu-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-soft); }
         .app-header-controls { display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:0; }
+        .filters-head-row { display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap; }
+        .filters-title { min-width:0;line-height:1.3; }
+        .filters-head-actions { display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:auto; }
+        .filters-source-meta { line-height:1.7;overflow-wrap:anywhere;word-break:break-word; }
+        .filters-source-badge { white-space:normal;overflow-wrap:anywhere;word-break:break-word; }
         .filters-grid { display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;align-items:start; }
         .trend-top-grid { display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:24px;align-items:stretch; }
         .action-gap-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start; }
@@ -888,6 +893,22 @@
                 gap: 5px !important;
             }
 
+            .dashboard-shell {
+                padding-top: env(safe-area-inset-top);
+            }
+
+            .dashboard-header {
+                padding: calc(8px + env(safe-area-inset-top)) 10px 8px !important;
+                gap: 6px !important;
+            }
+
+            .dashboard-header h1 {
+                font-size: 11px !important;
+                line-height: 1.2 !important;
+                white-space: normal !important;
+                max-width: calc(100vw - 24px);
+            }
+
             /* Toggle buttons: slightly more compact text */
             .toggle-btn {
                 padding: 5px 9px !important;
@@ -916,7 +937,41 @@
 
             /* Filters bar: reduce top padding slightly */
             .dashboard-filters {
-                padding: 8px 10px !important;
+                padding: 10px 10px 8px !important;
+            }
+
+            .filters-head-row {
+                gap: 10px !important;
+            }
+
+            .filters-title {
+                flex: 1 1 170px;
+                font-size: 12px !important;
+                white-space: normal;
+            }
+
+            .filters-head-actions {
+                width: 100%;
+                margin-left: 0 !important;
+                justify-content: flex-start !important;
+                gap: 8px !important;
+            }
+
+            .filters-head-actions button {
+                min-height: 34px;
+                padding: 6px 10px;
+                border-radius: 10px;
+            }
+
+            .filters-source-meta {
+                font-size: 10.5px !important;
+                line-height: 1.65 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .filters-source-badge {
+                display: inline;
+                padding: 0 4px !important;
             }
 
             /* Section label: slightly smaller */
@@ -935,6 +990,10 @@
                Ultra compact but still usable
            ────────────────────────────────────────────── */
         @media(max-width:390px) {
+
+            .dashboard-header {
+                padding: calc(6px + env(safe-area-inset-top)) 8px 8px !important;
+            }
 
             .toggle-btn {
                 padding: 4px 7px !important;
@@ -972,7 +1031,19 @@
 
             /* Header title: minimal */
             .dashboard-header h1 {
-                font-size: 12px !important;
+                font-size: 10px !important;
+            }
+
+            .filters-title {
+                font-size: 11px !important;
+            }
+
+            .filters-head-actions {
+                gap: 6px !important;
+            }
+
+            .filters-head-actions button {
+                font-size: 11px !important;
             }
 
             /* Filters: stacked 1-col */
@@ -10444,15 +10515,15 @@ var App = function App() {
   }), /*#__PURE__*/React.createElement("div", {
     className: "dashboard-filters bg-white border-b border-slate-200 p-4 shadow-sm z-10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-2"
+    className: "filters-head-row mb-2"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Filter",
     size: 16,
     className: "text-slate-500"
   }), " ", /*#__PURE__*/React.createElement("h3", {
-    className: "text-sm font-bold text-slate-700"
+    className: "filters-title text-sm font-bold text-slate-700"
   }, "\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (Smart Filters)"), /*#__PURE__*/React.createElement("div", {
-    className: "ml-auto flex items-center gap-3"
+    className: "filters-head-actions ml-auto flex items-center gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('filters');
@@ -10466,11 +10537,11 @@ var App = function App() {
   }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))), sectionOpen.filters && /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex-1 min-h-0 flex flex-col"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500 mb-3"
+    className: "filters-source-meta text-[11px] text-slate-500 mb-3"
   }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22: ", /*#__PURE__*/React.createElement("code", {
-    className: "bg-slate-100 px-1 rounded"
+    className: "filters-source-badge bg-slate-100 px-1 rounded"
   }, uploadedSalesFileLabel), " \u00B7 \u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14 ", googleSheetSyncLabel, " \u00B7 \u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 Target: ", /*#__PURE__*/React.createElement("code", {
-    className: "bg-slate-100 px-1 rounded"
+    className: "filters-source-badge bg-slate-100 px-1 rounded"
   }, uploadedTargetFileLabel), " \u00B7 \u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14 ", googleTargetSyncLabel), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
