@@ -1478,6 +1478,7 @@ var EXPECTED_APP_SCRIPT_VERSION = '2026-04-20-clean-v9';
 var DEFAULT_SOURCE_SPREADSHEET_URL = '';
 var DEFAULT_TARGET_SPREADSHEET_URL = '';
 var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
+var AUTH_SESSION_EXPIRES_AT_KEY = 'dashboardAuthSessionExpiresAt';
 var AUTH_USER_KEY = 'dashboardAuthUser';
 var GOOGLE_SHEET_LAST_SYNC_PREFIX = 'googleSheetLastSyncAt';
 var GOOGLE_SHEET_SOURCE_LABEL = 'Google Sheet Sales';
@@ -4086,6 +4087,12 @@ var App = function App() {
     _useStateAuthToken2 = _slicedToArray(_useStateAuthToken, 2),
     authSessionToken = _useStateAuthToken2[0],
     setAuthSessionToken = _useStateAuthToken2[1];
+  var _useStateAuthExpires = useState(function () {
+      return safeStorageGet(AUTH_SESSION_EXPIRES_AT_KEY) || '';
+    }),
+    _useStateAuthExpires2 = _slicedToArray(_useStateAuthExpires, 2),
+    authSessionExpiresAt = _useStateAuthExpires2[0],
+    setAuthSessionExpiresAt = _useStateAuthExpires2[1];
   var _useStateAuthUser = useState(function () {
       try {
         var raw = safeStorageGet(AUTH_USER_KEY);
@@ -4220,6 +4227,30 @@ var App = function App() {
       };
     });
   };
+  var isSessionExpiredMessage = function isSessionExpiredMessage(message) {
+    var safeMessage = String(message || '').trim().toLowerCase();
+    if (!safeMessage) return false;
+    return safeMessage.indexOf('session หมดอายุ') >= 0 || safeMessage.indexOf('session หมดอายุหรือไม่ถูกต้อง') >= 0 || safeMessage.indexOf('session expired') >= 0 || safeMessage.indexOf('invalid session') >= 0 || safeMessage.indexOf('กรุณาเข้าสู่ระบบใหม่') >= 0 || safeMessage.indexOf('กรุณาเข้าสู่ระบบก่อนใช้งาน') >= 0;
+  };
+  var forceReturnToLogin = function forceReturnToLogin() {
+    var reason = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'session หมดอายุ กรุณาเข้าสู่ระบบใหม่';
+    setAuthSessionToken('');
+    setAuthSessionExpiresAt('');
+    setAuthUser(null);
+    setAuthPassword('');
+    setIsAIPanelOpen(false);
+    setIsDrawerOpen(false);
+    setAuthNotice('');
+    setAuthError(reason);
+    setStatusInfo({
+      type: 'error',
+      message: reason,
+      loading: false,
+      progress: 0,
+      indeterminate: false,
+      startedAt: 0
+    });
+  };
   var formatElapsedTime = function formatElapsedTime(ms) {
     var totalSeconds = Math.max(0, Math.floor(Number(ms || 0) / 1000));
     var minutes = Math.floor(totalSeconds / 60);
@@ -4303,6 +4334,9 @@ var App = function App() {
   useEffect(function () {
     if (authSessionToken) safeStorageSet(AUTH_SESSION_TOKEN_KEY, authSessionToken);else safeStorageRemove(AUTH_SESSION_TOKEN_KEY);
   }, [authSessionToken]);
+  useEffect(function () {
+    if (authSessionExpiresAt) safeStorageSet(AUTH_SESSION_EXPIRES_AT_KEY, authSessionExpiresAt);else safeStorageRemove(AUTH_SESSION_EXPIRES_AT_KEY);
+  }, [authSessionExpiresAt]);
   useEffect(function () {
     if (authUser) safeStorageSet(AUTH_USER_KEY, JSON.stringify(authUser));else safeStorageRemove(AUTH_USER_KEY);
   }, [authUser]);
@@ -4413,6 +4447,52 @@ var App = function App() {
       return clearTimeout(timer);
     };
   }, [statusInfo.message]);
+  useEffect(function () {
+    if (!authSessionToken || !authUser) return undefined;
+    var cancelled = false;
+    var verifySessionSilently = function verifySessionSilently() {
+      return callAuthWebApp('verify_session', {
+        token: authSessionToken
+      }).catch(function () {
+        return null;
+      });
+    };
+    if (!authSessionExpiresAt) {
+      verifySessionSilently();
+    }
+    var handleVisibilityChange = function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        verifySessionSilently();
+      }
+    };
+    var intervalId = window.setInterval(function () {
+      if (!cancelled && document.visibilityState === 'visible') {
+        verifySessionSilently();
+      }
+    }, 120000);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return function () {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [authSessionToken, authSessionExpiresAt, authUser && authUser.username]);
+  useEffect(function () {
+    if (!authSessionToken || !authUser) return undefined;
+    if (!authSessionExpiresAt) return undefined;
+    var expireAtTime = new Date(authSessionExpiresAt).getTime();
+    if (!Number.isFinite(expireAtTime)) return undefined;
+    if (expireAtTime <= Date.now()) {
+      forceReturnToLogin('session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+      return undefined;
+    }
+    var timerId = window.setTimeout(function () {
+      forceReturnToLogin('session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+    }, Math.max(0, expireAtTime - Date.now()));
+    return function () {
+      return window.clearTimeout(timerId);
+    };
+  }, [authSessionToken, authSessionExpiresAt, authUser && authUser.username]);
   var sanitizeSalesRow = function sanitizeSalesRow(row) {
     var fallbackId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
     if (!row || _typeof(row) !== 'object') return null;
@@ -8836,7 +8916,7 @@ var App = function App() {
   };
   var callAuthWebApp = /*#__PURE__*/function () {
     var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(mode, extraPayload) {
-      var payload, result;
+      var payload, result, errorMessage;
       return _regenerator().w(function (_context12) {
         while (1) switch (_context12.n) {
           case 0:
@@ -8850,15 +8930,30 @@ var App = function App() {
                 console.warn('Iframe Apps Script auth failed:', bridgeError);
                 throw bridgeError && bridgeError.message ? bridgeError : jsonpError;
               });
+            }).catch(function (error) {
+              var message = error && error.message ? error.message : String(error || 'เรียกระบบล็อกอินไม่สำเร็จ');
+              if (String(mode || '').trim().toLowerCase() !== 'login' && isSessionExpiredMessage(message)) {
+                forceReturnToLogin('session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+              }
+              throw error && error.message ? error : new Error(message);
             });
           case 1:
             result = _context12.v;
             if (result && result.ok) {
-              _context12.n = 3;
+              if (String(mode || '').trim().toLowerCase() === 'verify_session' && result.auth) {
+                if (result.auth.token) setAuthSessionToken(result.auth.token);
+                if (result.auth.expiresAt) setAuthSessionExpiresAt(String(result.auth.expiresAt || ''));
+                if (result.auth.user) setAuthUser(result.auth.user);
+              }
+              _context12.n = 4;
               break;
             }
-            throw new Error(result && result.error ? result.error : 'เรียกระบบล็อกอินไม่สำเร็จ');
-          case 3:
+            errorMessage = result && result.error ? result.error : 'เรียกระบบล็อกอินไม่สำเร็จ';
+            if (String(mode || '').trim().toLowerCase() !== 'login' && isSessionExpiredMessage(errorMessage)) {
+              forceReturnToLogin('session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+            }
+            throw new Error(errorMessage);
+          case 4:
             return _context12.a(2, result);
         }
       }, _callee12);
@@ -8869,7 +8964,7 @@ var App = function App() {
   }();
   var callAIWebApp = /*#__PURE__*/function () {
     var _ref13 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(mode, questionText, contextPayload, extraPayload) {
-      var result;
+      var result, errorMessage;
       return _regenerator().w(function (_context13) {
         while (1) switch (_context13.n) {
           case 0:
@@ -8879,15 +8974,25 @@ var App = function App() {
               question: questionText,
               context: contextPayload,
               authToken: authSessionToken
-            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 180000 : 25000);
+            }, extraPayload || {}), /^sync_/i.test(String(mode || '')) ? 180000 : 25000).catch(function (error) {
+              var message = error && error.message ? error.message : String(error || 'เรียก AI ไม่สำเร็จ');
+              if (isSessionExpiredMessage(message)) {
+                forceReturnToLogin('session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+              }
+              throw error && error.message ? error : new Error(message);
+            });
           case 1:
             result = _context13.v;
             if (result && result.ok) {
-              _context13.n = 3;
+              _context13.n = 4;
               break;
             }
-            throw new Error(result && result.error ? result.error : 'เรียก AI ไม่สำเร็จ');
-          case 3:
+            errorMessage = result && result.error ? result.error : 'เรียก AI ไม่สำเร็จ';
+            if (isSessionExpiredMessage(errorMessage)) {
+              forceReturnToLogin('session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+            }
+            throw new Error(errorMessage);
+          case 4:
             return _context13.a(2, result);
         }
       }, _callee13);
@@ -9482,6 +9587,7 @@ var App = function App() {
         throw new Error('ระบบไม่ได้ส่งข้อมูล session กลับมา');
       }
       setAuthSessionToken(auth.token);
+      setAuthSessionExpiresAt(String(auth.expiresAt || ''));
       setAuthUser(auth.user);
       setAuthPassword('');
       setStatusInfo({
@@ -9597,6 +9703,7 @@ var App = function App() {
   var handleLogout = function handleLogout() {
     var existingToken = authSessionToken;
     setAuthSessionToken('');
+    setAuthSessionExpiresAt('');
     setAuthUser(null);
     setAuthPassword('');
     setIsAIPanelOpen(false);
