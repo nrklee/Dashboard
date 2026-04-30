@@ -2972,11 +2972,13 @@ var ExpandableBrandItem = function ExpandableBrandItem(_ref3) {
     className: "text-xs font-semibold text-slate-500 mb-2 px-2 border-b border-slate-200 pb-1",
     style: {
       display: 'grid',
-      gridTemplateColumns: 'minmax(0,1fr) minmax(90px,118px) minmax(132px,180px)',
+      gridTemplateColumns: 'minmax(150px,1.35fr) minmax(96px,126px) minmax(126px,170px)',
       columnGap: '0.75rem',
       alignItems: 'center'
     }
-  }, /*#__PURE__*/React.createElement("span", null, "\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32 (", brand.breakdown.length, ")"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "whitespace-nowrap"
+  }, "\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32 (", brand.breakdown.length, ")"), /*#__PURE__*/React.createElement("span", {
     className: "text-center text-blue-600"
   }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E40\u0E09\u0E25\u0E35\u0E48\u0E22"), /*#__PURE__*/React.createElement("span", {
     className: "text-right"
@@ -2988,12 +2990,12 @@ var ExpandableBrandItem = function ExpandableBrandItem(_ref3) {
       className: "text-xs px-2 py-1 bg-white rounded border border-slate-100",
       style: {
         display: 'grid',
-        gridTemplateColumns: 'minmax(0,1fr) minmax(90px,118px) minmax(132px,180px)',
+        gridTemplateColumns: 'minmax(150px,1.35fr) minmax(96px,126px) minmax(126px,170px)',
         columnGap: '0.75rem',
         alignItems: 'center'
       }
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-700 font-medium truncate pr-2",
+      className: "text-slate-700 font-medium pr-2 whitespace-nowrap",
       title: size.name
     }, size.name), /*#__PURE__*/React.createElement("span", {
       className: "text-center text-blue-600 font-bold whitespace-nowrap"
