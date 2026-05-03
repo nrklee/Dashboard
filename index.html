@@ -1703,6 +1703,79 @@ var formatLastSyncLabel = function formatLastSyncLabel(value) {
     timeStyle: 'short'
   });
 };
+var createEmptySalesUpdateMeta = function createEmptySalesUpdateMeta() {
+  return {
+    monthly: {
+      sales: {},
+      qty: {},
+      ton: {}
+    },
+    yearly: {
+      sales: {},
+      qty: {},
+      ton: {}
+    }
+  };
+};
+var normalizeSalesUpdateMeta = function normalizeSalesUpdateMeta(meta) {
+  var empty = createEmptySalesUpdateMeta();
+  var safeMeta = meta && _typeof(meta) === 'object' ? meta : {};
+  var monthlyMeta = safeMeta.monthly && _typeof(safeMeta.monthly) === 'object' ? safeMeta.monthly : {};
+  var yearlyMeta = safeMeta.yearly && _typeof(safeMeta.yearly) === 'object' ? safeMeta.yearly : {};
+  return {
+    monthly: {
+      sales: _objectSpread(_objectSpread({}, empty.monthly.sales), monthlyMeta.sales || {}),
+      qty: _objectSpread(_objectSpread({}, empty.monthly.qty), monthlyMeta.qty || {}),
+      ton: _objectSpread(_objectSpread({}, empty.monthly.ton), monthlyMeta.ton || {})
+    },
+    yearly: {
+      sales: _objectSpread(_objectSpread({}, empty.yearly.sales), yearlyMeta.sales || {}),
+      qty: _objectSpread(_objectSpread({}, empty.yearly.qty), yearlyMeta.qty || {}),
+      ton: _objectSpread(_objectSpread({}, empty.yearly.ton), yearlyMeta.ton || {})
+    }
+  };
+};
+var normalizeAllDataShape = function normalizeAllDataShape(data) {
+  var safeData = data && _typeof(data) === 'object' ? data : {};
+  return _objectSpread(_objectSpread({
+    monthly: [],
+    yearly: [],
+    targets: []
+  }, safeData), {}, {
+    salesUpdateMeta: normalizeSalesUpdateMeta(safeData.salesUpdateMeta)
+  });
+};
+var normalizeSheetUpdateDisplayValue = function normalizeSheetUpdateDisplayValue(value) {
+  if (value === undefined || value === null) return '';
+  var text = String(value).replace(/\s+/g, ' ').trim();
+  if (!text || text === 'ยอดขายอัปเดต') return '';
+  return text;
+};
+var extractSheetUpdateLabel = function extractSheetUpdateLabel(sheet) {
+  if (!sheet || !sheet['!ref']) return '';
+  try {
+    var rows = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      blankrows: false,
+      raw: false
+    });
+    var maxRows = Math.min(40, rows.length);
+    for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
+      var row = rows[rowIndex] || [];
+      var labelIndex = row.findIndex(function (cell) {
+        return String(cell !== null && cell !== void 0 ? cell : '').replace(/\s+/g, ' ').trim().includes('ยอดขายอัปเดต');
+      });
+      if (labelIndex < 0) continue;
+      var afterLabel = row.slice(labelIndex + 1).map(normalizeSheetUpdateDisplayValue).filter(Boolean);
+      if (afterLabel.length > 0) return afterLabel.join(' ');
+      var beforeLabel = row.slice(0, labelIndex).map(normalizeSheetUpdateDisplayValue).filter(Boolean);
+      if (beforeLabel.length > 0) return beforeLabel[beforeLabel.length - 1];
+    }
+  } catch (err) {
+    console.warn('extractSheetUpdateLabel failed', err);
+  }
+  return '';
+};
 // NEW: Force Local Date String to prevent Timezone shift
 var toLocalISOString = function toLocalISOString(date) {
   var year = date.getFullYear();
@@ -4113,11 +4186,7 @@ var App = function App() {
       fill: options.textColor || '#1e40af'
     }, labelText));
   };
-  var _useState1 = useState({
-      monthly: [],
-      yearly: [],
-      targets: []
-    }),
+  var _useState1 = useState(normalizeAllDataShape()),
     _useState10 = _slicedToArray(_useState1, 2),
     allData = _useState10[0],
     setAllData = _useState10[1];
@@ -4462,10 +4531,11 @@ var App = function App() {
   var useDirectUploadInput = isIOSDevice || isHTMLViewerApp || !hasFileSystemAccess;
   var mergeParsedDataByType = function mergeParsedDataByType(baseData, type, parsedData) {
     if (!parsedData) return baseData;
-    var nextData = _objectSpread({}, baseData);
+    var nextData = normalizeAllDataShape(baseData);
     if (type === 'sales') {
       nextData.monthly = parsedData.monthly || [];
       nextData.yearly = parsedData.yearly || [];
+      nextData.salesUpdateMeta = normalizeSalesUpdateMeta(parsedData.salesUpdateMeta);
     } else {
       nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
     }
@@ -4530,11 +4600,7 @@ var App = function App() {
                 _context6.n = 1;
                 break;
               }
-              setAllData({
-                monthly: [],
-                yearly: [],
-                targets: []
-              });
+              setAllData(normalizeAllDataShape());
               setIsUsingSavedData(false);
               setIsLoading(false);
               return _context6.a(2);
@@ -4546,16 +4612,12 @@ var App = function App() {
             case 2:
               data = _context6.v;
               if (data) {
-                setAllData(data);
+                setAllData(normalizeAllDataShape(data));
                 setIsUsingSavedData(true);
                 showStatus('โหลดข้อมูลล่าสุดจากเครื่องแล้ว', 'success');
                 setIsLoading(false);
               } else {
-                setAllData({
-                  monthly: [],
-                  yearly: [],
-                  targets: []
-                });
+                setAllData(normalizeAllDataShape());
                 setIsLoading(false);
               }
               _context6.n = 4;
@@ -4564,11 +4626,7 @@ var App = function App() {
               _context6.p = 3;
               _t4 = _context6.v;
               console.error(_t4);
-              setAllData({
-                monthly: [],
-                yearly: [],
-                targets: []
-              });
+              setAllData(normalizeAllDataShape());
               setIsUsingSavedData(false);
               setIsLoading(false);
             case 4:
@@ -4584,11 +4642,7 @@ var App = function App() {
   }, [authUser && authUser.username, activeDataKey]);
   useEffect(function () {
     if (!isSalesRestrictedUser) return;
-    setAllData({
-      monthly: [],
-      yearly: [],
-      targets: []
-    });
+    setAllData(normalizeAllDataShape());
     setIsUsingSavedData(false);
     setLastGoogleSheetSyncAt('');
     setLastGoogleTargetSyncAt('');
@@ -4770,11 +4824,7 @@ var App = function App() {
             _context9.n = 1;
             return idb.remove(activeDataKey);
           case 1:
-            setAllData({
-              monthly: [],
-              yearly: [],
-              targets: []
-            });
+            setAllData(normalizeAllDataShape());
             setSelectedTrendYears([]);
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             setIsUsingSavedData(false);
@@ -5255,7 +5305,7 @@ var App = function App() {
                         }();
                         parseSalesWorkbook = /*#__PURE__*/function () {
                           var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, monthlyEntries, cfgIndex, cfg, rows, yearlyEntries, _cfgIndex, _cfg, _rows, _t8, _t9, _t0, _t1;
+                            var normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, _t8, _t9, _t0, _t1;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
@@ -5342,6 +5392,7 @@ var App = function App() {
                                     if (yearCmp !== 0) return yearCmp;
                                     return String(a.sheetName).localeCompare(String(b.sheetName), 'th');
                                   });
+                                  salesUpdateMeta = createEmptySalesUpdateMeta();
                                   monthlyEntries = [];
                                   cfgIndex = 0;
                                 case 1:
@@ -5360,6 +5411,11 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[cfg.sheetName]);
                                 case 3:
                                   rows = _context12.v;
+                                  monthlyUpdateLabel = extractSheetUpdateLabel(workbook.Sheets[cfg.sheetName]);
+                                  monthlyMetaYear = normalizeYearLabel(cfg.forcedYear || currentYear);
+                                  if (monthlyUpdateLabel && monthlyMetaYear) {
+                                    salesUpdateMeta.monthly[cfg.metricKey][monthlyMetaYear] = monthlyUpdateLabel;
+                                  }
                                   _t8 = appendRows;
                                   _t9 = monthlyEntries;
                                   _context12.n = 4;
@@ -5393,6 +5449,12 @@ var App = function App() {
                                   return sheetToRowsChunked(workbook.Sheets[_cfg.sheetName]);
                                 case 9:
                                   _rows = _context12.v;
+                                  yearlyUpdateLabel = extractSheetUpdateLabel(workbook.Sheets[_cfg.sheetName]);
+                                  yearlyMetaYear = normalizeYearLabel(extractYearLabelFromText(_cfg.sheetName));
+                                  if (yearlyUpdateLabel) {
+                                    if (yearlyMetaYear) salesUpdateMeta.yearly[_cfg.metricKey][yearlyMetaYear] = yearlyUpdateLabel;
+                                    salesUpdateMeta.yearly[_cfg.metricKey].default = yearlyUpdateLabel;
+                                  }
                                   _t0 = appendRows;
                                   _t1 = yearlyEntries;
                                   _context12.n = 10;
@@ -5408,7 +5470,8 @@ var App = function App() {
                                 case 12:
                                   return _context12.a(2, {
                                     monthly: mergeMetricEntries(monthlyEntries, 'month'),
-                                    yearly: mergeMetricEntries(yearlyEntries, 'year')
+                                    yearly: mergeMetricEntries(yearlyEntries, 'year'),
+                                    salesUpdateMeta: salesUpdateMeta
                                   });
                               }
                             }, _callee12);
@@ -6922,7 +6985,8 @@ var App = function App() {
           case 0:
             newData = _objectSpread(_objectSpread({}, allData), {}, {
               monthly: [],
-              yearly: []
+              yearly: [],
+              salesUpdateMeta: createEmptySalesUpdateMeta()
             });
             setAllData(newData);
             persistUploadedFileName('sales', '');
@@ -7379,6 +7443,32 @@ var App = function App() {
       return sortYearLabels(b, a);
     }).slice(0, 2);
   }, [selectedTrendYears, trendYearsAvailable]);
+  var salesSourceUpdateLabel = useMemo(function () {
+    var metricKey = metricMode === 'qty' ? 'qty' : metricMode === 'ton' ? 'ton' : 'sales';
+    var salesUpdateMeta = normalizeSalesUpdateMeta(allData && allData.salesUpdateMeta);
+    if (viewMode === 'monthly') {
+      var monthlyMetricMap = salesUpdateMeta.monthly && salesUpdateMeta.monthly[metricKey] ? salesUpdateMeta.monthly[metricKey] : {};
+      var monthlyCandidates = activeTrendYears.length > 0 ? activeTrendYears : _toConsumableArray(trendYearsAvailable).sort(function (a, b) {
+        return sortYearLabels(b, a);
+      });
+      for (var monthlyIndex = 0; monthlyIndex < monthlyCandidates.length; monthlyIndex++) {
+        var monthlyYearLabel = monthlyCandidates[monthlyIndex];
+        if (monthlyMetricMap[monthlyYearLabel]) return monthlyMetricMap[monthlyYearLabel];
+      }
+      return '';
+    }
+    var yearlyMetricMap = salesUpdateMeta.yearly && salesUpdateMeta.yearly[metricKey] ? salesUpdateMeta.yearly[metricKey] : {};
+    var yearlyCandidates = activeTrendYears.length > 0 ? activeTrendYears : Object.keys(yearlyMetricMap).filter(function (key) {
+      return key !== 'default';
+    }).sort(function (a, b) {
+      return sortYearLabels(b, a);
+    });
+    for (var yearlyIndex = 0; yearlyIndex < yearlyCandidates.length; yearlyIndex++) {
+      var yearlyYearLabel = yearlyCandidates[yearlyIndex];
+      if (yearlyMetricMap[yearlyYearLabel]) return yearlyMetricMap[yearlyYearLabel];
+    }
+    return yearlyMetricMap.default || '';
+  }, [allData && allData.salesUpdateMeta, metricMode, viewMode, activeTrendYears, trendYearsAvailable]);
   var toggleTrendYearSelection = function toggleTrendYearSelection(yearLabel) {
     setSelectedTrendYears(function (prev) {
       var current = Array.isArray(prev) ? prev : [];
@@ -10834,9 +10924,9 @@ var App = function App() {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold flex flex-wrap items-center gap-2"
-  }, "\u0E01\u0E23\u0E32\u0E1F\u0E41\u0E19\u0E27\u0E42\u0E19\u0E49\u0E21\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (", getUnitLabel(metricMode, unitMode), ")", /*#__PURE__*/React.createElement("span", {
+  }, "\u0E01\u0E23\u0E32\u0E1F\u0E41\u0E19\u0E27\u0E42\u0E19\u0E49\u0E21\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (", getUnitLabel(metricMode, unitMode), ")", !!salesSourceUpdateLabel && /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-semibold text-blue-600"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ", googleSheetSyncLabel)), /*#__PURE__*/React.createElement("button", {
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ", salesSourceUpdateLabel)), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('trend');
     },
