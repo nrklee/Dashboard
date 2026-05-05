@@ -1759,7 +1759,8 @@ var extractSheetUpdateLabel = function extractSheetUpdateLabel(sheet) {
       blankrows: false,
       raw: false
     });
-    var maxRows = Math.min(40, rows.length);
+    var maxRows = Math.min(60, rows.length);
+    var bestCandidate = null;
     for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
       var row = rows[rowIndex] || [];
       var labelIndex = row.findIndex(function (cell) {
@@ -1767,10 +1768,28 @@ var extractSheetUpdateLabel = function extractSheetUpdateLabel(sheet) {
       });
       if (labelIndex < 0) continue;
       var afterLabel = row.slice(labelIndex + 1).map(normalizeSheetUpdateDisplayValue).filter(Boolean);
-      if (afterLabel.length > 0) return afterLabel.join(' ');
       var beforeLabel = row.slice(0, labelIndex).map(normalizeSheetUpdateDisplayValue).filter(Boolean);
-      if (beforeLabel.length > 0) return beforeLabel[beforeLabel.length - 1];
+      var candidateValue = afterLabel.length > 0 ? afterLabel.join(' ') : beforeLabel.length > 0 ? beforeLabel[beforeLabel.length - 1] : '';
+      if (!candidateValue) continue;
+      var nextRow = rows[rowIndex + 1] || [];
+      var sameRowMonthHints = row.reduce(function (count, cell) {
+        var parsed = parseHeaderToType(cell);
+        return parsed && parsed.type === 'month' ? count + 1 : count;
+      }, 0);
+      var nextRowMonthHints = nextRow.reduce(function (count, cell) {
+        var parsed = parseHeaderToType(cell);
+        return parsed && parsed.type === 'month' ? count + 1 : count;
+      }, 0);
+      var candidateScore = (afterLabel.length > 0 ? 60 : 20) + sameRowMonthHints * 6 + nextRowMonthHints * 12 + (/^\d{1,2}\s+[A-Za-zก-๙]/.test(candidateValue) ? 8 : 0) + (candidateValue.indexOf(':') >= 0 ? -4 : 0) + (candidateValue.length <= 16 ? 3 : 0);
+      if (!bestCandidate || candidateScore > bestCandidate.score || candidateScore === bestCandidate.score && rowIndex > bestCandidate.rowIndex) {
+        bestCandidate = {
+          value: candidateValue,
+          score: candidateScore,
+          rowIndex: rowIndex
+        };
+      }
     }
+    if (bestCandidate && bestCandidate.value) return bestCandidate.value;
   } catch (err) {
     console.warn('extractSheetUpdateLabel failed', err);
   }
@@ -3045,16 +3064,19 @@ var ExpandableBrandItem = function ExpandableBrandItem(_ref3) {
     className: "text-xs font-semibold text-slate-500 mb-2 px-2 border-b border-slate-200 pb-1",
     style: {
       display: 'grid',
-      gridTemplateColumns: 'minmax(150px,1.35fr) minmax(96px,126px) minmax(126px,170px)',
+      gridTemplateColumns: 'minmax(160px,1.4fr) minmax(96px,0.9fr) minmax(118px,1fr)',
       columnGap: '0.75rem',
       alignItems: 'center'
     }
   }, /*#__PURE__*/React.createElement("span", {
-    className: "whitespace-nowrap"
+    className: "leading-tight text-[11px]",
+    style: {
+      whiteSpace: 'nowrap'
+    }
   }, "\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32 (", brand.breakdown.length, ")"), /*#__PURE__*/React.createElement("span", {
     className: "text-center text-blue-600"
   }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E40\u0E09\u0E25\u0E35\u0E48\u0E22"), /*#__PURE__*/React.createElement("span", {
-    className: "text-right"
+    className: "text-right leading-tight"
   }, getUnitLabel(metric, unit), " (\u0E2A\u0E31\u0E14\u0E2A\u0E48\u0E27\u0E19)")), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-1.5 max-h-60 overflow-y-auto custom-scrollbar pr-1"
   }, brand.breakdown.map(function (size, idx) {
@@ -3063,19 +3085,26 @@ var ExpandableBrandItem = function ExpandableBrandItem(_ref3) {
       className: "text-xs px-2 py-1 bg-white rounded border border-slate-100",
       style: {
         display: 'grid',
-        gridTemplateColumns: 'minmax(150px,1.35fr) minmax(96px,126px) minmax(126px,170px)',
+        gridTemplateColumns: 'minmax(160px,1.4fr) minmax(96px,0.9fr) minmax(118px,1fr)',
         columnGap: '0.75rem',
         alignItems: 'center'
       }
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-700 font-medium pr-2 whitespace-nowrap",
-      title: size.name
+      className: "text-slate-700 font-medium pr-2 leading-tight",
+      title: size.name,
+      style: {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }
     }, size.name), /*#__PURE__*/React.createElement("span", {
-      className: "text-center text-blue-600 font-bold whitespace-nowrap"
+      className: "text-center text-blue-600 font-bold leading-tight"
     }, formatValue(size.avgValue || 0, metric, unit)), /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-600 shrink-0 whitespace-nowrap text-right"
-    }, formatValue(size.value, metric, unit), " ", /*#__PURE__*/React.createElement("span", {
-      className: "text-blue-500 ml-1 font-mono"
+      className: "text-slate-600 shrink-0 text-right leading-tight"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block"
+    }, formatValue(size.value, metric, unit)), /*#__PURE__*/React.createElement("span", {
+      className: "block text-blue-500 font-mono text-[11px]"
     }, "(", (size.percent * 100).toFixed(1), "%)")));
   }))));
 };
@@ -4241,6 +4270,10 @@ var App = function App() {
     _useState30 = _slicedToArray(_useState29, 2),
     selectedTrendYears = _useState30[0],
     setSelectedTrendYears = _useState30[1];
+  var _useStateTopBrandsYear = useState(''),
+    _useStateTopBrandsYear2 = _slicedToArray(_useStateTopBrandsYear, 2),
+    topBrandsYear = _useStateTopBrandsYear2[0],
+    setTopBrandsYear = _useStateTopBrandsYear2[1];
   var _useState31 = useState(createEmptyRepeatGapFilters),
     _useState32 = _slicedToArray(_useState31, 2),
     repeatGapFilters = _useState32[0],
@@ -4857,11 +4890,12 @@ var App = function App() {
               var reader = new FileReader();
               reader.onload = /*#__PURE__*/function () {
                 var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(e) {
-                  var currentYear, YIELD_EVERY, maybeYield, appendRows, sheetToRowsChunked, normalizeRecordDimensions, findHeaderRow, mapColumns, dedupeTimeCols, shouldSkipRow, extractDimensions, detectTargetMetricContext, parseMetricSheet, mergeMetricEntries, parseGenericRows, parseSalesWorkbook, parseTargetWorkbook, parseDistrictTargetWorkbook, isCSV, parsed, parseWorkbookGeneric, text, rows, data, workbook, readStage, decoder, binaryString, msg, _parsed, _parsed2, monthlyCount, yearlyCount, fallbackMsg, _t10, _t11, _t12, _t13, _t14, _t15;
+                  var parseOptions, currentYear, YIELD_EVERY, maybeYield, appendRows, sheetToRowsChunked, normalizeRecordDimensions, findHeaderRow, mapColumns, dedupeTimeCols, shouldSkipRow, extractDimensions, detectTargetMetricContext, parseMetricSheet, mergeMetricEntries, parseGenericRows, parseSalesWorkbook, parseTargetWorkbook, parseDistrictTargetWorkbook, isCSV, parsed, parseWorkbookGeneric, text, rows, data, workbook, readStage, decoder, binaryString, msg, _parsed, _parsed2, monthlyCount, yearlyCount, fallbackMsg, _t10, _t11, _t12, _t13, _t14, _t15;
                   return _regenerator().w(function (_context16) {
                     while (1) switch (_context16.p = _context16.n) {
                       case 0:
                         _context16.p = 0;
+                        parseOptions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
                         currentYear = new Date().getFullYear();
                         YIELD_EVERY = isIOSDevice ? 120 : 360;
                         maybeYield = /*#__PURE__*/function () {
@@ -5206,7 +5240,7 @@ var App = function App() {
                         };
                         parseGenericRows = /*#__PURE__*/function () {
                           var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(rows) {
-                            var options, _findHeaderRow2, headerIdx, headerRow, _mapColumns2, map, timeCols, usableTimeCols, targetSheetMetric, targetSheetYear, results, i, row, dimensions, tIndex, t, val, date, targetValue, targetTon;
+                            var options, _findHeaderRow2, headerIdx, headerRow, _mapColumns2, map, timeCols, usableTimeCols, targetSheetMetric, targetSheetYear, salesSheetYear, results, i, row, dimensions, tIndex, t, val, date, targetValue, targetTon;
                             return _regenerator().w(function (_context11) {
                               while (1) switch (_context11.n) {
                                 case 0:
@@ -5216,9 +5250,11 @@ var App = function App() {
                                   usableTimeCols = dedupeTimeCols(timeCols);
                                   targetSheetMetric = type === 'target' ? detectTargetMetricContext(options.sheetName) : 'value';
                                   targetSheetYear = type === 'target' ? extractYearLabelFromText(options.sheetName) || normalizeYearLabel(currentYear) : normalizeYearLabel(currentYear);
+                                  salesSheetYear = type === 'sales' ? normalizeYearLabel(options.preferredYearHint || extractYearLabelFromText(options.sheetName) || currentYear) : '';
                                   results = {
                                     monthly: [],
-                                    yearly: []
+                                    yearly: [],
+                                    salesUpdateMeta: createEmptySalesUpdateMeta()
                                   };
                                   i = headerIdx + 1;
                                 case 1:
@@ -5255,14 +5291,14 @@ var App = function App() {
                                   return _context11.a(3, 6);
                                 case 5:
                                   if (t.type === 'month') {
-                                    date = new Date(type === 'target' ? toCEYear(targetSheetYear) || currentYear : currentYear, t.value, 1);
+                                    date = new Date(type === 'target' ? toCEYear(targetSheetYear) || currentYear : toCEYear(salesSheetYear) || currentYear, t.value, 1);
                                     targetValue = type === 'target' ? targetSheetMetric === 'ton' ? 0 : val : 0;
                                     targetTon = type === 'target' ? targetSheetMetric === 'ton' ? val : 0 : 0;
                                     results.monthly.push(_objectSpread({
                                       id: "m-".concat(Math.random()),
                                       date: toLocalISOString(date),
                                       monthIndex: t.value,
-                                      year: type === 'target' ? targetSheetYear : normalizeYearLabel(currentYear),
+                                      year: type === 'target' ? targetSheetYear : salesSheetYear || normalizeYearLabel(currentYear),
                                       sales: type === 'target' ? 0 : val,
                                       target: targetValue,
                                       targetValue: targetValue,
@@ -5305,10 +5341,11 @@ var App = function App() {
                         }();
                         parseSalesWorkbook = /*#__PURE__*/function () {
                           var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, _t8, _t9, _t0, _t1;
+                            var workbookOptions, normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, preferredYearHint, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, _t8, _t9, _t0, _t1;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
+                                  workbookOptions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
                                   normalizeSheetName = function normalizeSheetName(name) {
                                     return String(name || '').toLowerCase().replace(/\s+/g, '');
                                   };
@@ -5353,10 +5390,11 @@ var App = function App() {
                                     };
                                   });
                                   useExplicitYearlySheets = explicitYearlyTasks.length > 0;
+                                  preferredYearHint = normalizeYearLabel(workbookOptions.preferredYearHint || '');
                                   sheetNames.forEach(function (sheetName) {
                                     var normalized = normalizeSheetName(sheetName);
                                     var isMonthly = normalized.includes('เดือน');
-                                    var yearFromSheetName = extractYearLabelFromText(sheetName);
+                                    var yearFromSheetName = extractYearLabelFromText(sheetName) || preferredYearHint;
                                     metricDefs.forEach(function (metric) {
                                       var metricInMonth = metric.monthKeywords.some(function (keyword) {
                                         return normalized.includes(keyword);
@@ -5412,7 +5450,7 @@ var App = function App() {
                                 case 3:
                                   rows = _context12.v;
                                   monthlyUpdateLabel = extractSheetUpdateLabel(workbook.Sheets[cfg.sheetName]);
-                                  monthlyMetaYear = normalizeYearLabel(cfg.forcedYear || currentYear);
+                                  monthlyMetaYear = normalizeYearLabel(cfg.forcedYear || preferredYearHint || currentYear);
                                   if (monthlyUpdateLabel && monthlyMetaYear) {
                                     salesUpdateMeta.monthly[cfg.metricKey][monthlyMetaYear] = monthlyUpdateLabel;
                                   }
@@ -5420,7 +5458,7 @@ var App = function App() {
                                   _t9 = monthlyEntries;
                                   _context12.n = 4;
                                   return parseMetricSheet(rows, cfg.metricKey, 'month', {
-                                    forcedYear: cfg.forcedYear
+                                    forcedYear: cfg.forcedYear || preferredYearHint
                                   });
                                 case 4:
                                   _t8(_t9, _context12.v);
@@ -5450,7 +5488,7 @@ var App = function App() {
                                 case 9:
                                   _rows = _context12.v;
                                   yearlyUpdateLabel = extractSheetUpdateLabel(workbook.Sheets[_cfg.sheetName]);
-                                  yearlyMetaYear = normalizeYearLabel(extractYearLabelFromText(_cfg.sheetName));
+                                  yearlyMetaYear = normalizeYearLabel(extractYearLabelFromText(_cfg.sheetName) || preferredYearHint);
                                   if (yearlyUpdateLabel) {
                                     if (yearlyMetaYear) salesUpdateMeta.yearly[_cfg.metricKey][yearlyMetaYear] = yearlyUpdateLabel;
                                     salesUpdateMeta.yearly[_cfg.metricKey].default = yearlyUpdateLabel;
@@ -5928,9 +5966,9 @@ var App = function App() {
                                 case 2:
                                   rows = _context15.v;
                                   _context15.n = 3;
-                                  return parseGenericRows(rows, {
+                                  return parseGenericRows(rows, _objectSpread({
                                     sheetName: name
-                                  });
+                                  }, parseOptions));
                                 case 3:
                                   sheetRes = _context15.v;
                                   appendRows(genericParsed.monthly, sheetRes.monthly);
@@ -5959,9 +5997,9 @@ var App = function App() {
                           return splitCSV(r.trim());
                         });
                         _context16.n = 1;
-                        return parseGenericRows(rows, {
+                        return parseGenericRows(rows, _objectSpread({
                           sheetName: file.name
-                        });
+                        }, parseOptions));
                       case 1:
                         parsed = _context16.v;
                         _context16.n = 27;
@@ -6035,7 +6073,7 @@ var App = function App() {
                         }
                         _context16.p = 11;
                         _context16.n = 12;
-                        return parseSalesWorkbook(workbook);
+                        return parseSalesWorkbook(workbook, parseOptions);
                       case 12:
                         parsed = _context16.v;
                         monthlyCount = (((_parsed = parsed) === null || _parsed === void 0 ? void 0 : _parsed.monthly) || []).length;
@@ -7903,6 +7941,28 @@ var App = function App() {
   var latestSelectedScopeYear = useMemo(function () {
     return selectedYearsScope && selectedYearsScope.length > 0 ? selectedYearsScope[0] : '';
   }, [selectedYearsScope]);
+  var topBrandsYearsAvailable = useMemo(function () {
+    return Array.from(new Set([].concat(_toConsumableArray((filteredData || []).map(function (item) {
+      return getYearLabelFromItem(item, false);
+    })), _toConsumableArray((allData.monthly || []).filter(function (item) {
+      return item && _typeof(item) === 'object' && matchesFilters(item, false, ['month']);
+    }).map(function (item) {
+      return getYearLabelFromItem(item, false);
+    }))).filter(function (yearLabel) {
+      return yearLabel && isReasonableYearLabel(yearLabel);
+    }))).sort(function (a, b) {
+      return sortYearLabels(b, a);
+    });
+  }, [filteredData, allData.monthly, filters]);
+  useEffect(function () {
+    setTopBrandsYear(function (prev) {
+      if (prev && topBrandsYearsAvailable.includes(prev)) return prev;
+      return topBrandsYearsAvailable[0] || '';
+    });
+  }, [topBrandsYearsAvailable]);
+  var selectedTopBrandsYear = useMemo(function () {
+    return topBrandsYear && topBrandsYearsAvailable.includes(topBrandsYear) ? topBrandsYear : topBrandsYearsAvailable[0] || '';
+  }, [topBrandsYear, topBrandsYearsAvailable]);
   var latestYearScopedData = useMemo(function () {
     if (!latestSelectedScopeYear) return scopedData;
     return scopedData.filter(function (item) {
@@ -7915,12 +7975,18 @@ var App = function App() {
       return String(getYearLabelFromItem(item, false)) === String(latestSelectedScopeYear);
     });
   }, [scopedTargets, latestSelectedScopeYear]);
+  var topBrandsScopedData = useMemo(function () {
+    if (!selectedTopBrandsYear) return filteredData;
+    return filteredData.filter(function (item) {
+      return String(getYearLabelFromItem(item, false)) === String(selectedTopBrandsYear);
+    });
+  }, [filteredData, selectedTopBrandsYear]);
   var topBrandsData = useMemo(function () {
     var brandSales = {},
       brandSizeSales = {},
       brandMonthTotals = {},
       brandSizeMonthTotals = {};
-    latestYearScopedData.forEach(function (item) {
+    topBrandsScopedData.forEach(function (item) {
       var groupName = normalizeDimensionValue(item.group);
       var brandName = normalizeDimensionValue(item.brand);
       var sizeName = normalizeDimensionValue(item.size);
@@ -7943,7 +8009,7 @@ var App = function App() {
     (allData.monthly || []).filter(function (item) {
       if (!(item && _typeof(item) === 'object')) return false;
       if (!matchesFilters(item, false, ['month'])) return false;
-      if (latestSelectedScopeYear && String(getYearLabelFromItem(item, false)) !== String(latestSelectedScopeYear)) return false;
+      if (selectedTopBrandsYear && String(getYearLabelFromItem(item, false)) !== String(selectedTopBrandsYear)) return false;
       return true;
     }).forEach(function (item) {
       var groupName = normalizeDimensionValue(item.group);
@@ -8002,7 +8068,7 @@ var App = function App() {
         })
       });
     });
-  }, [latestYearScopedData, allData.monthly, filters, latestSelectedScopeYear, metricMode]);
+  }, [topBrandsScopedData, allData.monthly, filters, selectedTopBrandsYear, metricMode]);
   var scopedMonthlyData = useMemo(function () {
     if (!selectedYearsScope || selectedYearsScope.length === 0) return filteredMonthlyTrendData;
     var yearSet = new Set(selectedYearsScope);
@@ -9506,6 +9572,48 @@ var App = function App() {
       });
     }) : [];
   };
+  var buildWorkbookSalesStructureProfile = function buildWorkbookSalesStructureProfile(workbookSheets) {
+    var normalizedSheets = Array.isArray(workbookSheets) ? workbookSheets : [];
+    var bestProfile = {
+      score: 0,
+      matchedColumns: 0,
+      timeColumns: 0,
+      sheetName: ''
+    };
+    normalizedSheets.forEach(function (sheet, sheetIndex) {
+      var sheetRows = normalizeBridgeRowMatrix(sheet && sheet.rows);
+      var safeSheetName = String(sheet && sheet.name || '').trim() || "Sheet".concat(sheetIndex + 1);
+      var maxRows = Math.min(40, sheetRows.length);
+      for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
+        var rawRow = sheetRows[rowIndex] || [];
+        var loweredRow = rawRow.map(function (cell) {
+          return String(cell !== null && cell !== void 0 ? cell : '').toLowerCase().trim();
+        });
+        var matchedColumns = 0;
+        Object.keys(COLUMN_KEYWORDS).forEach(function (key) {
+          if (loweredRow.some(function (cell) {
+            return COLUMN_KEYWORDS[key].some(function (keyword) {
+              return cell.includes(keyword);
+            });
+          })) matchedColumns += 1;
+        });
+        var timeColumns = rawRow.reduce(function (count, cell) {
+          return parseHeaderToType(cell) ? count + 1 : count;
+        }, 0);
+        var nameBonus = /(ยอดขาย|sales|รายเดือน|รายปี|บาท|ชิ้น|ตัน)/i.test(safeSheetName) ? 5 : 0;
+        var score = matchedColumns * 100 + timeColumns * 10 + nameBonus;
+        if (score > bestProfile.score || score === bestProfile.score && matchedColumns > bestProfile.matchedColumns || score === bestProfile.score && matchedColumns === bestProfile.matchedColumns && timeColumns > bestProfile.timeColumns) {
+          bestProfile = {
+            score: score,
+            matchedColumns: matchedColumns,
+            timeColumns: timeColumns,
+            sheetName: safeSheetName
+          };
+        }
+      }
+    });
+    return bestProfile;
+  };
   var sanitizeWorkbookSheetName = function sanitizeWorkbookSheetName(sheetName) {
     var usedNames = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var rawName = String(sheetName || '').trim() || 'Sheet';
@@ -9562,6 +9670,15 @@ var App = function App() {
     if (/^[a-zA-Z0-9-_]{20,}$/.test(text) && text.indexOf('/') < 0) return text;
     return '';
   };
+  var extractDriveFolderIdFromUrl = function extractDriveFolderIdFromUrl(sourceUrl) {
+    var text = String(sourceUrl || '').trim();
+    if (!text) return '';
+    var folderMatch = text.match(/\/folders\/([a-zA-Z0-9-_]+)/i);
+    if (folderMatch && folderMatch[1]) return folderMatch[1];
+    var idMatch = text.match(/[?&]folder=([a-zA-Z0-9-_]+)/i);
+    if (idMatch && idMatch[1]) return idMatch[1];
+    return '';
+  };
   var buildGoogleSheetExportUrl = function buildGoogleSheetExportUrl(sourceUrl) {
     var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
     if (!spreadsheetId) {
@@ -9569,9 +9686,17 @@ var App = function App() {
     }
     return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/export?format=xlsx");
   };
+  var buildGoogleSheetCsvExportUrl = function buildGoogleSheetCsvExportUrl(sourceUrl) {
+    var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
+    if (!spreadsheetId) {
+      throw new Error('ไม่พบ Spreadsheet ID จากลิงก์ต้นทาง');
+    }
+    return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/gviz/tq?tqx=out:csv");
+  };
   var isLikelyDirectSourceFileUrl = function isLikelyDirectSourceFileUrl(sourceUrl) {
     var safeUrl = String(sourceUrl || '').trim();
     if (!safeUrl) return false;
+    if (extractDriveFolderIdFromUrl(safeUrl)) return false;
     if (extractSpreadsheetIdFromUrl(safeUrl)) return true;
     if (extractDriveFileIdFromUrl(safeUrl)) return true;
     if (/\.xlsx(?:[?#].*)?$/i.test(safeUrl) || /\.xlsm?(?:[?#].*)?$/i.test(safeUrl) || /\.csv(?:[?#].*)?$/i.test(safeUrl)) return true;
@@ -9618,6 +9743,122 @@ var App = function App() {
       fileName: inferFileNameFromSourceUrl(safeUrl, fallbackFileName)
     };
   };
+  var buildDirectSourceFetchCandidates = function buildDirectSourceFetchCandidates(sourceUrl, fallbackFileName) {
+    var safeUrl = String(sourceUrl || '').trim();
+    var preferredFileName = String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx';
+    var spreadsheetId = extractSpreadsheetIdFromUrl(safeUrl);
+    var primaryInfo, csvFileName, directInfo;
+    if (spreadsheetId) {
+      primaryInfo = buildDirectSourceFetchInfo(safeUrl, preferredFileName);
+      csvFileName = preferredFileName.replace(/\.(xlsx|xlsm?|csv)$/i, '') || 'source';
+      csvFileName = "".concat(csvFileName, ".csv");
+      return [primaryInfo, {
+        requestUrl: buildGoogleSheetCsvExportUrl(safeUrl),
+        kind: 'google-sheet-csv',
+        fileName: csvFileName
+      }];
+    }
+    directInfo = buildDirectSourceFetchInfo(safeUrl, preferredFileName);
+    return [directInfo];
+  };
+  var extractPreferredSalesYearHint = function extractPreferredSalesYearHint(folderPath, fileName, sheetName) {
+    var sources = [folderPath, fileName, sheetName];
+    for (var i = 0; i < sources.length; i++) {
+      var yearLabel = extractYearLabelFromText(sources[i]);
+      if (yearLabel) return normalizeYearLabel(yearLabel);
+    }
+    return '';
+  };
+  var inferParsedSalesYearHint = function inferParsedSalesYearHint(parsedData) {
+    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
+    var yearCandidates = [].concat(_toConsumableArray((safeData.monthly || []).map(function (item) {
+      return getYearLabelFromItem(item);
+    })), _toConsumableArray((safeData.yearly || []).map(function (item) {
+      return getYearLabelFromItem(item, false);
+    })), _toConsumableArray(Object.keys(normalizeSalesUpdateMeta(safeData.salesUpdateMeta).monthly.sales || {})), _toConsumableArray(Object.keys(normalizeSalesUpdateMeta(safeData.salesUpdateMeta).yearly.sales || {}).filter(function (key) {
+      return key !== 'default';
+    }))).filter(function (yearLabel) {
+      return yearLabel && isReasonableYearLabel(yearLabel);
+    });
+    if (!yearCandidates.length) return '';
+    return yearCandidates.sort(function (a, b) {
+      return sortYearLabels(b, a);
+    })[0];
+  };
+  var getParsedSalesCoverageScore = function getParsedSalesCoverageScore(parsedData) {
+    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
+    var monthlyMetrics = new Set();
+    var yearlyMetrics = new Set();
+    (safeData.monthly || []).forEach(function (item) {
+      if (Number(item && item.sales || 0) !== 0) monthlyMetrics.add('sales');
+      if (Number(item && item.qty || 0) !== 0) monthlyMetrics.add('qty');
+      if (Number(item && item.ton || 0) !== 0) monthlyMetrics.add('ton');
+    });
+    (safeData.yearly || []).forEach(function (item) {
+      if (Number(item && item.sales || 0) !== 0) yearlyMetrics.add('sales');
+      if (Number(item && item.qty || 0) !== 0) yearlyMetrics.add('qty');
+      if (Number(item && item.ton || 0) !== 0) yearlyMetrics.add('ton');
+    });
+    return monthlyMetrics.size * 100 + yearlyMetrics.size * 10 + (safeData.monthly || []).length * 0.001 + (safeData.yearly || []).length * 0.0001;
+  };
+  var getParsedSalesPrimaryTotal = function getParsedSalesPrimaryTotal(parsedData) {
+    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
+    var yearlySales = (safeData.yearly || []).reduce(function (sum, item) {
+      return sum + Number(item && item.sales || 0);
+    }, 0);
+    if (yearlySales > 0) return yearlySales;
+    return (safeData.monthly || []).reduce(function (sum, item) {
+      return sum + Number(item && item.sales || 0);
+    }, 0);
+  };
+  var mergeSalesUpdateMetaValues = function mergeSalesUpdateMetaValues(baseMeta, nextMeta) {
+    var mergedMeta = normalizeSalesUpdateMeta(baseMeta);
+    var normalizedNext = normalizeSalesUpdateMeta(nextMeta);
+    ['sales', 'qty', 'ton'].forEach(function (metricKey) {
+      mergedMeta.monthly[metricKey] = _objectSpread(_objectSpread({}, mergedMeta.monthly[metricKey]), normalizedNext.monthly[metricKey] || {});
+      mergedMeta.yearly[metricKey] = _objectSpread(_objectSpread({}, mergedMeta.yearly[metricKey]), normalizedNext.yearly[metricKey] || {});
+    });
+    return mergedMeta;
+  };
+  var combineParsedSalesFolderResults = function combineParsedSalesFolderResults(candidates) {
+    var selectedByYear = {};
+    (Array.isArray(candidates) ? candidates : []).forEach(function (candidate, index) {
+      var parsedData = candidate && candidate.parsedData ? candidate.parsedData : null;
+      if (!parsedData) return;
+      var yearHint = String(candidate.yearHint || inferParsedSalesYearHint(parsedData) || "__UNSPECIFIED__:".concat(index)).trim();
+      var headerCompleteness = Number(candidate.headerCompleteness || 0);
+      var coverageScore = Number(candidate.coverageScore || getParsedSalesCoverageScore(parsedData));
+      var totalSales = Number(candidate.totalSales || getParsedSalesPrimaryTotal(parsedData));
+      var entryCount = Number(candidate.entryCount || ((parsedData.monthly || []).length + (parsedData.yearly || []).length));
+      var existing = selectedByYear[yearHint];
+      if (!existing || headerCompleteness > existing.headerCompleteness || headerCompleteness === existing.headerCompleteness && coverageScore > existing.coverageScore || headerCompleteness === existing.headerCompleteness && coverageScore === existing.coverageScore && totalSales > existing.totalSales || headerCompleteness === existing.headerCompleteness && coverageScore === existing.coverageScore && totalSales === existing.totalSales && entryCount > existing.entryCount) {
+        selectedByYear[yearHint] = {
+          yearHint: yearHint,
+          parsedData: parsedData,
+          headerCompleteness: headerCompleteness,
+          coverageScore: coverageScore,
+          totalSales: totalSales,
+          entryCount: entryCount
+        };
+      }
+    });
+    var selectedCandidates = Object.values(selectedByYear);
+    return {
+      monthly: selectedCandidates.reduce(function (mergedRows, candidate) {
+        return mergedRows.concat(candidate.parsedData.monthly || []);
+      }, []),
+      yearly: selectedCandidates.reduce(function (mergedRows, candidate) {
+        return mergedRows.concat(candidate.parsedData.yearly || []);
+      }, []),
+      salesUpdateMeta: selectedCandidates.reduce(function (mergedMeta, candidate) {
+        return mergeSalesUpdateMetaValues(mergedMeta, candidate.parsedData.salesUpdateMeta);
+      }, createEmptySalesUpdateMeta())
+    };
+  };
+  var hasParsedSalesContent = function hasParsedSalesContent(parsedData) {
+    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
+    return (safeData.monthly || []).length > 0 || (safeData.yearly || []).length > 0;
+  };
   var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
     var userSourceConfig = authUser && authUser.sourceConfig && _typeof(authUser.sourceConfig) === 'object' ? authUser.sourceConfig : {};
     var fallbackUrl = String(mode === 'sync_target_source' ? userSourceConfig.targetUrl || defaultUrl || '' : userSourceConfig.salesUrl || defaultUrl || '').trim();
@@ -9646,37 +9887,55 @@ var App = function App() {
     return basicMatch && basicMatch[1] ? String(basicMatch[1]).trim() : '';
   };
   var fetchSourceLinkFile = function fetchSourceLinkFile(sourceUrl, fallbackFileName, statusLabel) {
-    var fetchInfo = buildDirectSourceFetchInfo(sourceUrl, fallbackFileName);
-    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timeoutId = controller ? window.setTimeout(function () {
-      return controller.abort();
-    }, 240000) : null;
-    return fetch(fetchInfo.requestUrl, {
-      method: 'GET',
-      redirect: 'follow',
-      cache: 'no-store',
-      signal: controller ? controller.signal : undefined
-    }).then(function (response) {
-      var dispositionName = parseFileNameFromDisposition(response.headers.get('content-disposition'));
-      if (!response.ok) {
-        throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ (HTTP ").concat(response.status, ")"));
+    var fetchCandidates = buildDirectSourceFetchCandidates(sourceUrl, fallbackFileName);
+    var lastError = null;
+    var attemptFetch = function attemptFetch(index) {
+      var fetchInfo, controller, timeoutId;
+      if (index >= fetchCandidates.length) {
+        throw lastError || new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ"));
       }
-      return response.blob().then(function (blob) {
-        if (!blob || !blob.size) {
-          throw new Error("ไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ว่างเปล่าหรือไม่มีข้อมูล"));
+      fetchInfo = fetchCandidates[index];
+      controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      timeoutId = controller ? window.setTimeout(function () {
+        return controller.abort();
+      }, 240000) : null;
+      return fetch(fetchInfo.requestUrl, {
+        method: 'GET',
+        redirect: 'follow',
+        cache: 'no-store',
+        credentials: 'omit',
+        mode: 'cors',
+        referrerPolicy: 'no-referrer',
+        signal: controller ? controller.signal : undefined
+      }).then(function (response) {
+        var dispositionName = parseFileNameFromDisposition(response.headers.get('content-disposition'));
+        if (!response.ok) {
+          throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ (HTTP ").concat(response.status, ")"));
         }
-        return new File([blob], dispositionName || fetchInfo.fileName || fallbackFileName || 'source.xlsx', {
-          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        return response.blob().then(function (blob) {
+          var inferredMimeType;
+          if (!blob || !blob.size) {
+            throw new Error("ไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ว่างเปล่าหรือไม่มีข้อมูล"));
+          }
+          inferredMimeType = blob.type || (/csv$/i.test(fetchInfo.fileName || '') ? 'text/csv;charset=utf-8' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          return new File([blob], dispositionName || fetchInfo.fileName || fallbackFileName || 'source.xlsx', {
+            type: inferredMimeType
+          });
         });
+      }).catch(function (error) {
+        if (error && error.name === 'AbortError') {
+          throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ใช้เวลานานเกินไป"));
+        }
+        lastError = error;
+        if (index + 1 < fetchCandidates.length) {
+          return attemptFetch(index + 1);
+        }
+        throw error;
+      }).finally(function () {
+        if (timeoutId) window.clearTimeout(timeoutId);
       });
-    }).catch(function (error) {
-      if (error && error.name === 'AbortError') {
-        throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ใช้เวลานานเกินไป"));
-      }
-      throw error;
-    }).finally(function () {
-      if (timeoutId) window.clearTimeout(timeoutId);
-    });
+    };
+    return attemptFetch(0);
   };
   var buildFileFromSyncResult = function buildFileFromSyncResult(result, defaultFileName) {
     var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
@@ -9727,6 +9986,7 @@ var App = function App() {
   var loadChunkedSheetRows = /*#__PURE__*/function () {
     var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode, statusLabel) {
       var rowChunkSize, fileChunkSize,
+        extraPayload,
         firstResult,
         sourceInfo,
         totalChunks,
@@ -9750,14 +10010,15 @@ var App = function App() {
           case 0:
             rowChunkSize = 350;
             fileChunkSize = 350000;
+            extraPayload = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
             startLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 12, true);
             _context14.n = 1;
-            return callAIWebApp(mode, '', {}, {
+            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
               chunkIndex: 0,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
               workbookRows: true
-            });
+            }));
           case 1:
             firstResult = _context14.v;
             sourceInfo = firstResult && firstResult.source && _typeof(firstResult.source) === 'object' ? firstResult.source : {};
@@ -9775,7 +10036,7 @@ var App = function App() {
             }
             updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 12 + Math.round((_i3 + 1) / Math.max(totalChunks, 1) * 36), false);
             _context14.n = 3;
-            return callAIWebApp(mode, '', {}, {
+            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
               chunkIndex: _i3,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
@@ -9783,7 +10044,7 @@ var App = function App() {
               totalChunks: totalChunks,
               fileName: sourceInfo.fileName || '',
               mimeType: sourceInfo.mimeType || ''
-            });
+            }));
           case 3:
             chunkResult = _context14.v;
             aggregatedFileBase64 += String(chunkResult.fileChunkBase64 || '');
@@ -9835,13 +10096,13 @@ var App = function App() {
             }
             updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(totalRows > 0 ? Math.min(100, Math.round(processedRows / Math.max(totalRows, 1) * 100)) : _i3, "%)"), 12 + Math.round((totalRows > 0 ? processedRows / Math.max(totalRows, 1) : Math.min(_i3 / 12, 1)) * 36), false);
             _context14.n = 8;
-            return callAIWebApp(mode, '', {}, {
+            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
               workbookRows: true,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
               workbookSheetIndex: nextSheetIndex,
               workbookRowOffset: nextRowOffset
-            });
+            }));
           case 8:
             chunkResult = _context14.v;
             appendWorkbookSheets(chunkResult && chunkResult.workbookSheets);
@@ -9887,12 +10148,12 @@ var App = function App() {
             }
             updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 12 + Math.round((_i3 + 1) / Math.max(totalChunks, 1) * 36), false);
             _context14.n = 15;
-            return callAIWebApp(mode, '', {}, {
+            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
               chunkIndex: _i3,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
               workbookRows: true
-            });
+            }));
           case 15:
             chunkResult = _context14.v;
             chunkRows = normalizeBridgeRowMatrix(chunkResult.rows);
@@ -10083,6 +10344,7 @@ var App = function App() {
     var syncedAtSetter = options && typeof options.syncedAtSetter === 'function' ? options.syncedAtSetter : null;
     var resolvedSourceUrl = '';
     var directFetchError = null;
+    var folderId = '';
     if (!authUser || !authSessionToken) {
       showStatus(notReadyMessage, 'error');
       return Promise.resolve(null);
@@ -10097,6 +10359,102 @@ var App = function App() {
       resolvedSourceUrl = String(sourceUrl || '').trim();
       if (!resolvedSourceUrl) {
         throw new Error(missingSourceMessage);
+      }
+      folderId = type === 'sales' ? extractDriveFolderIdFromUrl(resolvedSourceUrl) : '';
+      if (folderId) {
+        updateLoadingStatus("กำลังอ่านรายการไฟล์".concat(statusLabel, " จากโฟลเดอร์..."), 12, false);
+        return callAIWebApp(mode, '', {}, {
+          folderManifest: true
+        }).then(function (manifestResult) {
+          var manifestSource = manifestResult && manifestResult.source && _typeof(manifestResult.source) === 'object' ? manifestResult.source : {};
+          var entries = Array.isArray(manifestResult && manifestResult.entries) ? manifestResult.entries : [];
+          var folderDisplayName = String(manifestSource.spreadsheetName || manifestSource.fileName || 'Sales Folder').trim() || 'Sales Folder';
+          var candidates = [];
+          var processEntryAt = function processEntryAt(entryIndex) {
+            var entry, sourceFileName, workbookSheetName, preferredYearHint;
+            if (entryIndex >= entries.length) return Promise.resolve();
+            entry = entries[entryIndex] || {};
+            sourceFileName = String(entry.fileName || defaultFileName).trim() || defaultFileName;
+            updateLoadingStatus("กำลังโหลด".concat(statusLabel, " จากโฟลเดอร์ (").concat(entryIndex + 1, "/").concat(entries.length, ")"), 16 + Math.round(entryIndex / Math.max(entries.length, 1) * 24), false);
+            return loadChunkedSheetRows(mode, sourceFileName, {
+              folderFileId: String(entry.fileId || '').trim(),
+              folderPath: String(entry.folderPath || '').trim(),
+              folderFileName: sourceFileName,
+              folderMimeType: String(entry.mimeType || '').trim(),
+              workbookRows: true
+            }).then(function (result) {
+              var workbookProfile = buildWorkbookSalesStructureProfile(result && result.workbookSheets);
+              var builtFile = buildFileFromSyncResult(result, sourceFileName);
+              if (!builtFile) return null;
+              if (workbookProfile.score <= 0) return null;
+              workbookSheetName = workbookProfile.sheetName || (Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0 ? String(result.workbookSheets[0].name || '').trim() : '');
+              preferredYearHint = extractPreferredSalesYearHint(entry.folderPath || '', sourceFileName, workbookSheetName);
+              updateLoadingStatus("กำลังอ่านไฟล์ ".concat(sourceFileName, "..."), 22 + Math.round((entryIndex + 1) / Math.max(entries.length, 1) * 38), false);
+              return processFile(builtFile, 'sales', {
+                preferredYearHint: preferredYearHint
+              }).then(function (parsedData) {
+                var inferredYearHint, coverageScore, totalSales;
+                if (!hasParsedSalesContent(parsedData)) return null;
+                inferredYearHint = preferredYearHint || inferParsedSalesYearHint(parsedData);
+                coverageScore = getParsedSalesCoverageScore(parsedData);
+                totalSales = getParsedSalesPrimaryTotal(parsedData);
+                if (coverageScore <= 0 && totalSales <= 0) return null;
+                candidates.push({
+                  yearHint: inferredYearHint || "__UNSPECIFIED__:".concat(entryIndex),
+                  parsedData: parsedData,
+                  headerCompleteness: workbookProfile.score,
+                  coverageScore: coverageScore,
+                  totalSales: totalSales,
+                  entryCount: (parsedData.monthly || []).length + (parsedData.yearly || []).length,
+                  fileName: sourceFileName,
+                  folderPath: String(entry.folderPath || '').trim()
+                });
+                return null;
+              }).catch(function (parseError) {
+                console.warn('skip sales folder file after parse failure', sourceFileName, parseError);
+                return null;
+              });
+            }).catch(function (entryError) {
+              console.warn('skip sales folder file after source load failure', sourceFileName, entryError);
+              return null;
+            }).then(function () {
+              return processEntryAt(entryIndex + 1);
+            });
+          };
+          if (!entries.length) {
+            throw new Error('ไม่พบไฟล์ยอดขายในโฟลเดอร์หรือโฟลเดอร์ย่อย');
+          }
+          return processEntryAt(0).then(function () {
+            var inMemoryRowsCount, latestStoredDataPromise;
+            if (!candidates.length) {
+              throw new Error('ไม่พบไฟล์ยอดขายที่มีข้อมูลครบถ้วนพอให้ใช้งานได้ในโฟลเดอร์นี้');
+            }
+            var combinedParsedData = combineParsedSalesFolderResults(candidates);
+            if (!hasParsedSalesContent(combinedParsedData)) {
+              throw new Error('รวมข้อมูลยอดขายจากโฟลเดอร์ไม่สำเร็จ');
+            }
+            inMemoryRowsCount = (allData.monthly || []).length + (allData.yearly || []).length + (allData.targets || []).length;
+            latestStoredDataPromise = inMemoryRowsCount > 0 ? Promise.resolve(allData) : idb.load(activeDataKey).then(function (storedData) {
+              return storedData || allData;
+            });
+            return latestStoredDataPromise.then(function (latestStoredData) {
+              var mergedData = mergeParsedDataByType(latestStoredData, 'sales', combinedParsedData);
+              setAllData(mergedData);
+              persistUploadedFileName('sales', "".concat(sourceLabel, " \u00B7 ").concat(folderDisplayName));
+              setFilters(buildLockedFiltersState(lockedFilters));
+              setRepeatGapFilters(createEmptyRepeatGapFilters());
+              updateLoadingStatus("กำลังบันทึก".concat(statusLabel, " จากโฟลเดอร์..."), 92, false);
+              return saveToStorage(mergedData).then(function (saved) {
+                if (!saved) {
+                  throw new Error('บันทึกข้อมูลยอดขายจากโฟลเดอร์ไม่สำเร็จ');
+                }
+                if (syncedAtSetter) syncedAtSetter(manifestSource.syncedAt || new Date().toISOString());
+                finishLoadingStatus("โหลดและรวม".concat(statusLabel, " สำเร็จ (").concat(candidates.length, "/").concat(entries.length, " \u0E44\u0E1F\u0E25\u0E4C)"), 'success');
+                return true;
+              });
+            });
+          });
+        });
       }
       if (!isLikelyDirectSourceFileUrl(resolvedSourceUrl)) {
         return null;
@@ -10116,6 +10474,9 @@ var App = function App() {
     }).then(function (directPayload) {
       if (directPayload) {
         return directPayload;
+      }
+      if (folderId) {
+        return null;
       }
       if (resolvedSourceUrl && directFetchError) {
         updateLoadingStatus("ดึงไฟล์".concat(statusLabel, " ตรงไม่สำเร็จ กำลังสลับไปโหลดผ่าน Google Apps Script..."), 28, false);
@@ -10142,6 +10503,9 @@ var App = function App() {
         };
       });
     }).then(function (payload) {
+      if (folderId && payload === true) {
+        return payload;
+      }
       var sourceDisplayName = String(payload && payload.sourceDisplayName || payload && payload.file && payload.file.name || defaultFileName).trim() || defaultFileName;
       updateLoadingStatus("เตรียมไฟล์".concat(statusLabel, " สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์..."), 62, false);
       return processAndStoreFile(payload.file, type, {
@@ -11122,11 +11486,26 @@ var App = function App() {
     size: 14
   }))), sectionOpen.brands && /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex-1 min-h-0 flex flex-col"
-  }, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500"
+  }, /*#__PURE__*/React.createElement("span", null, "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E1B\u0E35\u0E17\u0E35\u0E48\u0E08\u0E30\u0E41\u0E2A\u0E14\u0E07:"), /*#__PURE__*/React.createElement("select", {
+    value: selectedTopBrandsYear || '',
+    onChange: function onChange(e) {
+      return setTopBrandsYear(e.target.value);
+    },
+    className: "rounded-lg border border-blue-200 bg-white px-2 py-1 text-[11px] font-semibold text-blue-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+  }, topBrandsYearsAvailable.length > 0 ? topBrandsYearsAvailable.map(function (yearLabel) {
+    return /*#__PURE__*/React.createElement("option", {
+      key: yearLabel,
+      value: yearLabel
+    }, yearLabel);
+  }) : /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-")), /*#__PURE__*/React.createElement("span", null, "\u0E15\u0E31\u0E49\u0E07\u0E15\u0E49\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E1B\u0E35\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14")), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mb-1.5"
-  }, "\u0E41\u0E2A\u0E14\u0E07\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E1B\u0E35\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E17\u0E35\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01: ", /*#__PURE__*/React.createElement("span", {
+  }, "\u0E41\u0E2A\u0E14\u0E07\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E1B\u0E35: ", /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, latestSelectedScopeYear || '-')), /*#__PURE__*/React.createElement(ExpandableBrandList, {
+  }, selectedTopBrandsYear || '-')), /*#__PURE__*/React.createElement(ExpandableBrandList, {
     data: topBrandsData,
     metric: metricMode,
     unit: unitMode
