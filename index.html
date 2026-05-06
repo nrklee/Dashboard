@@ -2120,16 +2120,23 @@ var parseHeaderToType = function parseHeaderToType(header) {
   var str = String(header).trim();
   if (!str) return null;
   var lowerStr = str.toLowerCase();
-  var thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-  var enMonths = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-  for (var i = 0; i < thMonths.length; i++) {
-    if (str.includes(thMonths[i])) return {
+  var normalizedText = typeof lowerStr.normalize === 'function' ? lowerStr.normalize('NFKC') : lowerStr;
+  var compactText = normalizedText.replace(/\s+/g, '').replace(/[.．。]/g, '').replace(/[()]/g, '');
+  var thMonthAliases = [['มค', 'มกราคม', 'มกรา'], ['กพ', 'กุมภาพันธ์', 'กุมภา'], ['มีค', 'มีนาคม'], ['เมย', 'เมษายน', 'เมษา'], ['พค', 'พฤษภาคม'], ['มิย', 'มิถุนายน'], ['กค', 'กรกฎาคม'], ['สค', 'สิงหาคม'], ['กย', 'กันยายน'], ['ตค', 'ตุลาคม'], ['พย', 'พฤศจิกายน'], ['ธค', 'ธันวาคม']];
+  var enMonthAliases = [['jan', 'january'], ['feb', 'february'], ['mar', 'march'], ['apr', 'april'], ['may'], ['jun', 'june'], ['jul', 'july'], ['aug', 'august'], ['sep', 'sept', 'september'], ['oct', 'october'], ['nov', 'november'], ['dec', 'december']];
+  for (var i = 0; i < thMonthAliases.length; i++) {
+    if (thMonthAliases[i].some(function (alias) {
+      return compactText.includes(alias);
+    })) return {
       type: 'month',
       value: i
     };
   }
-  for (var _i = 0; _i < enMonths.length; _i++) {
-    if (lowerStr.includes(enMonths[_i])) return {
+  var asciiText = normalizedText.replace(/[^a-z0-9]+/g, ' ');
+  for (var _i = 0; _i < enMonthAliases.length; _i++) {
+    if (enMonthAliases[_i].some(function (alias) {
+      return asciiText.split(' ').includes(alias);
+    })) return {
       type: 'month',
       value: _i
     };
@@ -5031,9 +5038,10 @@ var App = function App() {
                           var best = {
                             index: 0,
                             row: rows[0] || [],
-                            score: -1
+                            score: -1,
+                            timeCount: 0
                           };
-                          for (var i = 0; i < Math.min(80, rows.length); i++) {
+                          for (var i = 0; i < Math.min(200, rows.length); i++) {
                             var rawRow = rows[i] || [];
                             var row = rawRow.map(function (c) {
                               return String(c !== null && c !== void 0 ? c : '').toLowerCase().trim();
@@ -5049,15 +5057,27 @@ var App = function App() {
                             for (var key in COLUMN_KEYWORDS) {
                               _loop(key);
                             }
-                            var hasTime = rawRow.some(function (cell) {
+                            var timeCount = rawRow.reduce(function (count, cell) {
+                              return count + (parseHeaderToType(cell) ? 1 : 0);
+                            }, 0);
+                            var nonEmptyCount = rawRow.reduce(function (count, cell) {
+                              return count + (String(cell !== null && cell !== void 0 ? cell : '').trim() ? 1 : 0);
+                            }, 0);
+                            var rowScore = timeCount * 20 + score * 5 + Math.min(nonEmptyCount, 20);
+                            var hasTime = timeCount > 0 || rawRow.some(function (cell) {
                               return parseHeaderToType(cell);
                             });
-                            if (hasTime && score > best.score) best = {
+                            if (hasTime && rowScore > best.score) best = {
                               index: i,
                               row: rawRow,
-                              score: score
+                              score: rowScore,
+                              timeCount: timeCount
                             };
-                            if (hasTime && score >= 3) return {
+                            if (timeCount >= 2 && score >= 2) return {
+                              index: i,
+                              row: rawRow
+                            };
+                            if (timeCount >= 4 && score >= 1) return {
                               index: i,
                               row: rawRow
                             };
