@@ -4903,7 +4903,7 @@ var App = function App() {
     };
   }();
   var processFile = /*#__PURE__*/function () {
-    var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(file, type) {
+    var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(file, type, parseOptionsArg) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -4911,12 +4911,12 @@ var App = function App() {
               var reader = new FileReader();
               reader.onload = /*#__PURE__*/function () {
                 var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(e) {
-                  var parseOptions, currentYear, YIELD_EVERY, maybeYield, appendRows, sheetToRowsChunked, normalizeRecordDimensions, findHeaderRow, mapColumns, dedupeTimeCols, shouldSkipRow, extractDimensions, detectTargetMetricContext, parseMetricSheet, mergeMetricEntries, parseGenericRows, parseSalesWorkbook, parseTargetWorkbook, parseDistrictTargetWorkbook, isCSV, parsed, parseWorkbookGeneric, text, rows, data, workbook, readStage, decoder, binaryString, msg, _parsed, _parsed2, monthlyCount, yearlyCount, fallbackMsg, _t10, _t11, _t12, _t13, _t14, _t15;
+                  var parseOptions, currentYear, YIELD_EVERY, maybeYield, appendRows, sheetToRowsChunked, normalizeRecordDimensions, findHeaderRow, mapColumns, dedupeTimeCols, shouldSkipRow, extractDimensions, detectTargetMetricContext, parseMetricSheet, mergeMetricEntries, buildYearlyEntriesFromMonthly, parseGenericRows, parseSalesWorkbook, parseTargetWorkbook, parseDistrictTargetWorkbook, isCSV, parsed, parseWorkbookGeneric, text, rows, data, workbook, readStage, decoder, binaryString, msg, _parsed, _parsed2, monthlyCount, yearlyCount, fallbackMsg, _t10, _t11, _t12, _t13, _t14, _t15;
                   return _regenerator().w(function (_context16) {
                     while (1) switch (_context16.p = _context16.n) {
                       case 0:
                         _context16.p = 0;
-                        parseOptions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+                        parseOptions = parseOptionsArg && _typeof(parseOptionsArg) === 'object' ? parseOptionsArg : {};
                         currentYear = new Date().getFullYear();
                         YIELD_EVERY = isIOSDevice ? 120 : 360;
                         maybeYield = /*#__PURE__*/function () {
@@ -5033,7 +5033,7 @@ var App = function App() {
                             row: rows[0] || [],
                             score: -1
                           };
-                          for (var i = 0; i < Math.min(30, rows.length); i++) {
+                          for (var i = 0; i < Math.min(80, rows.length); i++) {
                             var rawRow = rows[i] || [];
                             var row = rawRow.map(function (c) {
                               return String(c !== null && c !== void 0 ? c : '').toLowerCase().trim();
@@ -5259,6 +5259,27 @@ var App = function App() {
                           });
                           return Object.values(merged);
                         };
+                        buildYearlyEntriesFromMonthly = function buildYearlyEntriesFromMonthly(monthlyRows) {
+                          var merged = {};
+                          (Array.isArray(monthlyRows) ? monthlyRows : []).forEach(function (row) {
+                            var dimensions = normalizeRecordDimensions(row || {});
+                            var yearLabel = normalizeYearLabel(row && row.year || currentYear);
+                            var key = [yearLabel, dimensions.region, dimensions.province, dimensions.district, dimensions.cv, dimensions.group, dimensions.brand, dimensions.model, dimensions.size, dimensions.sku].join('|');
+                            if (!merged[key]) {
+                              merged[key] = _objectSpread({
+                                id: "y-auto-".concat(Math.random()),
+                                year: yearLabel,
+                                sales: 0,
+                                qty: 0,
+                                ton: 0
+                              }, dimensions);
+                            }
+                            merged[key].sales += Number(row && row.sales || 0);
+                            merged[key].qty += Number(row && row.qty || 0);
+                            merged[key].ton += Number(row && row.ton || 0);
+                          });
+                          return Object.values(merged);
+                        };
                         parseGenericRows = /*#__PURE__*/function () {
                           var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(rows) {
                             var options, _findHeaderRow2, headerIdx, headerRow, _mapColumns2, map, timeCols, usableTimeCols, targetSheetMetric, targetSheetYear, salesSheetYear, results, i, row, dimensions, tIndex, t, val, date, targetValue, targetTon;
@@ -5362,7 +5383,7 @@ var App = function App() {
                         }();
                         parseSalesWorkbook = /*#__PURE__*/function () {
                           var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var workbookOptions, normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, preferredYearHint, preferredMetricHint, preferredPeriodHint, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, _t8, _t9, _t0, _t1;
+                            var workbookOptions, normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, preferredYearHint, preferredMetricHint, preferredPeriodHint, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, monthlyRows, yearlyRows, _t8, _t9, _t0, _t1;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
@@ -5550,9 +5571,14 @@ var App = function App() {
                                   _context12.n = 7;
                                   break;
                                 case 12:
+                                  monthlyRows = mergeMetricEntries(monthlyEntries, 'month');
+                                  yearlyRows = mergeMetricEntries(yearlyEntries, 'year');
+                                  if (yearlyRows.length === 0 && monthlyRows.length > 0) {
+                                    yearlyRows = buildYearlyEntriesFromMonthly(monthlyRows);
+                                  }
                                   return _context12.a(2, {
-                                    monthly: mergeMetricEntries(monthlyEntries, 'month'),
-                                    yearly: mergeMetricEntries(yearlyEntries, 'year'),
+                                    monthly: monthlyRows,
+                                    yearly: yearlyRows,
                                     salesUpdateMeta: salesUpdateMeta
                                   });
                               }
@@ -10416,8 +10442,8 @@ var App = function App() {
               if (!builtFile) return null;
               workbookSheetName = Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0 ? String(result.workbookSheets[0].name || '').trim() : '';
               preferredYearHint = extractPreferredSalesYearHint(entry.folderPath || '', sourceFileName, workbookSheetName);
-              preferredMetricHint = extractPreferredSalesMetricHint(entry.folderPath || '', sourceFileName, workbookSheetName);
-              preferredPeriodHint = extractPreferredSalesPeriodHint(entry.folderPath || '', sourceFileName, workbookSheetName);
+              preferredMetricHint = extractPreferredSalesMetricHint(entry.folderPath || '', sourceFileName, workbookSheetName) || 'sales';
+              preferredPeriodHint = extractPreferredSalesPeriodHint(entry.folderPath || '', sourceFileName, workbookSheetName) || 'month';
               updateLoadingStatus("กำลังอ่านไฟล์ ".concat(sourceFileName, "..."), 22 + Math.round((entryIndex + 1) / Math.max(entries.length, 1) * 38), false);
               return processFile(builtFile, 'sales', {
                 preferredYearHint: preferredYearHint,
