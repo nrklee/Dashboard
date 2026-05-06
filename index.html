@@ -9673,9 +9673,9 @@ var App = function App() {
   var extractDriveFolderIdFromUrl = function extractDriveFolderIdFromUrl(sourceUrl) {
     var text = String(sourceUrl || '').trim();
     if (!text) return '';
-    var folderMatch = text.match(/\/folders\/([a-zA-Z0-9-_]+)/i);
+    var folderMatch = text.match(/\/folders\/([a-zA-Z0-9-_]+)/i) || text.match(/folders\/([a-zA-Z0-9-_]+)/i);
     if (folderMatch && folderMatch[1]) return folderMatch[1];
-    var idMatch = text.match(/[?&]folder=([a-zA-Z0-9-_]+)/i);
+    var idMatch = text.match(/[?&](?:folder|folderId)=([a-zA-Z0-9-_]+)/i);
     if (idMatch && idMatch[1]) return idMatch[1];
     return '';
   };
@@ -10364,7 +10364,9 @@ var App = function App() {
       if (folderId) {
         updateLoadingStatus("กำลังอ่านรายการไฟล์".concat(statusLabel, " จากโฟลเดอร์..."), 12, false);
         return callAIWebApp(mode, '', {}, {
-          folderManifest: true
+          folderManifest: true,
+          sourceUrl: resolvedSourceUrl,
+          folderId: folderId
         }).then(function (manifestResult) {
           var manifestSource = manifestResult && manifestResult.source && _typeof(manifestResult.source) === 'object' ? manifestResult.source : {};
           var entries = Array.isArray(manifestResult && manifestResult.entries) ? manifestResult.entries : [];
@@ -10377,6 +10379,8 @@ var App = function App() {
             sourceFileName = String(entry.fileName || defaultFileName).trim() || defaultFileName;
             updateLoadingStatus("กำลังโหลด".concat(statusLabel, " จากโฟลเดอร์ (").concat(entryIndex + 1, "/").concat(entries.length, ")"), 16 + Math.round(entryIndex / Math.max(entries.length, 1) * 24), false);
             return loadChunkedSheetRows(mode, sourceFileName, {
+              sourceUrl: resolvedSourceUrl,
+              folderId: folderId,
               folderFileId: String(entry.fileId || '').trim(),
               folderPath: String(entry.folderPath || '').trim(),
               folderFileName: sourceFileName,
