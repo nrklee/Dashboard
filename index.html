@@ -5362,7 +5362,7 @@ var App = function App() {
                         }();
                         parseSalesWorkbook = /*#__PURE__*/function () {
                           var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var workbookOptions, normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, preferredYearHint, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, _t8, _t9, _t0, _t1;
+                            var workbookOptions, normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, preferredYearHint, preferredMetricHint, preferredPeriodHint, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, _t8, _t9, _t0, _t1;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
@@ -5412,10 +5412,16 @@ var App = function App() {
                                   });
                                   useExplicitYearlySheets = explicitYearlyTasks.length > 0;
                                   preferredYearHint = normalizeYearLabel(workbookOptions.preferredYearHint || '');
+                                  preferredMetricHint = String(workbookOptions.preferredMetricHint || '').trim();
+                                  preferredPeriodHint = String(workbookOptions.preferredPeriodHint || '').trim();
                                   sheetNames.forEach(function (sheetName) {
                                     var normalized = normalizeSheetName(sheetName);
                                     var isMonthly = normalized.includes('เดือน');
                                     var yearFromSheetName = extractYearLabelFromText(sheetName) || preferredYearHint;
+                                    var taskCountBefore = monthlySheetTasks.length + yearlySheetTasks.length;
+                                    var isExplicitYearlyConfiguredSheet = explicitYearlyTasks.some(function (task) {
+                                      return task.sheetName === sheetName;
+                                    });
                                     metricDefs.forEach(function (metric) {
                                       var metricInMonth = metric.monthKeywords.some(function (keyword) {
                                         return normalized.includes(keyword);
@@ -5440,6 +5446,23 @@ var App = function App() {
                                         });
                                       }
                                     });
+                                    if (preferredMetricHint && !isExplicitYearlyConfiguredSheet && monthlySheetTasks.length + yearlySheetTasks.length === taskCountBefore) {
+                                      var blockFallbackSheet = normalized === 'target' || normalized === 'targets' || normalized.includes('target');
+                                      if (!blockFallbackSheet) {
+                                        if (preferredPeriodHint === 'year' || !isMonthly && normalized.includes('รายปี')) {
+                                          yearlySheetTasks.push({
+                                            sheetName: sheetName,
+                                            metricKey: preferredMetricHint
+                                          });
+                                        } else {
+                                          monthlySheetTasks.push({
+                                            sheetName: sheetName,
+                                            metricKey: preferredMetricHint,
+                                            forcedYear: yearFromSheetName
+                                          });
+                                        }
+                                      }
+                                    }
                                   });
                                   if (useExplicitYearlySheets) {
                                     explicitYearlyTasks.forEach(function (task) {
@@ -9748,6 +9771,25 @@ var App = function App() {
     }
     return '';
   };
+  var extractPreferredSalesMetricHint = function extractPreferredSalesMetricHint(folderPath, fileName, sheetName) {
+    var text = [folderPath, fileName, sheetName].map(function (value) {
+      return String(value || '').toLowerCase();
+    }).join(' ').replace(/\s+/g, '');
+    if (!text) return '';
+    if (text.includes('ตัน') || text.includes('ton')) return 'ton';
+    if (text.includes('ชิ้น') || text.includes('qty') || text.includes('quantity') || text.includes('จำนวน')) return 'qty';
+    if (text.includes('บาท') || text.includes('sales') || text.includes('value') || text.includes('ยอดขาย')) return 'sales';
+    return '';
+  };
+  var extractPreferredSalesPeriodHint = function extractPreferredSalesPeriodHint(folderPath, fileName, sheetName) {
+    var text = [folderPath, fileName, sheetName].map(function (value) {
+      return String(value || '').toLowerCase();
+    }).join(' ').replace(/\s+/g, '');
+    if (!text) return '';
+    if (text.includes('รายปี') || text.includes('yearly') || text.includes('annual')) return 'year';
+    if (text.includes('รายเดือน') || text.includes('เดือน') || text.includes('monthly')) return 'month';
+    return '';
+  };
   var inferParsedSalesYearHint = function inferParsedSalesYearHint(parsedData) {
     var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
     var yearCandidates = [].concat(_toConsumableArray((safeData.monthly || []).map(function (item) {
@@ -10355,7 +10397,7 @@ var App = function App() {
           var candidates = [];
           var failedEntries = [];
           var processEntryAt = function processEntryAt(entryIndex) {
-            var entry, sourceFileName, workbookSheetName, preferredYearHint;
+            var entry, sourceFileName, workbookSheetName, preferredYearHint, preferredMetricHint, preferredPeriodHint;
             if (entryIndex >= entries.length) return Promise.resolve();
             entry = entries[entryIndex] || {};
             sourceFileName = String(entry.fileName || defaultFileName).trim() || defaultFileName;
@@ -10374,12 +10416,22 @@ var App = function App() {
               if (!builtFile) return null;
               workbookSheetName = Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0 ? String(result.workbookSheets[0].name || '').trim() : '';
               preferredYearHint = extractPreferredSalesYearHint(entry.folderPath || '', sourceFileName, workbookSheetName);
+              preferredMetricHint = extractPreferredSalesMetricHint(entry.folderPath || '', sourceFileName, workbookSheetName);
+              preferredPeriodHint = extractPreferredSalesPeriodHint(entry.folderPath || '', sourceFileName, workbookSheetName);
               updateLoadingStatus("กำลังอ่านไฟล์ ".concat(sourceFileName, "..."), 22 + Math.round((entryIndex + 1) / Math.max(entries.length, 1) * 38), false);
               return processFile(builtFile, 'sales', {
-                preferredYearHint: preferredYearHint
+                preferredYearHint: preferredYearHint,
+                preferredMetricHint: preferredMetricHint,
+                preferredPeriodHint: preferredPeriodHint
               }).then(function (parsedData) {
                 var inferredYearHint, coverageScore, totalSales;
-                if (!hasParsedSalesContent(parsedData)) return null;
+                if (!hasParsedSalesContent(parsedData)) {
+                  failedEntries.push({
+                    fileName: sourceFileName,
+                    reason: 'อ่านไฟล์ได้ แต่ไม่พบหัวตารางยอดขาย/เดือน/ปีที่ระบบรู้จัก'
+                  });
+                  return null;
+                }
                 inferredYearHint = preferredYearHint || inferParsedSalesYearHint(parsedData);
                 coverageScore = getParsedSalesCoverageScore(parsedData);
                 totalSales = getParsedSalesPrimaryTotal(parsedData);
