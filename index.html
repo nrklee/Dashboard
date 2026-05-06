@@ -9572,48 +9572,6 @@ var App = function App() {
       });
     }) : [];
   };
-  var buildWorkbookSalesStructureProfile = function buildWorkbookSalesStructureProfile(workbookSheets) {
-    var normalizedSheets = Array.isArray(workbookSheets) ? workbookSheets : [];
-    var bestProfile = {
-      score: 0,
-      matchedColumns: 0,
-      timeColumns: 0,
-      sheetName: ''
-    };
-    normalizedSheets.forEach(function (sheet, sheetIndex) {
-      var sheetRows = normalizeBridgeRowMatrix(sheet && sheet.rows);
-      var safeSheetName = String(sheet && sheet.name || '').trim() || "Sheet".concat(sheetIndex + 1);
-      var maxRows = Math.min(40, sheetRows.length);
-      for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
-        var rawRow = sheetRows[rowIndex] || [];
-        var loweredRow = rawRow.map(function (cell) {
-          return String(cell !== null && cell !== void 0 ? cell : '').toLowerCase().trim();
-        });
-        var matchedColumns = 0;
-        Object.keys(COLUMN_KEYWORDS).forEach(function (key) {
-          if (loweredRow.some(function (cell) {
-            return COLUMN_KEYWORDS[key].some(function (keyword) {
-              return cell.includes(keyword);
-            });
-          })) matchedColumns += 1;
-        });
-        var timeColumns = rawRow.reduce(function (count, cell) {
-          return parseHeaderToType(cell) ? count + 1 : count;
-        }, 0);
-        var nameBonus = /(ยอดขาย|sales|รายเดือน|รายปี|บาท|ชิ้น|ตัน)/i.test(safeSheetName) ? 5 : 0;
-        var score = matchedColumns * 100 + timeColumns * 10 + nameBonus;
-        if (score > bestProfile.score || score === bestProfile.score && matchedColumns > bestProfile.matchedColumns || score === bestProfile.score && matchedColumns === bestProfile.matchedColumns && timeColumns > bestProfile.timeColumns) {
-          bestProfile = {
-            score: score,
-            matchedColumns: matchedColumns,
-            timeColumns: timeColumns,
-            sheetName: safeSheetName
-          };
-        }
-      }
-    });
-    return bestProfile;
-  };
   var sanitizeWorkbookSheetName = function sanitizeWorkbookSheetName(sheetName) {
     var usedNames = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var rawName = String(sheetName || '').trim() || 'Sheet';
@@ -10387,11 +10345,9 @@ var App = function App() {
               folderMimeType: String(entry.mimeType || '').trim(),
               workbookRows: true
             }).then(function (result) {
-              var workbookProfile = buildWorkbookSalesStructureProfile(result && result.workbookSheets);
               var builtFile = buildFileFromSyncResult(result, sourceFileName);
               if (!builtFile) return null;
-              if (workbookProfile.score <= 0) return null;
-              workbookSheetName = workbookProfile.sheetName || (Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0 ? String(result.workbookSheets[0].name || '').trim() : '');
+              workbookSheetName = Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0 ? String(result.workbookSheets[0].name || '').trim() : '';
               preferredYearHint = extractPreferredSalesYearHint(entry.folderPath || '', sourceFileName, workbookSheetName);
               updateLoadingStatus("กำลังอ่านไฟล์ ".concat(sourceFileName, "..."), 22 + Math.round((entryIndex + 1) / Math.max(entries.length, 1) * 38), false);
               return processFile(builtFile, 'sales', {
@@ -10402,11 +10358,10 @@ var App = function App() {
                 inferredYearHint = preferredYearHint || inferParsedSalesYearHint(parsedData);
                 coverageScore = getParsedSalesCoverageScore(parsedData);
                 totalSales = getParsedSalesPrimaryTotal(parsedData);
-                if (coverageScore <= 0 && totalSales <= 0) return null;
                 candidates.push({
                   yearHint: inferredYearHint || "__UNSPECIFIED__:".concat(entryIndex),
                   parsedData: parsedData,
-                  headerCompleteness: workbookProfile.score,
+                  headerCompleteness: 1,
                   coverageScore: coverageScore,
                   totalSales: totalSales,
                   entryCount: (parsedData.monthly || []).length + (parsedData.yearly || []).length,
@@ -10431,7 +10386,7 @@ var App = function App() {
           return processEntryAt(0).then(function () {
             var inMemoryRowsCount, latestStoredDataPromise;
             if (!candidates.length) {
-              throw new Error('ไม่พบไฟล์ยอดขายที่มีข้อมูลครบถ้วนพอให้ใช้งานได้ในโฟลเดอร์นี้');
+              throw new Error('พบไฟล์ในโฟลเดอร์แล้ว แต่ parser อ่านข้อมูลยอดขายจากไฟล์ไม่ได้');
             }
             var combinedParsedData = combineParsedSalesFolderResults(candidates);
             if (!hasParsedSalesContent(combinedParsedData)) {
