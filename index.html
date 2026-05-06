@@ -2141,6 +2141,22 @@ var parseHeaderToType = function parseHeaderToType(header) {
       value: _i
     };
   }
+  var slashDate = normalizedText.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+  if (slashDate) {
+    var slashMonth = Number(slashDate[2]);
+    if (slashMonth >= 1 && slashMonth <= 12) return {
+      type: 'month',
+      value: slashMonth - 1
+    };
+  }
+  var isoDate = normalizedText.match(/^(20\d{2}|25\d{2})[\/.-](\d{1,2})[\/.-](\d{1,2})$/);
+  if (isoDate) {
+    var isoMonth = Number(isoDate[2]);
+    if (isoMonth >= 1 && isoMonth <= 12) return {
+      type: 'month',
+      value: isoMonth - 1
+    };
+  }
   var directYear = lowerStr.match(/^(25\d{2}|20\d{2})$/);
   if (directYear) return {
     type: 'year',
@@ -4978,11 +4994,11 @@ var App = function App() {
                                   _context1.p = 4;
                                   _t7 = _context1.v;
                                   console.warn('decode_range failed, fallback to direct sheet_to_json', _t7);
-                                  return _context1.a(2, XLSX.utils.sheet_to_json(sheet, {
-                                    header: 1,
-                                    blankrows: false,
-                                    raw: true
-                                  }));
+	                                  return _context1.a(2, XLSX.utils.sheet_to_json(sheet, {
+	                                    header: 1,
+	                                    blankrows: false,
+	                                    raw: false
+	                                  }));
                                 case 5:
                                   chunkRows = [];
                                   chunkSize = isIOSDevice ? 1400 : 5000;
@@ -4993,11 +5009,11 @@ var App = function App() {
                                     break;
                                   }
                                   endRow = Math.min(decodedRange.e.r, startRow + chunkSize - 1);
-                                  part = XLSX.utils.sheet_to_json(sheet, {
-                                    header: 1,
-                                    blankrows: false,
-                                    raw: true,
-                                    range: {
+	                                  part = XLSX.utils.sheet_to_json(sheet, {
+	                                    header: 1,
+	                                    blankrows: false,
+	                                    raw: false,
+	                                    range: {
                                       s: {
                                         r: startRow,
                                         c: decodedRange.s.c
