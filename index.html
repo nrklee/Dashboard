@@ -9888,28 +9888,9 @@ var App = function App() {
     return mergedMeta;
   };
   var combineParsedSalesFolderResults = function combineParsedSalesFolderResults(candidates) {
-    var selectedByYear = {};
-    (Array.isArray(candidates) ? candidates : []).forEach(function (candidate, index) {
-      var parsedData = candidate && candidate.parsedData ? candidate.parsedData : null;
-      if (!parsedData) return;
-      var yearHint = String(candidate.yearHint || inferParsedSalesYearHint(parsedData) || "__UNSPECIFIED__:".concat(index)).trim();
-      var headerCompleteness = Number(candidate.headerCompleteness || 0);
-      var coverageScore = Number(candidate.coverageScore || getParsedSalesCoverageScore(parsedData));
-      var totalSales = Number(candidate.totalSales || getParsedSalesPrimaryTotal(parsedData));
-      var entryCount = Number(candidate.entryCount || ((parsedData.monthly || []).length + (parsedData.yearly || []).length));
-      var existing = selectedByYear[yearHint];
-      if (!existing || headerCompleteness > existing.headerCompleteness || headerCompleteness === existing.headerCompleteness && coverageScore > existing.coverageScore || headerCompleteness === existing.headerCompleteness && coverageScore === existing.coverageScore && totalSales > existing.totalSales || headerCompleteness === existing.headerCompleteness && coverageScore === existing.coverageScore && totalSales === existing.totalSales && entryCount > existing.entryCount) {
-        selectedByYear[yearHint] = {
-          yearHint: yearHint,
-          parsedData: parsedData,
-          headerCompleteness: headerCompleteness,
-          coverageScore: coverageScore,
-          totalSales: totalSales,
-          entryCount: entryCount
-        };
-      }
+    var selectedCandidates = (Array.isArray(candidates) ? candidates : []).filter(function (candidate) {
+      return candidate && candidate.parsedData;
     });
-    var selectedCandidates = Object.values(selectedByYear);
     return {
       monthly: selectedCandidates.reduce(function (mergedRows, candidate) {
         return mergedRows.concat(candidate.parsedData.monthly || []);
@@ -10543,7 +10524,7 @@ var App = function App() {
                 }
                 if (syncedAtSetter) syncedAtSetter(manifestSource.syncedAt || new Date().toISOString());
                 var skippedCount = Math.max(entries.length - candidates.length, 0);
-                finishLoadingStatus("โหลดและรวม".concat(statusLabel, " สำเร็จ (").concat(candidates.length, "/").concat(entries.length, " \u0E44\u0E1F\u0E25\u0E4C)").concat(skippedCount ? " \u0E02\u0E49\u0E32\u0E21 ".concat(skippedCount, " \u0E44\u0E1F\u0E25\u0E4C\u0E17\u0E35\u0E48\u0E2D\u0E48\u0E32\u0E19\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49") : ''), 'success');
+                finishLoadingStatus("อัปโหลดและรวม".concat(statusLabel, " จากโฟลเดอร์สำเร็จ (อ่านได้ ").concat(candidates.length, "/").concat(entries.length, " \u0E44\u0E1F\u0E25\u0E4C)").concat(skippedCount ? " \u0E02\u0E49\u0E32\u0E21 ".concat(skippedCount, " \u0E44\u0E1F\u0E25\u0E4C\u0E17\u0E35\u0E48\u0E2D\u0E48\u0E32\u0E19\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49") : ''), 'success');
                 return true;
               });
             });
