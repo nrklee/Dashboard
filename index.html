@@ -5062,12 +5062,12 @@ var App = function App() {
                             var row = rawRow.map(function (c) {
                               return String(c !== null && c !== void 0 ? c : '').toLowerCase().trim();
                             });
-                            var score = 0;
-                            var _loop = function _loop(key) {
-                              if (row.some(function (cell) {
-                                return COLUMN_KEYWORDS[key].some(function (k) {
-                                  return cell.includes(k);
-                                });
+	                            var score = 0;
+	                            var _loop = function _loop(key) {
+	                              if (row.some(function (cell) {
+	                                return COLUMN_KEYWORDS[key].some(function (k) {
+	                                  return cell.includes(k);
+	                                });
                               })) score++;
                             };
                             for (var key in COLUMN_KEYWORDS) {
@@ -5076,27 +5076,39 @@ var App = function App() {
                             var timeCount = rawRow.reduce(function (count, cell) {
                               return count + (parseHeaderToType(cell) ? 1 : 0);
                             }, 0);
-                            var nonEmptyCount = rawRow.reduce(function (count, cell) {
-                              return count + (String(cell !== null && cell !== void 0 ? cell : '').trim() ? 1 : 0);
-                            }, 0);
-                            var rowScore = timeCount * 20 + score * 5 + Math.min(nonEmptyCount, 20);
-                            var hasTime = timeCount > 0 || rawRow.some(function (cell) {
-                              return parseHeaderToType(cell);
-                            });
-                            if (hasTime && rowScore > best.score) best = {
-                              index: i,
-                              row: rawRow,
-                              score: rowScore,
-                              timeCount: timeCount
-                            };
-                            if (timeCount >= 2 && score >= 2) return {
-                              index: i,
-                              row: rawRow
-                            };
-                            if (timeCount >= 4 && score >= 1) return {
-                              index: i,
-                              row: rawRow
-                            };
+	                            var nonEmptyCount = rawRow.reduce(function (count, cell) {
+	                              return count + (String(cell !== null && cell !== void 0 ? cell : '').trim() ? 1 : 0);
+	                            }, 0);
+	                            var isUpdateRow = row.some(function (cell) {
+	                              return cell.includes('ยอดขายอัปเดต') || cell.includes('updated');
+	                            });
+	                            var hasHeaderShape = score >= 3;
+	                            var rowScore = timeCount * 20 + score * 8 + Math.min(nonEmptyCount, 20) + (hasHeaderShape ? 40 : 0) - (isUpdateRow && !hasHeaderShape ? 80 : 0);
+	                            var hasTime = timeCount > 0 || rawRow.some(function (cell) {
+	                              return parseHeaderToType(cell);
+	                            });
+	                            if ((hasTime || hasHeaderShape) && rowScore > best.score) best = {
+	                              index: i,
+	                              row: rawRow,
+	                              score: rowScore,
+	                              timeCount: timeCount
+	                            };
+	                            if (hasHeaderShape && timeCount >= 1) return {
+	                              index: i,
+	                              row: rawRow
+	                            };
+	                            if (timeCount >= 2 && score >= 2) return {
+	                              index: i,
+	                              row: rawRow
+	                            };
+	                            if (timeCount >= 4 && score >= 1) return {
+	                              index: i,
+	                              row: rawRow
+	                            };
+	                            if (hasHeaderShape && rawRow.length >= 10) return {
+	                              index: i,
+	                              row: rawRow
+	                            };
                           }
                           return {
                             index: best.index,
@@ -5115,16 +5127,33 @@ var App = function App() {
                                 if (map[key] === undefined) map[key] = idx;
                               }
                             }
-                            var parsedType = parseHeaderToType(h);
-                            if (parsedType) timeCols.push(_objectSpread({
-                              index: idx,
-                              raw: h
-                            }, parsedType));
-                          });
-                          return {
-                            map: map,
-                            timeCols: timeCols
-                          };
+	                            var parsedType = parseHeaderToType(h);
+	                            if (parsedType) timeCols.push(_objectSpread({
+	                              index: idx,
+	                              raw: h
+	                            }, parsedType));
+	                          });
+	                          if (type === 'sales' && map.sku !== undefined) {
+	                            var existingTimeIndexes = new Set(timeCols.map(function (col) {
+	                              return col.index;
+	                            }));
+	                            var monthStartIndex = Number(map.sku) + 1;
+	                            var monthEndIndex = Math.min(headerRow.length, monthStartIndex + 12);
+	                            for (var monthColIndex = monthStartIndex; monthColIndex < monthEndIndex; monthColIndex++) {
+	                              if (existingTimeIndexes.has(monthColIndex)) continue;
+	                              timeCols.push({
+	                                index: monthColIndex,
+	                                raw: headerRow[monthColIndex] || THAI_MONTHS[monthColIndex - monthStartIndex],
+	                                type: 'month',
+	                                value: monthColIndex - monthStartIndex,
+	                                inferred: true
+	                              });
+	                            }
+	                          }
+	                          return {
+	                            map: map,
+	                            timeCols: timeCols
+	                          };
                         };
                         dedupeTimeCols = function dedupeTimeCols(timeCols) {
                           var seen = new Set();
