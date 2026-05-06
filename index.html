@@ -9945,6 +9945,7 @@ var App = function App() {
     var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode, statusLabel) {
       var rowChunkSize, fileChunkSize,
         extraPayload,
+        shouldUseWorkbookRows,
         firstResult,
         sourceInfo,
         totalChunks,
@@ -9969,13 +9970,14 @@ var App = function App() {
             rowChunkSize = 350;
             fileChunkSize = 350000;
             extraPayload = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            shouldUseWorkbookRows = !(extraPayload && (extraPayload.workbookRows === false || String(extraPayload.workbookRows || '').toLowerCase() === 'false'));
             startLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 12, true);
             _context14.n = 1;
             return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
               chunkIndex: 0,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
-              workbookRows: true
+              workbookRows: shouldUseWorkbookRows
             }));
           case 1:
             firstResult = _context14.v;
@@ -9998,7 +10000,7 @@ var App = function App() {
               chunkIndex: _i3,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
-              workbookRows: true,
+              workbookRows: shouldUseWorkbookRows,
               totalChunks: totalChunks,
               fileName: sourceInfo.fileName || '',
               mimeType: sourceInfo.mimeType || ''
@@ -10055,7 +10057,7 @@ var App = function App() {
             updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(totalRows > 0 ? Math.min(100, Math.round(processedRows / Math.max(totalRows, 1) * 100)) : _i3, "%)"), 12 + Math.round((totalRows > 0 ? processedRows / Math.max(totalRows, 1) : Math.min(_i3 / 12, 1)) * 36), false);
             _context14.n = 8;
             return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
-              workbookRows: true,
+              workbookRows: shouldUseWorkbookRows,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
               workbookSheetIndex: nextSheetIndex,
@@ -10110,7 +10112,7 @@ var App = function App() {
               chunkIndex: _i3,
               chunkSize: rowChunkSize,
               fileChunkSize: fileChunkSize,
-              workbookRows: true
+              workbookRows: shouldUseWorkbookRows
             }));
           case 15:
             chunkResult = _context14.v;
@@ -10343,7 +10345,8 @@ var App = function App() {
               folderPath: String(entry.folderPath || '').trim(),
               folderFileName: sourceFileName,
               folderMimeType: String(entry.mimeType || '').trim(),
-              workbookRows: true
+              workbookRows: false,
+              forceFile: true
             }).then(function (result) {
               var builtFile = buildFileFromSyncResult(result, sourceFileName);
               if (!builtFile) return null;
