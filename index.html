@@ -5001,14 +5001,12 @@ var App = function App() {
 	      return a.monthIndex - b.monthIndex;
 	    });
 	    var skuIndex = map && Number.isFinite(Number(map.sku)) ? Number(map.sku) : -1;
-	    if (skuIndex >= 0 && (headerRow || []).length >= skuIndex + 4) {
+	    if (skuIndex >= 0) {
 	      return THAI_MONTHS.map(function (_, monthIndex) {
 	        return {
 	          index: skuIndex + 1 + monthIndex,
 	          monthIndex: monthIndex
 	        };
-	      }).filter(function (col) {
-	        return col.index < (headerRow || []).length;
 	      });
 	    }
 	    return monthCols;
@@ -5073,7 +5071,8 @@ var App = function App() {
 	      var rows = XLSX.utils.sheet_to_json(sheet, {
 	        header: 1,
 	        blankrows: false,
-	        raw: false
+	        raw: false,
+	        defval: ''
 	      });
 	      var headerInfo = findWideSalesHeaderInfo(rows);
 	      if (!headerInfo || !headerInfo.monthCols || headerInfo.monthCols.length < 2) return;
