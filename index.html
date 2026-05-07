@@ -5011,6 +5011,83 @@ var App = function App() {
 	    }
 	    return monthCols;
 	  };
+	  var isWideNumericLikeCell = function isWideNumericLikeCell(value) {
+	    if (value === undefined || value === null || value === '') return false;
+	    if (typeof value === 'number') return Number.isFinite(value);
+	    var text = String(value).trim();
+	    if (!text || text === '-' || text === '—') return false;
+	    text = text.replace(/,/g, '');
+	    return /^-?\d+(?:\.\d+)?$/.test(text) || /^\(-?\d+(?:\.\d+)?\)$/.test(text);
+	  };
+	  var countWideNumericMonthCells = function countWideNumericMonthCells(row, monthCols) {
+	    return (monthCols || []).reduce(function (count, col) {
+	      return count + (isWideNumericLikeCell(row && row[col.index]) ? 1 : 0);
+	    }, 0);
+	  };
+	  var buildFixedWideSalesHeaderInfo = function buildFixedWideSalesHeaderInfo(rows) {
+	    var maxRows = Math.min((rows || []).length, 260);
+	    var dimensionKeys = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
+	    for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
+	      var headerRow = rows[rowIndex] || [];
+	      var map = mapWideSalesHeader(headerRow);
+	      var skuIndex = Number.isFinite(Number(map.sku)) ? Number(map.sku) : findWideSalesHeaderColumn(headerRow, 'sku');
+	      var parsedMonthCols = [];
+	      (headerRow || []).forEach(function (cell, index) {
+	        var parsed = parseHeaderToType(cell);
+	        if (parsed && parsed.type === 'month') {
+	          parsedMonthCols.push({
+	            index: index,
+	            monthIndex: parsed.value
+	          });
+	        }
+	      });
+	      parsedMonthCols.sort(function (a, b) {
+	        return a.monthIndex - b.monthIndex;
+	      });
+	      if (skuIndex < 0 && parsedMonthCols.length >= 2 && parsedMonthCols[0].index > 0) {
+	        skuIndex = parsedMonthCols[0].index - 1;
+	      }
+	      if (skuIndex < 0) continue;
+	      var inferredMap = _objectSpread({}, map);
+	      var fixedStart = skuIndex - (dimensionKeys.length - 1);
+	      dimensionKeys.forEach(function (key, offset) {
+	        if (!Number.isFinite(Number(inferredMap[key])) && fixedStart + offset >= 0) {
+	          inferredMap[key] = fixedStart + offset;
+	        }
+	      });
+	      var monthCols = parsedMonthCols.length >= 2 ? parsedMonthCols : THAI_MONTHS.map(function (_, monthIndex) {
+	        return {
+	          index: skuIndex + 1 + monthIndex,
+	          monthIndex: monthIndex
+	        };
+	      });
+	      if (monthCols.length < 2) continue;
+	      var rowsWithValues = 0;
+	      var numericCells = 0;
+	      var dataProbeLimit = Math.min(rows.length, rowIndex + 80);
+	      for (var dataIndex = rowIndex + 1; dataIndex < dataProbeLimit; dataIndex++) {
+	        var dataRow = rows[dataIndex] || [];
+	        var hasDimensionValue = dimensionKeys.some(function (key) {
+	          var colIndex = Number(inferredMap[key]);
+	          return Number.isFinite(colIndex) && normalizeDimensionValue(dataRow[colIndex]) !== '-';
+	        });
+	        var numericCount = countWideNumericMonthCells(dataRow, monthCols);
+	        if (hasDimensionValue && numericCount > 0) {
+	          rowsWithValues += 1;
+	          numericCells += numericCount;
+	        }
+	        if (rowsWithValues >= 3 || numericCells >= 6) {
+	          return {
+	            rowIndex: rowIndex,
+	            headerRow: headerRow,
+	            map: inferredMap,
+	            monthCols: monthCols
+	          };
+	        }
+	      }
+	    }
+	    return null;
+	  };
 	  var findWideSalesHeaderInfo = function findWideSalesHeaderInfo(rows) {
 	    var best = null;
 	    var maxRows = Math.min((rows || []).length, 180);
@@ -5021,12 +5098,14 @@ var App = function App() {
 	      var dimensionCount = Object.keys(map).length;
 	      var score = dimensionCount * 10 + monthCols.length;
 	      if (dimensionCount >= 5 && monthCols.length >= 2) {
-	        return {
+	        best = {
 	          rowIndex: rowIndex,
 	          headerRow: headerRow,
 	          map: map,
-	          monthCols: monthCols
+	          monthCols: monthCols,
+	          score: score + 1000
 	        };
+	        continue;
 	      }
 	      if (monthCols.length >= 2 && dimensionCount >= 3 && (!best || score > best.score)) {
 	        best = {
@@ -5038,7 +5117,7 @@ var App = function App() {
 	        };
 	      }
 	    }
-	    return best;
+	    return buildFixedWideSalesHeaderInfo(rows) || best;
 	  };
 	  var normalizeWideSalesDimensions = function normalizeWideSalesDimensions(row, map) {
 	    var getValue = function getValue(key) {
