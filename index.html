@@ -4891,7 +4891,7 @@ var App = function App() {
       return _ref13.apply(this, arguments);
     };
   }();
-  var clearStorage = /*#__PURE__*/function () {
+	  var clearStorage = /*#__PURE__*/function () {
     var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
       var _t6;
       return _regenerator().w(function (_context9) {
@@ -4923,9 +4923,228 @@ var App = function App() {
     }));
     return function clearStorage() {
       return _ref14.apply(this, arguments);
-    };
-  }();
-  var processFile = /*#__PURE__*/function () {
+	    };
+	  }();
+	  var getWideSalesMetricFromText = function getWideSalesMetricFromText() {
+	    for (var _len = arguments.length, sources = new Array(_len), _key = 0; _key < _len; _key++) {
+	      sources[_key] = arguments[_key];
+	    }
+	    var text = sources.map(function (value) {
+	      return String(value || '').toLowerCase();
+	    }).join(' ').replace(/\s+/g, '');
+	    if (text.includes('ตัน') || text.includes('ton')) return 'ton';
+	    if (text.includes('ชิ้น') || text.includes('qty') || text.includes('quantity') || text.includes('จำนวน')) return 'qty';
+	    if (text.includes('บาท') || text.includes('sales') || text.includes('value') || text.includes('ยอดขาย')) return 'sales';
+	    return '';
+	  };
+	  var normalizeWideSalesHeaderText = function normalizeWideSalesHeaderText(value) {
+	    var text = String(value === undefined || value === null ? '' : value).trim().toLowerCase();
+	    if (typeof text.normalize === 'function') text = text.normalize('NFKC');
+	    return text.replace(/\s+/g, '').replace(/[.．。]/g, '').replace(/[()]/g, '');
+	  };
+	  var findWideSalesHeaderColumn = function findWideSalesHeaderColumn(headerRow, key) {
+	    var headers = (headerRow || []).map(normalizeWideSalesHeaderText);
+	    var exactByKey = {
+	      region: ['ภาค', 'region', 'zone'],
+	      province: ['จังหวัด', 'province', 'prov'],
+	      district: ['เขต', 'อำเภอ', 'district', 'amphur', 'เขตการขาย'],
+	      cv: ['cv', 'cvลูกค้า', 'ลูกค้า', 'customer', 'shop', 'dealer'],
+	      group: ['กลุ่ม', 'กลุ่มสินค้า', 'group', 'category', 'cat', 'หมวด'],
+	      brand: ['แบรนด์', 'ยี่ห้อ', 'brand'],
+	      model: ['รุ่น', 'model', 'สูตร'],
+	      size: ['ขนาด', 'ขนาดสินค้า', 'size', 'weight', 'น้ำหนัก', 'นน'],
+	      sku: ['sku', 'รหัสสินค้า', 'รหัสsku', 'itemcode', 'productcode', 'code']
+	    };
+	    var exactList = exactByKey[key] || [];
+	    for (var i = 0; i < headers.length; i++) {
+	      if (exactList.includes(headers[i])) return i;
+	    }
+	    for (var _i2 = 0; _i2 < headers.length; _i2++) {
+	      var header = headers[_i2];
+	      if (!header) continue;
+	      if (key === 'sku') {
+	        if (header === 'sku' || header.includes('รหัสสินค้า') || header.includes('itemcode') || header.includes('productcode')) return _i2;
+	        continue;
+	      }
+	      if (key === 'size') {
+	        if (header.includes('ขนาด') || header.includes('size') || header.includes('weight') || header.includes('น้ำหนัก')) return _i2;
+	        continue;
+	      }
+	      if (exactList.some(function (keyword) {
+	        return header.includes(normalizeWideSalesHeaderText(keyword));
+	      })) return _i2;
+	    }
+	    return -1;
+	  };
+	  var mapWideSalesHeader = function mapWideSalesHeader(headerRow) {
+	    var map = {};
+	    ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'].forEach(function (key) {
+	      var index = findWideSalesHeaderColumn(headerRow, key);
+	      if (index >= 0) map[key] = index;
+	    });
+	    return map;
+	  };
+	  var getWideSalesMonthColumns = function getWideSalesMonthColumns(headerRow, map) {
+	    var monthCols = [];
+	    var seenMonths = new Set();
+	    (headerRow || []).forEach(function (cell, index) {
+	      var parsed = parseHeaderToType(cell);
+	      if (!parsed || parsed.type !== 'month') return;
+	      if (seenMonths.has(parsed.value)) return;
+	      seenMonths.add(parsed.value);
+	      monthCols.push({
+	        index: index,
+	        monthIndex: parsed.value
+	      });
+	    });
+	    if (monthCols.length >= 2) return monthCols.sort(function (a, b) {
+	      return a.monthIndex - b.monthIndex;
+	    });
+	    var skuIndex = map && Number.isFinite(Number(map.sku)) ? Number(map.sku) : -1;
+	    if (skuIndex >= 0 && (headerRow || []).length >= skuIndex + 4) {
+	      return THAI_MONTHS.map(function (_, monthIndex) {
+	        return {
+	          index: skuIndex + 1 + monthIndex,
+	          monthIndex: monthIndex
+	        };
+	      }).filter(function (col) {
+	        return col.index < (headerRow || []).length;
+	      });
+	    }
+	    return monthCols;
+	  };
+	  var findWideSalesHeaderInfo = function findWideSalesHeaderInfo(rows) {
+	    var best = null;
+	    var maxRows = Math.min((rows || []).length, 180);
+	    for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
+	      var headerRow = rows[rowIndex] || [];
+	      var map = mapWideSalesHeader(headerRow);
+	      var monthCols = getWideSalesMonthColumns(headerRow, map);
+	      var dimensionCount = Object.keys(map).length;
+	      var score = dimensionCount * 10 + monthCols.length;
+	      if (dimensionCount >= 5 && monthCols.length >= 2) {
+	        return {
+	          rowIndex: rowIndex,
+	          headerRow: headerRow,
+	          map: map,
+	          monthCols: monthCols
+	        };
+	      }
+	      if (monthCols.length >= 2 && dimensionCount >= 3 && (!best || score > best.score)) {
+	        best = {
+	          rowIndex: rowIndex,
+	          headerRow: headerRow,
+	          map: map,
+	          monthCols: monthCols,
+	          score: score
+	        };
+	      }
+	    }
+	    return best;
+	  };
+	  var normalizeWideSalesDimensions = function normalizeWideSalesDimensions(row, map) {
+	    var getValue = function getValue(key) {
+	      var index = map && Number.isFinite(Number(map[key])) ? Number(map[key]) : -1;
+	      return index >= 0 ? normalizeDimensionValue(row[index]) : '-';
+	    };
+	    var dimensions = {
+	      region: getValue('region'),
+	      province: getValue('province'),
+	      district: normalizeDistrictName(getValue('district')),
+	      cv: getValue('cv'),
+	      group: getValue('group'),
+	      brand: getValue('brand'),
+	      model: getValue('model'),
+	      size: getValue('size'),
+	      sku: getValue('sku')
+	    };
+	    dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
+	    return dimensions;
+	  };
+	  var parseWideMonthlySalesWorkbook = function parseWideMonthlySalesWorkbook(workbook, options) {
+	    var workbookOptions = options && _typeof(options) === 'object' ? options : {};
+	    var monthlyMap = {};
+	    var yearlyMap = {};
+	    var salesUpdateMeta = createEmptySalesUpdateMeta();
+	    var rowsParsed = 0;
+	    (workbook && workbook.SheetNames || []).forEach(function (sheetName) {
+	      var sheet = workbook.Sheets[sheetName];
+	      if (!sheet || !sheet['!ref']) return;
+	      var rows = XLSX.utils.sheet_to_json(sheet, {
+	        header: 1,
+	        blankrows: false,
+	        raw: false
+	      });
+	      var headerInfo = findWideSalesHeaderInfo(rows);
+	      if (!headerInfo || !headerInfo.monthCols || headerInfo.monthCols.length < 2) return;
+	      var metricKey = getWideSalesMetricFromText(sheetName) || workbookOptions.preferredMetricHint || 'sales';
+	      if (!['sales', 'qty', 'ton'].includes(metricKey)) metricKey = 'sales';
+	      var yearLabel = normalizeYearLabel(workbookOptions.preferredYearHint || extractYearLabelFromText(sheetName) || '');
+	      if (!yearLabel || !isReasonableYearLabel(yearLabel)) yearLabel = extractYearLabelFromText(sheetName) || normalizeYearLabel(new Date().getFullYear());
+	      var ceYear = toCEYear(yearLabel) || new Date().getFullYear();
+	      var updateLabel = extractSheetUpdateLabel(sheet);
+	      if (updateLabel) {
+	        salesUpdateMeta.monthly[metricKey][yearLabel] = updateLabel;
+	        salesUpdateMeta.yearly[metricKey][yearLabel] = updateLabel;
+	        salesUpdateMeta.yearly[metricKey].default = updateLabel;
+	      }
+	      for (var rowIndex = headerInfo.rowIndex + 1; rowIndex < rows.length; rowIndex++) {
+	        var row = rows[rowIndex] || [];
+	        var dimensions = normalizeWideSalesDimensions(row, headerInfo.map);
+	        var dimensionValues = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'].map(function (key) {
+	          return dimensions[key];
+	        });
+	        if (dimensionValues.every(function (value) {
+	          return !value || value === '-';
+	        })) continue;
+	        headerInfo.monthCols.forEach(function (col) {
+	          var value = parseNumericValue(row[col.index]);
+	          if (!Number.isFinite(value) || value === 0) return;
+	          var date = toLocalISOString(new Date(ceYear, col.monthIndex, 1));
+	          var monthlyKey = buildCompositeKey(dimensions, 'month', "".concat(yearLabel, "-").concat(col.monthIndex));
+	          if (!monthlyMap[monthlyKey]) {
+	            monthlyMap[monthlyKey] = _objectSpread(_objectSpread({
+	              id: "wide-m-".concat(monthlyKey),
+	              date: date,
+	              monthIndex: col.monthIndex,
+	              year: yearLabel,
+	              sales: 0,
+	              qty: 0,
+	              ton: 0
+	            }, dimensions), {}, {
+	              groupName: dimensions.group
+	            });
+	          }
+	          monthlyMap[monthlyKey][metricKey] += value;
+	          var yearlyKey = buildCompositeKey(dimensions, 'year', yearLabel);
+	          if (!yearlyMap[yearlyKey]) {
+	            yearlyMap[yearlyKey] = _objectSpread(_objectSpread({
+	              id: "wide-y-".concat(yearlyKey),
+	              year: yearLabel,
+	              sales: 0,
+	              qty: 0,
+	              ton: 0
+	            }, dimensions), {}, {
+	              groupName: dimensions.group
+	            });
+	          }
+	          yearlyMap[yearlyKey][metricKey] += value;
+	          rowsParsed += 1;
+	        });
+	      }
+	    });
+	    if (!rowsParsed) return {
+	      monthly: [],
+	      yearly: [],
+	      salesUpdateMeta: salesUpdateMeta
+	    };
+	    return {
+	      monthly: Object.values(monthlyMap),
+	      yearly: Object.values(yearlyMap),
+	      salesUpdateMeta: salesUpdateMeta
+	    };
+	  };
+	  var processFile = /*#__PURE__*/function () {
     var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(file, type, parseOptionsArg) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
@@ -6201,12 +6420,22 @@ var App = function App() {
                         _t12 = _context16.v;
                         msg = _t12 && _t12.message ? _t12.message : 'อ่านไฟล์ไม่ได้';
                         throw new Error("[".concat(readStage, "] ").concat(msg));
-                      case 10:
-                        if (!(type === 'sales')) {
-                          _context16.n = 18;
-                          break;
-                        }
-                        _context16.p = 11;
+	                      case 10:
+	                        if (!(type === 'sales')) {
+	                          _context16.n = 18;
+	                          break;
+	                        }
+		                        try {
+		                          parsed = parseWideMonthlySalesWorkbook(workbook, parseOptions);
+		                        } catch (_wideSalesError) {
+		                          console.warn('Wide monthly sales parser failed, fallback to raw parser', _wideSalesError);
+		                          parsed = null;
+		                        }
+		                        if ((((_parsed = parsed) === null || _parsed === void 0 ? void 0 : _parsed.monthly) || []).length > 0 || (((_parsed2 = parsed) === null || _parsed2 === void 0 ? void 0 : _parsed2.yearly) || []).length > 0) {
+		                          _context16.n = 17;
+		                          break;
+		                        }
+		                        _context16.p = 11;
                         _context16.n = 12;
                         return parseSalesWorkbook(workbook, parseOptions);
                       case 12:
