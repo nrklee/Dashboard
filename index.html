@@ -209,6 +209,19 @@
         .sales-guide-list-shell { width:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch; }
         .repeat-gap-list-inner,
         .sales-guide-list-inner { width:100%;min-width:0; }
+        .repeat-gap-card .major-section-head { align-items:center; }
+        .repeat-gap-card .major-section-head h3 { white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0; }
+        .repeat-gap-content { min-height:0; }
+        .repeat-gap-window { display:flex;align-items:center;gap:4px;flex-wrap:wrap; }
+        .repeat-gap-filter-bar { display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:-2px 0 8px; }
+        .repeat-gap-filter-toggle { display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-soft);color:var(--accent);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap; }
+        .repeat-gap-filter-toggle:hover { border-color:var(--accent);background:var(--accent-soft); }
+        .repeat-gap-filter-count { min-width:18px;height:18px;border-radius:999px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;padding:0 5px; }
+        .repeat-gap-filters-grid { display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:6px!important;margin-bottom:8px!important;align-items:end!important; }
+        .repeat-gap-filters-grid > .relative { min-width:0!important; }
+        .repeat-gap-filters-grid > .relative > label { font-size:10px!important;line-height:1.15!important;margin-bottom:3px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important; }
+        .repeat-gap-filters-grid > .relative > button { min-height:32px!important;min-width:0!important;padding:5px 7px!important;border-radius:8px!important;font-size:11px!important;line-height:1.1!important; }
+        .repeat-gap-summary-row { margin-bottom:8px!important; }
         .sales-guide-summary-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem; }
         .sales-guide-weight-row { display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap; }
         .top-brands-panel { min-height:42rem; }
@@ -372,6 +385,7 @@
             .trend-top-grid,
             .action-gap-grid { grid-template-columns:1fr; }
             .filters-grid { grid-template-columns:repeat(3,minmax(180px,1fr)); }
+            .repeat-gap-filters-grid { grid-template-columns:repeat(5,minmax(0,1fr))!important; }
             .top-brands-panel { min-height:34rem; }
         }
 
@@ -382,6 +396,15 @@
             .dashboard-card { border-radius:12px!important; }
             .drawer-panel { width:400px; }
             .filters-grid { grid-template-columns:repeat(2,minmax(180px,1fr)); }
+            .repeat-gap-card { padding:14px!important; }
+            .repeat-gap-card .major-section-head { flex-direction:row!important;align-items:center!important;gap:8px!important;margin-bottom:10px!important; }
+            .repeat-gap-card .major-section-head h3 { font-size:12px!important; }
+            .repeat-gap-content { height:26rem!important; }
+            .repeat-gap-window { font-size:10px!important;margin-bottom:6px!important; }
+            .repeat-gap-filter-bar { margin-bottom:6px!important; }
+            .repeat-gap-filters-grid { grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important; }
+            .repeat-gap-filters-grid > .relative > label { font-size:9px!important; }
+            .repeat-gap-filters-grid > .relative > button { min-height:30px!important;padding:4px 5px!important;font-size:10px!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .top-brands-panel { min-height:36rem; }
         }
@@ -398,6 +421,18 @@
             .dashboard-header { flex-wrap:wrap;align-items:flex-start;gap:8px; }
             .app-header-controls { width:100%;justify-content:flex-start; }
             .filters-grid { grid-template-columns:repeat(2,minmax(160px,1fr));gap:10px; }
+            .repeat-gap-card { padding:12px!important; }
+            .repeat-gap-card .major-section-head { flex-direction:row!important;align-items:center!important;gap:8px!important;margin-bottom:8px!important; }
+            .repeat-gap-card .major-section-head h3 { font-size:12px!important; }
+            .repeat-gap-content { height:24rem!important; }
+            .repeat-gap-window { font-size:10px!important;line-height:1.35!important;margin-bottom:6px!important; }
+            .repeat-gap-filter-bar { justify-content:flex-start;margin-bottom:6px!important; }
+            .repeat-gap-filter-toggle { min-height:30px!important;padding:5px 9px!important;font-size:10px!important; }
+            .repeat-gap-filters-grid { grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important; }
+            .repeat-gap-filters-grid > .relative > label { font-size:8.5px!important; }
+            .repeat-gap-filters-grid > .relative > button { min-height:30px!important;padding:4px 4px!important;font-size:9.5px!important; }
+            .repeat-gap-summary-row { flex-wrap:wrap!important;gap:6px!important;margin-bottom:6px!important; }
+            .repeat-gap-summary-row p { font-size:10px!important;line-height:1.35!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .sales-guide-weight-row { gap:0.4rem; }
             .repeat-gap-list-inner,
@@ -453,6 +488,15 @@
             .filters-source-label { display:block; min-width:88px; }
             .filters-source-badge { display:inline-block; max-width:100%; }
             .filters-grid { grid-template-columns:1fr;gap:8px; }
+            .repeat-gap-card { padding:10px!important; }
+            .repeat-gap-card .major-section-head { flex-direction:row!important;align-items:center!important;gap:6px!important; }
+            .repeat-gap-card .major-section-head h3 { font-size:11px!important;max-width:calc(100% - 58px); }
+            .repeat-gap-content { height:22rem!important; }
+            .repeat-gap-window { font-size:9.5px!important; }
+            .repeat-gap-filter-toggle { min-height:28px!important;min-width:0!important;padding:5px 8px!important;font-size:9.5px!important; }
+            .repeat-gap-filters-grid { grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:3px!important; }
+            .repeat-gap-filters-grid > .relative > label { font-size:7.5px!important;margin-bottom:2px!important; }
+            .repeat-gap-filters-grid > .relative > button { min-height:28px!important;padding:3px 3px!important;font-size:8.5px!important;border-radius:7px!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(1,minmax(0,1fr)); }
             .sales-guide-weight-row { gap:0.35rem; }
             .repeat-gap-list-inner,
@@ -4324,6 +4368,13 @@ var App = function App() {
     _useState32 = _slicedToArray(_useState31, 2),
     repeatGapFilters = _useState32[0],
     setRepeatGapFilters = _useState32[1];
+  var _useStateRepeatGapFiltersOpen = useState(function () {
+      if (typeof window === 'undefined' || !window.matchMedia) return true;
+      return !window.matchMedia('(max-width: 1024px)').matches;
+    }),
+    _useStateRepeatGapFiltersOpen2 = _slicedToArray(_useStateRepeatGapFiltersOpen, 2),
+    repeatGapFiltersOpen = _useStateRepeatGapFiltersOpen2[0],
+    setRepeatGapFiltersOpen = _useStateRepeatGapFiltersOpen2[1];
   var safeStorageGet = function safeStorageGet(key) {
     try {
       if (typeof localStorage === 'undefined') return null;
@@ -5024,9 +5075,70 @@ var App = function App() {
 	      return count + (isWideNumericLikeCell(row && row[col.index]) ? 1 : 0);
 	    }, 0);
 	  };
-	  var buildFixedWideSalesHeaderInfo = function buildFixedWideSalesHeaderInfo(rows) {
-	    var maxRows = Math.min((rows || []).length, 260);
+	  var getFixedWideMonthColsAfterSku = function getFixedWideMonthColsAfterSku(skuIndex) {
+	    if (!Number.isFinite(Number(skuIndex)) || Number(skuIndex) < 0) return [];
+	    return THAI_MONTHS.map(function (_, monthIndex) {
+	      return {
+	        index: Number(skuIndex) + 1 + monthIndex,
+	        monthIndex: monthIndex
+	      };
+	    });
+	  };
+	  var buildWideHeaderCandidate = function buildWideHeaderCandidate(rows, rowIndex, headerRow, map, skuIndex, monthCols) {
+	    if (!Array.isArray(rows) || !Array.isArray(headerRow)) return null;
+	    if (!Number.isFinite(Number(skuIndex)) || Number(skuIndex) < 0) return null;
+	    var safeSkuIndex = Number(skuIndex);
+	    var safeMonthCols = Array.isArray(monthCols) && monthCols.length >= 2 ? monthCols : getFixedWideMonthColsAfterSku(safeSkuIndex);
+	    if (safeMonthCols.length < 2) return null;
 	    var dimensionKeys = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
+	    var inferredMap = _objectSpread({}, map || {});
+	    inferredMap.sku = Number.isFinite(Number(inferredMap.sku)) ? Number(inferredMap.sku) : safeSkuIndex;
+	    var fixedStart = safeSkuIndex - (dimensionKeys.length - 1);
+	    dimensionKeys.forEach(function (key, offset) {
+	      if (!Number.isFinite(Number(inferredMap[key])) && fixedStart + offset >= 0) {
+	        inferredMap[key] = fixedStart + offset;
+	      }
+	    });
+	    var explicitLabelCount = dimensionKeys.reduce(function (count, key) {
+	      return count + (Number.isFinite(Number(map && map[key])) ? 1 : 0);
+	    }, 0);
+	    var rowsWithValues = 0;
+	    var numericCells = 0;
+	    var dataProbeLimit = Math.min(rows.length, rowIndex + 220);
+	    for (var dataIndex = rowIndex + 1; dataIndex < dataProbeLimit; dataIndex++) {
+	      var dataRow = rows[dataIndex] || [];
+	      var dimensionTextCount = dimensionKeys.reduce(function (count, key) {
+	        var colIndex = Number(inferredMap[key]);
+	        return count + (Number.isFinite(colIndex) && normalizeDimensionValue(dataRow[colIndex]) !== '-' ? 1 : 0);
+	      }, 0);
+	      var numericCount = countWideNumericMonthCells(dataRow, safeMonthCols);
+	      numericCells += numericCount;
+	      if (numericCount > 0 && dimensionTextCount >= 2) {
+	        rowsWithValues += 1;
+	      }
+	      if (rowsWithValues >= 2 || numericCells >= 8) {
+	        return {
+	          rowIndex: rowIndex,
+	          headerRow: headerRow,
+	          map: inferredMap,
+	          monthCols: safeMonthCols
+	        };
+	      }
+	    }
+	    if (explicitLabelCount >= 5 && numericCells > 0) {
+	      return {
+	        rowIndex: rowIndex,
+	        headerRow: headerRow,
+	        map: inferredMap,
+	        monthCols: safeMonthCols
+	      };
+	    }
+	    return null;
+	  };
+	  var buildFixedWideSalesHeaderInfo = function buildFixedWideSalesHeaderInfo(rows, options, sheetName) {
+	    var maxRows = Math.min((rows || []).length, 260);
+	    var contextText = [sheetName, options && options.preferredPeriodHint, options && options.preferredMetricHint, options && options.preferredYearHint].filter(Boolean).join(' ').toLowerCase();
+	    var likelyMonthlyFile = contextText.indexOf('เดือน') >= 0 || contextText.indexOf('month') >= 0 || /25\d{2}|20\d{2}/.test(contextText);
 	    for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
 	      var headerRow = rows[rowIndex] || [];
 	      var map = mapWideSalesHeader(headerRow);
@@ -5047,48 +5159,25 @@ var App = function App() {
 	      if (skuIndex < 0 && parsedMonthCols.length >= 2 && parsedMonthCols[0].index > 0) {
 	        skuIndex = parsedMonthCols[0].index - 1;
 	      }
-	      if (skuIndex < 0) continue;
-	      var inferredMap = _objectSpread({}, map);
-	      var fixedStart = skuIndex - (dimensionKeys.length - 1);
-	      dimensionKeys.forEach(function (key, offset) {
-	        if (!Number.isFinite(Number(inferredMap[key])) && fixedStart + offset >= 0) {
-	          inferredMap[key] = fixedStart + offset;
+	      var candidateSkuIndexes = [];
+	      if (skuIndex >= 0) candidateSkuIndexes.push(skuIndex);
+	      if (parsedMonthCols.length >= 2 && parsedMonthCols[0].index > 0) candidateSkuIndexes.push(parsedMonthCols[0].index - 1);
+	      if (likelyMonthlyFile) {
+	        for (var commonSkuIndex = 8; commonSkuIndex <= 12; commonSkuIndex++) {
+	          candidateSkuIndexes.push(commonSkuIndex);
 	        }
-	      });
-	      var monthCols = parsedMonthCols.length >= 2 ? parsedMonthCols : THAI_MONTHS.map(function (_, monthIndex) {
-	        return {
-	          index: skuIndex + 1 + monthIndex,
-	          monthIndex: monthIndex
-	        };
-	      });
-	      if (monthCols.length < 2) continue;
-	      var rowsWithValues = 0;
-	      var numericCells = 0;
-	      var dataProbeLimit = Math.min(rows.length, rowIndex + 80);
-	      for (var dataIndex = rowIndex + 1; dataIndex < dataProbeLimit; dataIndex++) {
-	        var dataRow = rows[dataIndex] || [];
-	        var hasDimensionValue = dimensionKeys.some(function (key) {
-	          var colIndex = Number(inferredMap[key]);
-	          return Number.isFinite(colIndex) && normalizeDimensionValue(dataRow[colIndex]) !== '-';
-	        });
-	        var numericCount = countWideNumericMonthCells(dataRow, monthCols);
-	        if (hasDimensionValue && numericCount > 0) {
-	          rowsWithValues += 1;
-	          numericCells += numericCount;
-	        }
-	        if (rowsWithValues >= 3 || numericCells >= 6) {
-	          return {
-	            rowIndex: rowIndex,
-	            headerRow: headerRow,
-	            map: inferredMap,
-	            monthCols: monthCols
-	          };
-	        }
+	      }
+	      var uniqueSkuIndexes = Array.from(new Set(candidateSkuIndexes.filter(function (value) {
+	        return Number.isFinite(Number(value)) && Number(value) >= 0;
+	      })));
+	      for (var candidateIndex = 0; candidateIndex < uniqueSkuIndexes.length; candidateIndex++) {
+	        var candidate = buildWideHeaderCandidate(rows, rowIndex, headerRow, map, uniqueSkuIndexes[candidateIndex], parsedMonthCols);
+	        if (candidate) return candidate;
 	      }
 	    }
 	    return null;
 	  };
-	  var findWideSalesHeaderInfo = function findWideSalesHeaderInfo(rows) {
+	  var findWideSalesHeaderInfo = function findWideSalesHeaderInfo(rows, options, sheetName) {
 	    var best = null;
 	    var maxRows = Math.min((rows || []).length, 180);
 	    for (var rowIndex = 0; rowIndex < maxRows; rowIndex++) {
@@ -5117,7 +5206,7 @@ var App = function App() {
 	        };
 	      }
 	    }
-	    return buildFixedWideSalesHeaderInfo(rows) || best;
+	    return buildFixedWideSalesHeaderInfo(rows, options, sheetName) || best;
 	  };
 	  var normalizeWideSalesDimensions = function normalizeWideSalesDimensions(row, map) {
 	    var getValue = function getValue(key) {
@@ -5153,7 +5242,7 @@ var App = function App() {
 	        raw: false,
 	        defval: ''
 	      });
-	      var headerInfo = findWideSalesHeaderInfo(rows);
+	      var headerInfo = findWideSalesHeaderInfo(rows, workbookOptions, sheetName);
 	      if (!headerInfo || !headerInfo.monthCols || headerInfo.monthCols.length < 2) return;
 	      var metricKey = getWideSalesMetricFromText(sheetName) || workbookOptions.preferredMetricHint || 'sales';
 	      if (!['sales', 'qty', 'ton'].includes(metricKey)) metricKey = 'sales';
@@ -12078,7 +12167,7 @@ var App = function App() {
     unit: unitMode,
     weightSummaryLabel: salesGuideSummary.weightSummaryLabel || salesGuideWeightSummaryLabel
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-1",
+    className: "dashboard-card repeat-gap-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-1",
     style: {
       order: 1
     }
@@ -12095,15 +12184,28 @@ var App = function App() {
     name: sectionOpen.repeatGap ? "ChevronUp" : "ChevronDown",
     size: 14
   }))), sectionOpen.repeatGap && /*#__PURE__*/React.createElement("div", {
-    className: "h-[30rem] w-full fade-in flex flex-col"
+    className: "repeat-gap-content h-[30rem] w-full fade-in flex flex-col"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500 mb-1.5"
+    className: "repeat-gap-window text-[11px] text-slate-500 mb-1.5"
   }, "\u0E0A\u0E48\u0E27\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07 12 \u0E40\u0E14\u0E37\u0E2D\u0E19: ", /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
   }, repeatPurchaseGapSummary.startMonthLabel), " \u0E16\u0E36\u0E07 ", /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
   }, repeatPurchaseGapSummary.latestMonthLabel)), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2 mb-3"
+    className: "repeat-gap-filter-bar"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      return setRepeatGapFiltersOpen(!repeatGapFiltersOpen);
+    },
+    className: "repeat-gap-filter-toggle"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Filter",
+    size: 13
+  }), repeatGapFiltersOpen ? '\u0E22\u0E48\u0E2D\u0E1F\u0E34\u0E25\u0E40\u0E15\u0E2D\u0E23\u0E4C' : '\u0E02\u0E22\u0E32\u0E22\u0E1F\u0E34\u0E25\u0E40\u0E15\u0E2D\u0E23\u0E4C', repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "repeat-gap-filter-count"
+  }, repeatGapActiveFilterCount))), repeatGapFiltersOpen && /*#__PURE__*/React.createElement("div", {
+    className: "repeat-gap-filters-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2 mb-3"
   }, /*#__PURE__*/React.createElement(MultiSelect, {
     label: "CV \u0E25\u0E39\u0E01\u0E04\u0E49\u0E32",
     options: repeatGapCvOptions,
@@ -12152,7 +12254,7 @@ var App = function App() {
       return formatRepeatGapMonthLabel(value);
     }
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between gap-3 mb-3"
+    className: "repeat-gap-summary-row flex items-center justify-between gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-blue-700"
   }, "\u0E40\u0E23\u0E35\u0E22\u0E07\u0E08\u0E32\u0E01\u0E22\u0E2D\u0E14\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E21\u0E32\u0E01\u0E44\u0E1B\u0E19\u0E49\u0E2D\u0E22 | \u0E2B\u0E19\u0E48\u0E27\u0E22\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22: ", getUnitLabel(metricMode, unitMode), " | \u0E1E\u0E1A ", filteredRepeatPurchaseGapItems.length.toLocaleString(), " \u0E23\u0E32\u0E22\u0E01\u0E32\u0E23", filteredRepeatPurchaseGapItems.length > REPEAT_GAP_LIMIT ? " | \u0E41\u0E2A\u0E14\u0E07 ".concat(REPEAT_GAP_LIMIT.toLocaleString(), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E41\u0E23\u0E01") : ''), repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("button", {
