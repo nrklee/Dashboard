@@ -136,6 +136,34 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background:var(--border-strong);border-radius:4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:var(--text-muted); }
 
+        /* ===== Scroll Visibility: Show 5 items in list shells ===== */
+        .repeat-gap-list-shell,
+        .sales-guide-list-shell {
+            max-height: 340px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-border) var(--bg-soft);
+        }
+        .repeat-gap-list-shell::-webkit-scrollbar,
+        .sales-guide-list-shell::-webkit-scrollbar {
+            width: 7px;
+        }
+        .repeat-gap-list-shell::-webkit-scrollbar-track,
+        .sales-guide-list-shell::-webkit-scrollbar-track {
+            background: var(--bg-soft);
+            border-radius: 4px;
+        }
+        .repeat-gap-list-shell::-webkit-scrollbar-thumb,
+        .sales-guide-list-shell::-webkit-scrollbar-thumb {
+            background: var(--accent-border);
+            border-radius: 4px;
+            border: 1px solid var(--bg-soft);
+        }
+        .repeat-gap-list-shell::-webkit-scrollbar-thumb:hover,
+        .sales-guide-list-shell::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
         /* ===== Animations ===== */
         @keyframes fadeIn { from{opacity:0}to{opacity:1} }
         @keyframes slideIn { from{transform:translateX(100%)}to{transform:translateX(0)} }
@@ -423,6 +451,8 @@
             .repeat-gap-size-row-head { padding:5px 7px!important;font-size:10px!important; }
             .repeat-gap-sku-row { font-size:10px!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .repeat-gap-list-shell,
+            .sales-guide-list-shell { max-height:300px!important; }
             .top-brands-panel { min-height:36rem; }
         }
 
@@ -461,6 +491,8 @@
             .repeat-gap-sku-row { font-size:9.5px!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .sales-guide-weight-row { gap:0.4rem; }
+            .repeat-gap-list-shell,
+            .sales-guide-list-shell { max-height:280px!important; }
             .repeat-gap-list-inner,
             .sales-guide-list-inner { min-width:0; }
             .top-brands-panel { min-height:32rem; }
@@ -538,6 +570,8 @@
             .sales-guide-weight-row { gap:0.35rem; }
             .repeat-gap-list-inner,
             .sales-guide-list-inner { min-width:0; }
+            .repeat-gap-list-shell,
+            .sales-guide-list-shell { max-height:260px!important; }
             .top-brands-panel { min-height:28rem; }
             .ai-panel-title { font-size:16px; }
             .ai-quick-row { gap:6px; }
