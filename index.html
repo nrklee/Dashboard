@@ -544,15 +544,19 @@
             .sales-guide-card .major-section-head { flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-bottom:8px!important;padding:8px 10px!important; }
             .sales-guide-card .major-section-head h3 { font-size:14px!important;line-height:1.25!important;min-width:0!important; }
             .sales-guide-card .major-section-head button { min-height:32px!important;min-width:58px!important;padding:6px 10px!important;border-radius:10px!important;font-size:11px!important; }
-            .sales-guide-content { height:auto!important;min-height:0!important; }
+            .sales-guide-content { height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;gap:6px!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin-bottom:8px!important; }
             .sales-guide-summary-grid > div { min-height:54px!important;padding:7px 8px!important;border-radius:10px!important; }
             .sales-guide-summary-grid > div p:first-child { font-size:9.5px!important;line-height:1.2!important; }
             .sales-guide-summary-grid > div p:last-child { font-size:12px!important;line-height:1.2!important;margin-top:2px!important; }
+            .sales-guide-summary-grid { order:1!important; }
+            .sales-guide-message { order:2!important;font-size:10px!important;line-height:1.35!important;margin:0!important; }
+            .sales-guide-order-note { order:3!important;font-size:10px!important;line-height:1.35!important;margin:0!important; }
+            .sales-guide-weight-panel { order:5!important;margin-top:4px!important;margin-bottom:0!important;padding:6px 7px!important; }
             .sales-guide-weight-row { gap:4px!important;font-size:9.5px!important; }
             .sales-guide-weight-row input { width:2.25rem!important;min-height:28px!important;font-size:10px!important;padding:2px 3px!important; }
             .sales-guide-weight-row button { min-height:28px!important;padding:3px 6px!important;font-size:9.5px!important;border-radius:8px!important; }
-            .sales-guide-list-shell { flex:0 0 auto!important;height:18.5rem!important;min-height:18.5rem!important;overflow-y:auto!important;overflow-x:hidden!important; }
+            .sales-guide-list-shell { order:4!important;flex:0 0 auto!important;height:20.5rem!important;min-height:20.5rem!important;overflow-y:auto!important;overflow-x:hidden!important; }
             .sales-guide-list-head { grid-template-columns:minmax(0,1fr) minmax(0,108px) 16px!important;gap:5px!important;padding:5px 7px!important;font-size:8.5px!important; }
             .sales-guide-list-head > span:nth-child(2) { display:none!important; }
             .sales-guide-item-head { grid-template-columns:minmax(0,1fr) minmax(0,108px) 16px!important;gap:5px!important;padding:6px 7px!important;font-size:9.5px!important;min-height:3.35rem!important; }
@@ -12271,7 +12275,7 @@ var App = function App() {
       color: '#059669'
     }
   }, formatValue(salesGuideSummary.totalPotential || 0, metricMode, unitMode)))), /*#__PURE__*/React.createElement("div", {
-    className: "mb-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2"
+    className: "sales-guide-weight-panel mb-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sales-guide-weight-row text-[11px]"
   }, /*#__PURE__*/React.createElement("span", {
@@ -12314,9 +12318,9 @@ var App = function App() {
   }, "\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19")), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[11px] text-slate-500"
   }, "\u0E23\u0E30\u0E1A\u0E1A\u0E43\u0E0A\u0E49\u0E2A\u0E31\u0E14\u0E2A\u0E48\u0E27\u0E19\u0E08\u0E23\u0E34\u0E07: ", salesGuideWeightSummaryLabel)), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] ".concat(salesGuideSummary.targetGap > 0 ? 'text-amber-700' : 'text-slate-500', " mb-1")
+    className: "sales-guide-message text-[11px] ".concat(salesGuideSummary.targetGap > 0 ? 'text-amber-700' : 'text-slate-500', " mb-1")
   }, salesGuideSummary.message), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-blue-700 mb-1"
+    className: "sales-guide-order-note text-[11px] text-blue-700 mb-1"
   }, "\u0E40\u0E23\u0E35\u0E22\u0E07\u0E08\u0E32\u0E01\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E22\u0E2D\u0E14\u0E21\u0E32\u0E01\u0E44\u0E1B\u0E19\u0E49\u0E2D\u0E22", salesGuideSummary.projectedClosePct !== null ? " | \u0E1B\u0E23\u0E30\u0E21\u0E32\u0E13\u0E01\u0E32\u0E23\u0E1B\u0E34\u0E14\u0E41\u0E19\u0E30\u0E19\u0E33\u0E02\u0E32\u0E22 ".concat(Number(salesGuideSummary.projectedClosePct || 0).toFixed(0), "%") : '', (salesGuideSummary.totalStores || 0) > SALES_GUIDE_LIMIT ? " | \u0E41\u0E2A\u0E14\u0E07 ".concat(SALES_GUIDE_LIMIT.toLocaleString(), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E41\u0E23\u0E01") : ''), /*#__PURE__*/React.createElement(SalesGuideList, {
     data: salesGuideSummary.visibleItems,
     metric: metricMode,
