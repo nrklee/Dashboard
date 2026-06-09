@@ -1806,6 +1806,8 @@ var _Recharts = Recharts,
   ComposedChart = _Recharts.ComposedChart,
   LineChart = _Recharts.LineChart,
   Line = _Recharts.Line,
+  AreaChart = _Recharts.AreaChart,
+  Area = _Recharts.Area,
   BarChart = _Recharts.BarChart,
   Bar = _Recharts.Bar,
   XAxis = _Recharts.XAxis,
@@ -3973,7 +3975,8 @@ var LoginScreen = function LoginScreen(props) {
                 required: true,
                 type: "text",
                 value: username,
-                onChange: function(e) { return onUsernameChange && onUsernameChange(e.target.value); }
+                onChange: function(e) { return onUsernameChange && onUsernameChange(e.target.value); },
+                onKeyDown: function(e) { if (e.key === 'Enter') handlePrimaryAction(e); }
               })
             )
           ),
@@ -4003,6 +4006,7 @@ var LoginScreen = function LoginScreen(props) {
                 type: "password",
                 value: password,
                 onChange: function(e) { return onPasswordChange && onPasswordChange(e.target.value); },
+                onKeyDown: function(e) { if (e.key === 'Enter') handlePrimaryAction(e); },
                 className: "login-input"
               })
             )
@@ -4029,6 +4033,7 @@ var LoginScreen = function LoginScreen(props) {
               type: "password",
               value: newPassword,
               onChange: function(e) { return setNewPassword(e.target.value); },
+              onKeyDown: function(e) { if (e.key === "Enter") handlePrimaryAction(e); },
               required: true
             })
           ),
@@ -4040,6 +4045,7 @@ var LoginScreen = function LoginScreen(props) {
               type: "password",
               value: confirmPassword,
               onChange: function(e) { return setConfirmPassword(e.target.value); },
+              onKeyDown: function(e) { if (e.key === "Enter") handlePrimaryAction(e); },
               required: true
             })
           ),
@@ -4068,6 +4074,7 @@ var LoginScreen = function LoginScreen(props) {
               type: "text",
               value: resetCode,
               onChange: function(e) { return setResetCode(e.target.value); },
+              onKeyDown: function(e) { if (e.key === "Enter") handlePrimaryAction(e); },
               required: true
             })
           ),
@@ -4079,6 +4086,7 @@ var LoginScreen = function LoginScreen(props) {
               type: "password",
               value: newPassword,
               onChange: function(e) { return setNewPassword(e.target.value); },
+              onKeyDown: function(e) { if (e.key === "Enter") handlePrimaryAction(e); },
               required: true
             })
           ),
@@ -4090,6 +4098,7 @@ var LoginScreen = function LoginScreen(props) {
               type: "password",
               value: confirmPassword,
               onChange: function(e) { return setConfirmPassword(e.target.value); },
+              onKeyDown: function(e) { if (e.key === "Enter") handlePrimaryAction(e); },
               required: true
             })
           ),
@@ -4583,7 +4592,7 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
   }, "ตั้งแต่วันที่ (Start Date)"), /*#__PURE__*/React.createElement("input", {
     type: "date",
     value: config.startDate,
-    onChange: function(e) { return setConfig(Object.assign({}, config, { startDate: e.target.value })); },
+    onChange: function(e) { setConfig(Object.assign({}, config, { startDate: e.target.value })); e.target.blur(); },
     className: "p-2 rounded-lg border border-outline-variant bg-surface w-full"
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
@@ -4592,7 +4601,7 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
   }, "ถึงวันที่ (End Date)"), /*#__PURE__*/React.createElement("input", {
     type: "date",
     value: config.endDate,
-    onChange: function(e) { return setConfig(Object.assign({}, config, { endDate: e.target.value })); },
+    onChange: function(e) { setConfig(Object.assign({}, config, { endDate: e.target.value })); e.target.blur(); },
     className: "p-2 rounded-lg border border-outline-variant bg-surface w-full"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-6"
@@ -4831,6 +4840,167 @@ var ImportExportScreen = function ImportExportScreen(props) {
     onClose: function() { setShowBuilder(false); },
     onExport: function(config) { exportCustomSalesReport(config); }
   }));
+};
+
+var CustomDashboardModal = function CustomDashboardModal(_ref) {
+  var isOpen = _ref.isOpen,
+    onClose = _ref.onClose,
+    sectionOpen = _ref.sectionOpen,
+    toggleSection = _ref.toggleSection,
+    allData = _ref.allData;
+  if (!isOpen) return null;
+
+  var _useState = useState('layout'),
+    _useState2 = _slicedToArray(_useState, 2),
+    activeTab = _useState2[0],
+    setActiveTab = _useState2[1];
+
+  var _useState3 = useState('Line'),
+    _useState4 = _slicedToArray(_useState3, 2),
+    chartType = _useState4[0],
+    setChartType = _useState4[1];
+
+  var _useState5 = useState('month'),
+    _useState6 = _slicedToArray(_useState5, 2),
+    xAxisKey = _useState6[0],
+    setXAxisKey = _useState6[1];
+
+  var _useState7 = useState('sales'),
+    _useState8 = _slicedToArray(_useState7, 2),
+    yAxisKey = _useState8[0],
+    setYAxisKey = _useState8[1];
+
+  // Simple grouping for Chart Builder preview
+  var previewData = useMemo(function() {
+    if (!allData || !allData.monthly) return [];
+    var grouped = {};
+    allData.monthly.forEach(function(item) {
+      var k = item[xAxisKey] || 'N/A';
+      if (!grouped[k]) grouped[k] = { name: k, value: 0 };
+      grouped[k].value += Number(item[yAxisKey]) || 0;
+    });
+    return Object.values(grouped).slice(0, 50); // limit 50 points
+  }, [allData, xAxisKey, yAxisKey]);
+
+  var renderPreviewChart = function() {
+    if (previewData.length === 0) return React.createElement("div", {className: "text-center text-slate-500 py-10"}, "No Data");
+    
+    var ChartElement = LineChart;
+    var DataElement = Line;
+    if (chartType === 'Bar') { ChartElement = BarChart; DataElement = Bar; }
+    if (chartType === 'Area') { ChartElement = AreaChart; DataElement = Area; }
+    
+    if (chartType === 'Pie') {
+      return React.createElement(ResponsiveContainer, {width: "100%", height: 300},
+        React.createElement(PieChart, null,
+          React.createElement(Pie, {
+            data: previewData,
+            dataKey: "value",
+            nameKey: "name",
+            cx: "50%",
+            cy: "50%",
+            outerRadius: 100,
+            fill: "#3b82f6",
+            label: true
+          }),
+          React.createElement(Tooltip, null)
+        )
+      );
+    }
+    
+    return React.createElement(ResponsiveContainer, {width: "100%", height: 300},
+      React.createElement(ChartElement, {data: previewData},
+        React.createElement(CartesianGrid, {strokeDasharray: "3 3"}),
+        React.createElement(XAxis, {dataKey: "name"}),
+        React.createElement(YAxis, null),
+        React.createElement(Tooltip, null),
+        React.createElement(DataElement, {type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6"})
+      )
+    );
+  };
+
+  return React.createElement("div", { className: "status-modal-overlay" },
+    React.createElement("div", { className: "status-modal", style: { width: '800px', maxWidth: '95vw' } },
+      React.createElement("div", { className: "status-modal-head" },
+        React.createElement("div", { className: "status-modal-title" }, "Custom Dashboard"),
+        React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "\u00D7")
+      ),
+      React.createElement("div", { className: "status-modal-body" },
+        React.createElement("div", { className: "flex border-b border-slate-200 mb-4" },
+          React.createElement("button", {
+            className: "px-4 py-2 font-bold " + (activeTab === 'layout' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500'),
+            onClick: function() { setActiveTab('layout'); }
+          }, "Layout Settings"),
+          React.createElement("button", {
+            className: "px-4 py-2 font-bold " + (activeTab === 'chart' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500'),
+            onClick: function() { setActiveTab('chart'); }
+          }, "Chart Builder")
+        ),
+        activeTab === 'layout' && React.createElement("div", null,
+          React.createElement("p", { className: "mb-4 text-sm text-slate-600" }, "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E40\u0E1B\u0E34\u0E14-\u0E1B\u0E34\u0E14\u0E01\u0E32\u0E23\u0E41\u0E2A\u0E14\u0E07\u0E1C\u0E25\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E2B\u0E31\u0E27\u0E02\u0E49\u0E2D\u0E1A\u0E19\u0E2B\u0E19\u0E49\u0E32 Dashboard"),
+          React.createElement("div", { className: "grid grid-cols-2 gap-4" },
+            Object.keys(sectionOpen).map(function(key) {
+              return React.createElement("label", { key: key, className: "flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded border border-slate-100" },
+                React.createElement("input", {
+                  type: "checkbox",
+                  checked: sectionOpen[key],
+                  onChange: function() { toggleSection(key); },
+                  className: "w-4 h-4 text-blue-600 rounded border-gray-300"
+                }),
+                React.createElement("span", { className: "text-sm font-medium text-slate-700 capitalize" }, key)
+              );
+            })
+          )
+        ),
+        activeTab === 'chart' && React.createElement("div", { className: "flex flex-col gap-4" },
+          React.createElement("div", { className: "flex gap-4 flex-wrap" },
+            React.createElement("div", { className: "flex-1" },
+              React.createElement("label", { className: "block text-xs font-bold text-slate-500 mb-1" }, "Chart Type"),
+              React.createElement("select", {
+                className: "w-full p-2 rounded border border-slate-300",
+                value: chartType,
+                onChange: function(e) { setChartType(e.target.value); }
+              }, 
+                React.createElement("option", { value: "Line" }, "Line Chart"),
+                React.createElement("option", { value: "Bar" }, "Bar Chart"),
+                React.createElement("option", { value: "Area" }, "Area Chart"),
+                React.createElement("option", { value: "Pie" }, "Pie Chart")
+              )
+            ),
+            React.createElement("div", { className: "flex-1" },
+              React.createElement("label", { className: "block text-xs font-bold text-slate-500 mb-1" }, "X-Axis (Dimension)"),
+              React.createElement("select", {
+                className: "w-full p-2 rounded border border-slate-300",
+                value: xAxisKey,
+                onChange: function(e) { setXAxisKey(e.target.value); }
+              },
+                React.createElement("option", { value: "month" }, "Month"),
+                React.createElement("option", { value: "year" }, "Year"),
+                React.createElement("option", { value: "brand" }, "Brand"),
+                React.createElement("option", { value: "district" }, "District"),
+                React.createElement("option", { value: "province" }, "Province"),
+                React.createElement("option", { value: "size" }, "Size")
+              )
+            ),
+            React.createElement("div", { className: "flex-1" },
+              React.createElement("label", { className: "block text-xs font-bold text-slate-500 mb-1" }, "Y-Axis (Metric)"),
+              React.createElement("select", {
+                className: "w-full p-2 rounded border border-slate-300",
+                value: yAxisKey,
+                onChange: function(e) { setYAxisKey(e.target.value); }
+              },
+                React.createElement("option", { value: "sales" }, "Sales (Value)"),
+                React.createElement("option", { value: "qty" }, "Quantity")
+              )
+            )
+          ),
+          React.createElement("div", { className: "border rounded-lg bg-white p-4" },
+            renderPreviewChart()
+          )
+        )
+      )
+    )
+  );
 };
 
 var App = function App() {
@@ -5105,6 +5275,7 @@ var App = function App() {
     _useState50 = _slicedToArray(_useState49, 2),
     isAskingAI = _useState50[0],
     setIsAskingAI = _useState50[1];
+  var [isCustomDashboardOpen, setIsCustomDashboardOpen] = useState(false);
   var salesInputRef = useRef(null);
   var targetInputRef = useRef(null);
   var didAutoSyncRef = useRef(false);
@@ -5189,6 +5360,19 @@ var App = function App() {
       startedAt: 0
     });
   };
+  
+  React.useEffect(function() {
+    var handleGlobalKeyDown = function(e) {
+      if (e.key === 'Enter') {
+        if (statusInfo.message && !statusInfo.loading) {
+          e.preventDefault();
+          closeStatusPopup();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return function() { window.removeEventListener('keydown', handleGlobalKeyDown); };
+  }, [statusInfo]);
   var isSessionExpiredMessage = function isSessionExpiredMessage(message) {
     var safeMessage = String(message || '').trim().toLowerCase();
     if (!safeMessage) return false;
@@ -12411,7 +12595,13 @@ var App = function App() {
     type: "button",
     className: "status-modal-action",
     onClick: closeStatusPopup
-  }, "\u0E1B\u0E34\u0E14")))), /*#__PURE__*/React.createElement(AIPanel, {
+  }, "\u0E1B\u0E34\u0E14")))), /*#__PURE__*/React.createElement(CustomDashboardModal, {
+    isOpen: isCustomDashboardOpen,
+    onClose: function() { return setIsCustomDashboardOpen(false); },
+    sectionOpen: sectionOpen,
+    toggleSection: toggleSection,
+    allData: allData
+  }), /*#__PURE__*/React.createElement(AIPanel, {
     isOpen: isAIPanelOpen,
     onClose: function onClose() {
       return setIsAIPanelOpen(false);
@@ -12472,6 +12662,11 @@ var App = function App() {
   }, "\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (Smart Filters)"), /*#__PURE__*/React.createElement("div", {
     className: "filters-head-actions ml-auto flex items-center gap-3"
   }, /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setIsCustomDashboardOpen(true);
+    },
+    className: "flex items-center gap-1 text-xs px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md border border-indigo-200 transition-colors font-medium"
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 12 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return toggleSection('filters');
     },
@@ -12634,7 +12829,12 @@ var App = function App() {
       left: 20,
       bottom: 12
     }
-  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+  }, /*#__PURE__*/React.createElement("defs", null,
+    /*#__PURE__*/React.createElement("linearGradient", { id: "colorSales", x1: "0", y1: "0", x2: "0", y2: "1" },
+      /*#__PURE__*/React.createElement("stop", { offset: "5%", stopColor: "#3b82f6", stopOpacity: 0.25 }),
+      /*#__PURE__*/React.createElement("stop", { offset: "95%", stopColor: "#3b82f6", stopOpacity: 0 })
+    )
+  ), /*#__PURE__*/React.createElement(CartesianGrid, {
     strokeDasharray: "3 3",
     vertical: false
   }), /*#__PURE__*/React.createElement(XAxis, {
@@ -12682,17 +12882,23 @@ var App = function App() {
       dot: false
     });
   }), activeTrendYears.map(function (yearLabel, index) {
-    return /*#__PURE__*/React.createElement(Line, {
+    var sortedYears = [].concat(activeTrendYears).sort(function(a,b) { return b.localeCompare(a); });
+    var isLatest = yearLabel === sortedYears[0];
+    var isPrev = yearLabel === sortedYears[1];
+    var strokeColor = isLatest ? '#2563eb' : (isPrev ? '#8b5cf6' : COLORS[index % COLORS.length]);
+    var ChartElement = isLatest ? Area : Line;
+    
+    return /*#__PURE__*/React.createElement(ChartElement, {
       key: "sales-".concat(yearLabel),
       yAxisId: "left",
       type: "monotone",
       dataKey: "sales_".concat(yearLabel),
       name: "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 ".concat(yearLabel),
-      stroke: COLORS[index % COLORS.length],
-      strokeWidth: 2,
-      dot: {
-        r: 2.5
-      }
+      stroke: strokeColor,
+      strokeWidth: isLatest ? 2.5 : 2,
+      strokeDasharray: isLatest ? undefined : "5 5",
+      fill: isLatest ? "url(#colorSales)" : "none",
+      dot: isLatest ? { r: 4, fill: '#ffffff', stroke: strokeColor, strokeWidth: 2 } : false
     }, metricMode !== 'qty' && chartData.some(function (row) {
       return Number.isFinite(Number(row["pct_vs_target_".concat(yearLabel)]));
     }) && /*#__PURE__*/React.createElement(LabelList, {
