@@ -154,6 +154,21 @@
         [data-theme="dark"] .bg-slate-50,
         [data-theme="dark"] .bg-slate-100 { background-color:var(--bg-soft)!important; }
 
+        /* ===== Dark Mode Overrides for Tailwind Hardcoded Colors ===== */
+        html.dark .bg-surface-container-low, [data-theme="dark"] .bg-surface-container-low { background-color: #171c23 !important; }
+        html.dark .bg-surface-container-high, [data-theme="dark"] .bg-surface-container-high { background-color: #213145 !important; }
+        html.dark .bg-surface, [data-theme="dark"] .bg-surface { background-color: #171c23 !important; }
+        html.dark .text-on-surface-variant, [data-theme="dark"] .text-on-surface-variant { color: #c2c6d1 !important; }
+        html.dark .text-on-surface, [data-theme="dark"] .text-on-surface { color: #f8f9ff !important; }
+        html.dark .text-on-background, [data-theme="dark"] .text-on-background { color: #f8f9ff !important; }
+        html.dark .border-outline-variant, [data-theme="dark"] .border-outline-variant { border-color: #717786 !important; }
+        html.dark .bg-surface-container-lowest, [data-theme="dark"] .bg-surface-container-lowest { background-color: #0b1c30 !important; }
+        html.dark .bg-background, [data-theme="dark"] .bg-background { background-color: #0b1c30 !important; }
+        html.dark .text-primary, [data-theme="dark"] .text-primary { color: #adc6ff !important; }
+        html.dark .border-primary, [data-theme="dark"] .border-primary { border-color: #adc6ff !important; }
+        html.dark .hover\:bg-surface-container-high:hover, [data-theme="dark"] .hover\:bg-surface-container-high:hover { background-color: #213145 !important; }
+        html.dark .hover\:bg-surface-container-low:hover, [data-theme="dark"] .hover\:bg-surface-container-low:hover { background-color: #213145 !important; }
+
         /* ===== Dashboard Shell ===== */
         .dashboard-shell { background:var(--bg); }
         .dashboard-header { background:var(--header-bg)!important; border-color:transparent!important; backdrop-filter:blur(12px); color:var(--header-text)!important; }
@@ -3899,6 +3914,8 @@ var LoginScreen = function LoginScreen(props) {
   };
 
   return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen w-full flex items-center justify-center p-4 bg-pattern bg-background"
+  }, /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0px_8px_24px_rgba(0,0,0,0.08)] border border-outline-variant/30 p-8 flex flex-col gap-8 relative overflow-hidden"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-0 w-full h-1 bg-primary"
@@ -4083,7 +4100,7 @@ var LoginScreen = function LoginScreen(props) {
   }, "Don't have an account? ", /*#__PURE__*/React.createElement("a", {
     className: "font-label-md text-label-md text-primary hover:text-primary-container transition-colors",
     href: "#"
-  }, "Contact IT Support"))));
+  }, "Contact IT Support")))));
 };
 var AIPanel = function AIPanel(props) {
   var isOpen = props.isOpen,
@@ -4456,7 +4473,146 @@ var TargetBarChart = function TargetBarChart(_ref10) {
 };
 
 // --- Main App ---
+var ImportExportScreen = function ImportExportScreen(props) {
+  var googleSheetSyncLabel = props.googleSheetSyncLabel;
+  var syncSalesFromGoogleSheet = props.syncSalesFromGoogleSheet;
+  var openFilePickerForType = props.openFilePickerForType;
+  var googleTargetSyncLabel = props.googleTargetSyncLabel;
+  var syncTargetFromGoogleSheet = props.syncTargetFromGoogleSheet;
+  var exportSalesDatabase = props.exportSalesDatabase;
+  var salesDataRowsCount = props.salesDataRowsCount;
+  var exportTargetTemplate = props.exportTargetTemplate;
+  var targetDataRowsCount = props.targetDataRowsCount;
+  var clearSalesOnly = props.clearSalesOnly;
+  var clearTargetOnly = props.clearTargetOnly;
+  var clearStorage = props.clearStorage;
+
+  return /*#__PURE__*/React.createElement("div", {
+    className: "p-6 flex flex-col gap-6 w-full max-w-6xl mx-auto flex-1 overflow-y-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4 border-b border-outline-variant pb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-12 h-12 bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center shadow-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-2xl"
+  }, "sync_alt")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "font-headline-md text-on-surface"
+  }, "Import / Export"), /*#__PURE__*/React.createElement("p", {
+    className: "text-body-md text-on-surface-variant"
+  }, "\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 \u0E2A\u0E48\u0E07\u0E2D\u0E2D\u0E01 \u0E41\u0E25\u0E30\u0E25\u0E49\u0E32\u0E07\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E41\u0E25\u0E30\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-primary text-xl"
+  }, "payments"), /*#__PURE__*/React.createElement("h3", {
+    className: "font-title-lg text-on-surface"
+  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (Sales Data)")), /*#__PURE__*/React.createElement("p", {
+    className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
+  }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+    className: "font-medium"
+  }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), googleSheetSyncLabel), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "w-full flex items-center justify-center gap-2 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-lg py-3 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98]",
+    onClick: syncSalesFromGoogleSheet
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-lg"
+  }, "cloud_sync"), "Refresh Sales Data Link"), /*#__PURE__*/React.createElement("button", {
+    className: "w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg py-3 px-4 rounded-xl border border-outline-variant transition-all active:scale-[0.98]",
+    onClick: function onClick() {
+      return openFilePickerForType('sales');
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-lg"
+  }, "upload_file"), "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales (\u0E44\u0E1F\u0E25\u0E4C Excel/CSV)"))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-primary text-xl"
+  }, "ads_click"), /*#__PURE__*/React.createElement("h3", {
+    className: "font-title-lg text-on-surface"
+  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22 (Target Data)")), /*#__PURE__*/React.createElement("p", {
+    className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
+  }, "\u0E14\u0E36\u0E07 Target \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+    className: "font-medium"
+  }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), googleTargetSyncLabel), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "w-full flex items-center justify-center gap-2 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-lg py-3 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98]",
+    onClick: syncTargetFromGoogleSheet
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-lg"
+  }, "cloud_sync"), "Refresh Target Data Link"), /*#__PURE__*/React.createElement("button", {
+    className: "w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg py-3 px-4 rounded-xl border border-outline-variant transition-all active:scale-[0.98]",
+    onClick: function onClick() {
+      return openFilePickerForType('target');
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-lg"
+  }, "upload_file"), "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target (\u0E44\u0E1F\u0E25\u0E4C Excel/CSV)")))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5 lg:col-span-2 mt-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-tertiary text-xl"
+  }, "database"), /*#__PURE__*/React.createElement("h3", {
+    className: "font-title-lg text-on-surface"
+  }, "\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 (Database Management)")), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "flex items-center gap-3 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface border border-outline-variant p-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+    onClick: exportSalesDatabase,
+    disabled: salesDataRowsCount === 0
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-primary"
+  }, "download")), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col text-left"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-label-lg font-bold"
+  }, "Export Sales DB"), salesDataRowsCount > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-label-sm text-on-surface-variant"
+  }, salesDataRowsCount.toLocaleString(), " \u0E41\u0E16\u0E27"))), /*#__PURE__*/React.createElement("button", {
+    className: "flex items-center gap-3 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface border border-outline-variant p-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+    onClick: exportTargetTemplate,
+    disabled: targetDataRowsCount === 0
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-primary"
+  }, "download")), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col text-left"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-label-lg font-bold"
+  }, "Export Target Template"), targetDataRowsCount > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-label-sm text-on-surface-variant"
+  }, targetDataRowsCount.toLocaleString(), " \u0E41\u0E16\u0E27")))), /*#__PURE__*/React.createElement("div", {
+    className: "border-t border-outline-variant/50 pt-5 mt-2 grid grid-cols-1 md:grid-cols-3 gap-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "flex items-center justify-center gap-2 border border-error/30 bg-error-container/10 hover:bg-error-container/30 text-error font-label-md py-3 rounded-lg transition-colors",
+    onClick: clearSalesOnly
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-sm"
+  }, "delete"), "Reset Sales"), /*#__PURE__*/React.createElement("button", {
+    className: "flex items-center justify-center gap-2 border border-error/30 bg-error-container/10 hover:bg-error-container/30 text-error font-label-md py-3 rounded-lg transition-colors",
+    onClick: clearTargetOnly
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-sm"
+  }, "delete"), "Reset Target"), /*#__PURE__*/React.createElement("button", {
+    className: "flex items-center justify-center gap-2 bg-error hover:bg-[#93000a] text-on-error font-label-md py-3 rounded-lg transition-colors shadow-sm",
+    onClick: clearStorage
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-sm"
+  }, "warning"), "Reset \u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))));
+};
+
 var App = function App() {
+  var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:init';
   if (window.__dashboardBoot && !window.__dashboardBoot.mounted) {
     window.__dashboardBoot.phase = 'app:render:start';
@@ -11714,24 +11870,28 @@ var App = function App() {
     className: "font-body-sm text-on-surface-variant"
   }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 px-4 flex-1"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-surface-container-high transition-colors font-label-md"
+  }, 
+  /*#__PURE__*/React.createElement("button", {
+    onClick: function() { setActiveTab("dashboard"); },
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'dashboard' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
-  }, "dashboard"), "\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"), /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, "dashboard"), "\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"), 
+  /*#__PURE__*/React.createElement("button", {
+    onClick: function() { setActiveTab("import_export"); },
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
-  }, "sync_alt"), "Import / Export"), /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, "sync_alt"), "Import / Export"), 
+  /*#__PURE__*/React.createElement("button", {
+    onClick: function() { setActiveTab("target_match"); },
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
-  }, "center_focus_strong"), "Target Match"), /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, "center_focus_strong"), "Target Match"), 
+  /*#__PURE__*/React.createElement("button", {
+    onClick: function() { setActiveTab("setting"); },
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'setting' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "settings"), "Setting")), /*#__PURE__*/React.createElement("div", {
@@ -11915,118 +12075,6 @@ var App = function App() {
     onQuickPrompt: handleAIQuickPrompt,
     isLoading: isAskingAI,
     canEditWebAppUrl: String((authUser && authUser.role) || "").trim().toLowerCase() === "admin"
-  }), /*#__PURE__*/React.createElement(MenuDrawer, {
-    isOpen: isDrawerOpen,
-    onClose: function onClose() {
-      return setIsDrawerOpen(false);
-    }
-  }, !embeddedMode && /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section-title"
-  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("div", {
-    className: "text-xs mb-2",
-    style: {
-      color: 'var(--text-muted)',
-      lineHeight: 1.5
-    }
-  }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", googleSheetSyncLabel), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn primary",
-    onClick: syncSalesFromGoogleSheet
-      }, /*#__PURE__*/React.createElement(Icon, {
-    name: "RefreshCw",
-    size: 14
-  }), " Refresh Sales Data Link"), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn",
-    onClick: function onClick() {
-      return openFilePickerForType('sales');
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Upload",
-    size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales")), !embeddedMode && /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section-title"
-  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"), /*#__PURE__*/React.createElement("div", {
-    className: "text-xs mb-2",
-    style: {
-      color: 'var(--text-muted)',
-      lineHeight: 1.5
-    }
-  }, "\u0E14\u0E36\u0E07 Target \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: ", googleTargetSyncLabel), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn primary",
-    onClick: syncTargetFromGoogleSheet
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "RefreshCw",
-    size: 14
-  }), " Refresh Target Data Link"), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn",
-    onClick: function onClick() {
-      return openFilePickerForType('target');
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Upload",
-    size: 14
-  }), " \u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target")), /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section-title"
-  }, "\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25"), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn",
-    onClick: exportSalesDatabase,
-    disabled: salesDataRowsCount === 0
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "FileText",
-    size: 14
-  }), " Export Sales DB ", salesDataRowsCount > 0 && "(".concat(salesDataRowsCount.toLocaleString(), " \u0E41\u0E16\u0E27)")), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn",
-    onClick: exportTargetTemplate,
-    disabled: targetDataRowsCount === 0
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "FileText",
-    size: 14
-  }), " Export Target Template ", targetDataRowsCount > 0 && "(".concat(targetDataRowsCount.toLocaleString(), " \u0E41\u0E16\u0E27)")), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn danger",
-    onClick: clearSalesOnly
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "RefreshCw",
-    size: 14
-  }), " Reset Sales"), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn danger",
-    onClick: clearTargetOnly
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "RefreshCw",
-    size: 14
-  }), " Reset Target"), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn danger",
-    onClick: clearStorage
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "RefreshCw",
-    size: 14
-  }), " Reset \u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14")), /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "drawer-section-title"
-  }, "\u0E41\u0E2A\u0E14\u0E07\u0E1C\u0E25"), /*#__PURE__*/React.createElement("button", {
-    className: "drawer-btn",
-    onClick: function onClick() {
-      toggleAllSections();
-      setIsDrawerOpen(false);
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: allSectionsExpanded ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }), " ", allSectionsExpanded ? 'ย่อรายงานทั้งหมด' : 'ขยายรายงานทั้งหมด'))), /*#__PURE__*/React.createElement("input", {
-    ref: salesInputRef,
-    type: "file",
-    accept: ".xlsx,.xls,.csv",
-    style: {
-      display: 'none'
-    },
-    onChange: function onChange(event) {
-      return handleFileUpload(event, 'sales');
-    }
   }), /*#__PURE__*/React.createElement("input", {
     ref: targetInputRef,
     type: "file",
