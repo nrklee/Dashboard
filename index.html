@@ -4847,7 +4847,19 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     onClose = _ref.onClose,
     sectionOpen = _ref.sectionOpen,
     toggleSection = _ref.toggleSection,
-    allData = _ref.allData;
+    allData = _ref.allData,
+    onAddWidget = _ref.onAddWidget;
+    
+  var sectionTitles = {
+    filters: "ตัวกรอง (Smart Filters)",
+    kpi: "สรุปภาพรวม KPI",
+    trend: "กราฟแสดงแนวโน้มยอดขาย",
+    salesGuide: "Sales Guide (แนะนำการขาย)",
+    repeatGap: "วิเคราะห์ลูกค้า (Repeat & Gap)",
+    brands: "สัดส่วนยอดขายตามแบรนด์",
+    shops: "อันดับสาขายอดเยี่ยม",
+    district: "ยอดขายตามเขตและจังหวัด"
+  };
   if (!isOpen) return null;
 
   var _useState = useState('layout'),
@@ -4947,7 +4959,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                   onChange: function() { toggleSection(key); },
                   className: "w-4 h-4 text-blue-600 rounded border-gray-300"
                 }),
-                React.createElement("span", { className: "text-sm font-medium text-slate-700 capitalize" }, key)
+                React.createElement("span", { className: "text-sm font-medium text-slate-700 capitalize" }, sectionTitles[key] || key)
               );
             })
           )
@@ -4996,10 +5008,73 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
           ),
           React.createElement("div", { className: "border rounded-lg bg-white p-4" },
             renderPreviewChart()
+          ),
+          React.createElement("div", { className: "flex justify-end mt-2" },
+            React.createElement("button", {
+              className: "px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700",
+              onClick: function() {
+                if (onAddWidget) {
+                  onAddWidget({
+                    id: 'custom_' + Date.now(),
+                    chartType: chartType,
+                    xAxisKey: xAxisKey,
+                    yAxisKey: yAxisKey
+                  });
+                  onClose();
+                }
+              }
+            }, "\u0E19\u0E33\u0E44\u0E1B\u0E41\u0E2A\u0E14\u0E07\u0E1A\u0E19 Dashboard")
           )
         )
       )
     )
+  );
+};
+
+var CustomWidget = function CustomWidget(_ref) {
+  var widget = _ref.widget,
+      allData = _ref.allData,
+      onRemove = _ref.onRemove;
+  
+  var previewData = useMemo(function() {
+    if (!allData || !allData.monthly) return [];
+    var grouped = {};
+    allData.monthly.forEach(function(item) {
+      var k = item[widget.xAxisKey] || 'N/A';
+      if (!grouped[k]) grouped[k] = { name: k, value: 0 };
+      grouped[k].value += Number(item[widget.yAxisKey]) || 0;
+    });
+    return Object.values(grouped).slice(0, 50);
+  }, [allData, widget.xAxisKey, widget.yAxisKey]);
+
+  var ChartElement = LineChart;
+  var DataElement = Line;
+  if (widget.chartType === 'Bar') { ChartElement = BarChart; DataElement = Bar; }
+  if (widget.chartType === 'Area') { ChartElement = AreaChart; DataElement = Area; }
+
+  var title = "Custom Chart: " + widget.chartType + " (" + widget.xAxisKey + " / " + widget.yAxisKey + ")";
+
+  return React.createElement("div", { className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border mb-6" },
+    React.createElement("div", { className: "flex justify-between items-center mb-4" },
+      React.createElement("h3", { className: "text-base font-bold text-slate-800" }, title),
+      React.createElement("button", { className: "text-red-500 hover:text-red-700 text-xs font-medium", onClick: onRemove }, "\u0E25\u0E1A\u0E27\u0E34\u0E14\u0E40จ็ต")
+    ),
+    widget.chartType === 'Pie' ? 
+      React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+        React.createElement(PieChart, null,
+          React.createElement(Pie, { data: previewData, dataKey: "value", nameKey: "name", cx: "50%", cy: "50%", outerRadius: 100, fill: "#3b82f6", label: true }),
+          React.createElement(Tooltip, null)
+        )
+      ) : 
+      React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+        React.createElement(ChartElement, { data: previewData },
+          React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
+          React.createElement(XAxis, { dataKey: "name" }),
+          React.createElement(YAxis, null),
+          React.createElement(Tooltip, null),
+          React.createElement(DataElement, { type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6" })
+        )
+      )
   );
 };
 
@@ -5276,6 +5351,7 @@ var App = function App() {
     isAskingAI = _useState50[0],
     setIsAskingAI = _useState50[1];
   var [isCustomDashboardOpen, setIsCustomDashboardOpen] = useState(false);
+  var [customWidgets, setCustomWidgets] = useState([]);
   var salesInputRef = useRef(null);
   var targetInputRef = useRef(null);
   var didAutoSyncRef = useRef(false);
@@ -12600,7 +12676,8 @@ var App = function App() {
     onClose: function() { return setIsCustomDashboardOpen(false); },
     sectionOpen: sectionOpen,
     toggleSection: toggleSection,
-    allData: allData
+    allData: allData,
+    onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
   }), /*#__PURE__*/React.createElement(AIPanel, {
     isOpen: isAIPanelOpen,
     onClose: function onClose() {
@@ -12945,33 +13022,33 @@ var App = function App() {
   })))))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "border rounded-lg bg-slate-50 px-2 py-1 min-h-[5.4rem] flex flex-col justify-center text-center"
+    className: "border rounded-lg bg-[#1e293b] border-slate-700 px-3 py-4 min-h-[6.5rem] flex flex-col justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[6px] font-semibold text-slate-600 text-center"
+    className: "text-[10px] font-bold text-slate-200 text-center tracking-wider mb-1"
   }, "ACT(".concat(formatYearShort(latestMonthlyYoYStats === null || latestMonthlyYoYStats === void 0 ? void 0 : latestMonthlyYoYStats.latestYear), ")/ACT(").concat(formatYearShort(latestMonthlyYoYStats === null || latestMonthlyYoYStats === void 0 ? void 0 : latestMonthlyYoYStats.prevYear), ")")), /*#__PURE__*/React.createElement("p", {
-    className: "text-[0.96rem] leading-tight font-bold mt-0.5 text-center ".concat(Number.isFinite(latestMonthlyYoYStats === null || latestMonthlyYoYStats === void 0 ? void 0 : latestMonthlyYoYStats.growthPct) ? latestMonthlyYoYStats.growthPct >= 0 ? 'text-emerald-700' : 'text-rose-700' : 'text-slate-500')
+    className: "text-xl leading-tight font-bold mt-0.5 text-center ".concat(Number.isFinite(latestMonthlyYoYStats === null || latestMonthlyYoYStats === void 0 ? void 0 : latestMonthlyYoYStats.growthPct) ? latestMonthlyYoYStats.growthPct > 0 ? 'text-emerald-400' : latestMonthlyYoYStats.growthPct < 0 ? 'text-red-500' : 'text-slate-100' : 'text-slate-400')
   }, formatGrowthText(latestMonthlyYoYStats === null || latestMonthlyYoYStats === void 0 ? void 0 : latestMonthlyYoYStats.growthPct)), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] leading-tight text-slate-400 mt-0.5 text-center"
   }, latestMonthlyYoYStats !== null && latestMonthlyYoYStats !== void 0 && latestMonthlyYoYStats.latestYear && latestMonthlyYoYStats !== null && latestMonthlyYoYStats !== void 0 && latestMonthlyYoYStats.prevYear ? "".concat(latestMonthlyYoYStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyYoYStats.monthIndex], " ") : '').concat(latestMonthlyYoYStats.latestYear, " \u0E40\u0E17\u0E35\u0E22\u0E1A ").concat(latestMonthlyYoYStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyYoYStats.monthIndex], " ") : '').concat(latestMonthlyYoYStats.prevYear) : '-')), /*#__PURE__*/React.createElement("div", {
-    className: "border rounded-lg bg-slate-50 px-2 py-1 min-h-[5.4rem] flex flex-col justify-center text-center"
+    className: "border rounded-lg bg-[#1e293b] border-slate-700 px-3 py-4 min-h-[6.5rem] flex flex-col justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[6px] font-semibold text-slate-600 text-center"
+    className: "text-[10px] font-bold text-slate-200 text-center tracking-wider mb-1"
   }, "Achievement"), /*#__PURE__*/React.createElement("p", {
-    className: "text-[0.96rem] leading-tight font-bold mt-0.5 text-center text-red-600"
+    className: "text-xl leading-tight font-bold mt-0.5 text-center text-red-600"
   }, Number.isFinite(Number(latestYearlyTargetPct)) ? "".concat(Number(latestYearlyTargetPct).toFixed(1), "%") : '-'), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] leading-tight text-slate-400 mt-0.5 text-center"
   }, latestYearlyStats ? "\u0E1B\u0E35 ".concat(latestYearlyStats.year) : '-')), /*#__PURE__*/React.createElement("div", {
-    className: "border rounded-lg bg-slate-50 px-2 py-1 min-h-[5.4rem] flex flex-col justify-center text-center"
+    className: "border rounded-lg bg-[#1e293b] border-slate-700 px-3 py-4 min-h-[6.5rem] flex flex-col justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[6px] font-semibold text-slate-600 text-center"
+    className: "text-[10px] font-bold text-slate-200 text-center tracking-wider mb-1"
   }, "AVG(".concat(formatYearShort(latestMonthlyStats === null || latestMonthlyStats === void 0 ? void 0 : latestMonthlyStats.year), ")")), /*#__PURE__*/React.createElement("p", {
     className: "text-[1rem] leading-tight font-bold text-blue-700 mt-0.5 text-center"
   }, formatValue((latestMonthlyStats === null || latestMonthlyStats === void 0 ? void 0 : latestMonthlyStats.salesAvg) || 0, metricMode, unitMode)), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] leading-tight text-slate-400 mt-0.5 text-center"
   }, "\u0E2B\u0E32\u0E23\u0E14\u0E49\u0E27\u0E22 ", (latestMonthlyStats === null || latestMonthlyStats === void 0 ? void 0 : latestMonthlyStats.salesMonthCount) || 0, " \u0E40\u0E14\u0E37\u0E2D\u0E19\u0E17\u0E35\u0E48\u0E21\u0E35\u0E22\u0E2D\u0E14")), /*#__PURE__*/React.createElement("div", {
-    className: "border rounded-lg bg-slate-50 px-2 py-1 min-h-[5.4rem] flex flex-col justify-center text-center"
+    className: "border rounded-lg bg-[#1e293b] border-slate-700 px-3 py-4 min-h-[6.5rem] flex flex-col justify-center text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[6px] font-semibold text-slate-600 text-center"
+    className: "text-[10px] font-bold text-slate-200 text-center tracking-wider mb-1"
   }, "ACT(".concat(formatYearShort(latestMonthlyVsPrevYearAvgStats === null || latestMonthlyVsPrevYearAvgStats === void 0 ? void 0 : latestMonthlyVsPrevYearAvgStats.latestYear), ")/AVG(").concat(formatYearShort(latestMonthlyVsPrevYearAvgStats === null || latestMonthlyVsPrevYearAvgStats === void 0 ? void 0 : latestMonthlyVsPrevYearAvgStats.prevYear), ")")), /*#__PURE__*/React.createElement("p", {
     className: "text-[1rem] leading-tight font-bold text-orange-700 mt-0.5 text-center"
   }, Number.isFinite(Number(latestMonthlyVsPrevYearAvgStats === null || latestMonthlyVsPrevYearAvgStats === void 0 ? void 0 : latestMonthlyVsPrevYearAvgStats.pct)) ? "".concat(Number(latestMonthlyVsPrevYearAvgStats.pct).toFixed(1), "%") : '-'), /*#__PURE__*/React.createElement("p", {
@@ -13020,7 +13097,16 @@ var App = function App() {
     unit: unitMode
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 text-right mt-1"
-  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32")))), /*#__PURE__*/React.createElement("div", {
+  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32")))), 
+customWidgets.map(function(widget) {
+  return React.createElement(CustomWidget, {
+    key: widget.id,
+    widget: widget,
+    allData: allData,
+    onRemove: function() { setCustomWidgets(customWidgets.filter(function(w) { return w.id !== widget.id; })); }
+  });
+}),
+/*#__PURE__*/React.createElement("div", {
     className: "mb-6 action-gap-grid"
   }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card sales-guide-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-2",
