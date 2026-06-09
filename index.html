@@ -3996,19 +3996,15 @@ var LoginScreen = function LoginScreen(props) {
             /*#__PURE__*/React.createElement("div", { style: S.inputWrap },
               /*#__PURE__*/React.createElement("span", { style: S.iconLeft }, "lock"),
               /*#__PURE__*/React.createElement("input", {
-                style: S.inputPass,
+                style: Object.assign({}, S.input, { letterSpacing: '0.15em' }),
                 id: "password",
                 placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
                 required: true,
-                type: showPassword ? "text" : "password",
+                type: "password",
                 value: password,
-                onChange: function(e) { return onPasswordChange && onPasswordChange(e.target.value); }
-              }),
-              /*#__PURE__*/React.createElement("button", {
-                type: "button",
-                style: S.iconRight,
-                onClick: function() { return setShowPassword(!showPassword); }
-              }, /*#__PURE__*/React.createElement("span", { style: S.iconRightSpan }, showPassword ? "visibility" : "visibility_off"))
+                onChange: function(e) { return onPasswordChange && onPasswordChange(e.target.value); },
+                className: "login-input"
+              })
             )
           ),
           /*#__PURE__*/React.createElement("div", { style: S.checkboxRow },
@@ -4622,7 +4618,16 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
     checked: config.columnAxis === 'month',
     onChange: function() { return setConfig(Object.assign({}, config, { columnAxis: 'month' })); },
     className: "w-4 h-4 text-primary"
-  }), /*#__PURE__*/React.createElement("span", null, "เดือน (Month)")))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }), /*#__PURE__*/React.createElement("span", null, "เดือน (Month)")), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2 cursor-pointer"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "radio",
+    name: "columnAxis",
+    value: "date",
+    checked: config.columnAxis === 'date',
+    onChange: function() { return setConfig(Object.assign({}, config, { columnAxis: 'date' })); },
+    className: "w-4 h-4 text-primary"
+  }), /*#__PURE__*/React.createElement("span", null, "วันที่ (Date)")))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "font-label-md text-on-surface-variant mb-2 block"
   }, "ประเภทข้อมูล (Measurement)"), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-4 h-10 items-center"
@@ -7958,8 +7963,8 @@ var App = function App() {
         var m = item.month;
         if (!y || m === undefined) return false;
         
-        // Use item.date if exists, otherwise assume 1st of the month
-        var itemDateStr = item.date ? item.date : (y + '-' + String(m + 1).padStart(2, '0') + '-01');
+        var ceYear = toCEYear(y) || y;
+        var itemDateStr = item.date ? item.date : (ceYear + '-' + String(m + 1).padStart(2, '0') + '-01');
         
         if (config.startDate && itemDateStr < config.startDate) return false;
         if (config.endDate && itemDateStr > config.endDate) return false;
@@ -7983,8 +7988,11 @@ var App = function App() {
         var m = item.month;
         if (config.columnAxis === 'year') {
           return String(y).trim();
-        } else {
+        } else if (config.columnAxis === 'month') {
           return y + '-' + String(m).padStart(2, '0');
+        } else {
+          var ceYear = toCEYear(y) || y;
+          return item.date ? item.date : (ceYear + '-' + String(m + 1).padStart(2, '0') + '-01');
         }
       };
 
@@ -8002,8 +8010,13 @@ var App = function App() {
           var y = parts[0];
           var m = parseInt(parts[1], 10);
           label = THAI_MONTHS[m] + ' ' + formatYearHeader(y, 'short');
-        } else {
+        } else if (config.columnAxis === 'year') {
           label = formatYearHeader(k, 'full');
+        } else {
+          var parts = String(k).split('-');
+          if (parts.length === 3) {
+            label = parts[2] + '/' + parts[1] + '/' + parts[0];
+          }
         }
         return { key: k, label: label };
       });
@@ -13499,8 +13512,8 @@ try {
         /* ══════════════════════════════════════════════
            5. EYE ICON TOGGLE — both modes adaptive
            ══════════════════════════════════════════════ */
-        .pw-eye-wrap { position:relative; display:block; }
-        .pw-eye-wrap .login-input { padding-right:46px!important; }
+        .pw-eye-wrap { position:relative; display:block; width:100%; }
+        .pw-eye-wrap input { padding-right:46px!important; width:100%!important; box-sizing:border-box; }
 
         .pw-eye-btn {
             position:absolute; right:13px; top:50%; transform:translateY(-50%);
