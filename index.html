@@ -7960,7 +7960,7 @@ var App = function App() {
       // Filter by startDate / endDate (support exact date if available)
       var filteredSource = baseSource.filter(function(item) {
         var y = item.year;
-        var m = item.month;
+        var m = item.monthIndex !== undefined ? item.monthIndex : item.month;
         if (!y || m === undefined) return false;
         
         var ceYear = toCEYear(y) || y;
@@ -7985,7 +7985,7 @@ var App = function App() {
 
       var getColValue = function(item) {
         var y = item.year;
-        var m = item.month;
+        var m = item.monthIndex !== undefined ? item.monthIndex : item.month;
         if (config.columnAxis === 'year') {
           return String(y).trim();
         } else if (config.columnAxis === 'month') {
