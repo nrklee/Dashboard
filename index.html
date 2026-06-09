@@ -3916,23 +3916,29 @@ var LoginScreen = function LoginScreen(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "min-h-screen w-full flex items-center justify-center p-4 bg-slate-50"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-md bg-white rounded-2xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-slate-200 p-8 md:p-10 flex flex-col gap-8 relative overflow-hidden",
+    className: "w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-200 p-8 md:p-10 flex flex-col gap-6 relative overflow-hidden",
     style: { maxWidth: '480px' }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-0 left-0 w-full h-1.5 bg-[#0a58ca]"
+    className: "absolute top-0 left-0 w-full h-2",
+    style: { backgroundColor: '#0a58ca' }
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-center flex flex-col items-center gap-4 mt-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center bg-[#1f3a5f] text-white font-bold tracking-widest rounded-lg px-6 py-2 shadow-sm mb-1",
+    className: "flex items-center justify-center rounded-lg px-6 py-2 shadow-sm mb-1",
     style: { 
+      backgroundColor: '#1f3a5f',
+      color: '#ffffff',
       fontSize: '32px', 
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'Arial, Helvetica, sans-serif',
+      fontWeight: 'bold',
+      letterSpacing: '2px',
       boxShadow: '0 0 0 2px white, 0 0 0 4px #1f3a5f'
     }
   }, "PCG"), /*#__PURE__*/React.createElement("h1", {
     className: "text-3xl font-bold text-slate-900 tracking-tight"
   }, "Analytix Pro"), /*#__PURE__*/React.createElement("p", {
-    className: "text-[15px] text-slate-500 font-medium"
+    className: "text-base text-slate-500 font-medium",
+    style: { color: '#64748b' }
   }, "Sign in to your enterprise suite")), /*#__PURE__*/React.createElement("form", {
     className: "flex flex-col gap-5",
     onSubmit: handlePrimaryAction
@@ -3945,14 +3951,17 @@ var LoginScreen = function LoginScreen(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900",
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' },
     htmlFor: "email"
   }, "Email Address"), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl"
+    className: "absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl",
+    style: { color: '#94a3b8' }
   }, "mail"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 pl-11 pr-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca] transition-all placeholder:text-slate-400 placeholder:font-normal",
+    className: "w-full h-12 pr-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 transition-all placeholder:font-normal",
+    style: { paddingLeft: '3rem', borderColor: '#cbd5e1' },
     id: "email",
     placeholder: "name@company.com",
     required: true,
@@ -3966,18 +3975,22 @@ var LoginScreen = function LoginScreen(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900",
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' },
     htmlFor: "password"
   }, "Password"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() { return switchLoginMode('forgot_password'); },
-    className: "font-medium text-[14px] text-[#0a58ca] hover:text-blue-800 transition-colors"
+    className: "font-medium transition-colors hover:opacity-80",
+    style: { fontSize: '14px', color: '#0a58ca' }
   }, "Forgot password?")), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl"
+    className: "absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl",
+    style: { color: '#94a3b8' }
   }, "lock"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 pl-11 pr-12 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca] transition-all placeholder:text-slate-400 placeholder:font-normal tracking-[0.2em]",
+    className: "w-full h-12 pr-12 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 transition-all placeholder:font-normal tracking-widest",
+    style: { paddingLeft: '3rem', borderColor: '#cbd5e1' },
     id: "password",
     placeholder: "••••••••",
     required: true,
@@ -3987,22 +4000,26 @@ var LoginScreen = function LoginScreen(props) {
       return onPasswordChange && onPasswordChange(e.target.value);
     }
   }), /*#__PURE__*/React.createElement("button", {
-    className: "absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center",
+    className: "absolute right-4 top-1/2 -translate-y-1/2 transition-colors flex items-center justify-center hover:opacity-80",
+    style: { color: '#94a3b8' },
     onClick: function onClick() { return setShowPassword(!showPassword); },
     type: "button"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-xl"
   }, showPassword ? "visibility" : "visibility_off"))))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center mt-1"
+    className: "flex items-center mt-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-2.5 cursor-pointer group"
+    className: "flex items-center gap-3 cursor-pointer group"
   }, /*#__PURE__*/React.createElement("input", {
-    className: "w-[18px] h-[18px] rounded border-slate-300 text-[#0a58ca] focus:ring-[#0a58ca] transition-all cursor-pointer",
+    className: "w-5 h-5 rounded border-slate-300 transition-all cursor-pointer",
+    style: { accentColor: '#0a58ca' },
     type: "checkbox"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "font-medium text-[15px] text-slate-700 group-hover:text-slate-900 transition-colors"
+    className: "font-medium text-slate-700 group-hover:text-slate-900 transition-colors",
+    style: { fontSize: '15px' }
   }, "Keep me logged in"))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 mt-2 bg-[#0a58ca] hover:bg-blue-700 text-white font-bold text-[16px] rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed",
+    className: "w-full h-12 mt-2 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm hover:opacity-90 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed",
+    style: { backgroundColor: '#0a58ca', fontSize: '16px' },
     type: "submit",
     disabled: isLoading
   }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Signing in..." : "Sign In"), !isLoading && /*#__PURE__*/React.createElement("span", {
@@ -4012,9 +4029,11 @@ var LoginScreen = function LoginScreen(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900"
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' }
   }, "New Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
+    style: { borderColor: '#cbd5e1' },
     type: "password",
     value: newPassword,
     onChange: function onChange(e) { return setNewPassword(e.target.value); },
@@ -4022,29 +4041,35 @@ var LoginScreen = function LoginScreen(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900"
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' }
   }, "Confirm Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
+    style: { borderColor: '#cbd5e1' },
     type: "password",
     value: confirmPassword,
     onChange: function onChange(e) { return setConfirmPassword(e.target.value); },
     required: true
   }))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 mt-2 bg-[#0a58ca] hover:bg-blue-700 text-white font-bold text-[16px] rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70",
+    className: "w-full h-12 mt-2 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-70",
+    style: { backgroundColor: '#0a58ca', fontSize: '16px' },
     type: "submit",
     disabled: isLoading
   }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Saving..." : "Change Password")), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "w-full text-center text-[#0a58ca] font-medium mt-2",
+    className: "w-full text-center font-medium mt-2 hover:opacity-80",
+    style: { color: '#0a58ca' },
     onClick: function onClick() { return switchLoginMode('login'); }
   }, "Back to Login")), loginMode === 'forgot_password' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900"
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' }
   }, "Username"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
+    style: { borderColor: '#cbd5e1' },
     type: "text",
     value: username,
     onChange: function onChange(e) { return onUsernameChange && onUsernameChange(e.target.value); },
@@ -4052,9 +4077,11 @@ var LoginScreen = function LoginScreen(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900"
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' }
   }, "Reset Code"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
+    style: { borderColor: '#cbd5e1' },
     type: "text",
     value: resetCode,
     onChange: function onChange(e) { return setResetCode(e.target.value); },
@@ -4062,9 +4089,11 @@ var LoginScreen = function LoginScreen(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900"
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' }
   }, "New Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
+    style: { borderColor: '#cbd5e1' },
     type: "password",
     value: newPassword,
     onChange: function onChange(e) { return setNewPassword(e.target.value); },
@@ -4072,27 +4101,33 @@ var LoginScreen = function LoginScreen(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-[15px] text-slate-900"
+    className: "font-bold text-slate-900",
+    style: { fontSize: '15px' }
   }, "Confirm Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
+    style: { borderColor: '#cbd5e1' },
     type: "password",
     value: confirmPassword,
     onChange: function onChange(e) { return setConfirmPassword(e.target.value); },
     required: true
   }))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 mt-2 bg-[#0a58ca] hover:bg-blue-700 text-white font-bold text-[16px] rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70",
+    className: "w-full h-12 mt-2 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-70",
+    style: { backgroundColor: '#0a58ca', fontSize: '16px' },
     type: "submit",
     disabled: isLoading
   }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Resetting..." : "Reset Password")), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "w-full text-center text-[#0a58ca] font-medium mt-2",
+    className: "w-full text-center font-medium mt-2 hover:opacity-80",
+    style: { color: '#0a58ca' },
     onClick: function onClick() { return switchLoginMode('login'); }
   }, "Back to Login"))), /*#__PURE__*/React.createElement("div", {
     className: "text-center mt-6 pt-6 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[15px] text-slate-500 font-medium"
+    className: "font-medium",
+    style: { fontSize: '15px', color: '#64748b' }
   }, "Don't have an account? ", /*#__PURE__*/React.createElement("a", {
-    className: "font-bold text-[#0a58ca] hover:text-blue-800 transition-colors ml-1",
+    className: "font-bold transition-colors ml-1 hover:opacity-80",
+    style: { color: '#0a58ca' },
     href: "#"
   }, "Contact IT Support")))));
 };
