@@ -11780,7 +11780,7 @@ var App = function App() {
       borderColor: 'rgba(248,113,113,.45)',
       background: 'rgba(127,29,29,.16)'
     }
-  }, "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A")))activeTab === 'dashboard' && /*#__PURE__*/React.createElement("main", {
+  }, "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A"))) /*#__PURE__*/React.createElement("main", {
     className: "dashboard-main flex-1 overflow-y-auto p-6",
     style: {
       background: 'var(--bg)'
@@ -11943,7 +11943,7 @@ var App = function App() {
   /*#__PURE__*/React.createElement("button", {
     className: "w-full text-left px-4 py-2 text-error hover:bg-error-container hover:text-on-error-container flex items-center gap-2 transition-colors",
     onClick: () => { setIsProfileDropdownOpen(false); if (typeof handleLogout !== 'undefined') handleLogout(); }
-  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "logout"), "Logout"))))), activeTab === 'dashboard' && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "logout"), "Logout"))))), activeTab === 'dashboard' ? /*#__PURE__*/React.createElement("div", {
     className: "app-header-controls px-8 pt-4 pb-2 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-background"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
@@ -12041,7 +12041,7 @@ var App = function App() {
     type: "button",
     className: "status-modal-action",
     onClick: closeStatusPopup
-  }, "\u0E1B\u0E34\u0E14")))), /*#__PURE__*/React.createElement(AIPanel, {
+  }, "\u0E1B\u0E34\u0E14")))) : null, /*#__PURE__*/React.createElement(AIPanel, {
     isOpen: isAIPanelOpen,
     onClose: function onClose() {
       return setIsAIPanelOpen(false);
@@ -12143,7 +12143,7 @@ var App = function App() {
         return handleFilterChange(f.key, sel);
       }
     }));
-  })))), /*#__PURE__*/React.createElement("main", {
+  })))), activeTab === 'dashboard' ? /*#__PURE__*/React.createElement("main", {
     className: "dashboard-main flex-1 overflow-y-auto p-5 bg-slate-50 flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
@@ -12708,7 +12708,7 @@ var App = function App() {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  }))))))));
+  })))))))) : null;
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
