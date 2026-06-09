@@ -3876,15 +3876,15 @@ var LoginScreen = function LoginScreen(props) {
   var loginModeState = React.useState('login');
   var loginMode = loginModeState[0];
   var setLoginMode = loginModeState[1];
-  
+
   var newPasswordState = React.useState('');
   var newPassword = newPasswordState[0];
   var setNewPassword = newPasswordState[1];
-  
+
   var confirmPasswordState = React.useState('');
   var confirmPassword = confirmPasswordState[0];
   var setConfirmPassword = confirmPasswordState[1];
-  
+
   var resetCodeState = React.useState('');
   var resetCode = resetCodeState[0];
   var setResetCode = resetCodeState[1];
@@ -3893,243 +3893,215 @@ var LoginScreen = function LoginScreen(props) {
   var showPassword = showPasswordState[0];
   var setShowPassword = showPasswordState[1];
 
-  var switchLoginMode = function switchLoginMode(mode) {
+  var switchLoginMode = function(mode) {
     setLoginMode(mode);
     setNewPassword('');
     setConfirmPassword('');
     setResetCode('');
   };
 
-  var handlePrimaryAction = function handlePrimaryAction(e) {
+  var handlePrimaryAction = function(e) {
     if (e && e.preventDefault) e.preventDefault();
     if (isLoading) return;
-    
-    if (loginMode === 'login') {
-      if (onSubmit) onSubmit();
-    } else if (loginMode === 'change_password') {
-      if (onChangePasswordSubmit) onChangePasswordSubmit(newPassword, confirmPassword);
-    } else if (loginMode === 'forgot_password') {
-      if (onForgotPasswordSubmit) onForgotPasswordSubmit(username, resetCode, newPassword, confirmPassword);
-    }
+    if (loginMode === 'login') { if (onSubmit) onSubmit(); }
+    else if (loginMode === 'change_password') { if (onChangePasswordSubmit) onChangePasswordSubmit(newPassword, confirmPassword); }
+    else if (loginMode === 'forgot_password') { if (onForgotPasswordSubmit) onForgotPasswordSubmit(username, resetCode, newPassword, confirmPassword); }
   };
 
-  return /*#__PURE__*/React.createElement("div", {
-    className: "min-h-screen w-full flex items-center justify-center p-4 bg-slate-50"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-200 p-8 md:p-10 flex flex-col gap-6 relative overflow-hidden",
-    style: { maxWidth: '480px' }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-0 left-0 w-full h-2",
-    style: { backgroundColor: '#0a58ca' }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "text-center flex flex-col items-center gap-4 mt-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center rounded-lg px-6 py-2 shadow-sm mb-1",
-    style: { 
-      backgroundColor: '#1f3a5f',
-      color: '#ffffff',
-      fontSize: '32px', 
-      fontFamily: 'Arial, Helvetica, sans-serif',
-      fontWeight: 'bold',
-      letterSpacing: '2px',
-      boxShadow: '0 0 0 2px white, 0 0 0 4px #1f3a5f'
-    }
-  }, "PCG"), /*#__PURE__*/React.createElement("h1", {
-    className: "text-3xl font-bold text-slate-900 tracking-tight"
-  }, "Analytix Pro"), /*#__PURE__*/React.createElement("p", {
-    className: "text-base text-slate-500 font-medium",
-    style: { color: '#64748b' }
-  }, "Sign in to your enterprise suite")), /*#__PURE__*/React.createElement("form", {
-    className: "flex flex-col gap-5",
-    onSubmit: handlePrimaryAction
-  }, errorMessage && /*#__PURE__*/React.createElement("div", {
-    className: "p-3 rounded-lg bg-red-50 text-red-700 text-sm font-medium border border-red-100"
-  }, errorMessage), noticeMessage && /*#__PURE__*/React.createElement("div", {
-    className: "p-3 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100"
-  }, noticeMessage), loginMode === 'login' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-5"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' },
-    htmlFor: "email"
-  }, "Email Address"), /*#__PURE__*/React.createElement("div", {
-    className: "relative"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl",
-    style: { color: '#94a3b8' }
-  }, "mail"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 pr-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 transition-all placeholder:font-normal",
-    style: { paddingLeft: '3rem', borderColor: '#cbd5e1' },
-    id: "email",
-    placeholder: "name@company.com",
-    required: true,
-    type: "text",
-    value: username,
-    onChange: function onChange(e) {
-      return onUsernameChange && onUsernameChange(e.target.value);
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between items-center"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' },
-    htmlFor: "password"
-  }, "Password"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: function onClick() { return switchLoginMode('forgot_password'); },
-    className: "font-medium transition-colors hover:opacity-80",
-    style: { fontSize: '14px', color: '#0a58ca' }
-  }, "Forgot password?")), /*#__PURE__*/React.createElement("div", {
-    className: "relative"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl",
-    style: { color: '#94a3b8' }
-  }, "lock"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 pr-12 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 transition-all placeholder:font-normal tracking-widest",
-    style: { paddingLeft: '3rem', borderColor: '#cbd5e1' },
-    id: "password",
-    placeholder: "••••••••",
-    required: true,
-    type: showPassword ? "text" : "password",
-    value: password,
-    onChange: function onChange(e) {
-      return onPasswordChange && onPasswordChange(e.target.value);
-    }
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "absolute right-4 top-1/2 -translate-y-1/2 transition-colors flex items-center justify-center hover:opacity-80",
-    style: { color: '#94a3b8' },
-    onClick: function onClick() { return setShowPassword(!showPassword); },
-    type: "button"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-xl"
-  }, showPassword ? "visibility" : "visibility_off"))))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center mt-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-3 cursor-pointer group"
-  }, /*#__PURE__*/React.createElement("input", {
-    className: "w-5 h-5 rounded border-slate-300 transition-all cursor-pointer",
-    style: { accentColor: '#0a58ca' },
-    type: "checkbox"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "font-medium text-slate-700 group-hover:text-slate-900 transition-colors",
-    style: { fontSize: '15px' }
-  }, "Keep me logged in"))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 mt-2 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm hover:opacity-90 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed",
-    style: { backgroundColor: '#0a58ca', fontSize: '16px' },
-    type: "submit",
-    disabled: isLoading
-  }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Signing in..." : "Sign In"), !isLoading && /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-xl"
-  }, "arrow_forward"))), loginMode === 'change_password' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' }
-  }, "New Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
-    style: { borderColor: '#cbd5e1' },
-    type: "password",
-    value: newPassword,
-    onChange: function onChange(e) { return setNewPassword(e.target.value); },
-    required: true
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' }
-  }, "Confirm Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
-    style: { borderColor: '#cbd5e1' },
-    type: "password",
-    value: confirmPassword,
-    onChange: function onChange(e) { return setConfirmPassword(e.target.value); },
-    required: true
-  }))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 mt-2 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-70",
-    style: { backgroundColor: '#0a58ca', fontSize: '16px' },
-    type: "submit",
-    disabled: isLoading
-  }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Saving..." : "Change Password")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "w-full text-center font-medium mt-2 hover:opacity-80",
-    style: { color: '#0a58ca' },
-    onClick: function onClick() { return switchLoginMode('login'); }
-  }, "Back to Login")), loginMode === 'forgot_password' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' }
-  }, "Username"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
-    style: { borderColor: '#cbd5e1' },
-    type: "text",
-    value: username,
-    onChange: function onChange(e) { return onUsernameChange && onUsernameChange(e.target.value); },
-    required: true
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' }
-  }, "Reset Code"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
-    style: { borderColor: '#cbd5e1' },
-    type: "text",
-    value: resetCode,
-    onChange: function onChange(e) { return setResetCode(e.target.value); },
-    required: true
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' }
-  }, "New Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
-    style: { borderColor: '#cbd5e1' },
-    type: "password",
-    value: newPassword,
-    onChange: function onChange(e) { return setNewPassword(e.target.value); },
-    required: true
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "font-bold text-slate-900",
-    style: { fontSize: '15px' }
-  }, "Confirm Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none",
-    style: { borderColor: '#cbd5e1' },
-    type: "password",
-    value: confirmPassword,
-    onChange: function onChange(e) { return setConfirmPassword(e.target.value); },
-    required: true
-  }))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 mt-2 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-70",
-    style: { backgroundColor: '#0a58ca', fontSize: '16px' },
-    type: "submit",
-    disabled: isLoading
-  }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Resetting..." : "Reset Password")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "w-full text-center font-medium mt-2 hover:opacity-80",
-    style: { color: '#0a58ca' },
-    onClick: function onClick() { return switchLoginMode('login'); }
-  }, "Back to Login"))), /*#__PURE__*/React.createElement("div", {
-    className: "text-center mt-6 pt-6 border-t border-slate-100"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "font-medium",
-    style: { fontSize: '15px', color: '#64748b' }
-  }, "Don't have an account? ", /*#__PURE__*/React.createElement("a", {
-    className: "font-bold transition-colors ml-1 hover:opacity-80",
-    style: { color: '#0a58ca' },
-    href: "#"
-  }, "Contact IT Support")))));
+  var S = {
+    page: { minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef0f7', padding: '16px', boxSizing: 'border-box' },
+    card: { width: '100%', maxWidth: '480px', backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.10)', border: '1px solid #e2e8f0', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '0', position: 'relative', overflow: 'hidden' },
+    topBar: { position: 'absolute', top: 0, left: 0, right: 0, height: '5px', backgroundColor: '#1a56db', borderRadius: '16px 16px 0 0' },
+    headerSection: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '28px', marginTop: '8px' },
+    pcgWrapper: { display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' },
+    pcgBox: { backgroundColor: '#1e3a5f', borderRadius: '12px', border: '3px solid #ffffff', outline: '3px solid #1e3a5f', padding: '10px 28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    pcgText: { color: '#ffffff', fontSize: '36px', fontWeight: '900', fontFamily: 'Arial Black, Arial, sans-serif', letterSpacing: '3px', lineHeight: '1' },
+    title: { fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px 0', fontFamily: 'inherit' },
+    subtitle: { fontSize: '15px', color: '#64748b', margin: '0', fontWeight: '500' },
+    form: { display: 'flex', flexDirection: 'column', gap: '0' },
+    fieldGroup: { display: 'flex', flexDirection: 'column', marginBottom: '18px' },
+    labelRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' },
+    label: { fontSize: '15px', fontWeight: '700', color: '#0f172a' },
+    forgotBtn: { fontSize: '14px', fontWeight: '600', color: '#1a56db', background: 'none', border: 'none', padding: 0, cursor: 'pointer' },
+    inputWrap: { position: 'relative', display: 'flex', alignItems: 'center' },
+    iconLeft: { position: 'absolute', left: '14px', color: '#94a3b8', fontSize: '20px', pointerEvents: 'none', lineHeight: 1, fontFamily: 'Material Symbols Outlined', fontWeight: '400', fontStyle: 'normal', userSelect: 'none' },
+    input: { width: '100%', height: '48px', paddingLeft: '44px', paddingRight: '14px', borderRadius: '10px', border: '1.5px solid #d1d5db', backgroundColor: '#ffffff', fontSize: '15px', color: '#0f172a', fontWeight: '500', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+    inputPass: { width: '100%', height: '48px', paddingLeft: '44px', paddingRight: '48px', borderRadius: '10px', border: '1.5px solid #d1d5db', backgroundColor: '#ffffff', fontSize: '15px', color: '#0f172a', fontWeight: '500', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', letterSpacing: '0.15em' },
+    iconRight: { position: 'absolute', right: '14px', color: '#94a3b8', fontSize: '20px', cursor: 'pointer', background: 'none', border: 'none', padding: '0', display: 'flex', alignItems: 'center' },
+    iconRightSpan: { fontFamily: 'Material Symbols Outlined', fontWeight: '400', fontStyle: 'normal', fontSize: '20px', lineHeight: 1, userSelect: 'none' },
+    checkboxRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' },
+    checkboxInput: { width: '18px', height: '18px', cursor: 'pointer', accentColor: '#1a56db' },
+    checkboxLabel: { fontSize: '15px', color: '#374151', fontWeight: '500', cursor: 'pointer' },
+    signInBtn: { width: '100%', height: '50px', backgroundColor: '#1a56db', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '0', fontFamily: 'inherit', transition: 'opacity 0.15s' },
+    signInIcon: { fontFamily: 'Material Symbols Outlined', fontWeight: '400', fontStyle: 'normal', fontSize: '22px', lineHeight: 1, userSelect: 'none' },
+    footer: { textAlign: 'center', marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' },
+    footerText: { fontSize: '14px', color: '#64748b', fontWeight: '500', margin: 0 },
+    footerLink: { fontWeight: '700', color: '#1a56db', textDecoration: 'none' },
+    errorBox: { padding: '12px 14px', borderRadius: '8px', backgroundColor: '#fef2f2', color: '#991b1b', fontSize: '14px', fontWeight: '600', border: '1px solid #fca5a5', marginBottom: '16px' },
+    noticeBox: { padding: '12px 14px', borderRadius: '8px', backgroundColor: '#eff6ff', color: '#1e40af', fontSize: '14px', fontWeight: '600', border: '1px solid #bfdbfe', marginBottom: '16px' },
+    secondaryInput: { width: '100%', height: '48px', paddingLeft: '14px', paddingRight: '14px', borderRadius: '10px', border: '1.5px solid #d1d5db', backgroundColor: '#ffffff', fontSize: '15px', color: '#0f172a', fontWeight: '500', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+    backBtn: { background: 'none', border: 'none', color: '#1a56db', fontWeight: '600', fontSize: '14px', cursor: 'pointer', marginTop: '8px', fontFamily: 'inherit' }
+  };
+
+  return /*#__PURE__*/React.createElement("div", { style: S.page },
+    /*#__PURE__*/React.createElement("div", { style: S.card },
+      /*#__PURE__*/React.createElement("div", { style: S.topBar }),
+      /*#__PURE__*/React.createElement("div", { style: S.headerSection },
+        /*#__PURE__*/React.createElement("div", { style: S.pcgWrapper },
+          /*#__PURE__*/React.createElement("div", { style: S.pcgBox },
+            /*#__PURE__*/React.createElement("span", { style: S.pcgText }, "PCG")
+          )
+        ),
+        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Analytix Pro"),
+        /*#__PURE__*/React.createElement("p", { style: S.subtitle }, "Sign in to your enterprise suite")
+      ),
+      /*#__PURE__*/React.createElement("form", { style: S.form, onSubmit: handlePrimaryAction },
+        errorMessage && /*#__PURE__*/React.createElement("div", { style: S.errorBox }, errorMessage),
+        noticeMessage && /*#__PURE__*/React.createElement("div", { style: S.noticeBox }, noticeMessage),
+        loginMode === 'login' && /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "Email Address"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("div", { style: S.inputWrap },
+              /*#__PURE__*/React.createElement("span", { style: S.iconLeft }, "mail"),
+              /*#__PURE__*/React.createElement("input", {
+                style: S.input,
+                id: "email",
+                placeholder: "name@company.com",
+                required: true,
+                type: "text",
+                value: username,
+                onChange: function(e) { return onUsernameChange && onUsernameChange(e.target.value); }
+              })
+            )
+          ),
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("div", { style: S.labelRow },
+              /*#__PURE__*/React.createElement("label", { style: S.label }, "Password"),
+              /*#__PURE__*/React.createElement("button", {
+                type: "button",
+                style: S.forgotBtn,
+                onClick: function() { return switchLoginMode('forgot_password'); }
+              }, "Forgot password?")
+            ),
+            /*#__PURE__*/React.createElement("div", { style: S.inputWrap },
+              /*#__PURE__*/React.createElement("span", { style: S.iconLeft }, "lock"),
+              /*#__PURE__*/React.createElement("input", {
+                style: S.inputPass,
+                id: "password",
+                placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
+                required: true,
+                type: showPassword ? "text" : "password",
+                value: password,
+                onChange: function(e) { return onPasswordChange && onPasswordChange(e.target.value); }
+              }),
+              /*#__PURE__*/React.createElement("button", {
+                type: "button",
+                style: S.iconRight,
+                onClick: function() { return setShowPassword(!showPassword); }
+              }, /*#__PURE__*/React.createElement("span", { style: S.iconRightSpan }, showPassword ? "visibility" : "visibility_off"))
+            )
+          ),
+          /*#__PURE__*/React.createElement("div", { style: S.checkboxRow },
+            /*#__PURE__*/React.createElement("input", { type: "checkbox", style: S.checkboxInput, id: "remember" }),
+            /*#__PURE__*/React.createElement("label", { htmlFor: "remember", style: S.checkboxLabel }, "Keep me logged in")
+          ),
+          /*#__PURE__*/React.createElement("button", {
+            type: "submit",
+            style: S.signInBtn,
+            disabled: isLoading
+          },
+            /*#__PURE__*/React.createElement("span", null, isLoading ? "Signing in..." : "Sign In"),
+            !isLoading && /*#__PURE__*/React.createElement("span", { style: S.signInIcon }, "arrow_forward")
+          )
+        ),
+        loginMode === 'change_password' && /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "New Password"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("input", {
+              style: S.secondaryInput,
+              type: "password",
+              value: newPassword,
+              onChange: function(e) { return setNewPassword(e.target.value); },
+              required: true
+            })
+          ),
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "Confirm Password"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("input", {
+              style: S.secondaryInput,
+              type: "password",
+              value: confirmPassword,
+              onChange: function(e) { return setConfirmPassword(e.target.value); },
+              required: true
+            })
+          ),
+          /*#__PURE__*/React.createElement("button", { type: "submit", style: S.signInBtn, disabled: isLoading },
+            isLoading ? "Saving..." : "Change Password"
+          ),
+          /*#__PURE__*/React.createElement("button", { type: "button", style: S.backBtn, onClick: function() { return switchLoginMode('login'); } }, "Back to Login")
+        ),
+        loginMode === 'forgot_password' && /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "Username"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("input", {
+              style: S.secondaryInput,
+              type: "text",
+              value: username,
+              onChange: function(e) { return onUsernameChange && onUsernameChange(e.target.value); },
+              required: true
+            })
+          ),
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "Reset Code"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("input", {
+              style: S.secondaryInput,
+              type: "text",
+              value: resetCode,
+              onChange: function(e) { return setResetCode(e.target.value); },
+              required: true
+            })
+          ),
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "New Password"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("input", {
+              style: S.secondaryInput,
+              type: "password",
+              value: newPassword,
+              onChange: function(e) { return setNewPassword(e.target.value); },
+              required: true
+            })
+          ),
+          /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "Confirm Password"),
+            /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
+            /*#__PURE__*/React.createElement("input", {
+              style: S.secondaryInput,
+              type: "password",
+              value: confirmPassword,
+              onChange: function(e) { return setConfirmPassword(e.target.value); },
+              required: true
+            })
+          ),
+          /*#__PURE__*/React.createElement("button", { type: "submit", style: S.signInBtn, disabled: isLoading },
+            isLoading ? "Resetting..." : "Reset Password"
+          ),
+          /*#__PURE__*/React.createElement("button", { type: "button", style: S.backBtn, onClick: function() { return switchLoginMode('login'); } }, "Back to Login")
+        )
+      ),
+      /*#__PURE__*/React.createElement("div", { style: S.footer },
+        /*#__PURE__*/React.createElement("p", { style: S.footerText },
+          "Don't have an account? ",
+          /*#__PURE__*/React.createElement("a", { href: "#", style: S.footerLink }, "Contact IT Support")
+        )
+      )
+    )
+  );
 };
 var AIPanel = function AIPanel(props) {
   var isOpen = props.isOpen,
