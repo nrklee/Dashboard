@@ -4507,21 +4507,9 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
   var onExport = props.onExport;
   var onClose = props.onClose;
 
-  // Extract available months from data
-  var availableMonths = React.useMemo(function() {
-    if (!allData || !allData.monthly) return [];
-    var months = new Set();
-    allData.monthly.forEach(function(row) {
-      if (row.year && row.month !== undefined) {
-        months.add(row.year + '-' + String(row.month).padStart(2, '0'));
-      }
-    });
-    return Array.from(months).sort();
-  }, [allData]);
-
   var [config, setConfig] = React.useState({
-    startMonth: availableMonths[0] || '',
-    endMonth: availableMonths[availableMonths.length - 1] || '',
+    startDate: '',
+    endDate: '',
     dimensions: [
       { key: 'region', order: 1 },
       { key: 'province', order: 2 },
@@ -4536,7 +4524,6 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
     var exists = config.dimensions.find(function(d) { return d.key === key; });
     if (exists) {
       var newDims = config.dimensions.filter(function(d) { return d.key !== key; });
-      // Re-normalize orders
       newDims.sort(function(a,b) { return a.order - b.order; });
       newDims.forEach(function(d, i) { d.order = i + 1; });
       setConfig(Object.assign({}, config, { dimensions: newDims }));
@@ -4552,8 +4539,6 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
     var item = oldDims.find(function(d) { return d.key === key; });
     if (!item) return;
     var oldOrder = item.order;
-    
-    // Shift others
     oldDims.forEach(function(d) {
       if (d.key === key) {
         d.order = newOrder;
@@ -4577,7 +4562,9 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
   };
 
   return /*#__PURE__*/React.createElement("div", {
-    className: "bg-surface rounded-xl border border-outline-variant p-6 flex flex-col gap-6 shadow-sm"
+    className: "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-surface rounded-2xl border border-outline-variant p-6 flex flex-col gap-6 shadow-xl w-full max-w-4xl m-auto"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between border-b border-outline-variant pb-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -4588,7 +4575,7 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
     className: "font-headline-sm text-on-surface"
   }, "Custom Export Report Builder")), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    className: "w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant"
+    className: "w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-sm"
   }, "close"))), /*#__PURE__*/React.createElement("div", {
@@ -4597,26 +4584,26 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "font-label-md text-on-surface-variant"
-  }, "ตั้งแต่เดือน (Start Month)"), /*#__PURE__*/React.createElement("select", {
-    value: config.startMonth,
-    onChange: function(e) { return setConfig(Object.assign({}, config, { startMonth: e.target.value })); },
-    className: "p-2 rounded-lg border border-outline-variant bg-surface"
-  }, /*#__PURE__*/React.createElement("option", { value: "" }, "ทั้งหมด (All)"), availableMonths.map(function(m) {
-    return /*#__PURE__*/React.createElement("option", { key: m, value: m }, m);
-  }))), /*#__PURE__*/React.createElement("div", {
+  }, "ตั้งแต่วันที่ (Start Date)"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: config.startDate,
+    onChange: function(e) { return setConfig(Object.assign({}, config, { startDate: e.target.value })); },
+    className: "p-2 rounded-lg border border-outline-variant bg-surface w-full"
+  })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "font-label-md text-on-surface-variant"
-  }, "ถึงเดือน (End Month)"), /*#__PURE__*/React.createElement("select", {
-    value: config.endMonth,
-    onChange: function(e) { return setConfig(Object.assign({}, config, { endMonth: e.target.value })); },
-    className: "p-2 rounded-lg border border-outline-variant bg-surface"
-  }, /*#__PURE__*/React.createElement("option", { value: "" }, "ทั้งหมด (All)"), availableMonths.map(function(m) {
-    return /*#__PURE__*/React.createElement("option", { key: m, value: m }, m);
-  })))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }, "ถึงวันที่ (End Date)"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: config.endDate,
+    onChange: function(e) { return setConfig(Object.assign({}, config, { endDate: e.target.value })); },
+    className: "p-2 rounded-lg border border-outline-variant bg-surface w-full"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "font-label-md text-on-surface-variant mb-2 block"
   }, "คอลัมน์แนวนอน (By Column)"), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-4"
+    className: "flex gap-4 h-10 items-center"
   }, /*#__PURE__*/React.createElement("label", {
     className: "flex items-center gap-2 cursor-pointer"
   }, /*#__PURE__*/React.createElement("input", {
@@ -4638,7 +4625,7 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
   }), /*#__PURE__*/React.createElement("span", null, "เดือน (Month)")))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "font-label-md text-on-surface-variant mb-2 block"
   }, "ประเภทข้อมูล (Measurement)"), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-4"
+    className: "flex flex-wrap gap-4 h-10 items-center"
   }, REPORT_MEASUREMENTS.map(function(m) {
     return /*#__PURE__*/React.createElement("label", {
       key: m.key,
@@ -4649,10 +4636,10 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
       onChange: function() { return toggleMeasurement(m.key); },
       className: "w-4 h-4 text-primary rounded"
     }), /*#__PURE__*/React.createElement("span", null, m.label));
-  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  })))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "font-label-md text-on-surface-variant mb-3 block"
   }, "หัวข้อแนวตั้ง (By Row) - เลือกและจัดลำดับจากซ้ายไปขวา"), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant"
+    className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant"
   }, REPORT_DIMENSIONS.map(function(dim) {
     var selectedItem = config.dimensions.find(function(d) { return d.key === dim.key; });
     var isSelected = !!selectedItem;
@@ -4683,13 +4670,16 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
       }, i + 1);
     }))));
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "pt-4 border-t border-outline-variant flex justify-end"
+    className: "pt-4 border-t border-outline-variant flex justify-end gap-3"
   }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-6 py-2 border border-outline-variant text-on-surface-variant rounded-lg font-bold hover:bg-surface-container transition-colors"
+  }, "ยกเลิก"), /*#__PURE__*/React.createElement("button", {
     onClick: function() { return onExport(config); },
-    className: "px-6 py-2 bg-primary text-on-primary rounded-lg font-bold shadow hover:bg-primary/90 flex items-center gap-2"
+    className: "px-6 py-2 bg-primary text-on-primary rounded-lg font-bold shadow hover:bg-primary/90 flex items-center gap-2 transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
-  }, "play_arrow"), "Execute Export")));
+  }, "play_arrow"), "Execute Export"))));
 };
 
 var ImportExportScreen = function ImportExportScreen(props) {
@@ -7962,14 +7952,17 @@ var App = function App() {
         return;
       }
 
-      // Filter by startMonth / endMonth
+      // Filter by startDate / endDate (support exact date if available)
       var filteredSource = baseSource.filter(function(item) {
         var y = item.year;
         var m = item.month;
         if (!y || m === undefined) return false;
-        var ym = y + '-' + String(m).padStart(2, '0');
-        if (config.startMonth && ym < config.startMonth) return false;
-        if (config.endMonth && ym > config.endMonth) return false;
+        
+        // Use item.date if exists, otherwise assume 1st of the month
+        var itemDateStr = item.date ? item.date : (y + '-' + String(m + 1).padStart(2, '0') + '-01');
+        
+        if (config.startDate && itemDateStr < config.startDate) return false;
+        if (config.endDate && itemDateStr > config.endDate) return false;
         return true;
       });
 
