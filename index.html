@@ -5626,7 +5626,8 @@ var App = function App() {
 	    return -1;
 	  };
 	  var mapWideSalesHeader = function mapWideSalesHeader(headerRow) {
-	    var map =['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor']e', 'sku'].forEach(function (key) {
+	    var map = {};
+	    ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'].forEach(function (key) {
 	      var index = findWideSalesHeaderColumn(headerRow, key);
 	      if (index >= 0) map[key] = index;
 	    });
@@ -5687,7 +5688,7 @@ var App = function App() {
 	    var safeSkuIndex = Number(skuIndex);
 	    var safeMonthCols = Array.isArray(monthCols) && monthCols.length >= 2 ? monthCols : getFixedWideMonthColsAfterSku(safeSkuIndex);
 	    if (safeMonthCols.length < 2) return null;
-	    ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor']del', 'size', 'sku'];
+	    ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'];
 	    var inferredMap = _objectSpread({}, map || {});
 	    inferredMap.sku = Number.isFinite(Number(inferredMap.sku)) ? Number(inferredMap.sku) : safeSkuIndex;
 	    var fixedStart = safeSkuIndex - (dimensionKeys.length - 1);
@@ -5855,7 +5856,7 @@ var App = function App() {
 	      for (var rowIndex = headerInfo.rowIndex + 1; rowIndex < rows.length; rowIndex++) {
 	        var row = rows[rowIndex] || [];
 	        var dimensions = normalizeWideSalesDimensions(row, headerInfo.map);
-	['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor']rand', 'model', 'size', 'sku'].map(function (key) {
+	['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'].map(function (key) {
 	          return dimensions[key];
 	        });
 	        if (dimensionValues.every(function (value) {
@@ -8085,7 +8086,9 @@ var App = function App() {
       }), exportFilterState);
       if (rawTargetSource.length === 0) {
         showStatus(hasLockedExportScope ? 'ไม่มีข้อมูล Target ในสิทธิ์ที่ถูกล็อกสำหรับ Export' : 'ยังไม่มีข้อมูล Target สำหรับสร้างแบบฟอร์ม', 'error');
-        retu['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor']group', 'brand', 'model', 'size', 'sku'];
+        return;
+      }
+      var dimensionFields = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'];
       var dimensionHeaders = ['ภาค', 'จังหวัด', 'เขต', 'CV', 'กลุ่มสินค้า', 'แบรนด์', 'รุ่น', 'ขนาด', 'SKU', 'รสชาติ'];
       var monthlyColumns = THAI_MONTHS.map(function (label, monthIndex) {
         return {
@@ -10121,8 +10124,8 @@ var App = function App() {
     var targetSampleSource = sortRowsByRecentValue((latestYearScopedTargets || []).length > 0 ? latestYearScopedTargets : scopedTargets, function (item) {
       return Number(getTarget(item) || 0);
     });
-    var aiFilterKeys = viewMode === 'monthly' ? ['month', 'region', 'province', 'district', ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor']', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
-    var globalAIKeys = ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku'];
+    var aiFilterKeys = viewMode === 'monthly' ? ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'] : ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'];
+    var globalAIKeys = ['month', 'region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'];
     var filterOptionsForAI = {};
     aiFilterKeys.forEach(function (key) {
       filterOptionsForAI[key] = trimOptionsForAI(key, getUniqueValues(key));
