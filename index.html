@@ -4894,7 +4894,18 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
       if (!grouped[k]) grouped[k] = { name: k, value: 0 };
       grouped[k].value += Number(item[yAxisKey]) || 0;
     });
-    return Object.values(grouped).slice(0, 50); // limit 50 points
+    var arr = Object.values(grouped);
+    if (xAxisKey === 'month') {
+        var thMonths = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        arr.sort(function(a, b) { return Number(a.name) - Number(b.name); });
+        arr.forEach(function(item) {
+            var m = Number(item.name);
+            if (!isNaN(m) && m >= 1 && m <= 12) {
+                item.name = thMonths[m];
+            }
+        });
+    }
+    return arr.slice(0, 50); // limit 50 points
   }, [allData, xAxisKey, yAxisKey]);
 
   var renderPreviewChart = function() {
@@ -5047,7 +5058,18 @@ var CustomWidget = function CustomWidget(_ref) {
       if (!grouped[k]) grouped[k] = { name: k, value: 0 };
       grouped[k].value += Number(item[widget.yAxisKey]) || 0;
     });
-    return Object.values(grouped).slice(0, 50);
+    var arr = Object.values(grouped);
+    if (widget.xAxisKey === 'month') {
+        var thMonths = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        arr.sort(function(a, b) { return Number(a.name) - Number(b.name); });
+        arr.forEach(function(item) {
+            var m = Number(item.name);
+            if (!isNaN(m) && m >= 1 && m <= 12) {
+                item.name = thMonths[m];
+            }
+        });
+    }
+    return arr.slice(0, 50);
   }, [allData, widget.xAxisKey, widget.yAxisKey]);
 
   var ChartElement = LineChart;
@@ -5058,7 +5080,7 @@ var CustomWidget = function CustomWidget(_ref) {
   var title = "Custom Chart: " + widget.chartType + " (" + widget.xAxisKey + " / " + widget.yAxisKey + ")";
 
   return React.createElement("div", { className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border mb-6" },
-    React.createElement("div", { className: "flex justify-between items-center mb-4" },
+    React.createElement("div", { className: "flex justify-between items-center mb-4 major-section-head cursor-move" },
       React.createElement("h3", { className: "text-base font-bold text-slate-800" }, title),
       React.createElement("button", { className: "text-red-500 hover:text-red-700 text-xs font-medium", onClick: onRemove }, "\u0E25\u0E1A\u0E27\u0E34\u0E14\u0E40จ็ต")
     ),
@@ -12556,7 +12578,7 @@ var App = function App() {
       setIsChangePasswordModalOpen(false);
     }
   }, "\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01"))))), /*#__PURE__*/React.createElement("nav", {
-    className: "hidden md:flex flex-col h-screen w-64 bg-surface-container-low py-8 border-r border-outline-variant flex-shrink-0 fixed left-0 top-0 bottom-0 z-50"
+    className: "hidden md:flex flex-col h-screen transition-all duration-300 overflow-hidden " + (isSidebarOpen ? "w-64" : "w-20") + " bg-surface-container-low py-8 border-r border-outline-variant flex-shrink-0 fixed left-0 top-0 bottom-0 z-50"
   }, /*#__PURE__*/React.createElement("div", {
     className: "px-6 mb-8 flex items-center gap-3 relative"
   }, /*#__PURE__*/React.createElement("button", {
@@ -12705,6 +12727,12 @@ var App = function App() {
     size: 12,
     className: "mr-1"
   }), "Saved"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setIsCustomDashboardOpen(true);
+    },
+    className: "flex items-center gap-1 text-xs px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md border border-indigo-200 transition-colors font-medium mr-2",
+    title: "Custom Dashboard"
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 12 }), " Custom"), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
@@ -12797,7 +12825,7 @@ var App = function App() {
     clearSalesOnly: clearSalesOnly,
     clearTargetOnly: clearTargetOnly,
     clearStorage: clearStorage
-  })) : /*#__PURE__*/React.createElement("div", {
+  })) : (sectionOpen.filters !== false ? /*#__PURE__*/React.createElement("div", {
     className: "dashboard-filters bg-white border-b border-slate-200 p-4 shadow-sm z-10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "filters-head-row mb-2"
@@ -12857,7 +12885,7 @@ var App = function App() {
         return handleFilterChange(f.key, sel);
       }
     }));
-  })))), /*#__PURE__*/React.createElement("main", {
+  })))) : null), /*#__PURE__*/React.createElement("main", {
     className: "dashboard-main overflow-y-auto p-5 bg-slate-50 flex-col " + (activeTab === 'dashboard' ? 'flex flex-1' : 'hidden')
   }, (sectionOpen.kpi ? /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
@@ -12922,12 +12950,12 @@ var App = function App() {
     }, Number(row.cvCount || 0).toLocaleString(), " CV"));
   })) : /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-bold whitespace-nowrap"
-  }, totalCVCount.toLocaleString(), " CV"))), /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 trend-top-grid"
+  }, totalCVCount.toLocaleString(), " CV")))) : null), /*#__PURE__*/React.createElement("div", {
+    className: "grid-stack"
   }, (sectionOpen.trend ? /*#__PURE__*/React.createElement("div", getGridProps("card-1", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head"
+    className: "major-section-head cursor-move"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold flex flex-wrap items-center gap-2"
   }, "\u0E01\u0E23\u0E32\u0E1F\u0E41\u0E19\u0E27\u0E42\u0E19\u0E49\u0E21\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (", getUnitLabel(metricMode, unitMode), ")", !!salesSourceUpdateLabel && /*#__PURE__*/React.createElement("span", {
@@ -13121,7 +13149,7 @@ var App = function App() {
   }, latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.latestYear && latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.prevYear ? "".concat(latestMonthlyVsPrevYearAvgStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyVsPrevYearAvgStats.monthIndex], " ") : '').concat(latestMonthlyVsPrevYearAvgStats.latestYear, " / AVG ").concat(latestMonthlyVsPrevYearAvgStats.prevYear) : '-'))))))) : null), (sectionOpen.brands ? /*#__PURE__*/React.createElement("div", getGridProps("card-2", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill top-brands-panel"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head"
+    className: "major-section-head cursor-move"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Icon, {
@@ -13162,19 +13190,21 @@ var App = function App() {
     className: "text-xs text-slate-400 text-right mt-1"
   }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null)), 
 customWidgets.map(function(widget) {
-  return React.createElement(CustomWidget, {
-    key: widget.id,
-    widget: widget,
-    allData: allData,
-    onRemove: function() { setCustomWidgets(customWidgets.filter(function(w) { return w.id !== widget.id; })); }
-  });
+  return React.createElement("div", getGridProps("cw-" + widget.id, 12, 4),
+    React.createElement("div", { className: "grid-stack-item-content" },
+      React.createElement(CustomWidget, {
+        key: widget.id,
+        widget: widget,
+        allData: allData,
+        onRemove: function() { setCustomWidgets(customWidgets.filter(function(w) { return w.id !== widget.id; })); }
+      })
+    )
+  );
 }),
-/*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
-  }, (sectionOpen.salesGuide ? /*#__PURE__*/React.createElement("div", getGridProps("card-3", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+/*#__PURE__*/React.createElement(React.Fragment, null, (sectionOpen.salesGuide ? /*#__PURE__*/React.createElement("div", getGridProps("card-3", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
   className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
 }, /*#__PURE__*/React.createElement("div", {
-  className: "major-section-head"
+  className: "major-section-head cursor-move"
 }, /*#__PURE__*/React.createElement("h3", {
   className: "text-base font-bold"
 }, "แนะนำการขาย"), /*#__PURE__*/React.createElement("button", {
@@ -13205,7 +13235,7 @@ customWidgets.map(function(widget) {
 (sectionOpen.repeatGap ? /*#__PURE__*/React.createElement("div", getGridProps("card-4", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
   className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
 }, /*#__PURE__*/React.createElement("div", {
-  className: "major-section-head"
+  className: "major-section-head cursor-move"
 }, /*#__PURE__*/React.createElement("h3", {
   className: "text-base font-bold"
 }, "วิเคราะห์ลูกค้า (Repeat & Gap)"), /*#__PURE__*/React.createElement("button", {
@@ -13264,7 +13294,7 @@ customWidgets.map(function(widget) {
 (sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head"
+    className: "major-section-head cursor-move"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Icon, {
@@ -13291,7 +13321,7 @@ customWidgets.map(function(widget) {
   }))))) : null), (sectionOpen.district ? /*#__PURE__*/React.createElement("div", getGridProps("card-6", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head"
+    className: "major-section-head cursor-move"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold"
   }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E23\u0E32\u0E22\u0E1B\u0E35"), /*#__PURE__*/React.createElement("button", {
@@ -13306,7 +13336,7 @@ customWidgets.map(function(widget) {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  }))))) : null))) : null))));
+  }))))) : null)))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
