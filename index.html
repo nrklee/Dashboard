@@ -12009,7 +12009,7 @@ var App = function App() {
       return setIsAIPanelOpen(true);
     },
     title: "เปิดผู้ช่วย AI"
-  }, "AI"))), statusInfo.message && /*#__PURE__*/React.createElement("div", {
+  }, "AI"))) : null, statusInfo.message && /*#__PURE__*/React.createElement("div", {
     className: "status-modal-overlay",
     role: "dialog",
     "aria-modal": "true"
@@ -12041,7 +12041,7 @@ var App = function App() {
     type: "button",
     className: "status-modal-action",
     onClick: closeStatusPopup
-  }, "\u0E1B\u0E34\u0E14")))) : null, /*#__PURE__*/React.createElement(AIPanel, {
+  }, "\u0E1B\u0E34\u0E14")))), /*#__PURE__*/React.createElement(AIPanel, {
     isOpen: isAIPanelOpen,
     onClose: function onClose() {
       return setIsAIPanelOpen(false);
@@ -12143,8 +12143,9 @@ var App = function App() {
         return handleFilterChange(f.key, sel);
       }
     }));
-  })))), activeTab === 'dashboard' ? /*#__PURE__*/React.createElement("main", {
-    className: "dashboard-main flex-1 overflow-y-auto p-5 bg-slate-50 flex flex-col"
+  })))), /*#__PURE__*/React.createElement("main", {
+    className: "dashboard-main flex-1 overflow-y-auto p-5 bg-slate-50 flex flex-col",
+    style: { display: activeTab === 'dashboard' ? 'flex' : 'none' }
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -12708,7 +12709,7 @@ var App = function App() {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  })))))))) : null;
+  }))))))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
