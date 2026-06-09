@@ -3914,46 +3914,44 @@ var LoginScreen = function LoginScreen(props) {
   };
 
   return /*#__PURE__*/React.createElement("div", {
-    className: "min-h-screen w-full flex items-center justify-center p-4 bg-pattern bg-background"
+    className: "min-h-screen w-full flex items-center justify-center p-4 bg-slate-50"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0px_8px_24px_rgba(0,0,0,0.08)] border border-outline-variant/30 p-8 flex flex-col gap-8 relative overflow-hidden"
+    className: "w-full max-w-[480px] bg-white rounded-2xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-slate-200 p-10 flex flex-col gap-8 relative overflow-hidden"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-0 left-0 w-full h-1 bg-primary"
+    className: "absolute top-0 left-0 w-full h-1.5 bg-[#0a58ca]"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "text-center flex flex-col items-center gap-2"
+    className: "text-center flex flex-col items-center gap-3 mt-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center mb-2"
+    className: "w-14 h-14 bg-[#eff4fb] rounded-xl flex items-center justify-center mb-1"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-primary text-3xl",
-    style: {
-      fontVariationSettings: "'FILL' 1"
-    }
+    className: "material-symbols-outlined text-[#0a58ca] text-3xl",
+    style: { fontVariationSettings: "'FILL' 1" }
   }, "analytics")), /*#__PURE__*/React.createElement("h1", {
-    className: "font-headline-lg text-headline-lg text-on-surface"
+    className: "text-3xl font-bold text-slate-900 tracking-tight"
   }, "Analytix Pro"), /*#__PURE__*/React.createElement("p", {
-    className: "font-body-md text-body-md text-on-surface-variant"
+    className: "text-[15px] text-slate-500 font-medium"
   }, "Sign in to your enterprise suite")), /*#__PURE__*/React.createElement("form", {
-    className: "flex flex-col gap-6",
+    className: "flex flex-col gap-5",
     onSubmit: handlePrimaryAction
   }, errorMessage && /*#__PURE__*/React.createElement("div", {
-    className: "p-3 rounded-lg bg-error-container text-on-error-container text-sm font-medium border border-error/20"
+    className: "p-3 rounded-lg bg-red-50 text-red-700 text-sm font-medium border border-red-100"
   }, errorMessage), noticeMessage && /*#__PURE__*/React.createElement("div", {
-    className: "p-3 rounded-lg bg-secondary-container text-on-secondary-container text-sm font-medium border border-secondary/20"
+    className: "p-3 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100"
   }, noticeMessage), loginMode === 'login' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-4"
+    className: "flex flex-col gap-5"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface",
+    className: "font-bold text-[15px] text-slate-900",
     htmlFor: "email"
-  }, "Email / Username"), /*#__PURE__*/React.createElement("div", {
+  }, "Email Address"), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-xl"
+    className: "absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl"
   }, "mail"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 pl-10 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-outline/60",
+    className: "w-full h-12 pl-11 pr-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca] transition-all placeholder:text-slate-400 placeholder:font-normal",
     id: "email",
-    placeholder: "Username or Email",
+    placeholder: "name@company.com",
     required: true,
     type: "text",
     value: username,
@@ -3961,22 +3959,22 @@ var LoginScreen = function LoginScreen(props) {
       return onUsernameChange && onUsernameChange(e.target.value);
     }
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface",
+    className: "font-bold text-[15px] text-slate-900",
     htmlFor: "password"
   }, "Password"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() { return switchLoginMode('forgot_password'); },
-    className: "font-body-sm text-body-sm text-primary hover:text-primary-container transition-colors"
+    className: "font-medium text-[14px] text-[#0a58ca] hover:text-blue-800 transition-colors"
   }, "Forgot password?")), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-xl"
+    className: "absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl"
   }, "lock"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 pl-10 pr-10 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-outline/60",
+    className: "w-full h-12 pl-11 pr-12 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca] transition-all placeholder:text-slate-400 placeholder:font-normal tracking-[0.2em]",
     id: "password",
     placeholder: "••••••••",
     required: true,
@@ -3986,119 +3984,112 @@ var LoginScreen = function LoginScreen(props) {
       return onPasswordChange && onPasswordChange(e.target.value);
     }
   }), /*#__PURE__*/React.createElement("button", {
-    className: "absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors",
+    className: "absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center",
     onClick: function onClick() { return setShowPassword(!showPassword); },
     type: "button"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-xl"
   }, showPassword ? "visibility" : "visibility_off"))))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center"
+    className: "flex items-center mt-1"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-2 cursor-pointer group"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "relative flex items-center justify-center w-5 h-5"
+    className: "flex items-center gap-2.5 cursor-pointer group"
   }, /*#__PURE__*/React.createElement("input", {
-    className: "peer appearance-none w-5 h-5 border-2 border-outline-variant rounded bg-surface-container-lowest checked:bg-primary checked:border-primary transition-all cursor-pointer",
+    className: "w-[18px] h-[18px] rounded border-slate-300 text-[#0a58ca] focus:ring-[#0a58ca] transition-all cursor-pointer",
     type: "checkbox"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined absolute text-on-primary text-sm opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none",
-    style: {
-      fontVariationSettings: "'FILL' 1"
-    }
-  }, "check")), /*#__PURE__*/React.createElement("span", {
-    className: "font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors"
+    className: "font-medium text-[15px] text-slate-700 group-hover:text-slate-900 transition-colors"
   }, "Keep me logged in"))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-headline-sm text-headline-sm rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed",
+    className: "w-full h-12 mt-2 bg-[#0a58ca] hover:bg-blue-700 text-white font-bold text-[16px] rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed",
     type: "submit",
     disabled: isLoading
   }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Signing in..." : "Sign In"), !isLoading && /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-lg"
+    className: "material-symbols-outlined text-xl"
   }, "arrow_forward"))), loginMode === 'change_password' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface"
+    className: "font-bold text-[15px] text-slate-900"
   }, "New Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 px-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
     type: "password",
     value: newPassword,
     onChange: function onChange(e) { return setNewPassword(e.target.value); },
     required: true
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface"
+    className: "font-bold text-[15px] text-slate-900"
   }, "Confirm Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 px-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
     type: "password",
     value: confirmPassword,
     onChange: function onChange(e) { return setConfirmPassword(e.target.value); },
     required: true
   }))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-headline-sm rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70",
+    className: "w-full h-12 mt-2 bg-[#0a58ca] hover:bg-blue-700 text-white font-bold text-[16px] rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70",
     type: "submit",
     disabled: isLoading
   }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Saving..." : "Change Password")), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "w-full text-center text-primary font-label-md mt-2",
+    className: "w-full text-center text-[#0a58ca] font-medium mt-2",
     onClick: function onClick() { return switchLoginMode('login'); }
   }, "Back to Login")), loginMode === 'forgot_password' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface"
+    className: "font-bold text-[15px] text-slate-900"
   }, "Username"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 px-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
     type: "text",
     value: username,
     onChange: function onChange(e) { return onUsernameChange && onUsernameChange(e.target.value); },
     required: true
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface"
+    className: "font-bold text-[15px] text-slate-900"
   }, "Reset Code"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 px-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
     type: "text",
     value: resetCode,
     onChange: function onChange(e) { return setResetCode(e.target.value); },
     required: true
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface"
+    className: "font-bold text-[15px] text-slate-900"
   }, "New Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 px-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
     type: "password",
     value: newPassword,
     onChange: function onChange(e) { return setNewPassword(e.target.value); },
     required: true
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1.5"
+    className: "flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "font-label-md text-label-md text-on-surface"
+    className: "font-bold text-[15px] text-slate-900"
   }, "Confirm Password"), /*#__PURE__*/React.createElement("input", {
-    className: "w-full h-11 px-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary",
+    className: "w-full h-12 px-4 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0a58ca]/20 focus:border-[#0a58ca]",
     type: "password",
     value: confirmPassword,
     onChange: function onChange(e) { return setConfirmPassword(e.target.value); },
     required: true
   }))), /*#__PURE__*/React.createElement("button", {
-    className: "w-full h-12 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-headline-sm rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70",
+    className: "w-full h-12 mt-2 bg-[#0a58ca] hover:bg-blue-700 text-white font-bold text-[16px] rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70",
     type: "submit",
     disabled: isLoading
   }, /*#__PURE__*/React.createElement("span", null, isLoading ? "Resetting..." : "Reset Password")), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "w-full text-center text-primary font-label-md mt-2",
+    className: "w-full text-center text-[#0a58ca] font-medium mt-2",
     onClick: function onClick() { return switchLoginMode('login'); }
   }, "Back to Login"))), /*#__PURE__*/React.createElement("div", {
-    className: "text-center mt-2"
+    className: "text-center mt-6 pt-6 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "font-body-sm text-body-sm text-on-surface-variant"
+    className: "text-[15px] text-slate-500 font-medium"
   }, "Don't have an account? ", /*#__PURE__*/React.createElement("a", {
-    className: "font-label-md text-label-md text-primary hover:text-primary-container transition-colors",
+    className: "font-bold text-[#0a58ca] hover:text-blue-800 transition-colors ml-1",
     href: "#"
   }, "Contact IT Support")))));
 };
