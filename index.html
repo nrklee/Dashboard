@@ -13215,11 +13215,51 @@ customWidgets.map(function(widget) {
   name: sectionExpanded.repeatGap ? "ChevronUp" : "ChevronDown", size: 14
 }))), sectionExpanded.repeatGap && /*#__PURE__*/React.createElement("div", {
   className: "repeat-gap-content w-full fade-in flex flex-col flex-1 min-h-0"
-}, /*#__PURE__*/React.createElement(RepeatGapFilters, {
-  filters: repeatGapFilters, setFilters: setRepeatGapFilters, options: repeatGapFilterOptions
-}), /*#__PURE__*/React.createElement(RepeatGapList, {
-  data: filteredRepeatGapItems, metric: metricMode, unit: unitMode
-}))))) : null),
+}, /*#__PURE__*/React.createElement("div", {
+  className: "mb-4 flex flex-wrap gap-3 p-4 bg-slate-50/50 rounded-lg border border-slate-100"
+}, /*#__PURE__*/React.createElement("div", {
+  className: "flex items-center gap-2 w-full mb-1"
+}, /*#__PURE__*/React.createElement("span", {
+  className: "text-sm font-bold text-slate-700"
+}, "\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (Filters)"), repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("button", {
+  onClick: clearRepeatGapFilters,
+  className: "text-[11px] text-blue-600 hover:text-blue-700 hover:underline px-2 py-0.5 rounded bg-blue-50"
+}, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (", repeatGapActiveFilterCount, ")")), /*#__PURE__*/React.createElement(MultiSelect, {
+  label: "CV (\u0E23\u0E2B\u0E31\u0E2A\u0E25\u0E39\u0E01\u0E04\u0E49\u0E32)",
+  options: repeatGapCvOptions,
+  selected: repeatGapFilters.cv,
+  onChange: function onChange(val) {
+    return handleRepeatGapFilterChange('cv', val);
+  }
+}), /*#__PURE__*/React.createElement(MultiSelect, {
+  label: "\u0E01\u0E25\u0E38\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32",
+  options: repeatGapItemsForGroupOptions,
+  selected: repeatGapFilters.group,
+  onChange: function onChange(val) {
+    return handleRepeatGapFilterChange('group', val);
+  }
+}), /*#__PURE__*/React.createElement(MultiSelect, {
+  label: "\u0E41\u0E1A\u0E23\u0E19\u0E14\u0E4C",
+  options: repeatGapItemsForBrandOptions,
+  selected: repeatGapFilters.brand,
+  onChange: function onChange(val) {
+    return handleRepeatGapFilterChange('brand', val);
+  }
+}), /*#__PURE__*/React.createElement(MultiSelect, {
+  label: "\u0E02\u0E19\u0E32\u0E14",
+  options: repeatGapItemsForSizeOptions,
+  selected: repeatGapFilters.size,
+  onChange: function onChange(val) {
+    return handleRepeatGapFilterChange('size', val);
+  }
+}), /*#__PURE__*/React.createElement(MultiSelect, {
+  label: "\u0E23\u0E30\u0E22\u0E30\u0E40\u0E27\u0E25\u0E32 (Gap)",
+  options: repeatGapItemsForGapMonthOptions,
+  selected: repeatGapFilters.gapMonths,
+  onChange: function onChange(val) {
+    return handleRepeatGapFilterChange('gapMonths', val);
+  }
+})), /*#__PURE__*/React.createElement(RepeatPurchaseGapList, { data: limitedRepeatPurchaseGapItems, metric: metricMode, unit: unitMode }))))) : null),
 
 (sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant"
