@@ -3916,17 +3916,20 @@ var LoginScreen = function LoginScreen(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "min-h-screen w-full flex items-center justify-center p-4 bg-slate-50"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-[480px] bg-white rounded-2xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-slate-200 p-10 flex flex-col gap-8 relative overflow-hidden"
+    className: "w-full max-w-md bg-white rounded-2xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-slate-200 p-8 md:p-10 flex flex-col gap-8 relative overflow-hidden",
+    style: { maxWidth: '480px' }
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-0 w-full h-1.5 bg-[#0a58ca]"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "text-center flex flex-col items-center gap-3 mt-2"
+    className: "text-center flex flex-col items-center gap-4 mt-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-14 h-14 bg-[#eff4fb] rounded-xl flex items-center justify-center mb-1"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-[#0a58ca] text-3xl",
-    style: { fontVariationSettings: "'FILL' 1" }
-  }, "analytics")), /*#__PURE__*/React.createElement("h1", {
+    className: "flex items-center justify-center bg-[#1f3a5f] text-white font-bold tracking-widest rounded-lg px-6 py-2 shadow-sm mb-1",
+    style: { 
+      fontSize: '32px', 
+      fontFamily: 'Arial, sans-serif',
+      boxShadow: '0 0 0 2px white, 0 0 0 4px #1f3a5f'
+    }
+  }, "PCG"), /*#__PURE__*/React.createElement("h1", {
     className: "text-3xl font-bold text-slate-900 tracking-tight"
   }, "Analytix Pro"), /*#__PURE__*/React.createElement("p", {
     className: "text-[15px] text-slate-500 font-medium"
