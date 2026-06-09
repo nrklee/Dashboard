@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytix Pro - Data Management</title>
+    <title>Salytix - Data Management</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -3954,7 +3954,7 @@ var LoginScreen = function LoginScreen(props) {
             style: { width: '160px', height: 'auto', display: 'block' }
           })
         ),
-        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Analytix Pro"),
+        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Salytix"),
         /*#__PURE__*/React.createElement("p", { style: S.subtitle }, "Sign in to your enterprise suite")
       ),
       /*#__PURE__*/React.createElement("form", { style: S.form, onSubmit: handlePrimaryAction },
@@ -3962,14 +3962,14 @@ var LoginScreen = function LoginScreen(props) {
         noticeMessage && /*#__PURE__*/React.createElement("div", { style: S.noticeBox }, noticeMessage),
         loginMode === 'login' && /*#__PURE__*/React.createElement(React.Fragment, null,
           /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
-            /*#__PURE__*/React.createElement("label", { style: S.label }, "Email Address"),
+            /*#__PURE__*/React.createElement("label", { style: S.label }, "Username"),
             /*#__PURE__*/React.createElement("div", { style: { height: '8px' } }),
             /*#__PURE__*/React.createElement("div", { style: S.inputWrap },
-              /*#__PURE__*/React.createElement("span", { style: S.iconLeft }, "mail"),
+              /*#__PURE__*/React.createElement("span", { style: S.iconLeft }, "person"),
               /*#__PURE__*/React.createElement("input", {
                 style: S.input,
-                id: "email",
-                placeholder: "name@company.com",
+                id: "username",
+                placeholder: "Username",
                 required: true,
                 type: "text",
                 value: username,
@@ -3980,11 +3980,18 @@ var LoginScreen = function LoginScreen(props) {
           /*#__PURE__*/React.createElement("div", { style: S.fieldGroup },
             /*#__PURE__*/React.createElement("div", { style: S.labelRow },
               /*#__PURE__*/React.createElement("label", { style: S.label }, "Password"),
-              /*#__PURE__*/React.createElement("button", {
-                type: "button",
-                style: S.forgotBtn,
-                onClick: function() { return switchLoginMode('forgot_password'); }
-              }, "Forgot password?")
+              /*#__PURE__*/React.createElement("div", { style: { display: 'flex', gap: '12px' } },
+                /*#__PURE__*/React.createElement("button", {
+                  type: "button",
+                  style: S.forgotBtn,
+                  onClick: function() { return switchLoginMode('change_password'); }
+                }, "Change password"),
+                /*#__PURE__*/React.createElement("button", {
+                  type: "button",
+                  style: S.forgotBtn,
+                  onClick: function() { return switchLoginMode('forgot_password'); }
+                }, "Forgot password?")
+              )
             ),
             /*#__PURE__*/React.createElement("div", { style: S.inputWrap },
               /*#__PURE__*/React.createElement("span", { style: S.iconLeft }, "lock"),
@@ -11869,7 +11876,7 @@ var App = function App() {
     "data-icon": "bar_chart"
   }, "bar_chart")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "font-headline-md text-primary font-bold"
-  }, "Analytix Pro"), /*#__PURE__*/React.createElement("div", {
+  }, "Salytix"), /*#__PURE__*/React.createElement("div", {
     className: "font-body-sm text-on-surface-variant"
   }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 px-4 flex-1"
@@ -11916,7 +11923,7 @@ var App = function App() {
     className: "flex items-center gap-4 flex-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "font-headline-lg font-bold text-primary md:hidden"
-  }, "Analytix Pro")), /*#__PURE__*/React.createElement("div", {
+  }, "Salytix")), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
