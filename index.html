@@ -7944,6 +7944,15 @@ var App = function App() {
   };
   
   var exportCustomSalesReport = function exportCustomSalesReport(config) {
+    var formatYearHeader = function formatYearHeader(yearValue, style) {
+        var yearText = String(yearValue || '').trim();
+        if (!yearText) return 'ปี -';
+        if (style === 'short') {
+          var digits = yearText.replace(/\D/g, '');
+          if (digits.length >= 2) return "ปี " + digits.slice(-2);
+        }
+        return "ปี " + yearText;
+    };
     try {
       var exportFilterState = buildLockedFiltersState(lockedFilters);
       var hasLockedExportScope = Object.keys(exportFilterState).length > 0;
@@ -8079,7 +8088,7 @@ var App = function App() {
 
     } catch (err) {
       console.error(err);
-      showStatus('Export ข้อมูลไม่สำเร็จ', 'error');
+      showStatus('Export ข้อมูลไม่สำเร็จ: ' + (err.message || String(err)), 'error');
     }
   };
 
