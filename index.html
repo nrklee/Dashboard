@@ -12859,7 +12859,7 @@ var App = function App() {
     }));
   })))), /*#__PURE__*/React.createElement("main", {
     className: "dashboard-main overflow-y-auto p-5 bg-slate-50 flex-col " + (activeTab === 'dashboard' ? 'flex flex-1' : 'hidden')
-  }, /*#__PURE__*/React.createElement("div", {
+  }, (sectionOpen.kpi ? /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-3"
@@ -13170,220 +13170,58 @@ customWidgets.map(function(widget) {
   });
 }),
 /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 action-gap-grid"
-  }, (sectionOpen.salesGuide ? /*#__PURE__*/React.createElement("div", getGridProps("card-3", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card sales-guide-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-2",
-    style: {
-      order: 2
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-base font-bold"
-  }, "\u0E41\u0E19\u0E30\u0E19\u0E33\u0E01\u0E32\u0E23\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('salesGuide'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.salesGuide ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.salesGuide ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.salesGuide && /*#__PURE__*/React.createElement("div", {
-    className: "sales-guide-content w-full fade-in flex flex-col"
-  }, !salesGuideSummary.supported ? /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-h-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-800"
-  }, salesGuideSummary.message) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "sales-guide-summary-grid mb-1.5 text-xs",
-    style: {
-      marginBottom: '0.875rem'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500"
-  }, "\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[13px] mt-0.5",
-    style: {
-      color: '#f97316'
-    }
-  }, formatValue(salesGuideSummary.currentTarget || 0, metricMode, unitMode))), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[13px] mt-0.5",
-    style: {
-      color: '#3b82f6'
-    }
-  }, formatValue(salesGuideSummary.currentSales || 0, metricMode, unitMode))), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500"
-  }, "\u0E15\u0E49\u0E2D\u0E07\u0E02\u0E32\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[13px] mt-0.5",
-    style: {
-      color: '#e11d48'
-    }
-  }, formatValue(salesGuideSummary.targetGap || 0, metricMode, unitMode))), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex flex-col items-center justify-center text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500"
-  }, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E0B\u0E37\u0E49\u0E2D"), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-[13px] mt-0.5",
-    style: {
-      color: '#059669'
-    }
-  }, formatValue(salesGuideSummary.totalPotential || 0, metricMode, unitMode)))), /*#__PURE__*/React.createElement("div", {
-    className: "sales-guide-weight-panel mb-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "sales-guide-weight-row text-[11px]"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-semibold text-slate-600"
-  }, "\u0E19\u0E49\u0E33\u0E2B\u0E19\u0E31\u0E01\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07"), [['month1', '\u0E40\u0E14\u0E37\u0E2D\u0E19 1'], ['month2', '\u0E40\u0E14\u0E37\u0E2D\u0E19 2'], ['month3', '\u0E40\u0E14\u0E37\u0E2D\u0E19 3']].map(function (_ref53) {
-    var _ref54 = _slicedToArray(_ref53, 2),
-      key = _ref54[0],
-      label = _ref54[1];
-    return /*#__PURE__*/React.createElement("label", {
-      key: key,
-      className: "text-slate-500",
-      style: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        whiteSpace: 'nowrap'
-      }
-    }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("input", {
-      type: "number",
-      min: "0",
-      step: "1",
-      value: salesGuideWeights[key],
-      onChange: function onChange(e) {
-        var nextValue = Number(e.target.value);
-        setSalesGuideWeights(function (prev) {
-          return sanitizeSalesGuideWeights(_objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, key, Number.isFinite(nextValue) ? nextValue : 0)));
-        });
-      },
-      className: "rounded border border-slate-300 px-1 py-0.5 text-center text-[12px] font-semibold text-slate-700",
-      style: {
-        width: '3rem'
-      }
-    }), /*#__PURE__*/React.createElement("span", null, "%"));
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: function onClick() {
-      return setSalesGuideWeights(_objectSpread({}, DEFAULT_SALES_GUIDE_WEIGHTS));
-    },
-    className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-semibold text-blue-600 hover:border-blue-300"
-  }, "\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19")), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] text-slate-500"
-  }, "\u0E2A\u0E31\u0E14\u0E2A\u0E48\u0E27\u0E19\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19: ", salesGuideWeightSummaryLabel)), /*#__PURE__*/React.createElement("p", {
-    className: "sales-guide-message text-[11px] ".concat(salesGuideSummary.targetGap > 0 ? 'text-amber-700' : 'text-slate-500', " mb-1")
-  }, salesGuideSummary.message), /*#__PURE__*/React.createElement("p", {
-    className: "sales-guide-order-note text-[11px] text-blue-700 mb-1"
-  }, "\u0E40\u0E23\u0E35\u0E22\u0E07\u0E08\u0E32\u0E01\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E22\u0E2D\u0E14\u0E21\u0E32\u0E01\u0E44\u0E1B\u0E19\u0E49\u0E2D\u0E22", salesGuideSummary.projectedClosePct !== null ? " | \u0E1B\u0E23\u0E30\u0E21\u0E32\u0E13\u0E01\u0E32\u0E23\u0E1B\u0E34\u0E14\u0E41\u0E19\u0E30\u0E19\u0E33\u0E02\u0E32\u0E22 ".concat(Number(salesGuideSummary.projectedClosePct || 0).toFixed(0), "%") : '', (salesGuideSummary.totalStores || 0) > SALES_GUIDE_LIMIT ? " | \u0E41\u0E2A\u0E14\u0E07 ".concat(SALES_GUIDE_LIMIT.toLocaleString(), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E41\u0E23\u0E01") : ''), /*#__PURE__*/React.createElement(SalesGuideList, {
-    data: salesGuideSummary.visibleItems,
-    metric: metricMode,
-    unit: unitMode,
-    weightSummaryLabel: salesGuideSummary.weightSummaryLabel || salesGuideWeightSummaryLabel
-  })))))) : null), (sectionOpen.repeatGap ? /*#__PURE__*/React.createElement("div", getGridProps("card-4", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card repeat-gap-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill xl:order-1",
-    style: {
-      order: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-base font-bold"
-  }, "\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E02\u0E32\u0E14\u0E01\u0E32\u0E23\u0E0B\u0E37\u0E49\u0E2D\u0E0B\u0E49\u0E33"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('repeatGap'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.repeatGap ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.repeatGap ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.repeatGap && /*#__PURE__*/React.createElement("div", {
-    className: "repeat-gap-content h-[30rem] w-full fade-in flex flex-col"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "repeat-gap-window text-[11px] text-slate-500 mb-1.5"
-  }, "\u0E0A\u0E48\u0E27\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07 12 \u0E40\u0E14\u0E37\u0E2D\u0E19: ", /*#__PURE__*/React.createElement("span", {
-    className: "font-semibold"
-  }, repeatPurchaseGapSummary.startMonthLabel), " \u0E16\u0E36\u0E07 ", /*#__PURE__*/React.createElement("span", {
-    className: "font-semibold"
-  }, repeatPurchaseGapSummary.latestMonthLabel)), /*#__PURE__*/React.createElement("div", {
-    className: "repeat-gap-filter-bar"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: function onClick() {
-      return setRepeatGapFiltersOpen(!repeatGapFiltersOpen);
-    },
-    className: "repeat-gap-filter-toggle"
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Filter",
-    size: 13
-  }), repeatGapFiltersOpen ? '\u0E22\u0E48\u0E2D\u0E1F\u0E34\u0E25\u0E40\u0E15\u0E2D\u0E23\u0E4C' : '\u0E02\u0E22\u0E32\u0E22\u0E1F\u0E34\u0E25\u0E40\u0E15\u0E2D\u0E23\u0E4C', repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "repeat-gap-filter-count"
-  }, repeatGapActiveFilterCount))), repeatGapFiltersOpen && /*#__PURE__*/React.createElement("div", {
-    className: "repeat-gap-filters-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2 mb-3"
-  }, /*#__PURE__*/React.createElement(MultiSelect, {
-    label: "CV \u0E25\u0E39\u0E01\u0E04\u0E49\u0E32",
-    options: repeatGapCvOptions,
-    selected: repeatGapFilters.cv,
-    onChange: function onChange(sel) {
-      return handleRepeatGapFilterChange('cv', sel);
-    },
-    formatOptionLabel: function formatOptionLabel(value) {
-      return formatCvFilterLabel(value);
-    },
-    getSearchText: function getSearchText(value) {
-      return "".concat(value, " ").concat(formatCvFilterLabel(value));
-    }
-  }), /*#__PURE__*/React.createElement(MultiSelect, {
-    label: "\u0E01\u0E25\u0E38\u0E48\u0E21",
-    options: repeatGapGroupOptions,
-    selected: repeatGapFilters.group,
-    onChange: function onChange(sel) {
-      return handleRepeatGapFilterChange('group', sel);
-    }
-  }), /*#__PURE__*/React.createElement(MultiSelect, {
-    label: "\u0E41\u0E1A\u0E23\u0E19\u0E14\u0E4C",
-    options: repeatGapBrandOptions,
-    selected: repeatGapFilters.brand,
-    onChange: function onChange(sel) {
-      return handleRepeatGapFilterChange('brand', sel);
-    }
-  }), /*#__PURE__*/React.createElement(MultiSelect, {
-    label: "\u0E02\u0E19\u0E32\u0E14",
-    options: repeatGapSizeOptions,
-    selected: repeatGapFilters.size,
-    onChange: function onChange(sel) {
-      return handleRepeatGapFilterChange('size', sel);
-    }
-  }), /*#__PURE__*/React.createElement(MultiSelect, {
-    label: "\u0E23\u0E30\u0E22\u0E30\u0E40\u0E27\u0E25\u0E32 (\u0E40\u0E14\u0E37\u0E2D\u0E19)",
-    options: repeatGapGapMonthOptions,
-    selected: repeatGapFilters.gapMonths,
-    onChange: function onChange(sel) {
-      return handleRepeatGapFilterChange('gapMonths', sel);
-    },
-    formatOptionLabel: function formatOptionLabel(value) {
-      return formatRepeatGapMonthLabel(value);
-    },
-    getSearchText: function getSearchText(value) {
-      return formatRepeatGapMonthLabel(value);
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "repeat-gap-summary-row flex items-center justify-between gap-3 mb-3"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-blue-700"
-  }, "\u0E40\u0E23\u0E35\u0E22\u0E07\u0E08\u0E32\u0E01\u0E22\u0E2D\u0E14\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E21\u0E32\u0E01\u0E44\u0E1B\u0E19\u0E49\u0E2D\u0E22 | \u0E2B\u0E19\u0E48\u0E27\u0E22\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22: ", getUnitLabel(metricMode, unitMode), " | \u0E1E\u0E1A ", filteredRepeatPurchaseGapItems.length.toLocaleString(), " \u0E23\u0E32\u0E22\u0E01\u0E32\u0E23", filteredRepeatPurchaseGapItems.length > REPEAT_GAP_LIMIT ? " | \u0E41\u0E2A\u0E14\u0E07 ".concat(REPEAT_GAP_LIMIT.toLocaleString(), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E41\u0E23\u0E01") : ''), repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("button", {
-    onClick: clearRepeatGapFilters,
-    className: "text-xs text-red-500 hover:underline whitespace-nowrap"
-  }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E2A\u0E48\u0E27\u0E19\u0E19\u0E35\u0E49")), /*#__PURE__*/React.createElement(RepeatPurchaseGapList, {
-    data: limitedRepeatPurchaseGapItems,
-    metric: metricMode,
-    unit: unitMode
-  }), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-400 text-right mt-2"
-  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null)), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
-  }, (sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  }, (sectionOpen.salesGuide ? /*#__PURE__*/React.createElement("div", getGridProps("card-3", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
+}, /*#__PURE__*/React.createElement("div", {
+  className: "major-section-head"
+}, /*#__PURE__*/React.createElement("h3", {
+  className: "text-base font-bold"
+}, "แนะนำการขาย"), /*#__PURE__*/React.createElement("button", {
+  onClick: function onClick() { return toggleExpanded('salesGuide'); },
+  className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+}, sectionExpanded.salesGuide ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
+  name: sectionExpanded.salesGuide ? "ChevronUp" : "ChevronDown", size: 14
+}))), sectionExpanded.salesGuide && /*#__PURE__*/React.createElement("div", {
+  className: "sales-guide-content w-full fade-in flex flex-col"
+}, !salesGuideSummary.supported ? /*#__PURE__*/React.createElement("div", {
+  className: "flex-1 min-h-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-800"
+}, salesGuideSummary.reason) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  className: "mb-3 flex items-center gap-2"
+}, /*#__PURE__*/React.createElement("div", {
+  className: "flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 text-[11px] font-medium text-slate-600 shadow-sm"
+}, /*#__PURE__*/React.createElement(Icon, {
+  name: "Settings2", size: 12, className: "text-slate-400"
+}), "ตั้งค่าอัลกอริทึม: ", /*#__PURE__*/React.createElement("span", {
+  className: "text-blue-700 font-bold ml-1"
+}, salesGuideSummary.weightSummaryLabel)), /*#__PURE__*/React.createElement("button", {
+  onClick: function onClick() { return setIsSalesGuideWeightModalOpen(true); },
+  className: "rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors",
+  title: "แก้ไขตั้งค่าอัลกอริทึม"
+}, /*#__PURE__*/React.createElement(Icon, { name: "Edit2", size: 14 }))), /*#__PURE__*/React.createElement(SalesGuideList, {
+  data: salesGuideSummary.visibleItems || [], metric: metricMode, unit: unitMode
+})))))) : null),
+
+(sectionOpen.repeatGap ? /*#__PURE__*/React.createElement("div", getGridProps("card-4", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
+}, /*#__PURE__*/React.createElement("div", {
+  className: "major-section-head"
+}, /*#__PURE__*/React.createElement("h3", {
+  className: "text-base font-bold"
+}, "วิเคราะห์ลูกค้า (Repeat & Gap)"), /*#__PURE__*/React.createElement("button", {
+  onClick: function onClick() { return toggleExpanded('repeatGap'); },
+  className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+}, sectionExpanded.repeatGap ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
+  name: sectionExpanded.repeatGap ? "ChevronUp" : "ChevronDown", size: 14
+}))), sectionExpanded.repeatGap && /*#__PURE__*/React.createElement("div", {
+  className: "repeat-gap-content w-full fade-in flex flex-col flex-1 min-h-0"
+}, /*#__PURE__*/React.createElement(RepeatGapFilters, {
+  filters: repeatGapFilters, setFilters: setRepeatGapFilters, options: repeatGapFilterOptions
+}), /*#__PURE__*/React.createElement(RepeatGapList, {
+  data: filteredRepeatGapItems, metric: metricMode, unit: unitMode
+}))))) : null),
+
+(sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
@@ -13428,7 +13266,7 @@ customWidgets.map(function(widget) {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  }))))) : null))))));
+  }))))) : null))) : null))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
