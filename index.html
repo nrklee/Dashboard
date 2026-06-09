@@ -3,36 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard</title>
+    <title>Analytix Pro - Data Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                      "tertiary-fixed-dim": "#c2c6d1",
+                      "surface-container-low": "#eff4ff",
+                      "on-primary-fixed-variant": "#004493",
+                      "surface-tint": "#005bc1",
+                      "outline": "#717786",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "on-primary-fixed": "#001a41",
+                      "on-error-container": "#93000a",
+                      "primary": "#0058bc",
+                      "surface-bright": "#f8f9ff",
+                      "on-primary-container": "#fefcff",
+                      "on-background": "#0b1c30",
+                      "on-secondary-container": "#007355",
+                      "surface-dim": "#cbdbf5",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#eaf1ff",
+                      "tertiary-fixed": "#dee2ed",
+                      "outline-variant": "#c1c6d7",
+                      "on-tertiary-container": "#fdfcff",
+                      "tertiary": "#575c65",
+                      "background": "#f8f9ff",
+                      "secondary-fixed-dim": "#41dfac",
+                      "primary-fixed-dim": "#adc6ff",
+                      "surface-variant": "#d3e4fe",
+                      "primary-fixed": "#d8e2ff",
+                      "on-surface-variant": "#414755",
+                      "surface-container": "#e5eeff",
+                      "inverse-surface": "#213145",
+                      "tertiary-container": "#70757e",
+                      "on-tertiary-fixed-variant": "#424750",
+                      "on-secondary-fixed": "#002116",
+                      "inverse-primary": "#adc6ff",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-surface": "#0b1c30",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface": "#f8f9ff",
+                      "secondary-fixed": "#65fcc7",
+                      "on-tertiary-fixed": "#171c23",
+                      "primary-container": "#0070eb",
+                      "secondary-container": "#65fcc7",
+                      "surface-container-high": "#dce9ff",
+                      "secondary": "#006c50"
+              },
+              borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+              fontFamily: {
+                      "label-md": ["Be Vietnam Pro"],
+                      "headline-sm": ["Plus Jakarta Sans"],
+                      "body-sm": ["Be Vietnam Pro"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "body-md": ["Be Vietnam Pro"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "data-num": ["Plus Jakarta Sans"],
+                      "body-lg": ["Be Vietnam Pro"]
+              }
+            }
+          }
+        }
+    </script>
     <style>
 /* ===== Light Theme (Default) ===== */
         :root, [data-theme="light"] {
-            --bg: #f0f5ff; --bg-soft: #e8eef8; --surface: #ffffff; --surface-alt: #f5f8ff;
-            --border: #d4dff0; --border-strong: #b0c4e8;
-            --text: #0c1a3a; --text-sec: #3a4f6e; --text-muted: #7b8faa;
-            --accent: #1a56db; --accent-hover: #1444b8; --accent-soft: #e8f0fe; --accent-border: #a4c2f7; --accent-text: #1540a0;
-            --success-bg: #ecfdf5; --success: #059669; --warn-bg: #fffbeb; --warn: #d97706;
-            --danger-bg: #fef2f2; --danger: #dc2626;
-            --shadow-sm: 0 1px 3px rgba(20,60,130,0.06); --shadow: 0 2px 8px rgba(20,60,130,0.08); --shadow-lg: 0 8px 24px rgba(20,60,130,0.12);
-            --radius: 14px; --radius-sm: 10px;
-            --chart-line: #1a56db; --chart-line2: #7c3aed; --chart-target: #dc2626;
-            --kpi-border: #1a56db;
-            --header-bg: linear-gradient(135deg,#1a3a7a 0%,#1a56db 60%,#2e7cf6 100%);
-            --header-text: #ffffff;
+            --bg: #f8f9ff; --bg-soft: #eff4ff; --surface: #ffffff; --surface-alt: #f8f9ff;
+            --border: #c1c6d7; --border-strong: #717786;
+            --text: #0b1c30; --text-sec: #414755; --text-muted: #70757e;
+            --accent: #0058bc; --accent-hover: #004493; --accent-soft: #d8e2ff; --accent-border: #adc6ff; --accent-text: #001a41;
+            --success-bg: #65fcc7; --success: #006c50; --warn-bg: #fffbeb; --warn: #d97706;
+            --danger-bg: #ffdad6; --danger: #ba1a1a;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow: 0 2px 8px rgba(0,0,0,0.08); --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --radius: 0.75rem; --radius-sm: 0.5rem;
+            --chart-line: #0058bc; --chart-line2: #65fcc7; --chart-target: #ba1a1a;
+            --kpi-border: #0058bc;
+            --header-bg: #ffffff;
+            --header-text: #0b1c30;
         }
         /* ===== Dark Theme ===== */
         [data-theme="dark"] {
-            --bg: #0a1628; --bg-soft: #142240; --surface: #172a4a; --surface-alt: #0e1d38;
-            --border: #243b66; --border-strong: #345080;
-            --text: #e8f0fe; --text-sec: #c0d0f0; --text-muted: #8098c0;
-            --accent: #5b9aff; --accent-hover: #7bb3ff; --accent-soft: rgba(91,154,255,0.12); --accent-border: #2a5caa; --accent-text: #a0c8ff;
-            --success-bg: rgba(5,150,105,0.12); --success: #34d399; --warn-bg: rgba(245,158,11,0.1); --warn: #fbbf24;
-            --danger-bg: rgba(220,38,38,0.1); --danger: #f87171;
+            --bg: #0b1c30; --bg-soft: #213145; --surface: #171c23; --surface-alt: #213145;
+            --border: #717786; --border-strong: #c1c6d7;
+            --text: #f8f9ff; --text-sec: #dee2ed; --text-muted: #c2c6d1;
+            --accent: #adc6ff; --accent-hover: #d8e2ff; --accent-soft: rgba(0,88,188,0.2); --accent-border: #0058bc; --accent-text: #fefcff;
+            --success-bg: rgba(0,108,80,0.2); --success: #41dfac; --warn-bg: rgba(217,119,6,0.2); --warn: #fbbf24;
+            --danger-bg: rgba(186,26,26,0.2); --danger: #ffdad6;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.3); --shadow: 0 2px 8px rgba(0,0,0,0.4); --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-            --chart-line: #5b9aff; --chart-line2: #a78bfa; --chart-target: #f87171;
-            --kpi-border: #5b9aff;
-            --header-bg: linear-gradient(135deg,#0a1628 0%,#142240 60%,#1a3a7a 100%);
-            --header-text: #e8f0fe;
+            --chart-line: #adc6ff; --chart-line2: #65fcc7; --chart-target: #ffdad6;
+            --kpi-border: #adc6ff;
+            --header-bg: #171c23;
+            --header-text: #f8f9ff;
         }
 
         /* ===== Base ===== */
@@ -11579,35 +11651,92 @@ var App = function App() {
     }
   }, "\u0E2B\u0E32\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E14\u0E39\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 \u0E43\u0E2B\u0E49\u0E40\u0E02\u0E49\u0E32\u0E14\u0E49\u0E27\u0E22\u0E1A\u0E31\u0E0D\u0E0A\u0E35 area_admin \u0E2B\u0E23\u0E37\u0E2D user \u0E02\u0E2D\u0E07\u0E20\u0E32\u0E04/\u0E40\u0E02\u0E15\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E44\u0E27\u0E49\u0E43\u0E19\u0E0A\u0E35\u0E15 USERS"))))));
   return /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-shell flex flex-col h-screen text-slate-900 font-sans overflow-hidden",
+    className: "dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md md:pl-64",
     style: {
       background: 'var(--bg)'
     }
-  }, /*#__PURE__*/React.createElement("header", {
-    className: "dashboard-header border-b p-3 flex items-center justify-between shadow-sm z-20 shrink-0",
-    style: {
-      background: 'var(--surface)',
-      borderColor: 'var(--border)'
-    }
-  }, /*#__PURE__*/React.createElement("h1", {
-    className: "text-base font-bold flex items-center gap-2 shrink-0",
-    style: {
-      color: 'var(--text)'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "TrendingUp",
-    className: "text-blue-600"
-  }), " Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
-    className: "app-header-controls"
+  }, /*#__PURE__*/React.createElement("nav", {
+    className: "hidden md:flex flex-col h-screen w-64 bg-surface-container-low py-8 border-r border-outline-variant flex-shrink-0 fixed left-0 top-0 bottom-0 z-50"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
-    style: {
-      background: 'rgba(255,255,255,0.12)',
-      border: '1px solid rgba(255,255,255,0.2)',
-      color: '#fff',
-      fontWeight: 700
-    }
-  }, (authUser.displayName || authUser.username || '').trim() || 'ผู้ใช้'), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 mb-8 flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined",
+    "data-icon": "bar_chart"
+  }, "bar_chart")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "font-headline-md text-primary font-bold"
+  }, "Analytix Pro"), /*#__PURE__*/React.createElement("div", {
+    className: "font-body-sm text-on-surface-variant"
+  }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-2 px-4 flex-1"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-surface-container-high transition-colors font-label-md"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined"
+  }, "dashboard"), "\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"), /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined"
+  }, "insights"), "Analytics"), /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined"
+  }, "payments"), "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22"), /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined"
+  }, "ads_click"), "\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22")), /*#__PURE__*/React.createElement("div", {
+    className: "px-4 mt-auto mb-4"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: function onClick(e) {
+      e.preventDefault();
+      if (typeof handleLogout !== 'undefined') handleLogout();
+    },
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors font-label-md"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined"
+  }, "logout"), "Log Out"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 flex flex-col min-w-0"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "bg-surface flex justify-between items-center w-full px-8 h-16 border-b border-outline-variant shadow-sm z-20 shrink-0 sticky top-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4 flex-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-headline-lg font-bold text-primary md:hidden"
+  }, "Analytix Pro"), /*#__PURE__*/React.createElement("div", {
+    className: "hidden md:flex relative w-64 max-w-sm items-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined absolute left-3 text-on-surface-variant text-[20px]"
+  }, "search"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "Search...",
+    className: "w-full pl-9 pr-4 py-2 rounded-full bg-surface-container-lowest border border-outline-variant focus:border-primary outline-none font-body-md text-on-surface placeholder:text-on-surface-variant transition-shadow"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-[20px]"
+  }, "notifications")), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { if (typeof setIsDarkMode !== 'undefined') setIsDarkMode(!isDarkMode); },
+    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-[20px]"
+  }, typeof isDarkMode !== 'undefined' && isDarkMode ? "light_mode" : "dark_mode")), /*#__PURE__*/React.createElement("div", {
+    className: "w-8 h-8 rounded-full bg-primary-container ml-2 flex items-center justify-center text-on-primary-container font-bold border border-outline-variant overflow-hidden"
+  }, (typeof authUser !== 'undefined' && authUser ? (authUser.displayName || authUser.username || "A") : "A").charAt(0).toUpperCase()))), /*#__PURE__*/React.createElement("div", {
+    className: "app-header-controls px-8 pt-4 pb-2 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-background"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "font-headline-lg font-bold text-on-background m-0"
+  }, "Sales Dashboard"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -11985,7 +12114,7 @@ var App = function App() {
   }, totalCVCount.toLocaleString(), " CV"))), /*#__PURE__*/React.createElement("div", {
     className: "mb-6 trend-top-grid"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill"
+    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -12170,7 +12299,7 @@ var App = function App() {
   }, Number.isFinite(Number(latestMonthlyVsPrevYearAvgStats === null || latestMonthlyVsPrevYearAvgStats === void 0 ? void 0 : latestMonthlyVsPrevYearAvgStats.pct)) ? "".concat(Number(latestMonthlyVsPrevYearAvgStats.pct).toFixed(1), "%") : '-'), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] leading-tight text-slate-400 mt-0.5 text-center"
   }, latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.latestYear && latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.prevYear ? "".concat(latestMonthlyVsPrevYearAvgStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyVsPrevYearAvgStats.monthIndex], " ") : '').concat(latestMonthlyVsPrevYearAvgStats.latestYear, " / AVG ").concat(latestMonthlyVsPrevYearAvgStats.prevYear) : '-'))))), /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border responsive-card-fill top-brands-panel"
+    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill top-brands-panel"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -12432,7 +12561,7 @@ var App = function App() {
   }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32")))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border"
+    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -12461,7 +12590,7 @@ var App = function App() {
       unit: unitMode
     })
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border"
+    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head"
   }, /*#__PURE__*/React.createElement("h3", {
