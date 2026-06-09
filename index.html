@@ -11780,7 +11780,7 @@ var App = function App() {
       borderColor: 'rgba(248,113,113,.45)',
       background: 'rgba(127,29,29,.16)'
     }
-  }, "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A"))), /*#__PURE__*/React.createElement("main", {
+  }, "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A")))activeTab === 'dashboard' && /*#__PURE__*/React.createElement("main", {
     className: "dashboard-main flex-1 overflow-y-auto p-6",
     style: {
       background: 'var(--bg)'
@@ -11943,7 +11943,7 @@ var App = function App() {
   /*#__PURE__*/React.createElement("button", {
     className: "w-full text-left px-4 py-2 text-error hover:bg-error-container hover:text-on-error-container flex items-center gap-2 transition-colors",
     onClick: () => { setIsProfileDropdownOpen(false); if (typeof handleLogout !== 'undefined') handleLogout(); }
-  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "logout"), "Logout"))))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "logout"), "Logout"))))), activeTab === 'dashboard' && /*#__PURE__*/React.createElement("div", {
     className: "app-header-controls px-8 pt-4 pb-2 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-background"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
@@ -12070,7 +12070,10 @@ var App = function App() {
     onChange: function onChange(event) {
       return handleFileUpload(event, 'target');
     }
-  }), activeTab === 'import_export' ? /*#__PURE__*/React.createElement(ImportExportScreen, {
+  }), activeTab === 'import_export' ? /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-y-auto",
+    style: { background: 'var(--bg)' }
+  }, /*#__PURE__*/React.createElement(ImportExportScreen, {
     googleSheetSyncLabel: googleSheetSyncLabel,
     syncSalesFromGoogleSheet: syncSalesFromGoogleSheet,
     openFilePickerForType: openFilePickerForType,
@@ -12083,7 +12086,7 @@ var App = function App() {
     clearSalesOnly: clearSalesOnly,
     clearTargetOnly: clearTargetOnly,
     clearStorage: clearStorage
-  }) : /*#__PURE__*/React.createElement("div", {
+  })) : /*#__PURE__*/React.createElement("div", {
     className: "dashboard-filters bg-white border-b border-slate-200 p-4 shadow-sm z-10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "filters-head-row mb-2"
