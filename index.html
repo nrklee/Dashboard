@@ -4948,7 +4948,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     return React.createElement(ResponsiveContainer, {width: "100%", height: 300},
       React.createElement(ChartElement, {data: previewData},
         React.createElement(CartesianGrid, {strokeDasharray: "3 3"}),
-        React.createElement(XAxis, {dataKey: "name"}),
+        React.createElement(XAxis, {dataKey: "name", stroke: "var(--text-sec)", tick: { fill: "var(--text-sec)", fontSize: 11 }}),
         React.createElement(YAxis, null),
         React.createElement(Tooltip, null),
         React.createElement(DataElement, {type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6"})
@@ -4987,6 +4987,17 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                 React.createElement("span", { className: "text-sm font-medium text-slate-700 capitalize" }, sectionTitles[key] || key)
               );
             })
+          ),
+          React.createElement("div", { className: "mt-6 pt-4 border-t border-slate-100 flex justify-end" },
+            React.createElement("button", {
+              className: "px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors border border-red-100",
+              onClick: function() {
+                if (window.confirm('รีเซ็ต layout กลับค่าเริ่มต้น?')) {
+                  localStorage.removeItem('dashboard_layouts');
+                  window.location.reload();
+                }
+              }
+            }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "grid_view"), " รีเซ็ต Layout")
           )
         ),
         activeTab === 'chart' && React.createElement("div", { className: "flex flex-col gap-4" },
@@ -5105,7 +5116,7 @@ var CustomWidget = function CustomWidget(_ref) {
       React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
         React.createElement(ChartElement, { data: previewData },
           React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
-          React.createElement(XAxis, { dataKey: "name" }),
+          React.createElement(XAxis, { dataKey: "name", stroke: "var(--text-sec)", tick: { fill: "var(--text-sec)", fontSize: 11 } }),
           React.createElement(YAxis, null),
           React.createElement(Tooltip, null),
           React.createElement(DataElement, { type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6" })
@@ -5201,7 +5212,7 @@ var App = function App() {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }, [activeTab, sectionOpen, customWidgets]);
+  }); // Run on every render to ensure React DOM updates are captured by GridStack
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
@@ -12756,7 +12767,7 @@ var App = function App() {
     onClick: function onClick() {
       return setIsCustomDashboardOpen(true);
     },
-    className: "flex items-center gap-2 text-sm px-4 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full shadow-md transition-colors font-bold mr-2 border border-blue-700",
+    className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm transition-colors font-bold mr-2 border border-blue-700 whitespace-nowrap",
     title: "Custom Dashboard"
   }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
@@ -12771,17 +12782,6 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[20px]"
   }, "notifications")), /*#__PURE__*/React.createElement("button", {
-    title: "รีเซ็ต Layout",
-    onClick: function onClick() {
-      if (window.confirm('รีเซ็ต layout กลับค่าเริ่มต้น?')) {
-        localStorage.removeItem('dashboard_layouts');
-        window.location.reload();
-      }
-    },
-    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-[20px]"
-  }, "grid_view")), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() { if (typeof setIsDarkMode !== 'undefined') setIsDarkMode(!isDarkMode); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
@@ -13072,6 +13072,8 @@ var App = function App() {
     interval: 0,
     minTickGap: 0,
     tickMargin: 8,
+    stroke: "var(--text-sec)",
+    tick: { fill: "var(--text-sec)", fontSize: 11 },
     padding: {
       left: 16,
       right: 16
@@ -13904,27 +13906,6 @@ try {
             overflow: visible;
             inset: 5px;
             border-radius: 12px;
-        }
-        /* resize handle – bottom-right only (se) */
-        .grid-stack-item > .ui-resizable-se {
-            width: 24px !important;
-            height: 24px !important;
-            bottom: 10px !important;
-            right: 10px !important;
-            background: transparent;
-            border-right: 3px solid var(--accent, #0058bc);
-            border-bottom: 3px solid var(--accent, #0058bc);
-            border-radius: 0 0 6px 0;
-            opacity: 0;
-            transition: opacity 0.2s;
-            cursor: se-resize !important;
-            z-index: 20;
-        }
-        .grid-stack-item:hover > .ui-resizable-se {
-            opacity: 0.75;
-        }
-        .grid-stack-item > .ui-resizable-se:hover {
-            opacity: 1 !important;
         }
         /* hide sw handle – only se needed */
         .grid-stack-item > .ui-resizable-sw { display: none !important; }
