@@ -681,6 +681,29 @@
         }
 
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+        /* Custom Resize Handle for GridStack */
+        .grid-stack > .grid-stack-item > .ui-resizable-se {
+            background-image: none !important;
+            right: 4px !important;
+            bottom: 4px !important;
+            width: 20px !important;
+            height: 20px !important;
+            cursor: nwse-resize !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .grid-stack > .grid-stack-item > .ui-resizable-se::before {
+            content: '\e85b'; /* Material symbol for open_in_full / arrows_outward */
+            font-family: 'Material Symbols Outlined';
+            font-size: 16px;
+            color: var(--text-muted, #94a3b8);
+            transform: rotate(90deg); /* Adjust angle if needed to look like a bottom-right resize */
+        }
+        .grid-stack > .grid-stack-item > .ui-resizable-se:hover::before {
+            color: var(--primary, #2563eb);
+        }
     </style>
 </head>
 <body>
@@ -4949,9 +4972,23 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
 
   return React.createElement("div", { className: "status-modal-overlay" },
     React.createElement("div", { className: "status-modal", style: { width: '800px', maxWidth: '95vw' } },
-      React.createElement("div", { className: "status-modal-head" },
+      React.createElement("div", { className: "status-modal-head flex justify-between items-center" },
         React.createElement("div", { className: "status-modal-title" }, "Custom Dashboard"),
-        React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "\u00D7")
+        React.createElement("div", { className: "flex items-center gap-4" },
+          React.createElement("button", { 
+            type: "button", 
+            className: "text-xs font-bold text-red-600 hover:bg-red-50 px-2 py-1 rounded border border-red-200 transition-colors", 
+            onClick: function() { 
+              try {
+                localStorage.removeItem('dashboard_layouts');
+                window.location.reload();
+              } catch(e) {
+                console.error(e);
+              }
+            } 
+          }, "Reset Layout"),
+          React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "\u00D7")
+        )
       ),
       React.createElement("div", { className: "status-modal-body" },
         React.createElement("div", { className: "flex border-b border-slate-200 mb-4" },
@@ -5056,7 +5093,12 @@ var CustomWidget = function CustomWidget(_ref) {
     if (!allData || !allData.monthly) return [];
     var grouped = {};
     allData.monthly.forEach(function(item) {
-      var k = item[widget.xAxisKey] || 'N/A';
+      var keyToUse = widget.xAxisKey;
+      if (keyToUse === 'month' && item.monthIndex !== undefined) {
+        keyToUse = 'monthIndex';
+      }
+      var k = item[keyToUse];
+      if (k === undefined || k === null || k === '') k = 'N/A';
       if (!grouped[k]) grouped[k] = { name: k, value: 0 };
       grouped[k].value += Number(item[widget.yAxisKey]) || 0;
     });
@@ -5081,27 +5123,31 @@ var CustomWidget = function CustomWidget(_ref) {
 
   var title = "Custom Chart: " + widget.chartType + " (" + widget.xAxisKey + " / " + widget.yAxisKey + ")";
 
-  return React.createElement("div", { className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border mb-6" },
-    React.createElement("div", { className: "flex justify-between items-center mb-4 major-section-head cursor-move" },
-      React.createElement("h3", { className: "text-base font-bold text-slate-800" }, title),
-      React.createElement("button", { className: "text-red-500 hover:text-red-700 text-xs font-medium", onClick: onRemove }, "\u0E25\u0E1A\u0E27\u0E34\u0E14\u0E40จ็ต")
-    ),
-    widget.chartType === 'Pie' ? 
-      React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
-        React.createElement(PieChart, null,
-          React.createElement(Pie, { data: previewData, dataKey: "value", nameKey: "name", cx: "50%", cy: "50%", outerRadius: 100, fill: "#3b82f6", label: true }),
-          React.createElement(Tooltip, null)
-        )
-      ) : 
-      React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
-        React.createElement(ChartElement, { data: previewData },
-          React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
-          React.createElement(XAxis, { dataKey: "name" }),
-          React.createElement(YAxis, null),
-          React.createElement(Tooltip, null),
-          React.createElement(DataElement, { type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6" })
-        )
+  return React.createElement("div", { className: "dashboard-card bg-white p-4 rounded-xl shadow-sm border w-full h-full flex flex-col" },
+    React.createElement("div", { className: "flex justify-between items-center mb-2 major-section-head cursor-move shrink-0" },
+      React.createElement("h3", { className: "text-sm font-bold text-slate-800 truncate" }, title),
+      React.createElement("button", { className: "text-slate-400 hover:text-red-600 transition-colors", onClick: onRemove },
+        React.createElement(Icon, { name: "X", size: 16 })
       )
+    ),
+    React.createElement("div", { className: "flex-1 min-h-0 w-full" },
+      widget.chartType === 'Pie' ? 
+        React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+          React.createElement(PieChart, null,
+            React.createElement(Pie, { data: previewData, dataKey: "value", nameKey: "name", cx: "50%", cy: "50%", outerRadius: "80%", fill: "#3b82f6", label: true }),
+            React.createElement(Tooltip, null)
+          )
+        ) : 
+        React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+          React.createElement(ChartElement, { data: previewData },
+            React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false }),
+            React.createElement(XAxis, { dataKey: "name", fontSize: 11, tickMargin: 8 }),
+            React.createElement(YAxis, { fontSize: 11, width: 40 }),
+            React.createElement(Tooltip, null),
+            React.createElement(DataElement, { type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6", strokeWidth: 2 })
+          )
+        )
+    )
   );
 };
 
@@ -12580,26 +12626,9 @@ var App = function App() {
       setIsChangePasswordModalOpen(false);
     }
   }, "\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01"))))), /*#__PURE__*/React.createElement("nav", {
-    className: "hidden md:flex flex-col h-screen transition-all duration-300 overflow-hidden " + (isSidebarOpen ? "w-64" : "w-20") + " bg-surface-container-low py-8 border-r border-outline-variant flex-shrink-0 fixed left-0 top-0 bottom-0 z-50"
+    className: "hidden md:flex flex-col h-screen transition-all duration-300 overflow-hidden " + (isSidebarOpen ? "w-64" : "w-0 opacity-0") + " bg-surface-container-low py-8 border-r border-outline-variant flex-shrink-0 fixed left-0 top-16 bottom-0 z-40"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "px-6 mb-8 flex items-center gap-3 relative"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setIsSidebarOpen(!isSidebarOpen),
-    className: "absolute -right-3 top-2 bg-primary text-on-primary w-6 h-6 rounded-full flex items-center justify-center border border-outline-variant hover:bg-on-primary-fixed-variant transition-colors z-50"
-  }, /*#__PURE__*/React.createElement(Icon, { name: isSidebarOpen ? "ChevronLeft" : "ChevronRight", size: 14 })), /*#__PURE__*/React.createElement("button", {
-    onClick: function() { window.location.href = window.location.href.split('#')[0]; },
-    className: "w-[140px] h-12 rounded-lg p-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer",
-    title: "กลับหน้าแรก"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "https://www.pcg.co.th/wp-content/uploads/2016/11/PCG-Logo-1-300x190.png",
-    alt: "PCG Logo",
-    style: { width: '100%', height: '100%', objectFit: 'contain' }
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "font-headline-md text-primary font-bold"
-  }, "Salytix"), /*#__PURE__*/React.createElement("div", {
-    className: "font-body-sm text-on-surface-variant"
-  }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2 px-4 flex-1"
+    className: "flex flex-col gap-2 px-4 flex-1 mt-4"
   }, 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("dashboard"); },
@@ -12636,46 +12665,28 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "logout"), "Log Out"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 flex flex-col min-w-0"
+    className: "flex-1 flex flex-col min-w-0" + (isSidebarOpen ? " md:ml-64" : " md:ml-0") + " transition-all duration-300"
   }, /*#__PURE__*/React.createElement("header", {
-    className: "bg-surface flex justify-between items-center w-full px-8 h-16 border-b border-outline-variant shadow-sm z-20 shrink-0 sticky top-0"
+    className: "bg-surface flex justify-between items-center w-full px-6 h-16 border-b border-outline-variant shadow-sm z-50 shrink-0 sticky top-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-4 flex-1"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "font-headline-lg font-bold text-primary md:hidden"
-  }, "Salytix")), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
+    className: "flex items-center gap-4 shrink-0"
   }, /*#__PURE__*/React.createElement("button", {
+    onClick: function() { setActiveTab("dashboard"); },
+    className: "h-10 hover:opacity-80 transition-opacity cursor-pointer",
+    title: "\u0E01\u0E25\u0E31\u0E1A\u0E2B\u0E19\u0E49\u0E32\u0E41\u0E23\u0E01"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "https://www.pcg.co.th/wp-content/uploads/2016/11/PCG-Logo-1-300x190.png",
+    alt: "PCG Logo",
+    style: { height: '100%', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setIsSidebarOpen(!isSidebarOpen),
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-[20px]"
-  }, "notifications")), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { if (typeof setIsDarkMode !== 'undefined') setIsDarkMode(!isDarkMode); },
-    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-[20px]"
-  }, typeof isDarkMode !== 'undefined' && isDarkMode ? "light_mode" : "dark_mode")), /*#__PURE__*/React.createElement("div", {
-    className: "relative"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setIsProfileDropdownOpen(!isProfileDropdownOpen),
-    className: "w-8 h-8 rounded-full bg-primary-container ml-2 flex items-center justify-center text-on-primary-container font-bold border border-outline-variant overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-  }, (typeof authUser !== 'undefined' && authUser ? (authUser.displayName || authUser.username || "A") : "A").charAt(0).toUpperCase()),
-  isProfileDropdownOpen && /*#__PURE__*/React.createElement("div", {
-    className: "absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "w-full text-left px-4 py-2 text-on-surface hover:bg-surface-container-low flex items-center gap-2 transition-colors",
-    onClick: () => { setIsProfileDropdownOpen(false); setIsChangePasswordModalOpen(true); }
-  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "password"), "\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"),
-  /*#__PURE__*/React.createElement("div", { className: "h-[1px] bg-outline-variant/30 my-1" }),
-  /*#__PURE__*/React.createElement("button", {
-    className: "w-full text-left px-4 py-2 text-error hover:bg-error-container hover:text-on-error-container flex items-center gap-2 transition-colors",
-    onClick: () => { setIsProfileDropdownOpen(false); if (typeof handleLogout !== 'undefined') handleLogout(); }
-  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "logout"), "Logout"))))), activeTab === 'dashboard' ? /*#__PURE__*/React.createElement("div", {
-    className: "app-header-controls px-8 pt-4 pb-2 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-background"
+    className: "material-symbols-outlined text-[24px]"
+  }, "menu"))), activeTab === 'dashboard' ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-1 items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "toggle-group"
+    className: "toggle-group hidden sm:flex"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
@@ -12689,7 +12700,7 @@ var App = function App() {
     },
     className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
   }, "\u0E23\u0E32\u0E22\u0E1B\u0E35")), /*#__PURE__*/React.createElement("div", {
-    className: "toggle-group"
+    className: "toggle-group hidden sm:flex"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setMetricMode('value');
@@ -12706,7 +12717,7 @@ var App = function App() {
     },
     className: "toggle-btn ".concat(metricMode === 'ton' ? 'active' : '')
   }, "\u0E15\u0E31\u0E19")), metricMode === 'value' && /*#__PURE__*/React.createElement("div", {
-    className: "toggle-group"
+    className: "toggle-group hidden sm:flex"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setUnitMode('baht');
@@ -12717,7 +12728,11 @@ var App = function App() {
       return setUnitMode('thousand');
     },
     className: "toggle-btn ".concat(unitMode === 'thousand' ? 'active' : '')
-  }, "\u0E1E\u0E31\u0E19\u0E1A\u0E32\u0E17")), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
+  }, "\u0E1E\u0E31\u0E19\u0E1A\u0E32\u0E17"))) : /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 shrink-0"
+  }, activeTab === 'dashboard' && isUsingSavedData && /*#__PURE__*/React.createElement("div", {
     className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
     style: {
       background: 'rgba(6, 95, 70, 0.96)',
@@ -12730,19 +12745,44 @@ var App = function App() {
     name: "Check",
     size: 12,
     className: "mr-1"
-  }), "Saved"), /*#__PURE__*/React.createElement("button", {
+  }), "Saved"), activeTab === 'dashboard' && /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setIsCustomDashboardOpen(true);
     },
-    className: "flex items-center gap-1.5 text-xs px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 rounded-md shadow-sm transition-colors font-semibold mr-2 border border-blue-700",
+    className: "flex items-center gap-1.5 text-[11px] px-2.5 py-1 bg-white text-blue-700 hover:bg-blue-50 rounded shadow-sm border border-blue-200 transition-colors font-medium mr-1",
     title: "Custom Dashboard"
-  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 12 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
-    className: "ai-launch-btn",
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 10 }), " Custom Dashboard"), activeTab === 'dashboard' && /*#__PURE__*/React.createElement("button", {
+    className: "ai-launch-btn !text-[11px] !px-2.5 !py-1 !h-auto !min-w-[40px]",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
     },
     title: "เปิดผู้ช่วย AI"
-  }, "AI"))) : null, statusInfo.message && /*#__PURE__*/React.createElement("div", {
+  }, "AI"), /*#__PURE__*/React.createElement("button", {
+    className: "w-10 h-10 rounded-full hidden sm:flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors ml-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-[20px]"
+  }, "notifications")), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { if (typeof setIsDarkMode !== 'undefined') setIsDarkMode(!isDarkMode); },
+    className: "w-10 h-10 rounded-full hidden sm:flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-[20px]"
+  }, typeof isDarkMode !== 'undefined' && isDarkMode ? "light_mode" : "dark_mode")), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setIsProfileDropdownOpen(!isProfileDropdownOpen),
+    className: "w-8 h-8 rounded-full bg-primary-container ml-1 sm:ml-2 flex items-center justify-center text-on-primary-container font-bold border border-outline-variant overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+  }, (typeof authUser !== 'undefined' && authUser ? (authUser.displayName || authUser.username || "A") : "A").charAt(0).toUpperCase()),
+  isProfileDropdownOpen && /*#__PURE__*/React.createElement("div", {
+    className: "absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "w-full text-left px-4 py-2 text-on-surface hover:bg-surface-container-low flex items-center gap-2 transition-colors",
+    onClick: () => { setIsProfileDropdownOpen(false); setIsChangePasswordModalOpen(true); }
+  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "password"), "\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"),
+  /*#__PURE__*/React.createElement("div", { className: "h-[1px] bg-outline-variant/30 my-1" }),
+  /*#__PURE__*/React.createElement("button", {
+    className: "w-full text-left px-4 py-2 text-error hover:bg-error-container hover:text-on-error-container flex items-center gap-2 transition-colors",
+    onClick: () => { setIsProfileDropdownOpen(false); if (typeof handleLogout !== 'undefined') handleLogout(); }
+  }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "logout"), "Logout"))))),, statusInfo.message && /*#__PURE__*/React.createElement("div", {
     className: "status-modal-overlay",
     role: "dialog",
     "aria-modal": "true"
