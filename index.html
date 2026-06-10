@@ -322,7 +322,7 @@
         .filters-grid { display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;align-items:start; }
         .trend-top-grid { display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:24px;align-items:stretch; }
         .action-gap-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start; }
-        .responsive-card-fill { min-width:0;height:100%;display:flex;flex-direction:column; }
+        .responsive-card-fill { min-width:0;height:100%;display:flex;flex-direction:column; overflow:hidden; }
         .responsive-scroll-x,
         .repeat-gap-list-shell,
         .sales-guide-list-shell { width:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch; }
@@ -4882,22 +4882,27 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
       weights = _ref.weights,
       onSave = _ref.onSave;
   
-  if (!isOpen) return null;
+  var m1State = React.useState(weights ? weights.month1 : 50);
+  var m1 = m1State[0];
+  var setM1 = m1State[1];
   
-  var _React$useState = React.useState(weights ? weights.month1 : 50),
-      _React$useState2 = _slicedToArray(_React$useState, 2),
-      m1 = _React$useState2[0],
-      setM1 = _React$useState2[1];
-      
-  var _React$useState3 = React.useState(weights ? weights.month2 : 30),
-      _React$useState4 = _slicedToArray(_React$useState3, 2),
-      m2 = _React$useState4[0],
-      setM2 = _React$useState4[1];
-      
-  var _React$useState5 = React.useState(weights ? weights.month3 : 20),
-      _React$useState6 = _slicedToArray(_React$useState5, 2),
-      m3 = _React$useState6[0],
-      setM3 = _React$useState6[1];
+  var m2State = React.useState(weights ? weights.month2 : 30);
+  var m2 = m2State[0];
+  var setM2 = m2State[1];
+  
+  var m3State = React.useState(weights ? weights.month3 : 20);
+  var m3 = m3State[0];
+  var setM3 = m3State[1];
+
+  React.useEffect(function() {
+      if (isOpen && weights) {
+          setM1(weights.month1);
+          setM2(weights.month2);
+          setM3(weights.month3);
+      }
+  }, [isOpen, weights]);
+  
+  if (!isOpen) return null;
       
   var handleSave = function handleSave() {
     onSave({ month1: Number(m1), month2: Number(m2), month3: Number(m3) });
@@ -13993,7 +13998,7 @@ try {
             transition: box-shadow 0.2s;
         }
         .grid-stack-item > .grid-stack-item-content {
-            overflow: visible;
+            overflow: hidden !important;
             inset: 5px;
             border-radius: 12px;
         }
