@@ -5109,7 +5109,7 @@ var App = function App() {
   var _useStateSidebar = React.useState(false), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
   
   React.useEffect(function() {
-    var gridRef = { current: null };
+    var timer;
     
     var loadGridStack = function() {
         if (!window.GridStack) {
@@ -5127,11 +5127,12 @@ var App = function App() {
     };
     
     var initGrid = function() {
-        setTimeout(function() {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(function() {
             var gridEl = document.querySelector('.grid-stack');
             if (!gridEl) return;
             
-            // Destroy existing instance to prevent stale references
+            // Destroy existing instance to prevent stale references when React re-renders
             if (gridEl.gridstack) {
                 try { gridEl.gridstack.destroy(false); } catch(e) {}
             }
@@ -5150,10 +5151,9 @@ var App = function App() {
                 }
             }, gridEl);
             
-            gridRef.current = grid;
-            
             // Save layout on change
             grid.on('change', function(event, items) {
+                if (!items) return;
                 var layouts = {};
                 try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
                 items.forEach(function(item) {
@@ -5164,19 +5164,19 @@ var App = function App() {
                 });
                 localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
             });
-        }, 600);
+        }, 100);
     };
     
     loadGridStack();
     
     return function() {
-        // Cleanup: destroy GridStack instance
+        if (timer) clearTimeout(timer);
         var gridEl = document.querySelector('.grid-stack');
         if (gridEl && gridEl.gridstack) {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }, [isCustomDashboardOpen, customWidgets, sectionOpen]); // re-init when widgets change
+  }, [isCustomDashboardOpen, customWidgets, sectionOpen, viewMode, metricMode, unitMode, activeTab, filters]);
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
