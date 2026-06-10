@@ -174,14 +174,13 @@
 
                 /* ===== GridStack Resize Handle ===== */
         .grid-stack-item .ui-resizable-se {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 16l8-8m0 0v5m0-5h-5'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='16 22 22 22 22 16'/%3E%3Cpolyline points='8 2 2 2 2 8'/%3E%3Cline x1='22' y1='22' x2='2' y2='2'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 16px;
-            transform: rotate(90deg);
+            background-size: 14px;
             opacity: 0.8;
-            right: 2px !important;
-            bottom: 2px !important;
+            right: 4px !important;
+            bottom: 4px !important;
         }
         .grid-stack-item .ui-resizable-se::before { display: none !important; }
 
@@ -3443,8 +3442,7 @@ var ExpandableBrandList = function ExpandableBrandList(_ref4) {
   return /*#__PURE__*/React.createElement("div", {
     className: "overflow-y-auto custom-scrollbar border rounded-lg p-2 bg-white flex flex-col gap-2",
     style: {
-      minHeight: '31rem',
-      maxHeight: '31rem'
+      height: '100%', flex: 1
     }
   }, data.map(function (brand, index) {
     return /*#__PURE__*/React.createElement(ExpandableBrandItem, {
@@ -4369,7 +4367,6 @@ var ScrollableBarChart = function ScrollableBarChart(_ref1) {
     className: "h-full flex-1 overflow-y-auto custom-scrollbar border rounded-lg p-2 bg-white"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      minHeight: chartHeight,
       height: '100%',
       width: '100%'
     }
@@ -4445,7 +4442,6 @@ var TargetBarChart = function TargetBarChart(_ref10) {
     className: "h-full flex-1 overflow-y-auto custom-scrollbar border rounded-lg p-2 bg-white"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      minHeight: chartHeight,
       height: '100%',
       width: '100%'
     }
@@ -12591,7 +12587,7 @@ var App = function App() {
     }
   }, "\u0E2B\u0E32\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E14\u0E39\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 \u0E43\u0E2B\u0E49\u0E40\u0E02\u0E49\u0E32\u0E14\u0E49\u0E27\u0E22\u0E1A\u0E31\u0E0D\u0E0A\u0E35 area_admin \u0E2B\u0E23\u0E37\u0E2D user \u0E02\u0E2D\u0E07\u0E20\u0E32\u0E04/\u0E40\u0E02\u0E15\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E44\u0E27\u0E49\u0E43\u0E19\u0E0A\u0E35\u0E15 USERS"))))))));
   return /*#__PURE__*/React.createElement("div", {
-    className: `dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "md:pl-20"}`,
+    cclassName: `dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
     style: {
       background: 'var(--bg)'
     }
@@ -12630,8 +12626,7 @@ var App = function App() {
       setIsChangePasswordModalOpen(false);
     }
   }, "\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01"))))), /*#__PURE__*/React.createElement("nav", {
-    className: "overflow-hidden flex flex-col h-screen bg-surface-container-low py-6 border-r border-outline-variant flex-shrink-0 fixed left-0 top-0 bottom-0 z-50 transform transition-transform duration-300 " + (isSidebarOpen ? "w-64 translate-x-0 shadow-2xl" : "w-20 -translate-x-full md:translate-x-0")
-  }, /*#__PURE__*/React.createElement("div", {
+    className: "overflow-hidden flex flex-col h-screen bg-surface-container-low py-6 border-r border-outline-variant flex-shrink-0 fixed left-0 top-0 bottom-0 z-50 transform transition-transform duration-300 w-64 " + (isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full")}, /*#__PURE__*/React.createElement("div", {
     className: "px-6 mb-8 flex items-center gap-3 relative"
   },  /*#__PURE__*/React.createElement("div", {
     className: "w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden shrink-0"
