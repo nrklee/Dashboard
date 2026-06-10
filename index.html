@@ -4889,42 +4889,13 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
 
   // Simple grouping for Chart Builder preview
   var previewData = useMemo(function() {
-    if (!allData) return [];
+    if (!allData || !allData.monthly) return [];
     var grouped = {};
-    
-    // Choose dataset based on xAxisKey
-    var dataset = [];
-    var actualKey = xAxisKey;
-    var isDirectFormat = false;
-
-    if (xAxisKey === 'month' || xAxisKey === 'year') {
-        dataset = allData.monthly || [];
-        actualKey = xAxisKey;
-    } else if (xAxisKey === 'brand') {
-        dataset = allData.brands || [];
-        isDirectFormat = true;
-    } else if (xAxisKey === 'province' || xAxisKey === 'district' || xAxisKey === 'region') {
-        dataset = allData.mapData || [];
-        actualKey = xAxisKey;
-    } else {
-        dataset = allData.monthly || [];
-        actualKey = xAxisKey;
-    }
-
-    if (isDirectFormat) {
-        dataset.forEach(function(item) {
-            var k = item.name || 'N/A';
-            if (!grouped[k]) grouped[k] = { name: k, value: 0 };
-            grouped[k].value += Number(item[yAxisKey] || item.sales || item.value) || 0;
-        });
-    } else {
-        dataset.forEach(function(item) {
-            var k = item[actualKey] || item.name || 'N/A';
-            if (!grouped[k]) grouped[k] = { name: k, value: 0 };
-            grouped[k].value += Number(item[yAxisKey] || item.sales || item.value) || 0;
-        });
-    }
-
+    allData.monthly.forEach(function(item) {
+      var k = item[xAxisKey] || 'N/A';
+      if (!grouped[k]) grouped[k] = { name: k, value: 0 };
+      grouped[k].value += Number(item[yAxisKey]) || 0;
+    });
     var arr = Object.values(grouped);
     if (xAxisKey === 'month') {
         var thMonths = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -4936,12 +4907,6 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
             }
         });
     }
-    
-    // Sort descending for non-month
-    if (xAxisKey !== 'month' && xAxisKey !== 'year') {
-        arr.sort(function(a, b) { return b.value - a.value; });
-    }
-    
     return arr.slice(0, 50); // limit 50 points
   }, [allData, xAxisKey, yAxisKey]);
 
@@ -5142,75 +5107,6 @@ var CustomWidget = function CustomWidget(_ref) {
 
 var App = function App() {
 
-  React.useEffect(() => {
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .grid-stack-item-content {
-            background: #ffffff !important;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-            inset: 0 !important;
-        }
-        .major-section-head {
-            background: #f8fafc;
-            padding: 10px 14px;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: move;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0 !important;
-        }
-        .grid-stack-item-content > div:not(.major-section-head) {
-            flex: 1;
-            overflow: auto;
-            min-height: 0;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-        }
-        .grid-stack-item-content > div.fade-in {
-            flex: 1;
-            overflow: auto;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        /* resize handle */
-        .grid-stack-item > .ui-resizable-se {
-            width: 28px !important;
-            height: 28px !important;
-            bottom: 8px !important;
-            right: 8px !important;
-            background: transparent !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
-            cursor: se-resize !important;
-            z-index: 10;
-        }
-        .grid-stack-item > .ui-resizable-se::after {
-            content: "open_in_full";
-            font-family: "Material Symbols Outlined";
-            font-size: 20px;
-            color: var(--accent, #3b82f6);
-            transform: rotate(90deg);
-        }
-        .grid-stack-item:hover > .ui-resizable-se {
-            opacity: 1;
-        }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSidebar = React.useState(true), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
   
@@ -5237,16 +5133,11 @@ var App = function App() {
                 var grid = gridEl.gridstack;
                 if (!grid) {
                     grid = GridStack.init({
-                        column: 12,
-                        cellHeight: 80,
-                        margin: 8,
+                        cellHeight: 120,
+                        margin: 15,
+                        itemClass: 'grid-stack-item',
                         handle: '.major-section-head',
-                        float: false,
-                        animate: true,
-                        disableOneColumnMode: true,
-                        resizable: {
-                            handles: 'se'
-                        }
+                        float: true
                     }, gridEl);
                 } else {
                     grid.makeWidget('.grid-stack-item');
@@ -12843,9 +12734,9 @@ var App = function App() {
     onClick: function onClick() {
       return setIsCustomDashboardOpen(true);
     },
-    className: "flex items-center gap-1 text-xs px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md border border-indigo-200 transition-colors font-medium mr-2",
+    className: "flex items-center gap-1.5 text-xs px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 rounded-md shadow-sm transition-colors font-semibold mr-2 border border-blue-700",
     title: "Custom Dashboard"
-  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 12 }), " Custom"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 12 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
@@ -12951,11 +12842,6 @@ var App = function App() {
   }, "\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (Smart Filters)"), /*#__PURE__*/React.createElement("div", {
     className: "filters-head-actions ml-auto flex items-center gap-3"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() {
-      return setIsCustomDashboardOpen(true);
-    },
-    className: "flex items-center gap-1 text-xs px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md border border-indigo-200 transition-colors font-medium"
-  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 12 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() { return toggleExpanded('filters'); },
     className: "text-xs text-blue-600 hover:underline"
   }, sectionExpanded.filters ? 'ย่อ' : 'ขยาย'), Object.keys(filters).length > 0 && /*#__PURE__*/React.createElement("button", {
