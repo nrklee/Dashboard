@@ -12668,7 +12668,75 @@ var App = function App() {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-center gap-2 flex-1 hidden lg:flex"
-  }, activeTab === 'dashboard' ?  : null), /*#__PURE__*/React.createElement("div", {
+  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "toggle-group"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      return handleViewModeChange('monthly');
+    },
+    className: "toggle-btn ".concat(viewMode === 'monthly' ? 'active' : '')
+  }, "รายเดือน"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      return handleViewModeChange('yearly');
+    },
+    className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
+  }, "รายปี")), /*#__PURE__*/React.createElement("div", {
+    className: "toggle-group"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setMetricMode('value');
+    },
+    className: "toggle-btn ".concat(metricMode === 'value' ? 'active' : '')
+  }, "บาท"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setMetricMode('qty');
+    },
+    className: "toggle-btn ".concat(metricMode === 'qty' ? 'active' : '')
+  }, "ชิ้น"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setMetricMode('ton');
+    },
+    className: "toggle-btn ".concat(metricMode === 'ton' ? 'active' : '')
+  }, "ตัน")), metricMode === 'value' && /*#__PURE__*/React.createElement("div", {
+    className: "toggle-group"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setUnitMode('baht');
+    },
+    className: "toggle-btn ".concat(unitMode === 'baht' ? 'active' : '')
+  }, "บาท"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setUnitMode('thousand');
+    },
+    className: "toggle-btn ".concat(unitMode === 'thousand' ? 'active' : '')
+  }, "พันบาท")), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
+    className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
+    style: {
+      background: 'rgba(6, 95, 70, 0.96)',
+      color: '#ecfdf5',
+      border: '1px solid rgba(167, 243, 208, 0.45)',
+      fontWeight: 700,
+      boxShadow: '0 6px 16px rgba(6, 95, 70, 0.18)'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Check",
+    size: 12,
+    className: "mr-1"
+  }), "Saved"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setIsCustomDashboardOpen(true);
+    },
+    className: "flex items-center gap-2 text-sm px-4 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-full shadow-md transition-colors font-bold mr-2 border border-blue-700",
+    title: "Custom Dashboard"
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
+    className: "ai-launch-btn",
+    onClick: function onClick() {
+      return setIsAIPanelOpen(true);
+    },
+    title: "เปิดผู้ช่วย AI"
+  }, "AI")) : null), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-1 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
