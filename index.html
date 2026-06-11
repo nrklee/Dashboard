@@ -4890,7 +4890,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                     if (item.el && item.el.getAttribute('data-widget')) {
                         var widgetKey = item.el.getAttribute('data-widget');
                         var id = widgetMapping[widgetKey];
-                        item.el.setAttribute('gs-id', id);
+                        item.el.setAttribute('gs-id', id); item.id = id;
                         item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
                     }
                 });
@@ -4965,7 +4965,17 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                 return React.createElement("div", { 
                   key: key, 
                   className: "grid-stack-item p-3 bg-surface rounded-lg border border-outline-variant cursor-move shadow-sm text-sm text-on-surface hover:border-primary transition-colors flex items-center justify-between",
-                  "gs-w": "12", "gs-h": "4", "data-widget": key
+                  
+                  "gs-w": "12", "gs-h": "4", "data-widget": key, "gs-id": ({
+                    trend: 'card-1',
+                    brands: 'card-2',
+                    salesGuide: 'card-3',
+                    repeatGap: 'card-4',
+                    shops: 'card-5',
+                    district: 'card-6',
+                    kpi: 'card-0'
+                  })[key]
+
                 }, 
                   React.createElement("div", { className: "grid-stack-item-content", style: { inset: 0, padding: '12px' } }, sectionTitles[key] || key)
                 );
@@ -4995,7 +5005,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                         var newSectionOpen = {};
                         var nodes = mockGridEl.gridstack.engine.nodes;
                         nodes.forEach(function(node) {
-                            var id = node.el ? node.el.getAttribute('gs-id') : null;
+                            var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
                             if (id) {
                                 var widgetKey = id.replace('card-', '');
                                 if (widgetKey === '1') newSectionOpen.trend = true;
@@ -5205,7 +5215,7 @@ var App = function App() {
                 var initialLayouts = {};
                 try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
                 engineNodes.forEach(function(node) {
-                    var id = node.el ? node.el.getAttribute('gs-id') : null;
+                    var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
                     if (id) {
                         initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
                     }
@@ -5248,7 +5258,7 @@ var App = function App() {
       var h = saved ? saved.h : (defH || 4);
       var x = (saved && saved.x != null) ? saved.x : 0;
       var y = (saved && saved.y != null) ? saved.y : undefined;
-      return { className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": w, "gs-h": h };
+      return { key: id, className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": w, "gs-h": h };
   };
 
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:init';
