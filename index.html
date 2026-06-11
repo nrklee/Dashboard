@@ -3618,7 +3618,7 @@ var RepeatPurchaseGapItem = function RepeatPurchaseGapItem(_ref5) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2 min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ".concat(index < 3 ? 'bg-blue-500' : 'bg-slate-400')
+    className: "flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-sm text-xs font-bold " + (index === 0 ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-100' : index === 1 ? 'bg-slate-300 text-slate-700 ring-2 ring-slate-100' : index === 2 ? 'bg-orange-300 text-orange-900 ring-2 ring-orange-50' : 'bg-blue-600 text-white')
   }, index + 1), /*#__PURE__*/React.createElement("div", {
     className: "min-w-0 flex-1",
     title: cvDisplayLabel
@@ -3775,10 +3775,7 @@ var SalesGuideItem = function SalesGuideItem(_ref8) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2 min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0",
-    style: {
-      backgroundColor: index < 3 ? '#10b981' : '#94a3b8'
-    }
+    className: "flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-sm text-xs font-bold " + (index === 0 ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-100' : index === 1 ? 'bg-slate-300 text-slate-700 ring-2 ring-slate-100' : index === 2 ? 'bg-orange-300 text-orange-900 ring-2 ring-orange-50' : 'bg-blue-600 text-white')
   }, index + 1), /*#__PURE__*/React.createElement("div", {
     className: "min-w-0 flex-1",
     title: cvDisplayLabel
@@ -4904,15 +4901,15 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
         React.createElement("div", { className: "flex flex-col gap-3" },
           React.createElement("div", null,
             React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนล่าสุด (M-1)"),
-            React.createElement("input", { id: "sg_m1", type: "text", defaultValue: weights ? weights.month1 : 50, className: "w-full border rounded p-2 text-sm text-slate-800" })
+            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("input", { id: "sg_m1", type: "text", defaultValue: weights ? weights.month1 : 50, className: "w-full border rounded p-2 text-sm text-slate-800" }), React.createElement("span", { className: "text-slate-500 font-bold" }, "%"))
           ),
           React.createElement("div", null,
             React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนก่อนหน้า (M-2)"),
-            React.createElement("input", { id: "sg_m2", type: "text", defaultValue: weights ? weights.month2 : 30, className: "w-full border rounded p-2 text-sm text-slate-800" })
+            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("input", { id: "sg_m2", type: "text", defaultValue: weights ? weights.month2 : 30, className: "w-full border rounded p-2 text-sm text-slate-800" }), React.createElement("span", { className: "text-slate-500 font-bold" }, "%"))
           ),
           React.createElement("div", null,
             React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนก่อนหน้า (M-3)"),
-            React.createElement("input", { id: "sg_m3", type: "text", defaultValue: weights ? weights.month3 : 20, className: "w-full border rounded p-2 text-sm text-slate-800" })
+            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("input", { id: "sg_m3", type: "text", defaultValue: weights ? weights.month3 : 20, className: "w-full border rounded p-2 text-sm text-slate-800" }), React.createElement("span", { className: "text-slate-500 font-bold" }, "%"))
           )
         ),
         React.createElement("div", { className: "mt-6 flex justify-end gap-2" },
