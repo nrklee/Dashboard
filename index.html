@@ -4866,7 +4866,12 @@ var sectionTitles = {
             window.removeMockWidget = function(btn) {
                 var item = btn.closest('.grid-stack-item');
                 if (item && mGrid) {
+                    var id = item.getAttribute('gs-id');
                     mGrid.removeWidget(item, true);
+                    if (id) {
+                        var orig = document.querySelector('#available-widgets [gs-id="' + id + '"]');
+                        if (orig) orig.style.display = '';
+                    }
                 }
             };
 
@@ -4909,6 +4914,9 @@ var sectionTitles = {
                         var widgetKey = item.el.getAttribute('data-widget');
                         var id = widgetMapping[widgetKey];
                         item.el.setAttribute('gs-id', id); item.id = id;
+                        var orig = document.querySelector('#available-widgets [data-widget="' + widgetKey + '"]');
+                        if (orig) orig.style.display = 'none';
+
                         item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[widgetKey] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
                     }
                 });
@@ -4979,10 +4987,11 @@ var sectionTitles = {
             React.createElement("p", { className: "text-xs text-on-surface-variant mb-4" }, "ลากกล่องด้านล่างไปวางในพื้นที่ด้านขวา"),
             React.createElement("div", { id: "available-widgets", className: "flex flex-col gap-3" },
               Object.keys(sectionTitles).map(function(key) {
-                if (sectionOpen[key]) return null; // Only show unused widgets
+                var isHidden = sectionOpen[key];
                 return React.createElement("div", { 
                   key: key, 
                   className: "grid-stack-item p-3 bg-surface rounded-lg border border-outline-variant cursor-move shadow-sm text-sm text-on-surface hover:border-primary transition-colors flex items-center justify-between",
+                  style: { display: isHidden ? 'none' : '' },
                   
                   "gs-w": "12", "gs-h": "4", "data-widget": key, "gs-id": ({
                     trend: 'card-1',
