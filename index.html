@@ -4869,8 +4869,14 @@ var sectionTitles = {
                     var id = item.getAttribute('gs-id');
                     mGrid.removeWidget(item, true);
                     if (id) {
-                        var orig = document.querySelector('#available-widgets [gs-id="' + id + '"]');
-                        if (orig) orig.style.display = '';
+                        var widgetKey = Object.keys(widgetMapping).find(function(k) { return widgetMapping[k] === id; });
+                        if (widgetKey && typeof setSectionOpen === 'function') {
+                            setSectionOpen(function(prev) {
+                                var next = Object.assign({}, prev);
+                                next[widgetKey] = false;
+                                return next;
+                            });
+                        }
                     }
                 }
             };
@@ -4924,7 +4930,7 @@ var sectionTitles = {
         }, 100);
     }
     return function() { if (timer) clearTimeout(timer); };
-  }, [activeTab, isOpen, sectionOpen]);
+  }, [activeTab, isOpen]);
 
   var renderPreviewChart = function() {
     if (previewData.length === 0) return React.createElement("div", {className: "text-center text-slate-500 py-10"}, "No Data");
@@ -4987,11 +4993,10 @@ var sectionTitles = {
             React.createElement("p", { className: "text-xs text-on-surface-variant mb-4" }, "ลากกล่องด้านล่างไปวางในพื้นที่ด้านขวา"),
             React.createElement("div", { id: "available-widgets", className: "flex flex-col gap-3" },
               Object.keys(sectionTitles).map(function(key) {
-                var isHidden = sectionOpen[key];
+                if (sectionOpen[key]) return null;
                 return React.createElement("div", { 
                   key: key, 
                   className: "grid-stack-item p-3 bg-surface rounded-lg border border-outline-variant cursor-move shadow-sm text-sm text-on-surface hover:border-primary transition-colors flex items-center justify-between",
-                  style: { display: isHidden ? 'none' : '' },
                   
                   "gs-w": "12", "gs-h": "4", "data-widget": key, "gs-id": ({
                     trend: 'card-1',
