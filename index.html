@@ -4878,7 +4878,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                     initialNodes.push({
                         id: id,
                         x: x, y: y, w: w, h: h,
-                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="this.closest(&quot;.grid-stack-item&quot;).remove()">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
+                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
                     });
                 }
             });
@@ -4891,7 +4891,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                         var widgetKey = item.el.getAttribute('data-widget');
                         var id = widgetMapping[widgetKey];
                         item.el.setAttribute('gs-id', id);
-                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="this.closest(&quot;.grid-stack-item&quot;).remove()">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
+                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
                     }
                 });
             });
