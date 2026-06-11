@@ -4366,7 +4366,7 @@ var ScrollableBarChart = function ScrollableBarChart(_ref1) {
     tooltipComponent = _ref1.tooltipComponent,
     _ref1$series = _ref1.series,
     series = _ref1$series === void 0 ? null : _ref1$series;
-  var safeData = Array.isArray(data) ? data.slice(0, 5) : [];
+  var safeData = Array.isArray(data) ? data : [];
   var activeSeries = Array.isArray(series) && series.length > 0 ? series : [{
     dataKey: 'value',
     name: 'ยอดขาย',
@@ -4447,7 +4447,7 @@ var TargetBarChart = function TargetBarChart(_ref10) {
   var data = _ref10.data,
     metric = _ref10.metric,
     unit = _ref10.unit;
-  var safeData = Array.isArray(data) ? data.slice(0, 5) : [];
+  var safeData = Array.isArray(data) ? data : [];
   var chartHeight = Math.max(350, safeData.length * 60);
   return /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-h-0 overflow-auto custom-scrollbar border rounded-lg p-2 bg-white"
@@ -13418,7 +13418,7 @@ customWidgets.map(function(widget) {
     )
   );
 }),
-/*#__PURE__*/React.createElement(React.Fragment, null, (sectionOpen.salesGuide ? /*#__PURE__*/React.createElement("div", getGridProps("card-3", 12, 6), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+/*#__PURE__*/React.createElement(React.Fragment, null, (sectionOpen.salesGuide ? /*#__PURE__*/React.createElement("div", getGridProps("card-3", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
   className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
 }, /*#__PURE__*/React.createElement("div", {
   className: "major-section-head cursor-move"
@@ -13449,7 +13449,7 @@ customWidgets.map(function(widget) {
   data: salesGuideSummary.visibleItems || [], metric: metricMode, unit: unitMode
 })))))) : null),
 
-(sectionOpen.repeatGap ? /*#__PURE__*/React.createElement("div", getGridProps("card-4", 12, 6), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+(sectionOpen.repeatGap ? /*#__PURE__*/React.createElement("div", getGridProps("card-4", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
   className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
 }, /*#__PURE__*/React.createElement("div", {
   className: "major-section-head cursor-move"
@@ -13508,7 +13508,7 @@ customWidgets.map(function(widget) {
   }
 })), /*#__PURE__*/React.createElement(RepeatPurchaseGapList, { data: limitedRepeatPurchaseGapItems, metric: metricMode, unit: unitMode }))))) : null),
 
-(sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 6), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+(sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head cursor-move"
@@ -13535,7 +13535,7 @@ customWidgets.map(function(widget) {
       metric: metricMode,
       unit: unitMode
     })
-  }))))) : null), (sectionOpen.district ? /*#__PURE__*/React.createElement("div", getGridProps("card-6", 12, 6), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  }))))) : null), (sectionOpen.district ? /*#__PURE__*/React.createElement("div", getGridProps("card-6", 12, 5), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head cursor-move"
