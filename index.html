@@ -4773,7 +4773,18 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     allData = _ref.allData,
     onAddWidget = _ref.onAddWidget;
     
-  var sectionTitles = {
+  
+  var sectionIcons = {
+    filters: "filter_alt",
+    kpi: "monitoring",
+    trend: "show_chart",
+    salesGuide: "lightbulb",
+    repeatGap: "shopping_cart_checkout",
+    brands: "pie_chart",
+    shops: "storefront",
+    district: "bar_chart"
+  };
+var sectionTitles = {
     filters: "ตัวกรอง (Smart Filters)",
     kpi: "สรุปภาพรวม KPI",
     trend: "กราฟแนวโน้มยอดขาย",
@@ -4878,7 +4889,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                     initialNodes.push({
                         id: id,
                         x: x, y: y, w: w, h: h,
-                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
+                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
                     });
                 }
             });
@@ -4891,7 +4902,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                         var widgetKey = item.el.getAttribute('data-widget');
                         var id = widgetMapping[widgetKey];
                         item.el.setAttribute('gs-id', id); item.id = id;
-                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
+                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[widgetKey] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
                     }
                 });
             });
@@ -4977,7 +4988,12 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
                   })[key]
 
                 }, 
-                  React.createElement("div", { className: "grid-stack-item-content", style: { inset: 0, padding: '12px' } }, sectionTitles[key] || key)
+                  React.createElement("div", { className: "grid-stack-item-content", style: { inset: 0, padding: '12px' } }, 
+                    React.createElement("div", { className: "flex items-center gap-3 h-full" },
+                      React.createElement("span", { className: "material-symbols-outlined text-xl opacity-60" }, sectionIcons[key] || 'widgets'),
+                      React.createElement("span", { className: "font-medium" }, sectionTitles[key] || key)
+                    )
+                  )
                 );
               })
             )
