@@ -77,20 +77,39 @@
         }
     </script>
     <style>
-/* ===== Light Theme (Default) ===== */
+/* ===== Light Theme (Modern Clean) ===== */
         :root, [data-theme="light"] {
-            --bg: #f8f9ff; --bg-soft: #eff4ff; --surface: #ffffff; --surface-alt: #f8f9ff;
-            --border: #c1c6d7; --border-strong: #717786;
-            --text: #0b1c30; --text-sec: #414755; --text-muted: #70757e;
-            --accent: #0058bc; --accent-hover: #004493; --accent-soft: #d8e2ff; --accent-border: #adc6ff; --accent-text: #001a41;
-            --success-bg: #65fcc7; --success: #006c50; --warn-bg: #fffbeb; --warn: #d97706;
-            --danger-bg: #ffdad6; --danger: #ba1a1a;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow: 0 2px 8px rgba(0,0,0,0.08); --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-            --radius: 0.75rem; --radius-sm: 0.5rem;
-            --chart-line: #0058bc; --chart-line2: #65fcc7; --chart-target: #ba1a1a;
-            --kpi-border: #0058bc;
-            --header-bg: #ffffff;
-            --header-text: #0b1c30;
+            --bg: #fdfdfd; --bg-soft: #f4f4f5; --surface: #ffffff; --surface-alt: #fafafa;
+            --border: #e4e4e7; --border-strong: #d4d4d8;
+            --text: #18181b; --text-sec: #52525b; --text-muted: #a1a1aa;
+            --accent: #18181b; --accent-hover: #27272a; --accent-soft: #f4f4f5; --accent-border: #e4e4e7; --accent-text: #ffffff;
+            --success-bg: #dcfce7; --success: #166534; --warn-bg: #fef9c3; --warn: #854d0e;
+            --danger-bg: #fee2e2; --danger: #991b1b;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --radius: 16px; --radius-sm: 8px;
+            --chart-line: #18181b; --chart-line2: #52525b; --chart-target: #ef4444;
+            --kpi-border: #e4e4e7;
+            --header-bg: rgba(253, 253, 253, 0.85);
+            --header-text: #18181b;
+        }
+        /* ===== Dark Theme (Modern Clean) ===== */
+        [data-theme="dark"] {
+            --bg: #09090b; --bg-soft: #18181b; --surface: #09090b; --surface-alt: #18181b;
+            --border: #27272a; --border-strong: #3f3f46;
+            --text: #fafafa; --text-sec: #a1a1aa; --text-muted: #71717a;
+            --accent: #fafafa; --accent-hover: #f4f4f5; --accent-soft: #27272a; --accent-border: #3f3f46; --accent-text: #09090b;
+            --success-bg: rgba(22, 101, 52, 0.2); --success: #4ade80; --warn-bg: rgba(133, 77, 14, 0.2); --warn: #facc15;
+            --danger-bg: rgba(153, 27, 27, 0.2); --danger: #f87171;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            --radius: 16px; --radius-sm: 8px;
+            --chart-line: #fafafa; --chart-line2: #a1a1aa; --chart-target: #f87171;
+            --kpi-border: #27272a;
+            --header-bg: rgba(9, 9, 11, 0.85);
+            --header-text: #fafafa;
         }
         /* ===== Dark Theme ===== */
         [data-theme="dark"] {
@@ -256,10 +275,12 @@
         .stat-box { background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px; }
 
         /* ===== Scrollbar ===== */
-        .custom-scrollbar::-webkit-scrollbar { width:5px;height:5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background:var(--bg-soft); }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background:var(--border-strong);border-radius:4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:var(--text-muted); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width:6px;height:6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background:rgba(161, 161, 170, 0.4);border-radius:10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:rgba(113, 113, 122, 0.6); }
+
 
         /* ===== Animations ===== */
         @keyframes fadeIn { from{opacity:0}to{opacity:1} }
@@ -273,7 +294,21 @@
         .sec-title { font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px; }
         .sec-toggle { font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit; }
         .sec-toggle:hover { text-decoration:underline; }
-        .major-section-head { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-radius:12px;padding:12px 16px; }
+        
+        .major-section-head {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            background: transparent;
+            border-radius: var(--radius) var(--radius) 0 0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .major-section-head h3 {
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+
         [data-theme="dark"] .major-section-head { background:linear-gradient(135deg,rgba(91,154,255,0.08),rgba(91,154,255,0.04)); border:1px solid rgba(91,154,255,0.2); }
         [data-theme="light"] .major-section-head { background:linear-gradient(135deg,rgba(26,86,219,0.06),rgba(26,86,219,0.02)); border:1px solid rgba(164,194,247,0.6); }
 
@@ -3450,7 +3485,7 @@ var ExpandableBrandItem = function ExpandableBrandItem(_ref3) {
   }))));
 };
 var ExpandableBrandList = function ExpandableBrandList(_ref4) {
-  var data = _ref4.data,
+  var data = _ref4.data ? _ref4.data.slice(0, 5) : [],
     metric = _ref4.metric,
     unit = _ref4.unit;
   return /*#__PURE__*/React.createElement("div", {
@@ -12714,8 +12749,6 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("div", getGridProps("card-0", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("section", {
     className: "dashboard-card",
     style: {
-      maxWidth: 820,
-      margin: '48px auto',
       padding: 28,
       background: 'var(--surface)',
       borderColor: 'var(--border)',
@@ -12917,10 +12950,10 @@ var App = function App() {
     onClick: function onClick() {
       return setIsCustomDashboardOpen(true);
     },
-    className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-blue-600 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-700 dark:hover:bg-blue-400 rounded-lg shadow-sm transition-colors font-bold mr-2 border border-blue-700 dark:border-blue-400 whitespace-nowrap",
+    className: "flex items-center justify-center gap-1.5 text-sm px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-xl shadow-sm transition-all font-semibold whitespace-nowrap",
     title: "Custom Dashboard"
   }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
-    className: "ai-launch-btn",
+    className: "flex items-center justify-center gap-1.5 text-sm px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl shadow-sm transition-all font-semibold whitespace-nowrap",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
     },
@@ -13064,8 +13097,8 @@ var App = function App() {
     onClick: function onClick() {
       return setFilters(buildLockedFiltersState(lockedFilters));
     },
-    className: "text-xs text-red-500 hover:underline"
-  }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))), sectionExpanded.filters && /*#__PURE__*/React.createElement("div", {
+    className: "text-xs font-semibold px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+  }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))), /*#__PURE__*/React.createElement("div", {
     className: "filters-panel-content fade-in flex-1 min-h-0 flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
     className: "filters-source-meta text-[13px] text-slate-500 mb-3"
@@ -13108,13 +13141,7 @@ var App = function App() {
     className: "flex items-center justify-between mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-sm font-bold text-slate-700"
-  }, "\u0E2A\u0E23\u0E38\u0E1B\u0E20\u0E32\u0E1E\u0E23\u0E27\u0E21"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('kpi'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.kpi ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.kpi ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.kpi && /*#__PURE__*/React.createElement("div", {
+  }, "\u0E2A\u0E23\u0E38\u0E1B\u0E20\u0E32\u0E1E\u0E23\u0E27\u0E21"), null), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-3 gap-4 fade-in"
   }, /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
@@ -13175,13 +13202,7 @@ var App = function App() {
     className: "text-base font-bold flex flex-wrap items-center gap-2"
   }, "\u0E01\u0E23\u0E32\u0E1F\u0E41\u0E19\u0E27\u0E42\u0E19\u0E49\u0E21\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (", getUnitLabel(metricMode, unitMode), ")", !!salesSourceUpdateLabel && /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-semibold text-blue-600"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ", salesSourceUpdateLabel)), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('trend'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.trend ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.trend ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.trend && /*#__PURE__*/React.createElement("div", {
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ", salesSourceUpdateLabel)), null), /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex flex-col h-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
@@ -13219,10 +13240,7 @@ var App = function App() {
       /*#__PURE__*/React.createElement("stop", { offset: "5%", stopColor: "#3b82f6", stopOpacity: 0.25 }),
       /*#__PURE__*/React.createElement("stop", { offset: "95%", stopColor: "#3b82f6", stopOpacity: 0 })
     )
-  ), /*#__PURE__*/React.createElement(CartesianGrid, {
-    strokeDasharray: "3 3",
-    vertical: false
-  }), /*#__PURE__*/React.createElement(XAxis, {
+  ), /*#__PURE__*/React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "var(--border)", opacity: 0.5 }), /*#__PURE__*/React.createElement(XAxis, {
     dataKey: "name",
     fontSize: 12,
     interval: 0,
@@ -13258,6 +13276,8 @@ var App = function App() {
     });
     if (!hasTarget) return null;
     return /*#__PURE__*/React.createElement(Line, {
+      strokeWidth: 3,
+      activeDot: { r: 6, strokeWidth: 0 },
       key: "target-".concat(yearLabel),
       yAxisId: "left",
       type: "monotone",
@@ -13300,6 +13320,8 @@ var App = function App() {
       }
     }));
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Line, {
+      strokeWidth: 3,
+      activeDot: { r: 6, strokeWidth: 0 },
     yAxisId: "left",
     type: "monotone",
     dataKey: "target",
@@ -13309,6 +13331,8 @@ var App = function App() {
     strokeWidth: 2,
     dot: false
   }), /*#__PURE__*/React.createElement(Line, {
+      strokeWidth: 3,
+      activeDot: { r: 6, strokeWidth: 0 },
     yAxisId: "left",
     type: "monotone",
     dataKey: "sales",
@@ -13372,13 +13396,7 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "ArrowUpCircle",
     className: "text-green-500"
-  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E02\u0E32\u0E22\u0E14\u0E35 (Top Brands)"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('brands'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.brands ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.brands ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.brands && /*#__PURE__*/React.createElement("div", {
+  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E02\u0E32\u0E22\u0E14\u0E35 (Top Brands)"), null), /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex-1 min-h-0 flex flex-col overflow-auto custom-scrollbar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500"
@@ -13424,12 +13442,7 @@ customWidgets.map(function(widget) {
   className: "major-section-head cursor-move"
 }, /*#__PURE__*/React.createElement("h3", {
   className: "text-base font-bold"
-}, "แนะนำการขาย"), /*#__PURE__*/React.createElement("button", {
-  onClick: function onClick() { return toggleExpanded('salesGuide'); },
-  className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-}, sectionExpanded.salesGuide ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-  name: sectionExpanded.salesGuide ? "ChevronUp" : "ChevronDown", size: 14
-}))), sectionExpanded.salesGuide && /*#__PURE__*/React.createElement("div", {
+}, "แนะนำการขาย"), null), /*#__PURE__*/React.createElement("div", {
   className: "sales-guide-content w-full fade-in flex flex-col flex-1 min-h-0"
 }, !salesGuideSummary.supported ? /*#__PURE__*/React.createElement("div", {
   className: "flex-1 min-h-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-800"
@@ -13455,12 +13468,7 @@ customWidgets.map(function(widget) {
   className: "major-section-head cursor-move"
 }, /*#__PURE__*/React.createElement("h3", {
   className: "text-base font-bold"
-}, "รายการสินค้าขาดการซื้อซ้ำ"), /*#__PURE__*/React.createElement("button", {
-  onClick: function onClick() { return toggleExpanded('repeatGap'); },
-  className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-}, sectionExpanded.repeatGap ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-  name: sectionExpanded.repeatGap ? "ChevronUp" : "ChevronDown", size: 14
-}))), sectionExpanded.repeatGap && /*#__PURE__*/React.createElement("div", {
+}, "รายการสินค้าขาดการซื้อซ้ำ"), null), /*#__PURE__*/React.createElement("div", {
   className: "repeat-gap-content w-full fade-in flex flex-col flex-1 min-h-0"
 }, /*#__PURE__*/React.createElement("div", {
   className: "mb-4 flex flex-wrap gap-3 p-4 bg-slate-50/50 rounded-lg border border-slate-100"
@@ -13517,13 +13525,7 @@ customWidgets.map(function(widget) {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Store",
     className: "text-blue-500"
-  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 20 \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A + Others"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('shops'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.shops ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.shops ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.shops && /*#__PURE__*/React.createElement("div", {
+  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 20 \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A + Others"), null), /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex flex-col flex-1 min-h-0 overflow-auto custom-scrollbar"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mb-1.5 shrink-0"
@@ -13541,13 +13543,7 @@ customWidgets.map(function(widget) {
     className: "major-section-head cursor-move"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E23\u0E32\u0E22\u0E1B\u0E35"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('district'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.district ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.district ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.district && /*#__PURE__*/React.createElement("div", {
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E23\u0E32\u0E22\u0E1B\u0E35"), null), /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex flex-col flex-1 min-h-0 overflow-auto custom-scrollbar"
   }, /*#__PURE__*/React.createElement(TargetBarChart, {
     data: districtData,
@@ -13625,461 +13621,10 @@ try {
     </script>
 
     <!-- ===== MINIMAL LIGHT: DESIGN SYSTEM v2 ===== -->
-    <style data-design="minimal-light">
-
-        /* ══════════════════════════════════════════════
-           1. DASHBOARD — LIGHT THEME CSS VARIABLES
-              ⚠ Scoped to [data-theme="light"] ONLY
-              Dark mode variables are NOT touched
-           ══════════════════════════════════════════════ */
-        [data-theme="light"] {
-            --bg:            #f2f6ff;
-            --bg-soft:       #e8eeff;
-            --surface:       #ffffff;
-            --surface-alt:   #f7faff;
-            --border:        #d6e3f7;
-            --border-strong: #b0c8ef;
-            --text:          #0c1b3d;
-            --text-sec:      #2a4070;
-            --text-muted:    #6882b0;
-            --accent:        #1d4fd7;
-            --accent-hover:  #153db5;
-            --accent-soft:   #ecf1ff;
-            --accent-border: #a3bdf5;
-            --accent-text:   #153db5;
-            --success-bg:    #f0fdf9;
-            --success:       #059669;
-            --warn-bg:       #fffbeb;
-            --warn:          #d97706;
-            --danger-bg:     #fef2f2;
-            --danger:        #dc2626;
-            --shadow-sm:     0 1px 4px rgba(20,60,180,.07);
-            --shadow:        0 2px 12px rgba(20,60,180,.10);
-            --shadow-lg:     0 8px 28px rgba(20,60,180,.13);
-            --kpi-border:    #1d4fd7;
-            --header-bg:     linear-gradient(135deg,#153db5 0%,#1d4fd7 55%,#2c68f5 100%);
-        }
-
-        /* ══════════════════════════════════════════════
-           2. DASHBOARD — LIGHT MODE COMPONENTS
-           ══════════════════════════════════════════════ */
-        [data-theme="light"] .dashboard-card          { border-color:var(--border)!important; background:#fff!important; }
-        [data-theme="light"] .dashboard-card:hover    { border-color:var(--accent-border)!important; box-shadow:var(--shadow)!important; }
-        [data-theme="light"] .kpi-card                { background:#fff!important; border-left-color:var(--accent)!important; border-color:var(--border)!important; }
-        [data-theme="light"] .major-section-head      { background:linear-gradient(135deg,rgba(29,79,215,.05),rgba(29,79,215,.01))!important; border-color:rgba(163,189,245,.55)!important; }
-        [data-theme="light"] .stat-box                { background:var(--bg-soft)!important; border-color:var(--border)!important; }
-        [data-theme="light"] .status-bar.s-info       { background:var(--accent-soft)!important; color:var(--accent-text)!important; }
-        [data-theme="light"] .dashboard-filters       { background:#fff!important; border-color:var(--border)!important; }
-        [data-theme="light"] .dashboard-header .toggle-group     { background:rgba(255,255,255,.14)!important; border-color:rgba(255,255,255,.22)!important; }
-        [data-theme="light"] .dashboard-header .toggle-btn       { color:rgba(255,255,255,.72)!important; }
-        [data-theme="light"] .dashboard-header .toggle-btn.active{ background:rgba(255,255,255,.22)!important; color:#fff!important; }
-        [data-theme="light"] .logout-btn              { border-color:rgba(220,38,38,.28)!important; background:rgba(220,38,38,.05)!important; color:#ef4444!important; }
-        [data-theme="light"] .logout-btn:hover        { background:rgba(220,38,38,.10)!important; }
-
-        /* ══════════════════════════════════════════════
-           3. DASHBOARD — LAYOUT & VISUAL REDESIGN
-              Both modes where possible; light-scoped
-              where colour-specific
-           ══════════════════════════════════════════════ */
-
-        /* ── Header: tighter + bottom separator line ── */
-        .dashboard-header {
-            padding: 10px 18px !important;
-            min-height: 54px;
-        }
-        .dashboard-header h1 {
-            font-size: 14px !important;
-            font-weight: 800 !important;
-            letter-spacing: -.02em !important;
-            gap: 7px !important;
-        }
-
-        /* Header: subtle shimmer line at the bottom */
-        [data-theme="light"] .dashboard-header {
-            border-bottom: 1px solid rgba(255,255,255,.12) !important;
-            box-shadow: 0 2px 12px rgba(21,61,181,.22) !important;
-        }
-        [data-theme="dark"] .dashboard-header {
-            border-bottom: 1px solid rgba(255,255,255,.06) !important;
-            box-shadow: 0 2px 16px rgba(0,0,0,.4) !important;
-        }
-
-        /* ── Filters bar: more compact + elevated ── */
-        .dashboard-filters {
-            padding: 10px 18px !important;
-        }
-        .dashboard-filters h3 {
-            font-size: 11px !important;
-            font-weight: 700 !important;
-            text-transform: uppercase !important;
-            letter-spacing: .06em !important;
-        }
-
-        /* ── Main area: comfortable breathing room ── */
-        @media(min-width:769px) {
-            .dashboard-main { padding: 20px 22px !important; gap: 18px; }
-        }
-        @media(min-width:1200px) {
-            .dashboard-main { padding: 22px 28px !important; }
-        }
-
-        /* ── KPI cards: elevated, accent left bar ── */
-        .kpi-card {
-            border-radius: 14px !important;
-            padding: 16px 20px !important;
-            border-left-width: 4px !important;
-            position: relative;
-            overflow: hidden;
-        }
-        /* Subtle tinted top-right blob for depth */
-        .kpi-card::after {
-            content: '' !important;
-            position: absolute !important;
-            top: -20px; right: -20px !important;
-            width: 80px; height: 80px !important;
-            border-radius: 50% !important;
-            background: var(--accent-soft, rgba(29,79,215,.06)) !important;
-            pointer-events: none !important;
-            z-index: 0 !important;
-        }
-        .kpi-card > * { position: relative; z-index: 1; }
-
-        /* KPI numbers — larger, tabular */
-        .kpi-card .text-xl,
-        .kpi-card .text-2xl {
-            font-size: 1.45rem !important;
-            font-weight: 900 !important;
-            letter-spacing: -.03em !important;
-            font-variant-numeric: tabular-nums !important;
-        }
-
-        /* ── Dashboard cards: consistent depth ── */
-        .dashboard-card {
-            border-radius: 14px !important;
-            transition: box-shadow .2s, border-color .2s, transform .18s !important;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-2px) !important;
-        }
-
-        /* ── Section headers: left accent rule ── */
-        .sec-head {
-            padding-bottom: 10px !important;
-            margin-bottom: 14px !important;
-            border-bottom: 1px solid var(--border, #d6e3f7) !important;
-        }
-        .sec-title {
-            font-size: 13px !important;
-            font-weight: 800 !important;
-            letter-spacing: -.01em !important;
-            position: relative;
-            padding-left: 10px !important;
-        }
-        .sec-title::before {
-            content: '' !important;
-            position: absolute !important;
-            left: 0; top: 15%; bottom: 15% !important;
-            width: 3px !important;
-            border-radius: 2px !important;
-            background: var(--accent, #1d4fd7) !important;
-        }
-
-        /* Major section header */
-        .major-section-head {
-            border-radius: 10px !important;
-            padding: 10px 14px !important;
-            margin-bottom: 16px !important;
-        }
-        .major-section-head h3 {
-            font-size: 13px !important;
-            font-weight: 800 !important;
-            letter-spacing: -.01em !important;
-        }
-
-        /* ── Stat boxes: clean pill style ── */
-        .stat-box {
-            border-radius: 10px !important;
-            padding: 9px 13px !important;
-        }
-
-        /* ── Drawer: better padding ── */
-        .drawer-panel { border-radius: 0 !important; }
-        .drawer-header { padding: 14px 18px !important; }
-        .drawer-content { padding: 14px 18px !important; }
-        .drawer-section-title {
-            font-size: 10px !important;
-            letter-spacing: .08em !important;
-            font-weight: 700 !important;
-        }
-        .drawer-btn {
-            border-radius: 9px !important;
-            font-size: 13px !important;
-            padding: 9px 12px !important;
-        }
-
-        /* ── Filter dropdown chips: refined ── */
-        .toggle-group { border-radius: 9px !important; padding: 2px !important; }
-        .toggle-btn   { border-radius: 7px !important; }
-
-        /* ── AI panel ── */
-        .ai-panel { border-radius: 0 !important; }
-        .ai-msg {
-            border-radius: 12px !important;
-            font-size: 13px !important;
-            line-height: 1.7 !important;
-        }
-
-        /* ── Scrollbar: thinner in main content ── */
-        .dashboard-main::-webkit-scrollbar { width: 4px; }
-        .dashboard-main::-webkit-scrollbar-thumb {
-            background: var(--border-strong, #b0c8ef);
-            border-radius: 4px;
-        }
-
-        /* ── Light-mode specific refinements ── */
-        [data-theme="light"] .sec-head {
-            border-bottom-color: var(--border) !important;
-        }
-        [data-theme="light"] .dashboard-main {
-            background: linear-gradient(180deg, #f0f5ff 0%, #f5f8ff 100%) !important;
-        }
-        /* Faint grid dot background on main area */
-        [data-theme="light"] .dashboard-main::before {
-            content: '' !important;
-            position: fixed !important;
-            inset: 0 !important;
-            pointer-events: none !important;
-            z-index: 0 !important;
-            background-image: radial-gradient(circle, rgba(29,79,215,.045) 1px, transparent 1px) !important;
-            background-size: 28px 28px !important;
-            mask-image: linear-gradient(180deg,transparent 0%,rgba(0,0,0,.5) 8%,rgba(0,0,0,.5) 92%,transparent 100%) !important;
-            -webkit-mask-image: linear-gradient(180deg,transparent 0%,rgba(0,0,0,.5) 8%,rgba(0,0,0,.5) 92%,transparent 100%) !important;
-        }
-        [data-theme="light"] .dashboard-main > * { position: relative; z-index: 1; }
-
-        [data-theme="light"] .kpi-card {
-            box-shadow: var(--shadow-sm) !important;
-        }
-        [data-theme="light"] .kpi-card:hover {
-            box-shadow: var(--shadow) !important;
-        }
-        [data-theme="light"] .dashboard-card {
-            box-shadow: 0 1px 3px rgba(20,60,180,.06) !important;
-        }
-        [data-theme="light"] .dashboard-card:hover {
-            box-shadow: 0 4px 16px rgba(20,60,180,.11) !important;
-        }
-        /* Filter bar: soft blue tint */
-        [data-theme="light"] .dashboard-filters {
-            background: linear-gradient(90deg,#fafcff,#f6f9ff) !important;
-            border-bottom: 1px solid var(--border) !important;
-        }
-
-        /* ── Dark-mode specific refinements ── */
-        [data-theme="dark"] .sec-head {
-            border-bottom-color: var(--border) !important;
-        }
-        [data-theme="dark"] .kpi-card::after {
-            background: rgba(91,154,255,.05) !important;
-        }
-        [data-theme="dark"] .kpi-card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,.3) !important;
-        }
-        [data-theme="dark"] .dashboard-card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,.3) !important;
-        }
-
-        /* ── Mobile layout fixes (from all previous sessions) ── */
-        @media(max-width:767px) {
-            .dashboard-header { padding: 8px 14px !important; min-height: 48px; }
-            .dashboard-filters { padding: 8px 12px !important; }
-            .kpi-card { padding: 12px 14px !important; }
-            .major-section-head { padding: 8px 10px !important; }
-            .sec-title::before { display: none !important; }
-        }
-
-        /* ══════════════════════════════════════════════
-           4. LOGIN — LIGHT MODE REDESIGN
-              ALL rules scoped under [data-theme="light"]
-              → dark mode login is 100% unchanged
-           ══════════════════════════════════════════════ */
-
-        /* Background */
-        [data-theme="light"] .login-shell {
-            background:linear-gradient(150deg,#e8f0ff 0%,#f2f6ff 40%,#edf2ff 70%,#e0ebff 100%)!important;
-            background-size:auto!important;
-            animation:none!important;
-        }
-        [data-theme="light"] .login-shell::before { display:none!important; }
-        [data-theme="light"] .login-shell::after  {
-            background:radial-gradient(circle,rgba(29,79,215,.08) 0%,transparent 70%)!important;
-            animation:pulseGlow 10s ease-in-out infinite!important;
-        }
-
-        /* ── LOGO: applies to BOTH light & dark mode ── */
-        .login-brand-badge {
-            margin-bottom: 32px !important;   /* was -14px (overlap) */
-            margin-top: -20px !important;     /* nudge up from center */
-        }
-
-        /* ── LOGO FIX: float cleanly above card border ── */
-        [data-theme="light"] .login-brand-badge {
-            margin-bottom:36px!important;
-            margin-top:-28px!important;
-        }
-        [data-theme="light"] .login-brand-badge img {
-            filter:none!important;
-            border-radius:16px!important;
-        }
-
-        /* Card */
-        [data-theme="light"] .login-card {
-            background:#ffffff!important;
-            border:1.5px solid #d6e3f7!important;
-            box-shadow:
-                0 4px 24px rgba(29,79,215,.10),
-                0 1px 4px rgba(29,79,215,.06),
-                inset 0 1px 0 rgba(255,255,255,.9)!important;
-            backdrop-filter:none!important;
-            animation:cardEntry .45s cubic-bezier(.16,1,.3,1) both!important;
-            padding-top:28px!important;
-        }
-        [data-theme="light"] .login-card::before {
-            background:linear-gradient(135deg,rgba(29,79,215,.04) 0%,transparent 60%)!important;
-        }
-        [data-theme="light"] .login-card::after {
-            background:linear-gradient(90deg,transparent,rgba(29,79,215,.18),transparent)!important;
-        }
-
-        /* Title */
-        [data-theme="light"] .login-title {
-            background:linear-gradient(135deg,#0c1b3d 0%,#1d4fd7 55%,#2c68f5 100%)!important;
-            background-size:auto!important;
-            -webkit-background-clip:text!important;
-            -webkit-text-fill-color:transparent!important;
-            background-clip:text!important;
-            animation:none!important;
-            filter:none!important;
-        }
-
-        [data-theme="light"] .login-card-divider { background:linear-gradient(90deg,transparent,rgba(29,79,215,.22),transparent)!important; }
-        [data-theme="light"] .login-label        { color:#2a4070!important; }
-        [data-theme="light"] .login-help-text    { color:#6882b0!important; }
-        [data-theme="light"] .login-link-btn     { color:#1d4fd7!important; }
-        [data-theme="light"] .login-link-btn:hover { color:#153db5!important; }
-
-        /* Inputs */
-        [data-theme="light"] .login-input             { background:#f5f8ff!important; border:1.5px solid #d6e3f7!important; color:#0c1b3d!important; }
-        [data-theme="light"] .login-input::placeholder { color:#90a8cf!important; }
-        [data-theme="light"] .login-input:focus        { border-color:#1d4fd7!important; background:#fff!important; box-shadow:0 0 0 3.5px rgba(29,79,215,.11)!important; }
-
-        /* Mode tabs */
-        [data-theme="light"] .login-mode-btn        { border-color:#d6e3f7!important; background:#f2f6ff!important; color:#2a4070!important; }
-        [data-theme="light"] .login-mode-btn:hover  { border-color:#1d4fd7!important; color:#1d4fd7!important; background:#ecf1ff!important; }
-        [data-theme="light"] .login-mode-btn.active { background:#ecf1ff!important; border-color:#1d4fd7!important; color:#1d4fd7!important; box-shadow:0 0 0 1px rgba(29,79,215,.12) inset!important; }
-
-        /* Error / notice */
-        [data-theme="light"] .login-error  { border-color:rgba(220,38,38,.25)!important; background:#fef2f2!important; color:#dc2626!important; }
-        [data-theme="light"] .login-notice { border-color:rgba(5,150,105,.25)!important; background:#f0fdf9!important; color:#059669!important; }
-
-        /* Submit */
-        [data-theme="light"] .login-submit-btn       { background:linear-gradient(135deg,#153db5 0%,#1d4fd7 45%,#2c68f5 100%)!important; box-shadow:0 6px 24px rgba(29,79,215,.32),0 0 0 1px rgba(44,104,245,.18)!important; }
-        [data-theme="light"] .login-submit-btn:hover { box-shadow:0 12px 32px rgba(29,79,215,.42),0 0 0 1px rgba(44,104,245,.25)!important; }
-
-        /* Floating animals */
-        [data-theme="light"] .login-decor       { background:linear-gradient(160deg,rgba(29,79,215,.08),rgba(29,79,215,.02))!important; border-color:rgba(29,79,215,.14)!important; box-shadow:0 4px 16px rgba(29,79,215,.08)!important; backdrop-filter:none!important; }
-        [data-theme="light"] .login-decor:hover { box-shadow:0 10px 28px rgba(29,79,215,.14)!important; }
-
-        /* ══════════════════════════════════════════════
-           5. EYE ICON TOGGLE — both modes adaptive
-           ══════════════════════════════════════════════ */
-        .pw-eye-wrap { position:relative; display:block; width:100%; }
-        .pw-eye-wrap input { padding-right:46px!important; width:100%!important; box-sizing:border-box; }
-
-        .pw-eye-btn {
-            position:absolute; right:13px; top:50%; transform:translateY(-50%);
-            background:none; border:none; cursor:pointer; padding:5px;
-            display:flex; align-items:center; justify-content:center;
-            color:var(--text-muted,#90a8cf);
-            z-index:10; line-height:1;
-            transition:color .15s,background .15s;
-            border-radius:6px;
-            min-height:unset!important;
-            min-width:unset!important;
-        }
-        .pw-eye-btn:hover  { color:var(--accent,#1d4fd7); background:rgba(29,79,215,.07); }
-        .pw-eye-btn:active { opacity:.7; }
-        .pw-eye-btn svg    { pointer-events:none; display:block; }
-
-        @media(max-width:560px) {
-            .pw-eye-btn { right:10px; padding:4px; }
-        }
-
-    </style>
+    
 
     <!-- ===== MOBILE SALES GUIDE: keep first 5 ranks visible ===== -->
-    <style data-fix="mobile-sales-guide-five-ranks">
-        @media(max-width:560px) {
-            .sales-guide-card {
-                overflow: visible !important;
-            }
-            .sales-guide-card .sales-guide-content {
-                height: auto !important;
-                min-height: 0 !important;
-                overflow: visible !important;
-            }
-            .sales-guide-card 
-            .sales-guide-card .sales-guide-list-inner {
-                min-height: 100% !important;
-            }
-            .sales-guide-card .sales-guide-list-head {
-                min-height: 2.7rem !important;
-                align-items: center !important;
-            }
-            .sales-guide-card .sales-guide-item-head {
-                min-height: 4.75rem !important;
-                align-items: center !important;
-            }
-        }
     
-        /* GridStack overrides */
-        .grid-stack {
-            min-height: 200px;
-        }
-        .grid-stack-item {
-            transition: box-shadow 0.2s;
-        }
-        .grid-stack-item > .grid-stack-item-content {
-            overflow: hidden !important;
-            inset: 5px;
-            border-radius: 12px;
-        }
-        /* hide sw handle – only se needed */
-        .grid-stack-item > .ui-resizable-sw { display: none !important; }
-        /* dragging state */
-        .grid-stack-item.ui-draggable-dragging {
-            opacity: 0.88;
-            z-index: 100 !important;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.22) !important;
-            transform: scale(1.01);
-        }
-        /* drop placeholder */
-        .grid-stack-placeholder > .placeholder-content {
-            border: 2px dashed var(--accent, #0058bc) !important;
-            background: rgba(0,88,188,0.06) !important;
-            border-radius: 12px;
-        }
-            border-radius: 12px;
-        }
-        .major-section-head.cursor-move,
-        .major-section-head {
-            cursor: grab;
-        }
-        .major-section-head:active {
-            cursor: grabbing;
-        }
-
-        </style>
 
     <!-- ===== EYE ICON: show/hide for all password fields ===== -->
     <script data-design="eye-toggle">
