@@ -3676,7 +3676,7 @@ var RepeatPurchaseGapItem = function RepeatPurchaseGapItem(_ref5) {
   }, item.lastOrderLabel))));
 };
 var RepeatPurchaseGapList = function RepeatPurchaseGapList(_ref6) {
-  var data = _ref6.data,
+  var data = _ref6.data ? _ref6.data.slice(0, 5) : [],
     metric = _ref6.metric,
     unit = _ref6.unit;
   if (!data || data.length === 0) {
@@ -3848,7 +3848,7 @@ var SalesGuideItem = function SalesGuideItem(_ref8) {
   }, "\u0E04\u0E34\u0E14\u0E08\u0E32\u0E01\u0E22\u0E2D\u0E14\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07 3 \u0E40\u0E14\u0E37\u0E2D\u0E19\u0E41\u0E1A\u0E1A\u0E16\u0E48\u0E27\u0E07\u0E19\u0E49\u0E33\u0E2B\u0E19\u0E31\u0E01 ", weightSummaryLabel || '', " \u0E40\u0E17\u0E35\u0E22\u0E1A\u0E01\u0E31\u0E1A\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E2D\u0E49\u0E32\u0E07\u0E2D\u0E34\u0E07")));
 };
 var SalesGuideList = function SalesGuideList(_ref9) {
-  var data = _ref9.data,
+  var data = _ref9.data ? _ref9.data.slice(0, 5) : [],
     metric = _ref9.metric,
     unit = _ref9.unit,
     weightSummaryLabel = _ref9.weightSummaryLabel;
@@ -4369,7 +4369,7 @@ var ScrollableBarChart = function ScrollableBarChart(_ref1) {
     tooltipComponent = _ref1.tooltipComponent,
     _ref1$series = _ref1.series,
     series = _ref1$series === void 0 ? null : _ref1$series;
-  var safeData = Array.isArray(data) ? data : [];
+  var safeData = Array.isArray(data) ? data.slice(0, 5) : [];
   var activeSeries = Array.isArray(series) && series.length > 0 ? series : [{
     dataKey: 'value',
     name: 'ยอดขาย',
@@ -4450,7 +4450,7 @@ var TargetBarChart = function TargetBarChart(_ref10) {
   var data = _ref10.data,
     metric = _ref10.metric,
     unit = _ref10.unit;
-  var safeData = Array.isArray(data) ? data : [];
+  var safeData = Array.isArray(data) ? data.slice(0, 5) : [];
   var chartHeight = Math.max(350, safeData.length * 60);
   return /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-h-0 overflow-auto custom-scrollbar border rounded-lg p-2 bg-white"
@@ -12028,10 +12028,7 @@ var App = function App() {
       setAuthSessionExpiresAt(String(auth.expiresAt || ''));
       setAuthUser(auth.user);
       setAuthPassword('');
-      setStatusInfo({
-        type: 'success',
-        message: 'เข้าสู่ระบบสำเร็จ'
-      });
+      
       return result;
     }).catch(function (error) {
       setAuthError(error && error.message ? error.message : 'เข้าสู่ระบบไม่สำเร็จ');
@@ -12849,7 +12846,7 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("header", {
     className: "bg-surface flex justify-between items-center w-full px-8 h-16 border-b border-outline-variant shadow-sm z-20 shrink-0 sticky top-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3 flex-1"
+    className: "flex items-center gap-3 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-16 h-10 rounded-lg flex items-center justify-center overflow-hidden shrink-0 cursor-pointer",
     onClick: function() { setActiveTab("dashboard"); }
@@ -12862,7 +12859,7 @@ var App = function App() {
     onClick: function() { setIsSidebarOpen(!isSidebarOpen); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 flex-1 overflow-x-auto hide-scrollbar pl-2 pr-4"
+    className: "flex items-center justify-center gap-2 flex-1 overflow-x-auto hide-scrollbar lg:overflow-visible pl-2 pr-4"
   }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
@@ -12932,7 +12929,7 @@ var App = function App() {
     },
     title: "เปิดผู้ช่วย AI"
   }, "AI")) : null), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 flex-1 justify-end"
+    className: "flex items-center gap-2 shrink-0 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
