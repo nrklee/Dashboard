@@ -5025,19 +5025,19 @@ window.removeMockWidget = function(btn) {
             React.createElement("p", { className: "text-xs text-on-surface-variant mb-4" }, "ลากกล่องด้านล่างไปวางในพื้นที่ด้านขวา"),
             React.createElement("div", { id: "available-widgets", className: "flex flex-col gap-3" },
               Object.keys(sectionTitles).map(function(key) {
-                if (sectionOpen[key]) return null;
+                var isOpen = sectionOpen[key];
                 return React.createElement("div", { 
                   key: key, 
-                  className: "grid-stack-item p-3 bg-surface rounded-lg border border-outline-variant cursor-move shadow-sm text-sm text-on-surface hover:border-primary transition-colors flex items-center justify-between",
-                  
-                  "gs-w": "12", "gs-h": "4", "data-widget": key
-
+                  className: "p-3 bg-surface rounded-lg border cursor-pointer transition-colors flex items-center justify-between " + (isOpen ? "border-primary bg-blue-50/30" : "border-outline-variant hover:border-primary"),
+                  onClick: function() { window.toggleMockWidget(key); }
                 }, 
-                  React.createElement("div", { className: "grid-stack-item-content", style: { inset: 0, padding: '12px' } }, 
-                    React.createElement("div", { className: "flex items-center gap-3 h-full" },
-                      React.createElement("span", { className: "material-symbols-outlined text-xl opacity-60" }, sectionIcons[key] || 'widgets'),
-                      React.createElement("span", { className: "font-medium" }, sectionTitles[key] || key)
-                    )
+                  React.createElement("div", { className: "flex items-center gap-3 h-full" },
+                    React.createElement("span", { className: "material-symbols-outlined text-xl opacity-60" }, sectionIcons[key] || 'widgets'),
+                    React.createElement("span", { className: "font-medium" }, sectionTitles[key] || key)
+                  ),
+                  React.createElement("div", { className: "flex items-center" },
+                    isOpen ? React.createElement("span", { className: "material-symbols-outlined text-primary text-xl" }, "check_circle") : 
+                             React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-xl" }, "radio_button_unchecked")
                   )
                 );
               })
