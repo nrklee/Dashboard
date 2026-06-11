@@ -204,6 +204,9 @@
         }
         .grid-stack-item .ui-resizable-se::before { display: none !important; }
 
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         /* ===== Dashboard Shell ===== */
         .dashboard-shell { background:var(--bg); }
         .dashboard-header { background:var(--header-bg)!important; border-color:transparent!important; backdrop-filter:blur(12px); color:var(--header-text)!important; }
@@ -3682,7 +3685,7 @@ var RepeatPurchaseGapList = function RepeatPurchaseGapList(_ref6) {
     }, "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E02\u0E32\u0E14\u0E01\u0E32\u0E23\u0E0B\u0E37\u0E49\u0E2D\u0E0B\u0E49\u0E33\u0E43\u0E19\u0E0A\u0E48\u0E27\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E49\u0E2D\u0E19\u0E2B\u0E25\u0E31\u0E07 12 \u0E40\u0E14\u0E37\u0E2D\u0E19");
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "repeat-gap-list-shell flex-1 min-h-0 overflow-y-auto custom-scrollbar border rounded-lg bg-white overflow-x-hidden"
+    className: "repeat-gap-list-shell flex-1 min-h-0 overflow-auto custom-scrollbar border rounded-lg bg-white"
   }, /*#__PURE__*/React.createElement("div", {
     className: "repeat-gap-list-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -3855,7 +3858,7 @@ var SalesGuideList = function SalesGuideList(_ref9) {
     }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E17\u0E35\u0E48\u0E21\u0E35\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E43\u0E19 scope \u0E19\u0E35\u0E49");
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "sales-guide-list-shell flex-1 min-h-0 custom-scrollbar border rounded-lg bg-white overflow-y-auto overflow-x-hidden"
+    className: "sales-guide-list-shell flex-1 min-h-0 custom-scrollbar border rounded-lg bg-white overflow-auto"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sales-guide-list-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -4375,7 +4378,7 @@ var ScrollableBarChart = function ScrollableBarChart(_ref1) {
   var isMultiSeries = activeSeries.length > 1;
   var chartHeight = Math.max(350, safeData.length * (isMultiSeries ? 58 : 50));
   return /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-h-0 overflow-y-auto custom-scrollbar border rounded-lg p-2 bg-white overflow-x-hidden"
+    className: "flex-1 min-h-0 overflow-auto custom-scrollbar border rounded-lg p-2 bg-white"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       height: chartHeight,
@@ -4450,7 +4453,7 @@ var TargetBarChart = function TargetBarChart(_ref10) {
   var safeData = Array.isArray(data) ? data : [];
   var chartHeight = Math.max(350, safeData.length * 60);
   return /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-h-0 overflow-y-auto custom-scrollbar border rounded-lg p-2 bg-white overflow-x-hidden"
+    className: "flex-1 min-h-0 overflow-auto custom-scrollbar border rounded-lg p-2 bg-white"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       height: chartHeight,
@@ -5318,7 +5321,7 @@ var App = function App() {
                 handle: '.major-section-head',
                 float: false,
                 animate: true,
-                disableOneColumnMode: true,
+                
                 resizable: {
                     handles: 'se'
                 }
@@ -12749,7 +12752,7 @@ var App = function App() {
     }
   }, "\u0E2B\u0E32\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E14\u0E39\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 \u0E43\u0E2B\u0E49\u0E40\u0E02\u0E49\u0E32\u0E14\u0E49\u0E27\u0E22\u0E1A\u0E31\u0E0D\u0E0A\u0E35 area_admin \u0E2B\u0E23\u0E37\u0E2D user \u0E02\u0E2D\u0E07\u0E20\u0E32\u0E04/\u0E40\u0E02\u0E15\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E44\u0E27\u0E49\u0E43\u0E19\u0E0A\u0E35\u0E15 USERS"))))))));
   return /*#__PURE__*/React.createElement("div", {
-    cclassName: `dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
+    className: `dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
     style: {
       background: 'var(--bg)'
     }
@@ -12859,7 +12862,7 @@ var App = function App() {
     onClick: function() { setIsSidebarOpen(!isSidebarOpen); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center gap-2 flex-1 hidden lg:flex"
+    className: "flex items-center gap-2 flex-1 overflow-x-auto hide-scrollbar pl-2 pr-4"
   }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
