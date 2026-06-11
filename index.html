@@ -1118,7 +1118,32 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
                 font-size: 9.5px !important;
             }
             .toggle-group {
-                gap: 0 !important;
+                display: flex;
+                align-items: center;
+                gap: 4px !important;
+                background: var(--surface-alt) !important;
+                border: 1px solid var(--border) !important;
+                padding: 4px !important;
+                border-radius: 8px !important;
+            }
+            .toggle-btn {
+                border: 1px solid transparent !important;
+                border-radius: 6px !important;
+                color: var(--text-sec) !important;
+                background: transparent !important;
+                transition: all 0.2s ease !important;
+                font-weight: 600 !important;
+            }
+            .toggle-btn:hover {
+                background: var(--bg-soft) !important;
+                border-color: var(--border) !important;
+                color: var(--text) !important;
+            }
+            .toggle-btn.active {
+                background: var(--accent) !important;
+                border-color: var(--accent-border) !important;
+                color: var(--accent-text, #fff) !important;
+                box-shadow: var(--shadow-sm) !important;
             }
 
             .ai-launch-btn {
