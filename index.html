@@ -4863,6 +4863,13 @@ var sectionTitles = {
                 removable: true,
                 removeTimeout: 100
             }, mockGridEl);
+            window.removeMockWidget = function(btn) {
+                var item = btn.closest('.grid-stack-item');
+                if (item && mGrid) {
+                    mGrid.removeWidget(item, true);
+                }
+            };
+
             
             var layouts = {};
             try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
@@ -4889,7 +4896,7 @@ var sectionTitles = {
                     initialNodes.push({
                         id: id,
                         x: x, y: y, w: w, h: h,
-                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
+                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
                     });
                 }
             });
@@ -4902,7 +4909,7 @@ var sectionTitles = {
                         var widgetKey = item.el.getAttribute('data-widget');
                         var id = widgetMapping[widgetKey];
                         item.el.setAttribute('gs-id', id); item.id = id;
-                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[widgetKey] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
+                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[widgetKey] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
                     }
                 });
             });
@@ -13312,7 +13319,7 @@ var App = function App() {
     unit: unitMode
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 text-right mt-1"
-  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null)), 
+  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null), 
 customWidgets.map(function(widget) {
   return React.createElement("div", getGridProps("cw-" + widget.id, 12, 4),
     React.createElement("div", { className: "grid-stack-item-content" },
@@ -13460,7 +13467,7 @@ customWidgets.map(function(widget) {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  }))))) : null)))));
+  }))))) : null))))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
