@@ -355,7 +355,7 @@
         .repeat-gap-sku-row { line-height:1.15; }
         .sales-guide-summary-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem; }
         .sales-guide-weight-row { display:flex;align-items:center;gap:0.5rem;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch; }
-        .top-brands-panel { min-height:42rem; }
+        .top-brands-panel { min-height: unset; }
         .ai-launch-btn { min-width:44px;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(91,154,255,0.35);background:linear-gradient(135deg,rgba(91,154,255,0.18),rgba(59,130,246,0.1));color:var(--accent);font-weight:800;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s ease; }
         .ai-launch-btn:hover { transform:translateY(-1px);box-shadow:0 10px 18px rgba(37,99,235,0.18);border-color:rgba(91,154,255,0.55); }
         .ai-panel-overlay { position:fixed;inset:0;background:rgba(15,23,42,0.52);z-index:80;backdrop-filter:blur(2px); }
@@ -517,7 +517,6 @@
             .action-gap-grid { grid-template-columns:1fr; }
             .filters-grid { grid-template-columns:repeat(3,minmax(180px,1fr)); }
             .repeat-gap-filters-grid { grid-template-columns:repeat(5,minmax(0,1fr))!important; }
-            .top-brands-panel { min-height:34rem; }
         }
 
         /* Tablet landscape / iPad (768px - 1024px) */
@@ -530,7 +529,6 @@
             .repeat-gap-card { padding:14px!important; }
             .repeat-gap-card .major-section-head { flex-direction:row!important;align-items:center!important;gap:8px!important;margin-bottom:10px!important; }
             .repeat-gap-card .major-section-head h3 { font-size:12px!important; }
-            .repeat-gap-content { height:32rem!important; }
             .repeat-gap-window { font-size:10px!important;margin-bottom:6px!important; }
             .repeat-gap-filter-bar { margin-bottom:6px!important; }
             .repeat-gap-filters-grid { grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important; }
@@ -545,7 +543,6 @@
             .repeat-gap-size-row-head { padding:5px 7px!important;font-size:10px!important; }
             .repeat-gap-sku-row { font-size:10px!important; }
             .sales-guide-summary-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
-            .top-brands-panel { min-height:36rem; }
         }
 
         /* Tablet portrait / iPad mini (600px - 768px) */
@@ -563,7 +560,6 @@
             .repeat-gap-card { padding:12px!important; }
             .repeat-gap-card .major-section-head { flex-direction:row!important;align-items:center!important;gap:8px!important;margin-bottom:8px!important; }
             .repeat-gap-card .major-section-head h3 { font-size:12px!important; }
-            .repeat-gap-content { height:34rem!important; }
             .repeat-gap-window { font-size:10px!important;line-height:1.35!important;margin-bottom:6px!important; }
             .repeat-gap-filter-bar { justify-content:flex-start;margin-bottom:6px!important; }
             .repeat-gap-filter-toggle { min-height:30px!important;padding:5px 9px!important;font-size:10px!important; }
@@ -585,7 +581,6 @@
             .sales-guide-weight-row { gap:0.4rem; }
             .repeat-gap-list-inner,
             .sales-guide-list-inner { min-width:0; }
-            .top-brands-panel { min-height:32rem; }
             .ai-panel { width:100vw; }
             .ai-panel-header { padding:16px 14px 12px; }
             .ai-panel-body { padding:12px; }
@@ -681,7 +676,7 @@
             .sales-guide-weight-row button { min-width:0!important;min-height:24px!important;padding:2px 5px!important;font-size:8.5px!important;border-radius:8px!important; }
             .sales-guide-message { order:3!important;font-size:9.5px!important;line-height:1.25!important;margin:0!important;white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;display:block!important;max-width:100%!important;padding-bottom:2px!important; }
             .sales-guide-order-note { order:4!important;font-size:10px!important;line-height:1.35!important;margin:0!important; }
-            .sales-guide-list-shell { order:5!important;flex:0 0 auto!important;height:32rem!important;min-height:32rem!important;overflow-y:auto!important;overflow-x:hidden!important; }
+            .sales-guide-list-shell { order:5!important;flex:1 1 auto!important;overflow-y:auto!important;overflow-x:hidden!important; }
             .sales-guide-list-head { grid-template-columns:minmax(0,1fr) minmax(0,108px) 16px!important;gap:5px!important;padding:5px 7px!important;font-size:8.5px!important; }
             .sales-guide-list-head > span:nth-child(2) { display:none!important; }
             .sales-guide-item-head { grid-template-columns:minmax(0,1fr) minmax(0,108px) 16px!important;gap:5px!important;padding:7px 7px!important;font-size:9.5px!important;min-height:4.45rem!important; }
@@ -690,7 +685,6 @@
             .sales-guide-item-head .w-5 { width:18px!important;height:18px!important;font-size:9px!important; }
             .repeat-gap-list-inner,
             .sales-guide-list-inner { min-width:0; }
-            .top-brands-panel { min-height:28rem; }
             .ai-panel-title { font-size:16px; }
             .ai-quick-row { gap:6px; }
             .ai-quick-btn { width:100%;justify-content:center; }
@@ -4879,42 +4873,129 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
       onClose = _ref.onClose,
       weights = _ref.weights,
       onSave = _ref.onSave;
-      
+
+  var initW = function() {
+    var m1 = (weights && weights.month1 != null) ? weights.month1 : 50;
+    var m2 = (weights && weights.month2 != null) ? weights.month2 : 30;
+    var m3 = (weights && weights.month3 != null) ? weights.month3 : 20;
+    return [m1, m2, m3];
+  };
+
+  var _wState = React.useState(initW), localW = _wState[0], setLocalW = _wState[1];
+
+  // Re-sync when modal reopens with new weights
+  React.useEffect(function() {
+    if (isOpen) setLocalW(initW());
+  }, [isOpen, weights]);
+
   if (!isOpen) return null;
 
-  var handleSave = function handleSave() {
-    var m1 = document.getElementById("sg_m1").value;
-    var m2 = document.getElementById("sg_m2").value;
-    var m3 = document.getElementById("sg_m3").value;
-    onSave({ month1: parseInt(m1) || 0, month2: parseInt(m2) || 0, month3: parseInt(m3) || 0 });
+  // Auto-normalize: when slider[idx] changes to newVal,
+  // distribute the remainder proportionally among the other two
+  var handleSlider = function(idx, newVal) {
+    var next = [localW[0], localW[1], localW[2]];
+    next[idx] = newVal;
+    var remainder = 100 - newVal;
+    var othersSum = 0;
+    [0,1,2].forEach(function(i) { if (i !== idx) othersSum += next[i]; });
+    if (othersSum === 0) {
+      // distribute equally
+      [0,1,2].forEach(function(i) { if (i !== idx) next[i] = Math.round(remainder / 2); });
+      // fix rounding
+      var s = next[0] + next[1] + next[2];
+      if (s !== 100) next[(idx === 0) ? 2 : (idx === 2) ? 0 : 2] += (100 - s);
+    } else {
+      [0,1,2].forEach(function(i) {
+        if (i !== idx) next[i] = Math.round(next[i] / othersSum * remainder);
+      });
+      // fix rounding drift
+      var total = next[0] + next[1] + next[2];
+      if (total !== 100) {
+        var fixIdx = idx === 0 ? 2 : (idx === 2 ? 1 : 2);
+        next[fixIdx] += (100 - total);
+      }
+    }
+    // clamp all ≥ 0
+    next = next.map(function(v) { return Math.max(0, v); });
+    setLocalW(next);
+  };
+
+  var handleSave = function() {
+    onSave({ month1: localW[0], month2: localW[1], month3: localW[2] });
     onClose();
   };
-  
+
+  var labels = ["เดือนล่าสุด (M-1)", "เดือนก่อนหน้า (M-2)", "เดือนก่อนหน้า (M-3)"];
+  var colors = ["#2563eb", "#7c3aed", "#0891b2"];
+  var total = localW[0] + localW[1] + localW[2];
+
   return React.createElement("div", { className: "status-modal-overlay" },
-    React.createElement("div", { className: "status-modal", style: { maxWidth: '400px' } },
+    React.createElement("div", { className: "status-modal", style: { maxWidth: '440px' } },
       React.createElement("div", { className: "status-modal-head" },
-        React.createElement("div", { className: "status-modal-title" }, "ตั้งค่าสัดส่วนอัลกอริทึม แนะนำการขาย"),
-        React.createElement("button", { className: "status-modal-close", onClick: onClose }, "×")
+        React.createElement("div", { className: "status-modal-title" }, "ตั้งค่าสัดส่วนอัลกอริทึม"),
+        React.createElement("button", { className: "status-modal-close", onClick: onClose }, "\u00d7")
       ),
-      React.createElement("div", { className: "status-modal-body p-4" },
-        React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "กำหนดน้ำหนัก (%) สำหรับการคำนวณคะแนนยอดขายย้อนหลัง 3 เดือน เพื่อแนะนำสินค้า"),
-        React.createElement("div", { className: "flex flex-col gap-3" },
-          React.createElement("div", null,
-            React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนล่าสุด (M-1)"),
-            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("input", { id: "sg_m1", type: "text", defaultValue: weights ? weights.month1 : 50, className: "w-full border rounded p-2 text-sm text-slate-800" }), React.createElement("span", { className: "text-slate-500 font-bold" }, "%"))
-          ),
-          React.createElement("div", null,
-            React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนก่อนหน้า (M-2)"),
-            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("input", { id: "sg_m2", type: "text", defaultValue: weights ? weights.month2 : 30, className: "w-full border rounded p-2 text-sm text-slate-800" }), React.createElement("span", { className: "text-slate-500 font-bold" }, "%"))
-          ),
-          React.createElement("div", null,
-            React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนก่อนหน้า (M-3)"),
-            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("input", { id: "sg_m3", type: "text", defaultValue: weights ? weights.month3 : 20, className: "w-full border rounded p-2 text-sm text-slate-800" }), React.createElement("span", { className: "text-slate-500 font-bold" }, "%"))
-          )
+      React.createElement("div", { className: "status-modal-body" },
+        React.createElement("p", { className: "text-sm text-slate-500 -mt-1 mb-4" },
+          "กำหนดน้ำหนัก % ยอดขายย้อนหลัง 3 เดือน — ปรับ slider แล้วระบบจะ normalize ให้รวม 100% อัตโนมัติ"
         ),
-        React.createElement("div", { className: "mt-6 flex justify-end gap-2" },
-          React.createElement("button", { className: "px-4 py-2 border rounded-lg text-slate-600 text-sm font-bold", onClick: onClose }, "ยกเลิก"),
-          React.createElement("button", { className: "px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700", onClick: handleSave }, "บันทึก")
+
+        /* stacked bar preview */
+        React.createElement("div", { className: "mb-5" },
+          React.createElement("div", {
+            className: "flex rounded-lg overflow-hidden h-6 border border-slate-200",
+            title: "M-1 : M-2 : M-3 = " + localW[0] + "% : " + localW[1] + "% : " + localW[2] + "%"
+          }, [0,1,2].map(function(i) {
+            return React.createElement("div", {
+              key: i,
+              style: { width: localW[i] + "%", background: colors[i], transition: "width 0.2s", display: "flex", alignItems: "center", justifyContent: "center" }
+            }, localW[i] >= 8 ? React.createElement("span", { style: { color: "#fff", fontSize: "10px", fontWeight: 700 } }, localW[i] + "%") : null);
+          }))
+        ),
+
+        /* sliders */
+        React.createElement("div", { className: "flex flex-col gap-4" },
+          [0,1,2].map(function(i) {
+            return React.createElement("div", { key: i },
+              React.createElement("div", { className: "flex justify-between items-center mb-1" },
+                React.createElement("label", { className: "text-xs font-bold text-slate-700" }, labels[i]),
+                React.createElement("span", {
+                  className: "text-sm font-black tabular-nums",
+                  style: { color: colors[i], minWidth: "40px", textAlign: "right" }
+                }, localW[i] + "%")
+              ),
+              React.createElement("input", {
+                type: "range", min: 0, max: 100, step: 1,
+                value: localW[i],
+                onChange: function(e) { handleSlider(i, parseInt(e.target.value)); },
+                style: {
+                  width: "100%", accentColor: colors[i],
+                  cursor: "pointer", height: "6px"
+                }
+              })
+            );
+          })
+        ),
+
+        /* total indicator */
+        React.createElement("div", {
+          className: "mt-4 flex items-center justify-between text-xs rounded-lg px-3 py-2 " +
+            (total === 100 ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-amber-50 border border-amber-200 text-amber-700")
+        },
+          React.createElement("span", null, "รวมทั้งหมด"),
+          React.createElement("span", { className: "font-black text-sm" }, total + "%")
+        ),
+
+        React.createElement("div", { className: "mt-5 flex justify-end gap-2" },
+          React.createElement("button", {
+            className: "px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-bold hover:bg-slate-50",
+            onClick: onClose
+          }, "ยกเลิก"),
+          React.createElement("button", {
+            className: "px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-40",
+            onClick: handleSave,
+            disabled: total !== 100
+          }, "บันทึก")
         )
       )
     )
@@ -5282,7 +5363,7 @@ var App = function App() {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }); // Run on every render to ensure React DOM updates are captured by GridStack
+  }, [activeTab]); // Re-init only when tab changes, not every render
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
