@@ -4770,6 +4770,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     onClose = _ref.onClose,
     sectionOpen = _ref.sectionOpen,
     toggleSection = _ref.toggleSection,
+    setSectionOpen = _ref.setSectionOpen,
     allData = _ref.allData,
     onAddWidget = _ref.onAddWidget;
     
@@ -11947,10 +11948,7 @@ var App = function App() {
       setAuthSessionExpiresAt(String(auth.expiresAt || ''));
       setAuthUser(auth.user);
       setAuthPassword('');
-      setStatusInfo({
-        type: 'success',
-        message: 'เข้าสู่ระบบสำเร็จ'
-      });
+      
       return result;
     }).catch(function (error) {
       setAuthError(error && error.message ? error.message : 'เข้าสู่ระบบไม่สำเร็จ');
@@ -12916,6 +12914,7 @@ var App = function App() {
     isOpen: isCustomDashboardOpen,
     onClose: function() { return setIsCustomDashboardOpen(false); },
     sectionOpen: sectionOpen,
+    setSectionOpen: setSectionOpen,
     toggleSection: toggleSection,
     allData: allData,
     onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
