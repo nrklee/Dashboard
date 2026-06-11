@@ -4866,32 +4866,28 @@ var sectionTitles = {
             }, mockGridEl);
             
             window.toggleMockWidget = function(key) {
-                if (typeof setSectionOpen === 'function') {
-                    var isCurrentlyOpen = sectionOpen[key];
-                    setSectionOpen(function(prev) {
-                        var next = Object.assign({}, prev);
-                        next[key] = !isCurrentlyOpen;
-                        return next;
+                if (!mGrid) return;
+                var id = widgetMapping[key];
+                var node = mGrid.engine.nodes.find(function(n) { return n.id === id || (n.el && n.el.getAttribute('gs-id') === id); });
+                
+                if (!node) {
+                    var el = mGrid.addWidget({
+                        id: id,
+                        x: 0, y: 100,
+                        w: 12, h: 4,
+                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 hover:bg-red-50 rounded-full cursor-pointer material-symbols-outlined text-[20px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm text-slate-700">' + (sectionTitles[key] || key) + '</p></div>'
                     });
+                    if (el) el.setAttribute('gs-id', id);
                     
-                    var id = widgetMapping[key];
-                    if (!isCurrentlyOpen) {
-                        if (mGrid) {
-                            var el = mGrid.addWidget({
-                                id: id,
-                                x: 0, y: 100,
-                                w: 12, h: 4,
-                                content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
-                            });
-                            if (el) el.setAttribute('gs-id', id);
-                        }
-                    } else {
-                        if (mGrid) {
-                            var node = mGrid.engine.nodes.find(function(n) { return n.id === id || (n.el && n.el.getAttribute('gs-id') === id); });
-                            if (node && node.el) {
-                                mGrid.removeWidget(node.el, true);
-                            }
-                        }
+                    if (typeof setSectionOpen === 'function') {
+                        setSectionOpen(function(prev) { var next = Object.assign({}, prev); next[key] = true; return next; });
+                    }
+                } else {
+                    if (node.el) {
+                        mGrid.removeWidget(node.el, true);
+                    }
+                    if (typeof setSectionOpen === 'function') {
+                        setSectionOpen(function(prev) { var next = Object.assign({}, prev); next[key] = false; return next; });
                     }
                 }
             };
