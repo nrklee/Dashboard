@@ -3095,7 +3095,7 @@ var MultiSelect = function MultiSelect(_ref2) {
       return setIsOpen(!isOpen);
     },
     disabled: disabled,
-    className: "w-full text-left border rounded-lg flex justify-between items-center transition-colors bg-white ".concat(size === 'sm' ? 'p-1.5 text-xs' : 'p-2 text-sm', " ").concat(disabled ? 'opacity-70 cursor-not-allowed' : '').concat(isOpen ? ' border-blue-500 ring-1 ring-blue-100' : ' border-slate-300 hover:bg-slate-50')
+    className: "w-full text-left border rounded-lg flex justify-between items-center transition-colors bg-white ".concat(size === 'sm' ? 'py-1 px-2 text-[11px]' : 'p-2 text-sm', " ").concat(disabled ? 'opacity-70 cursor-not-allowed' : '').concat(isOpen ? ' border-blue-500 ring-1 ring-blue-100' : ' border-slate-300 hover:bg-slate-50')
   }, /*#__PURE__*/React.createElement("span", {
     className: "truncate ".concat(selected.length === 0 ? 'text-slate-400' : 'text-blue-700 font-medium')
   }, summaryText), /*#__PURE__*/React.createElement(Icon, {
@@ -13429,12 +13429,10 @@ customWidgets.map(function(widget) {
 }))), sectionExpanded.repeatGap && /*#__PURE__*/React.createElement("div", {
   className: "repeat-gap-content w-full fade-in flex flex-col flex-1 min-h-0"
 }, /*#__PURE__*/React.createElement("div", {
-  className: "mb-4 flex flex-wrap gap-3 p-4 bg-slate-50/50 rounded-lg border border-slate-100"
-}, /*#__PURE__*/React.createElement("div", {
+  className: "mb-2 flex flex-wrap gap-2 px-3 py-2 bg-slate-50/50 rounded-lg border border-slate-100"
+}, repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("div", {
   className: "flex items-center gap-2 w-full mb-1"
-}, /*#__PURE__*/React.createElement("span", {
-  className: "text-sm font-bold text-slate-700"
-}, ""), repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("button", {
+}, /*#__PURE__*/React.createElement("button", {
   onClick: clearRepeatGapFilters,
   className: "text-[11px] text-blue-600 hover:text-blue-700 hover:underline px-2 py-0.5 rounded bg-blue-50"
 }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (", repeatGapActiveFilterCount, ")")), /*#__PURE__*/React.createElement(MultiSelect, {
