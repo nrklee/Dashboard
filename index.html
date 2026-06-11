@@ -185,7 +185,10 @@
             width: 26px !important;
             height: 26px !important;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
-            z-index: 10;
+            z-index: 99999 !important;
+            pointer-events: auto !important;
+            cursor: nwse-resize !important;
+            display: block !important;
         }
         html[data-theme='dark'] .ui-resizable-se {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='16 22 22 22 22 16'/%3E%3Cpolyline points='8 2 2 2 2 8'/%3E%3Cline x1='22' y1='22' x2='2' y2='2'/%3E%3C/svg%3E");
@@ -3861,7 +3864,7 @@ var SalesGuideList = function SalesGuideList(_ref9) {
     }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E17\u0E35\u0E48\u0E21\u0E35\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E43\u0E19 scope \u0E19\u0E35\u0E49");
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "sales-guide-list-shell flex-1 min-h-0 custom-scrollbar border rounded-lg bg-white"
+    className: "sales-guide-list-shell flex-1 min-h-0 custom-scrollbar border rounded-lg bg-white overflow-y-auto", style: { maxHeight: "280px" }
   }, /*#__PURE__*/React.createElement("div", {
     className: "sales-guide-list-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -4879,30 +4882,13 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
       onClose = _ref.onClose,
       weights = _ref.weights,
       onSave = _ref.onSave;
-  
-  var m1State = React.useState(weights ? weights.month1 : 50);
-  var m1 = m1State[0];
-  var setM1 = m1State[1];
-  
-  var m2State = React.useState(weights ? weights.month2 : 30);
-  var m2 = m2State[0];
-  var setM2 = m2State[1];
-  
-  var m3State = React.useState(weights ? weights.month3 : 20);
-  var m3 = m3State[0];
-  var setM3 = m3State[1];
-
-  React.useEffect(function() {
-      if (isOpen && weights) {
-          setM1(weights.month1);
-          setM2(weights.month2);
-          setM3(weights.month3);
-      }
-  }, [isOpen, weights]);
-  
-  if (!isOpen) return null;
       
+  if (!isOpen) return null;
+
   var handleSave = function handleSave() {
+    var m1 = document.getElementById("sg_m1").value;
+    var m2 = document.getElementById("sg_m2").value;
+    var m3 = document.getElementById("sg_m3").value;
     onSave({ month1: Number(m1), month2: Number(m2), month3: Number(m3) });
     onClose();
   };
@@ -4918,15 +4904,15 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
         React.createElement("div", { className: "flex flex-col gap-3" },
           React.createElement("div", null,
             React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนล่าสุด (M-1)"),
-            React.createElement("input", { type: "number", value: m1, onChange: function(e){ setM1(e.target.value); }, className: "w-full border rounded p-2 text-sm text-slate-800" })
+            React.createElement("input", { id: "sg_m1", type: "number", defaultValue: weights ? weights.month1 : 50, className: "w-full border rounded p-2 text-sm text-slate-800" })
           ),
           React.createElement("div", null,
             React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนก่อนหน้า (M-2)"),
-            React.createElement("input", { type: "number", value: m2, onChange: function(e){ setM2(e.target.value); }, className: "w-full border rounded p-2 text-sm text-slate-800" })
+            React.createElement("input", { id: "sg_m2", type: "number", defaultValue: weights ? weights.month2 : 30, className: "w-full border rounded p-2 text-sm text-slate-800" })
           ),
           React.createElement("div", null,
             React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, "เดือนก่อนหน้า (M-3)"),
-            React.createElement("input", { type: "number", value: m3, onChange: function(e){ setM3(e.target.value); }, className: "w-full border rounded p-2 text-sm text-slate-800" })
+            React.createElement("input", { id: "sg_m3", type: "number", defaultValue: weights ? weights.month3 : 20, className: "w-full border rounded p-2 text-sm text-slate-800" })
           )
         ),
         React.createElement("div", { className: "mt-6 flex justify-end gap-2" },
