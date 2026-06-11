@@ -12846,7 +12846,7 @@ var App = function App() {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-center gap-2 flex-1 hidden lg:flex"
-  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide " }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -12860,7 +12860,7 @@ var App = function App() {
       return handleViewModeChange('yearly');
     },
     className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
-  }, "รายปี")), /*#__PURE__*/React.createElement("div", {
+  }, "รายปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide " }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12877,7 +12877,7 @@ var App = function App() {
       return setMetricMode('ton');
     },
     className: "toggle-btn ".concat(metricMode === 'ton' ? 'active' : '')
-  }, "ตัน")), metricMode === 'value' && /*#__PURE__*/React.createElement("div", {
+  }, "ตัน"))), metricMode === 'value' && /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide " }, "หน่วย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12889,7 +12889,7 @@ var App = function App() {
       return setUnitMode('thousand');
     },
     className: "toggle-btn ".concat(unitMode === 'thousand' ? 'active' : '')
-  }, "พันบาท")), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
+  }, "พันบาท"))), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
     className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
     style: {
       background: 'rgba(6, 95, 70, 0.96)',
