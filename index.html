@@ -936,6 +936,9 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
 
             /* Toggle groups: don't shrink, keep natural width */
             .toggle-group {
+                display: flex;
+                align-items: center;
+                gap: 6px;
                 flex-shrink: 0;
             }
 
@@ -1738,6 +1741,7 @@ var COLUMN_KEYWORDS = {
   size: ['ขนาด', 'size', 'weight', 'นน.', 'น้ำหนัก'],
   sku: ['sku', 'item', 'code', 'product', 'รหัส', 'สินค้า']
 };
+if (!localStorage.getItem('dashboard_layouts')) { localStorage.setItem('dashboard_layouts', JSON.stringify({'card-0':{x:0,y:0,w:12,h:2},'card-1':{x:0,y:2,w:12,h:7},'card-6':{x:0,y:7,w:12,h:4},'card-2':{x:0,y:11,w:6,h:5},'card-5':{x:6,y:11,w:6,h:5},'card-3':{x:0,y:16,w:6,h:5},'card-4':{x:6,y:16,w:6,h:5}})); localStorage.setItem('dashboard_section_open', JSON.stringify({filters:true,kpi:true,trend:true,salesGuide:true,repeatGap:true,brands:true,shops:true,district:true})); }
 var DEFAULT_SECTION_STATE = {
   filters: true,
   kpi: true,
@@ -1768,7 +1772,7 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.brands = true;
         layouts = {
             'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
-            'card-1': { x: 0, y: 2, w: 12, h: 5 }, // trend
+            'card-1': { x: 0, y: 2, w: 12, h: 7 }, // trend
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
         };
@@ -1790,7 +1794,7 @@ window.applyDefaultLayout = function(type) {
             'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
             'card-2': { x: 0, y: 2, w: 12, h: 5 }, // brands
             'card-4': { x: 0, y: 7, w: 12, h: 5 }, // repeatGap
-            'card-1': { x: 0, y: 12, w: 12, h: 4 } // trend
+            'card-1': { x: 0, y: 12, w: 12, h: 7 } // trend
         };
     } else if (type === 4) { // 4. เต็มรูปแบบ (Full)
         sectionOpen.trend = true;
@@ -1801,7 +1805,7 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.repeatGap = true;
         layouts = {
             'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
-            'card-1': { x: 0, y: 2, w: 12, h: 5 }, // trend
+            'card-1': { x: 0, y: 2, w: 12, h: 7 }, // trend
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 6, h: 5 }, // brands
             'card-5': { x: 6, y: 10, w: 6, h: 5 }, // shops
@@ -1813,6 +1817,7 @@ window.applyDefaultLayout = function(type) {
     localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
     localStorage.setItem('dashboard_section_open', JSON.stringify(sectionOpen));
     
+    if (typeof setSectionOpen === 'function') { setSectionOpen(sectionOpen); }
     // Close dropdown
     var details = document.querySelector('#default-layout-details');
     if (details) details.removeAttribute('open');
@@ -12932,13 +12937,13 @@ var App = function App() {
       return handleViewModeChange('monthly');
     },
     className: "toggle-btn ".concat(viewMode === 'monthly' ? 'active' : '')
-  }, "รายเดือน"), /*#__PURE__*/React.createElement("button", {
+  }, "เดือน"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
       return handleViewModeChange('yearly');
     },
     className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
-  }, "รายปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
+  }, "ปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -13253,7 +13258,7 @@ var App = function App() {
     className: "text-lg font-bold whitespace-nowrap"
   }, totalCVCount.toLocaleString(), " CV")))) : null), /*#__PURE__*/React.createElement("div", {
     className: "grid-stack"
-  }, (sectionOpen.trend ? /*#__PURE__*/React.createElement("div", getGridProps("card-1", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  }, (sectionOpen.trend ? /*#__PURE__*/React.createElement("div", getGridProps("card-1", 12, 7), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head cursor-move"
@@ -13268,7 +13273,7 @@ var App = function App() {
     name: sectionExpanded.trend ? "ChevronUp" : "ChevronDown",
     size: 14
   }))), sectionExpanded.trend && /*#__PURE__*/React.createElement("div", {
-    className: "fade-in flex flex-col flex-1 min-h-0 overflow-hidden pb-2"
+    className: "fade-in flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("p", {
