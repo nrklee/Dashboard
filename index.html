@@ -525,7 +525,10 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
   .sales-guide-list-inner { min-width: 0; }
   .repeat-gap-list-inner { min-width: 0; }
 }
-    </style>
+    
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+</style>
 </head>
 <body>
     <div id="root"><div style="min-height:100vh;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;font-family:"IBM Plex Sans Thai",system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#0f172a;"><div style="text-align:center;max-width:420px;"><div style="width:44px;height:44px;border:4px solid #bfdbfe;border-top-color:#2563eb;border-radius:9999px;margin:0 auto 16px auto;animation:spin 1s linear infinite;"></div><div style="font-size:22px;font-weight:700;color:#1d4ed8;margin-bottom:8px;">กำลังเปิด Dashboard</div><div style="font-size:14px;line-height:1.7;color:#475569;">กำลังเตรียมระบบและโหลดข้อมูลที่บันทึกไว้เดิม</div></div></div></div>
@@ -1028,9 +1031,11 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
             }
 
             .filters-head-row {
-                align-items: flex-start !important;
+                display: flex !important;
+                align-items: center !important;
                 gap: 10px !important;
                 margin-bottom: 10px !important;
+                width: 100% !important;
             }
 
             .filters-title {
@@ -1043,11 +1048,10 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
             }
 
             .filters-head-actions {
-                width: 100%;
-                margin-left: 0 !important;
-                justify-content: flex-start !important;
+                width: auto !important;
+                margin-left: auto !important;
+                justify-content: flex-end !important;
                 gap: 8px !important;
-                row-gap: 8px !important;
             }
 
             .filters-head-actions button {
@@ -1120,6 +1124,7 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
             .toggle-group {
                 display: flex;
                 align-items: center;
+                flex-shrink: 0 !important;
                 gap: 4px !important;
                 background: var(--surface-alt) !important;
                 border: 1px solid var(--border) !important;
@@ -1133,6 +1138,10 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
                 background: transparent !important;
                 transition: all 0.2s ease !important;
                 font-weight: 600 !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             .toggle-btn:hover {
                 background: var(--bg-soft) !important;
@@ -1743,6 +1752,79 @@ var DEFAULT_SECTION_STATE = {
   shops: true,
   district: true
 };
+
+window.applyDefaultLayout = function(type) {
+    var layouts = {};
+    var sectionOpen = {
+        filters: true,
+        kpi: true,
+        trend: false,
+        salesGuide: false,
+        repeatGap: false,
+        brands: false,
+        shops: false,
+        district: false
+    };
+
+    if (type === 1) { // 1. ผู้บริหาร (Executive)
+        sectionOpen.trend = true;
+        sectionOpen.district = true;
+        sectionOpen.brands = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-1': { x: 0, y: 2, w: 12, h: 4 }, // trend
+            'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
+            'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
+        };
+    } else if (type === 2) { // 2. นักขาย (Sales Focus)
+        sectionOpen.salesGuide = true;
+        sectionOpen.repeatGap = true;
+        sectionOpen.shops = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-3': { x: 0, y: 2, w: 6, h: 5 },  // salesGuide
+            'card-4': { x: 6, y: 2, w: 6, h: 5 },  // repeatGap
+            'card-5': { x: 0, y: 7, w: 12, h: 4 }  // shops
+        };
+    } else if (type === 3) { // 3. สินค้า (Product Focus)
+        sectionOpen.brands = true;
+        sectionOpen.repeatGap = true;
+        sectionOpen.trend = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-2': { x: 0, y: 2, w: 12, h: 5 }, // brands
+            'card-4': { x: 0, y: 7, w: 12, h: 5 }, // repeatGap
+            'card-1': { x: 0, y: 12, w: 12, h: 4 } // trend
+        };
+    } else if (type === 4) { // 4. เต็มรูปแบบ (Full)
+        sectionOpen.trend = true;
+        sectionOpen.district = true;
+        sectionOpen.brands = true;
+        sectionOpen.shops = true;
+        sectionOpen.salesGuide = true;
+        sectionOpen.repeatGap = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-1': { x: 0, y: 2, w: 12, h: 4 }, // trend
+            'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
+            'card-2': { x: 0, y: 10, w: 6, h: 5 }, // brands
+            'card-5': { x: 6, y: 10, w: 6, h: 5 }, // shops
+            'card-3': { x: 0, y: 15, w: 6, h: 5 }, // salesGuide
+            'card-4': { x: 6, y: 15, w: 6, h: 5 }  // repeatGap
+        };
+    }
+
+    localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
+    localStorage.setItem('dashboard_section_open', JSON.stringify(sectionOpen));
+    
+    // Close dropdown
+    var details = document.querySelector('#default-layout-details');
+    if (details) details.removeAttribute('open');
+    
+    // Reload to apply new layout
+    window.location.reload();
+};
+
 var createEmptyRepeatGapFilters = function createEmptyRepeatGapFilters() {
   return {
     cv: [],
@@ -12846,7 +12928,7 @@ var App = function App() {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-center gap-2 flex-1 hidden lg:flex"
-  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide " }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
+  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -12860,7 +12942,7 @@ var App = function App() {
       return handleViewModeChange('yearly');
     },
     className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
-  }, "รายปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide " }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
+  }, "รายปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12877,7 +12959,7 @@ var App = function App() {
       return setMetricMode('ton');
     },
     className: "toggle-btn ".concat(metricMode === 'ton' ? 'active' : '')
-  }, "ตัน"))), metricMode === 'value' && /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide " }, "หน่วย:"), /*#__PURE__*/React.createElement("div", {
+  }, "ตัน"))), metricMode === 'value' && /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "หน่วย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12908,7 +12990,25 @@ var App = function App() {
     },
     className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-blue-600 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-700 dark:hover:bg-blue-400 rounded-lg shadow-sm transition-colors font-bold mr-2 border border-blue-700 dark:border-blue-400 whitespace-nowrap",
     title: "Custom Dashboard"
-  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"),
+  /*#__PURE__*/React.createElement("details", {
+    id: "default-layout-details",
+    className: "relative group cursor-pointer mr-2",
+    style: { listStyle: 'none' }
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-slate-100 dark:bg-surface-alt text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg shadow-sm transition-colors font-bold border border-slate-300 dark:border-slate-600 whitespace-nowrap",
+    title: "Default Layouts",
+    style: { listStyle: 'none' }
+  }, /*#__PURE__*/React.createElement(Icon, { name: "ViewQuilt", size: 14 }), " Default Layout"),
+  /*#__PURE__*/React.createElement("div", {
+    className: "absolute right-0 mt-2 w-56 bg-white dark:bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
+  },
+    /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wide border-b border-outline-variant/30 mb-1" }, "เลือกเทมเปลต"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, /*#__PURE__*/React.createElement(Icon, { name: "TrendingUp", size: 14 }), " 1. ผู้บริหาร (Executive)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. นักขาย (Sales Focus)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 3. สินค้า (Product Focus)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. เต็มรูปแบบ (Full Details)")
+  )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
