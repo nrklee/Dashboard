@@ -1772,7 +1772,7 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.brands = true;
         layouts = {
             'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
-            'card-1': { x: 0, y: 2, w: 12, h: 4 }, // trend
+            'card-1': { x: 0, y: 2, w: 12, h: 5 }, // trend
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
         };
@@ -1805,7 +1805,7 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.repeatGap = true;
         layouts = {
             'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
-            'card-1': { x: 0, y: 2, w: 12, h: 4 }, // trend
+            'card-1': { x: 0, y: 2, w: 12, h: 5 }, // trend
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 6, h: 5 }, // brands
             'card-5': { x: 6, y: 10, w: 6, h: 5 }, // shops
@@ -12927,8 +12927,8 @@ var App = function App() {
     onClick: function() { setIsSidebarOpen(!isSidebarOpen); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center gap-2 flex-1 hidden lg:flex"
-  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-start xl:justify-center gap-3 flex-1 hidden lg:flex overflow-x-auto hide-scrollbar whitespace-nowrap flex-nowrap pl-2"
+  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-1 px-2 rounded-lg whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -12942,7 +12942,7 @@ var App = function App() {
       return handleViewModeChange('yearly');
     },
     className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
-  }, "รายปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
+  }, "รายปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-1 px-2 rounded-lg whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12959,7 +12959,7 @@ var App = function App() {
       return setMetricMode('ton');
     },
     className: "toggle-btn ".concat(metricMode === 'ton' ? 'active' : '')
-  }, "ตัน"))), metricMode === 'value' && /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-1.5 ml-1" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "หน่วย:"), /*#__PURE__*/React.createElement("div", {
+  }, "ตัน"))), metricMode === 'value' && /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-1 px-2 rounded-lg whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "หน่วย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -13138,7 +13138,7 @@ var App = function App() {
   })) : (sectionOpen.filters !== false ? /*#__PURE__*/React.createElement("div", {
     className: "dashboard-filters bg-white border-b border-slate-200 p-4 shadow-sm z-10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "filters-head-row mb-2"
+    className: "filters-head-row mb-2 flex items-center justify-between w-full flex-nowrap"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Filter",
     size: 16,
@@ -13158,7 +13158,7 @@ var App = function App() {
   }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))), sectionExpanded.filters && /*#__PURE__*/React.createElement("div", {
     className: "filters-panel-content fade-in flex-1 min-h-0 flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "filters-source-meta text-[13px] text-slate-500 mb-3"
+    className: "filters-source-meta text-[13px] text-slate-500 mb-3 flex flex-wrap gap-x-4 gap-y-1 items-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "filters-source-meta-row"
   }, /*#__PURE__*/React.createElement("span", {
