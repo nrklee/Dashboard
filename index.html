@@ -79,34 +79,36 @@
     <style>
         /* GLOBAL TOGGLE STYLES FIX */
         .toggle-group {
-            display: flex !important;
+            display: inline-flex !important;
             align-items: center !important;
-            gap: 6px !important;
+            gap: 0 !important;
             flex-shrink: 0 !important;
+            border: 1px solid #5a73a3 !important;
+            border-radius: 999px !important;
+            padding: 2px !important;
+            background: #eef2fa !important;
         }
         .toggle-btn {
-            border: 1px solid var(--border) !important;
-            border-radius: 6px !important;
-            color: var(--text-sec) !important;
-            background: var(--surface-alt) !important;
+            border: none !important;
+            border-radius: 999px !important;
+            color: #3b4e76 !important;
+            background: transparent !important;
             transition: all 0.2s ease !important;
             font-weight: 600 !important;
             white-space: nowrap !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            padding: 4px 10px !important;
+            padding: 5px 16px !important;
+            font-size: 13px !important;
         }
         .toggle-btn:hover {
-            background: var(--bg-soft) !important;
-            border-color: var(--border) !important;
-            color: var(--text) !important;
+            color: #1a2a4b !important;
         }
         .toggle-btn.active {
-            background: var(--accent) !important;
-            border-color: var(--accent-border) !important;
-            color: var(--accent-text, #fff) !important;
-            box-shadow: var(--shadow-sm) !important;
+            background: #395eb5 !important;
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
 /* ═══════════════════════════════════════════════════════════
@@ -12960,7 +12962,7 @@ var App = function App() {
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
     /*#__PURE__*/React.createElement("button", {
       onClick: function() { setIsDashboardMenuOpen(!isDashboardMenuOpen); },
-      className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-medium hover:bg-surface-container-high w-full text-left"
+      className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-bold hover:bg-surface-container-high w-full text-left"
     }, 
       /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "dashboard"), 
       /*#__PURE__*/React.createElement("span", { className: "flex-1" }, "Dashboard"),
@@ -13018,19 +13020,19 @@ var App = function App() {
   ), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("import_export"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "sync_alt"), "Import / Export"), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("target_match"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "center_focus_strong"), "Target Match"), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("setting"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'setting' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'setting' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "settings"), "Setting")), /*#__PURE__*/React.createElement("div", {
