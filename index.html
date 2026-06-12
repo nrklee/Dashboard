@@ -1815,7 +1815,7 @@ window.applyDefaultLayout = function(type) {
         district: false
     };
 
-    if (type === 1) { // 1. ผู้บริหาร (Executive)
+    if (type === 1) { // 1. ผู้บริหาร
         sectionOpen.trend = true;
         sectionOpen.district = true;
         sectionOpen.brands = true;
@@ -1825,7 +1825,7 @@ window.applyDefaultLayout = function(type) {
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
         };
-    } else if (type === 2) { // 2. นักขาย (Sales Focus)
+    } else if (type === 2) { // 2. พนักงานขาย
         sectionOpen.salesGuide = true;
         sectionOpen.repeatGap = true;
         sectionOpen.shops = true;
@@ -1845,7 +1845,7 @@ window.applyDefaultLayout = function(type) {
             'card-4': { x: 0, y: 7, w: 12, h: 5 }, // repeatGap
             'card-1': { x: 0, y: 12, w: 12, h: 7 } // trend
         };
-    } else if (type === 4) { // 4. เต็มรูปแบบ (Full)
+    } else if (type === 4) { // 4. ภาพรวม
         sectionOpen.trend = true;
         sectionOpen.district = true;
         sectionOpen.brands = true;
@@ -5398,6 +5398,9 @@ var App = function App() {
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
   var _useStateSidebar = React.useState(false), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
+  var _useStateDashboardMenu = React.useState(true), isDashboardMenuOpen = _useStateDashboardMenu[0], setIsDashboardMenuOpen = _useStateDashboardMenu[1];
+  var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
+
   
   React.useEffect(function() {
     var timer;
@@ -12922,12 +12925,65 @@ var App = function App() {
   }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 px-4 flex-1"
   }, 
-  /*#__PURE__*/React.createElement("button", {
-    onClick: function() { setActiveTab("dashboard"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'dashboard' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined"
-  }, "dashboard"), "\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"), 
+  /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: function() { setIsDashboardMenuOpen(!isDashboardMenuOpen); },
+      className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-medium hover:bg-surface-container-high w-full text-left"
+    }, 
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "dashboard"), 
+      /*#__PURE__*/React.createElement("span", { className: "flex-1" }, "Dashboard"),
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: isDashboardMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
+    ),
+    isDashboardMenuOpen && /*#__PURE__*/React.createElement("div", { className: "flex flex-col pl-10 pr-4 mt-1 gap-1" },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setActiveTab("dashboard"); },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors " + (activeTab === 'dashboard' ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+      }, "1. Overview"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setActiveTab("rebate_program"); },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors " + (activeTab === 'rebate_program' ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+      }, "2. Rebate Program"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setActiveTab("point_program"); },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors " + (activeTab === 'point_program' ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+      }, "3. Point Program"),
+      customDashboards.map(function(cd, i) {
+        var id = "custom_dashboard_" + i;
+        return /*#__PURE__*/React.createElement("button", {
+          key: id,
+          onClick: function() { setActiveTab(id); },
+          className: "text-left px-3 py-2 rounded-lg text-sm transition-colors flex justify-between items-center group " + (activeTab === id ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+        }, 
+          /*#__PURE__*/React.createElement("span", null, (4 + i) + ". " + cd),
+          /*#__PURE__*/React.createElement("span", {
+             onClick: function(e) {
+                 e.stopPropagation();
+                 if(window.confirm("ยืนยันการลบ Dashboard " + cd + "?")) {
+                     var newDashboards = [].concat(customDashboards);
+                     newDashboards.splice(i, 1);
+                     setCustomDashboards(newDashboards);
+                     localStorage.setItem('custom_dashboards', JSON.stringify(newDashboards));
+                     if(activeTab === id) setActiveTab("dashboard");
+                 }
+             },
+             className: "material-symbols-outlined text-[14px] opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+          }, "delete")
+        );
+      }),
+      (customDashboards.length < 5) && /*#__PURE__*/React.createElement("button", {
+        onClick: function() { 
+          var name = window.prompt("ตั้งชื่อ Dashboard ใหม่ (New Create)");
+          if (name && name.trim()) {
+            var newDashboards = [].concat(customDashboards, [name.trim()]);
+            setCustomDashboards(newDashboards);
+            localStorage.setItem('custom_dashboards', JSON.stringify(newDashboards));
+            setActiveTab("custom_dashboard_" + (newDashboards.length - 1));
+          }
+        },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors text-blue-600 font-medium hover:bg-blue-50 mt-1 flex items-center gap-1"
+      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "add"), "+ New Create")
+    )
+  ), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("import_export"); },
     className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
@@ -13054,10 +13110,10 @@ var App = function App() {
     className: "absolute right-0 mt-2 w-56 bg-white dark:bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
   },
     /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wide border-b border-outline-variant/30 mb-1" }, "เลือกเทมเปลต"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, /*#__PURE__*/React.createElement(Icon, { name: "TrendingUp", size: 14 }), " 1. ผู้บริหาร (Executive)"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. นักขาย (Sales Focus)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, " 1. ผู้บริหาร"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. พนักงานขาย"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 3. สินค้า (Product Focus)"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. เต็มรูปแบบ (Full Details)")
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม")
   )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
