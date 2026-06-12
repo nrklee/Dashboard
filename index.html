@@ -934,7 +934,31 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
                 flex-shrink: 0;
             }
 
-            /* Toggle groups: don't shrink, keep natural width */
+            
+            .toggle-btn {
+                border: 1px solid var(--border) !important;
+                border-radius: 6px !important;
+                color: var(--text-sec) !important;
+                background: var(--surface-alt) !important;
+                transition: all 0.2s ease !important;
+                font-weight: 600 !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .toggle-btn:hover {
+                background: var(--bg-soft) !important;
+                border-color: var(--border) !important;
+                color: var(--text) !important;
+            }
+            .toggle-btn.active {
+                background: var(--accent) !important;
+                border-color: var(--accent-border) !important;
+                color: var(--accent-text, #fff) !important;
+                box-shadow: var(--shadow-sm) !important;
+            }
+/* Toggle groups: don't shrink, keep natural width */
             .toggle-group {
                 display: flex;
                 align-items: center;
@@ -1741,7 +1765,32 @@ var COLUMN_KEYWORDS = {
   size: ['ขนาด', 'size', 'weight', 'นน.', 'น้ำหนัก'],
   sku: ['sku', 'item', 'code', 'product', 'รหัส', 'สินค้า']
 };
-if (!localStorage.getItem('dashboard_layouts')) { localStorage.setItem('dashboard_layouts', JSON.stringify({'card-0':{x:0,y:0,w:12,h:2},'card-1':{x:0,y:2,w:12,h:7},'card-6':{x:0,y:7,w:12,h:4},'card-2':{x:0,y:11,w:6,h:5},'card-5':{x:6,y:11,w:6,h:5},'card-3':{x:0,y:16,w:6,h:5},'card-4':{x:6,y:16,w:6,h:5}})); localStorage.setItem('dashboard_section_open', JSON.stringify({filters:true,kpi:true,trend:true,salesGuide:true,repeatGap:true,brands:true,shops:true,district:true})); }
+
+
+(function(){
+    var layouts = localStorage.getItem('dashboard_layouts');
+    var isV2 = localStorage.getItem('dashboard_v2_init');
+    var shouldApplyDefault = false;
+    
+    if (!isV2) {
+        shouldApplyDefault = true;
+        localStorage.setItem('dashboard_v2_init', 'true');
+    } else if (!layouts) {
+        shouldApplyDefault = true;
+    } else {
+        try {
+            if (Object.keys(JSON.parse(layouts)).length === 0) {
+                shouldApplyDefault = true;
+            }
+        } catch(e) {}
+    }
+    
+    if (shouldApplyDefault) {
+        localStorage.setItem('dashboard_layouts', JSON.stringify({'card-0':{x:0,y:0,w:12,h:2},'card-1':{x:0,y:2,w:12,h:7},'card-6':{x:0,y:9,w:12,h:4},'card-2':{x:0,y:13,w:6,h:5},'card-5':{x:6,y:13,w:6,h:5},'card-3':{x:0,y:18,w:6,h:5},'card-4':{x:6,y:18,w:6,h:5}}));
+        localStorage.setItem('dashboard_section_open', JSON.stringify({filters:true,kpi:true,trend:true,salesGuide:true,repeatGap:true,brands:true,shops:true,district:true}));
+    }
+})();
+
 var DEFAULT_SECTION_STATE = {
   filters: true,
   kpi: true,
