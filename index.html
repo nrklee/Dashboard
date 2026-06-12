@@ -77,6 +77,38 @@
         }
     </script>
     <style>
+        /* GLOBAL TOGGLE STYLES FIX */
+        .toggle-group {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            flex-shrink: 0 !important;
+        }
+        .toggle-btn {
+            border: 1px solid var(--border) !important;
+            border-radius: 6px !important;
+            color: var(--text-sec) !important;
+            background: var(--surface-alt) !important;
+            transition: all 0.2s ease !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 4px 10px !important;
+        }
+        .toggle-btn:hover {
+            background: var(--bg-soft) !important;
+            border-color: var(--border) !important;
+            color: var(--text) !important;
+        }
+        .toggle-btn.active {
+            background: var(--accent) !important;
+            border-color: var(--accent-border) !important;
+            color: var(--accent-text, #fff) !important;
+            box-shadow: var(--shadow-sm) !important;
+        }
+
 /* ═══════════════════════════════════════════════════════════
    SALYTIX  ·  New Design System
    Accent: Violet  ·  Clean Minimal  ·  2025
@@ -12981,7 +13013,7 @@ var App = function App() {
           }
         },
         className: "text-left px-3 py-2 rounded-lg text-sm transition-colors text-blue-600 font-medium hover:bg-blue-50 mt-1 flex items-center gap-1"
-      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "add"), "+ New Create")
+      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "add"), "New Create")
     )
   ), 
   /*#__PURE__*/React.createElement("button", {
@@ -13034,7 +13066,7 @@ var App = function App() {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-start xl:justify-center gap-4 flex-1 hidden lg:flex whitespace-nowrap flex-nowrap pl-2"
-  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
+  }, (activeTab === 'dashboard' || activeTab.startsWith('custom_dashboard_')) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -13297,7 +13329,7 @@ var App = function App() {
       }
     }));
   })))) : null), /*#__PURE__*/React.createElement("main", {
-    className: "dashboard-main overflow-y-auto p-5 bg-slate-50 flex-col " + (activeTab === 'dashboard' ? 'flex flex-1' : 'hidden')
+    className: "dashboard-main overflow-y-auto p-5 bg-slate-50 flex-col " + ((activeTab === 'dashboard' || activeTab.startsWith('custom_dashboard_')) ? 'flex flex-1' : 'hidden')
   }, (sectionOpen.kpi ? /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
