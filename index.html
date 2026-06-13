@@ -6365,11 +6365,16 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   var dbBrands = new Set();
   var dbGroups = new Set();
   var dbDistricts = new Set();
+  var groupBrandsMap = {};
   if (allData && allData.monthly) {
       allData.monthly.forEach(function(row) {
           if (row.brand) dbBrands.add(row.brand);
           if (row.group) dbGroups.add(row.group);
           if (row.district) dbDistricts.add(row.district);
+          if (row.group && row.brand) {
+              if (!groupBrandsMap[row.group]) groupBrandsMap[row.group] = new Set();
+              groupBrandsMap[row.group].add(row.brand);
+          }
       });
   }
 
@@ -6379,7 +6384,6 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   };
 
   return React.createElement("div", { className: "status-modal-overlay z-[9999]" },
-    React.createElement("datalist", { id: "db-brands-list" }, Array.from(dbBrands).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
     React.createElement("datalist", { id: "db-groups-list" }, Array.from(dbGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
     React.createElement("div", { className: "status-modal flex flex-col", style: { width: '800px', maxWidth: '95vw', maxHeight: '90vh' } },
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
@@ -6394,7 +6398,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "เลือกเขตจาก Dropdown, พิมพ์กลุ่มสินค้า และหาก 1 เป้าหมายใช้คุมหลายแบรนด์ ให้กดปุ่ม ", React.createElement("strong", null, "+ เพิ่มแบรนด์"), " เพื่อเพิ่มช่องกรอกแบรนด์ได้ตามต้องการ")
+                React.createElement("p", null, "เลือกเขตจาก Dropdown, พิมพ์กลุ่มสินค้า (เมื่อเลือกกลุ่มสินค้าแล้ว ตัวเลือกแบรนด์จะกรองตามกลุ่มนั้นๆ) และหาก 1 เป้าหมายใช้คุมหลายแบรนด์ ให้กดปุ่ม ", React.createElement("strong", null, "+ เพิ่มแบรนด์"), " เพื่อเพิ่มช่องกรอกแบรนด์ได้ตามต้องการ")
             )
         ),
         
@@ -6437,11 +6441,16 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("div", { className: "space-y-3" },
                 targetList.map(function(t, idx) {
                     var key = 'brand||' + t.group + '||' + t.brand;
-                    var keyGrp = 'group||' + t.group;
+                    var keyGrp = 'group||' + t.group + '||' + t.brand;
+                    var legacyKeyGrp = 'group||' + t.group;
                     var val = localMap[key] || '';
-                    var valGrp = localMap[keyGrp] || '';
+                    var valGrp = localMap[keyGrp] !== undefined ? localMap[keyGrp] : (localMap[legacyKeyGrp] || '');
                     var brandArray = val ? val.split(',') : [''];
+                    var datalistId = "db-brands-list-" + idx;
+                    var availableBrands = valGrp && groupBrandsMap[valGrp] ? Array.from(groupBrandsMap[valGrp]) : Array.from(dbBrands);
+                    
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
+                        React.createElement("datalist", { id: datalistId }, availableBrands.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("div", { className: "flex items-start gap-3" },
                             React.createElement("div", { className: "w-1/3 mt-1" },
                                 React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
@@ -6474,7 +6483,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             return React.createElement("div", { key: bIdx, className: "flex items-center gap-1" },
                                                 React.createElement("input", {
                                                     type: "text",
-                                                    list: "db-brands-list",
+                                                    list: datalistId,
                                                     className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-blue-50/30 outline-none",
                                                     placeholder: "ระบุแบรนด์",
                                                     value: brandItem.trim(),
@@ -14650,11 +14659,12 @@ var App = function App() {
                 var mappedTargets = [];
                 pendingTG26Data.forEach(function(row) {
                     var brandKey = 'brand||' + row.group + '||' + row.brand;
-                    var groupKey = 'group||' + row.group;
+                    var groupKey = 'group||' + row.group + '||' + row.brand;
+                    var legacyGroupKey = 'group||' + row.group;
                     var distKey = 'dist||' + row.district;
                     
                     var mapBrandVal = newMap[brandKey] || '';
-                    var mapGroupVal = newMap[groupKey] || '';
+                    var mapGroupVal = newMap[groupKey] !== undefined ? newMap[groupKey] : (newMap[legacyGroupKey] || '');
                     var mapDistVal = newMap[distKey] || row.district;
                     
                     if (mapBrandVal.trim() !== '') {
