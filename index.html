@@ -1719,17 +1719,18 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 // 1. Firebase Configuration (ผู้ใช้ต้องนำ Config ของตนเองมาใส่ที่นี่)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCm6_UtPJANanuGyRy_Ef3VGllEJH7CbvQ",
+  authDomain: "salytix-dashboard.firebaseapp.com",
+  projectId: "salytix-dashboard",
+  storageBucket: "salytix-dashboard.firebasestorage.app",
+  messagingSenderId: "815101407643",
+  appId: "1:815101407643:web:090c0261c85da2d25b713e",
+  measurementId: "G-KDB97BDEEB"
 };
 
 // นำเข้า Firebase SDK ผ่าน CDN ด้วย Dynamic Import เพื่อไม่ให้ block การทำงาน
 let app, auth, db;
-let signInWithEmailAndPassword, signOut, onAuthStateChanged;
+let signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, sendPasswordResetEmail;
 let collection, addDoc, getDocs, doc, setDoc, getDoc;
 
 import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then((mod) => {
@@ -1740,6 +1741,8 @@ import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then((mod) 
     signInWithEmailAndPassword = mod.signInWithEmailAndPassword;
     signOut = mod.signOut;
     onAuthStateChanged = mod.onAuthStateChanged;
+    updatePassword = mod.updatePassword;
+    sendPasswordResetEmail = mod.sendPasswordResetEmail;
     return import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 }).then((mod) => {
     db = mod.getFirestore(app);
@@ -1792,12 +1795,12 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
             };
         } catch (error) {
             console.error("Login Error:", error);
-            return { ok: false, error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง (Admin เท่านั้น)' };
+            throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง (Admin เท่านั้น)');
         }
     } 
     
     if (mode === 'verify_session') {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const unsubscribe = onAuthStateChanged(auth, async (user) => {
                 unsubscribe();
                 if (user) {
@@ -1809,10 +1812,35 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
                         }
                     });
                 } else {
-                    resolve({ ok: false, error: 'Session expired' });
+                    reject(new Error('Session expired'));
                 }
             });
         });
+    }
+    
+    if (mode === 'change_password_public' || mode === 'change_password') {
+        const { username, currentPassword, newPassword } = extraPayload;
+        try {
+            // Sign in to get the current user object securely
+            const userCredential = await signInWithEmailAndPassword(auth, username, currentPassword);
+            await updatePassword(userCredential.user, newPassword);
+            return { ok: true };
+        } catch (error) {
+            console.error("Change Password Error:", error);
+            throw new Error('รหัสผ่านปัจจุบันไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+        }
+    }
+
+    if (mode === 'reset_password' || mode === 'forgot_password') {
+        const { username } = extraPayload;
+        try {
+            await sendPasswordResetEmail(auth, username);
+            throw new Error('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว! (กรุณาเช็คใน Inbox หรือ Junk) ไม่ต้องกรอก Reset Code ที่นี่');
+        } catch (error) {
+            if (error.message.includes('ส่งลิงก์')) throw error;
+            console.error("Reset Password Error:", error);
+            throw new Error('ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ กรุณาตรวจสอบอีเมลอีกครั้ง');
+        }
     }
 
     if (mode === 'logout') {
@@ -1820,7 +1848,7 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
         return { ok: true };
     }
 
-    return { ok: false, error: 'คำสั่งนี้ถูกระงับการใช้งานใน V2' };
+    throw new Error('คำสั่งนี้ถูกระงับการใช้งานใน V2');
 };
 
 // ----------------------------------------------------------------------
