@@ -1904,6 +1904,7 @@ window.uploadSalesToFirebase = async function(file) {
 
     // แสดงแจ้งเตือนในหน้า UI (ถ้า React ฟังก์ชันยังทำงานอยู่)
     console.log("เริ่มอัปโหลดไฟล์เข้าระบบ Firebase...");
+    alert("ระบบกำลังอัปโหลดข้อมูลเข้าสู่ Firebase (กรุณารอสักครู่)...");
 
     try {
         const data = await file.arrayBuffer();
