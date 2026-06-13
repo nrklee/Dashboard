@@ -6341,8 +6341,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     pendingData = _ref.pendingData,
     mappings = _ref.mappings,
     setMappings = _ref.setMappings,
-    onSaveAndProcess = _ref.onSaveAndProcess,
-    allData = _ref.allData;
+    allData = _ref.allData,
+    onSaveAndProcess = _ref.onSaveAndProcess;
   
   if (!isOpen) return null;
 
@@ -6351,12 +6351,27 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     setLocalMap = _useState[1];
 
   var uniqueTargets = {};
+  var uniqueDistricts = {};
   (pendingData || []).forEach(function (row) {
-    var key = row.group + '||' + row.brand;
+    uniqueDistricts[row.district] = true;
+    var key = 'brand||' + row.group + '||' + row.brand;
     if (!uniqueTargets[key]) uniqueTargets[key] = { group: row.group, brand: row.brand, val: 0 };
     uniqueTargets[key].val += row.value;
   });
   var targetList = Object.values(uniqueTargets);
+  var districtList = Object.keys(uniqueDistricts);
+  
+  // Create unique list of options from allData
+  var dbBrands = new Set();
+  var dbGroups = new Set();
+  var dbDistricts = new Set();
+  if (allData && allData.monthly) {
+      allData.monthly.forEach(function(row) {
+          if (row.brand) dbBrands.add(row.brand);
+          if (row.group) dbGroups.add(row.group);
+          if (row.district) dbDistricts.add(row.district);
+      });
+  }
 
   var handleSave = function handleSave() {
     setMappings(localMap);
@@ -6364,41 +6379,43 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   };
 
   return React.createElement("div", { className: "status-modal-overlay z-[9999]" },
+    React.createElement("datalist", { id: "db-brands-list" }, Array.from(dbBrands).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+    React.createElement("datalist", { id: "db-groups-list" }, Array.from(dbGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+    React.createElement("datalist", { id: "db-districts-list" }, Array.from(dbDistricts).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
     React.createElement("div", { className: "status-modal flex flex-col", style: { width: '800px', maxWidth: '95vw', maxHeight: '90vh' } },
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
-            "ตั้งค่า Target Match (การจับคู่เป้าหมาย)"
+            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม และ แบรนด์)"
         ),
-        React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "×")
+        React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "X")
       ),
       React.createElement("div", { className: "flex-1 overflow-y-auto p-6 bg-slate-50" },
         React.createElement("div", { className: "bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg mb-6 text-sm flex items-start gap-3" },
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "โปรดพิมพ์ชื่อ 'ยี่ห้อ' หรือ 'รุ่น' ที่มีในระบบยอดขาย เพื่อจับคู่กับเป้าหมายที่อ่านได้จากไฟล์ หากต้องการจับคู่ 1 เป้าหมาย ให้เข้ากับหลายแบรนด์ ให้ใช้เครื่องหมายจุลภาค (,) คั่น เช่น ", React.createElement("code", { className: "bg-white px-1 py-0.5 rounded text-blue-600" }, "SmartHeart, SmartHeart M&B"))
+                React.createElement("p", null, "พิมพ์เพื่อค้นหาชื่อที่มีในระบบยอดขาย หาก 1 เป้าหมายใช้คุมหลายแบรนด์ ให้ใช้เครื่องหมายจุลภาค (,) คั่น เช่น ", React.createElement("code", { className: "bg-white px-1 py-0.5 rounded text-blue-600" }, "SmartHeart, SmartHeart M&B"))
             )
         ),
-        React.createElement("div", { className: "space-y-4" },
-            targetList.map(function(t, idx) {
-                var key = t.group + '||' + t.brand;
-                var val = localMap[key] || '';
-                return React.createElement("div", { key: idx, className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-blue-300 transition-colors" },
-                    React.createElement("div", { className: "w-1/2" },
-                        React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-1" }, "กลุ่ม: ", t.group),
-                        React.createElement("div", { className: "text-sm text-slate-800 font-bold" }, t.brand),
-                        React.createElement("div", { className: "text-xs text-slate-400 mt-1" }, "ยอดรวมในไฟล์: ", t.val.toLocaleString())
-                    ),
-                    React.createElement("div", { className: "flex items-center justify-center text-slate-300" },
-                        React.createElement("span", { className: "material-symbols-outlined" }, "arrow_forward")
-                    ),
-                    React.createElement("div", { className: "flex-1" },
-                        React.createElement("label", { className: "block text-xs font-bold text-slate-500 mb-1" }, "ผูกกับแบรนด์ในระบบ (คั่นด้วย ,)"),
+        
+        React.createElement("div", { className: "mb-6" },
+            React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
+                React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "map"),
+                "1. จับคู่เขตการขาย"
+            ),
+            React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                districtList.map(function(dist, idx) {
+                    var key = 'dist||' + dist;
+                    var val = localMap[key] || '';
+                    return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center gap-3 hover:border-blue-300 transition-colors" },
+                        React.createElement("div", { className: "w-1/3 text-sm font-bold text-slate-700" }, dist),
+                        React.createElement("span", { className: "material-symbols-outlined text-slate-300" }, "arrow_forward"),
                         React.createElement("input", {
                             type: "text",
-                            className: "w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none",
-                            placeholder: "เช่น " + t.brand,
+                            list: "db-districts-list",
+                            className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none",
+                            placeholder: "เช่น NE.3/1 หรือ N.4/1",
                             value: val,
                             onChange: function(e) {
                                 var newMap = Object.assign({}, localMap);
@@ -6406,9 +6423,68 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 setLocalMap(newMap);
                             }
                         })
-                    )
-                );
-            })
+                    );
+                })
+            )
+        ),
+
+        React.createElement("div", null,
+            React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
+                React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "category"),
+                "2. จับคู่กลุ่มสินค้า และ แบรนด์"
+            ),
+            React.createElement("div", { className: "space-y-3" },
+                targetList.map(function(t, idx) {
+                    var key = 'brand||' + t.group + '||' + t.brand;
+                    var keyGrp = 'group||' + t.group;
+                    var val = localMap[key] || '';
+                    var valGrp = localMap[keyGrp] || '';
+                    return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
+                        React.createElement("div", { className: "flex items-center gap-3" },
+                            React.createElement("div", { className: "w-1/3" },
+                                React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
+                                React.createElement("div", { className: "text-sm text-slate-800 font-bold" }, t.brand),
+                                React.createElement("div", { className: "text-xs text-blue-500 mt-0.5 font-semibold" }, "เป้ารวม: ", t.val.toLocaleString())
+                            ),
+                            React.createElement("div", { className: "flex items-center justify-center text-slate-300" },
+                                React.createElement("span", { className: "material-symbols-outlined" }, "arrow_forward")
+                            ),
+                            React.createElement("div", { className: "flex-1 flex flex-col gap-2" },
+                                React.createElement("div", { className: "flex gap-2 items-center" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "กลุ่มสินค้า"),
+                                    React.createElement("input", {
+                                        type: "text",
+                                        list: "db-groups-list",
+                                        className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none",
+                                        placeholder: "จับคู่กลุ่ม (ถ้ามี)",
+                                        value: valGrp,
+                                        onChange: function(e) {
+                                            var newMap = Object.assign({}, localMap);
+                                            newMap[keyGrp] = e.target.value;
+                                            setLocalMap(newMap);
+                                        }
+                                    })
+                                ),
+                                React.createElement("div", { className: "flex gap-2 items-center" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "ผูกแบรนด์"),
+                                    React.createElement("input", {
+                                        type: "text",
+                                        list: "db-brands-list",
+                                        className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-blue-50/30 outline-none",
+                                        placeholder: "ระบุแบรนด์ (คั่นด้วย , หากมีหลายตัว)",
+                                        value: val,
+                                        onChange: function(e) {
+                                            var newMap = Object.assign({}, localMap);
+                                            newMap[key] = e.target.value;
+                                            setLocalMap(newMap);
+                                        }
+                                    })
+                                )
+                            )
+                        )
+                    );
+                })
+            )
         )
       ),
       React.createElement("div", { className: "p-4 border-t border-slate-200 bg-white flex justify-end gap-3" },
@@ -6424,7 +6500,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     )
   );
 };
-\nvar App = function App() {
+
+var App = function App() {
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
@@ -8772,7 +8849,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 if (!sheetName.startsWith('เขต')) continue;
                                 
                                 var districtRaw = sheetName.replace('เขต', '').trim();
-                                var district = 'NE.3/' + districtRaw;
+                                var district = 'เขต' + districtRaw;
                                 
                                 var ws = workbook.Sheets[sheetName];
                                 var rows = await sheetToRowsChunked(ws);
@@ -14517,6 +14594,94 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     toggleSection: toggleSection,
     allData: { monthly: filteredSalesData || [] },
     onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
+      React.createElement(TargetMappingModal, {
+        isOpen: isTargetMappingModalOpen,
+        onClose: function() { setIsTargetMappingModalOpen(false); },
+        pendingData: pendingTG26Data,
+        mappings: targetMappings,
+        setMappings: setTargetMappings,
+        allData: allData,
+        onSaveAndProcess: function(newMap) {
+            setIsTargetMappingModalOpen(false);
+            if (!pendingTG26Data) return;
+            setIsLoading(true);
+            updateLoadingStatus('กำลังผนวกยอดเป้าหมายเข้ากับระบบ...', 95, false);
+            
+            setTimeout(function() {
+                var mappedTargets = [];
+                pendingTG26Data.forEach(function(row) {
+                    var brandKey = 'brand||' + row.group + '||' + row.brand;
+                    var groupKey = 'group||' + row.group;
+                    var distKey = 'dist||' + row.district;
+                    
+                    var mapBrandVal = newMap[brandKey] || '';
+                    var mapGroupVal = newMap[groupKey] || '';
+                    var mapDistVal = newMap[distKey] || row.district;
+                    
+                    if (mapBrandVal.trim() !== '') {
+                        var mappedBrands = mapBrandVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                        if (mappedBrands.length > 0) {
+                            var mappedBrandStr = mappedBrands.join('||');
+                            mappedTargets.push(Object.assign({}, row, {
+                                district: mapDistVal,
+                                group: mapGroupVal || 'Total Target',
+                                brand: mappedBrandStr,
+                                targetLevel: 'brand',
+                                targetValue: row.value,
+                                targetTon: 0,
+                                sales: 0,
+                                qty: 0,
+                                ton: 0,
+                                id: 'tg26-' + mapDistVal + '-' + mappedBrandStr + '-' + row.month,
+                                monthIndex: row.month,
+                                year: new Date().getFullYear(),
+                                province: '-',
+                                region: '-'
+                            }));
+                        }
+                    } else if (mapDistVal !== '') {
+                        // Keep as district level target if no brand mapped
+                         mappedTargets.push(Object.assign({}, row, {
+                                district: mapDistVal,
+                                group: 'Total Target',
+                                brand: 'Total Target',
+                                targetLevel: 'district',
+                                targetValue: row.value,
+                                targetTon: 0,
+                                sales: 0,
+                                qty: 0,
+                                ton: 0,
+                                id: 'tg26-' + mapDistVal + '-' + row.month,
+                                monthIndex: row.month,
+                                year: new Date().getFullYear(),
+                                province: '-',
+                                region: '-'
+                            }));
+                    }
+                });
+                
+                var newAllData = Object.assign({}, allData);
+                if (!newAllData.monthly) newAllData.monthly = [];
+                mappedTargets.forEach(function(t) {
+                    var existing = newAllData.monthly.find(function(m) {
+                        return m.district === t.district && m.brand === t.brand && m.monthIndex === t.monthIndex && m.year === t.year;
+                    });
+                    if (existing) {
+                        existing.targetValue = (existing.targetValue || 0) + t.targetValue;
+                        existing.target = existing.targetValue;
+                    } else {
+                        newAllData.monthly.push(t);
+                    }
+                });
+                
+                setAllData(newAllData);
+                saveToStorage(newAllData);
+                setPendingTG26Data(null);
+                finishLoadingStatus('ประมวลผลเป้าหมายสำเร็จ', 'success');
+                setIsLoading(false);
+            }, 500);
+        }
+      }),
   }), /*#__PURE__*/React.createElement(SalesGuideWeightModal, {
         isOpen: isSalesGuideWeightModalOpen,
         onClose: function() { setIsSalesGuideWeightModalOpen(false); },
