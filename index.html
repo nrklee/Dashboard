@@ -2633,7 +2633,7 @@ var COLUMN_KEYWORDS = {
     }
     
     if (shouldApplyDefault) {
-        localStorage.setItem('dashboard_layouts', JSON.stringify({'card-0':{x:0,y:0,w:12,h:2},'card-1':{x:0,y:2,w:12,h:7},'card-6':{x:0,y:9,w:12,h:4},'card-2':{x:0,y:13,w:6,h:5},'card-5':{x:6,y:13,w:6,h:5},'card-3':{x:0,y:18,w:6,h:5},'card-4':{x:6,y:18,w:6,h:5}}));
+        localStorage.setItem('dashboard_layouts', JSON.stringify({'card-1':{x:0,y:0,w:12,h:7},'card-6':{x:0,y:7,w:12,h:4},'card-2':{x:0,y:11,w:6,h:5},'card-5':{x:6,y:11,w:6,h:5},'card-3':{x:0,y:16,w:6,h:5},'card-4':{x:6,y:16,w:6,h:5}}));
         localStorage.setItem('dashboard_section_open', JSON.stringify({filters:true,kpi:true,trend:true,salesGuide:true,repeatGap:true,brands:true,shops:true,district:true}));
     }
 })();
@@ -2667,8 +2667,8 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.district = true;
         sectionOpen.brands = true;
         layouts = {
-            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
-            'card-1': { x: 0, y: 2, w: 12, h: 7 }, // trend
+            // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
+            'card-1': { x: 0, y: 0, w: 12, h: 7 }, // trend
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
         };
@@ -2677,7 +2677,7 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.repeatGap = true;
         sectionOpen.shops = true;
         layouts = {
-            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
             'card-3': { x: 0, y: 2, w: 6, h: 5 },  // salesGuide
             'card-4': { x: 6, y: 2, w: 6, h: 5 },  // repeatGap
             'card-5': { x: 0, y: 7, w: 12, h: 4 }  // shops
@@ -2687,7 +2687,7 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.repeatGap = true;
         sectionOpen.trend = true;
         layouts = {
-            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
             'card-2': { x: 0, y: 2, w: 12, h: 5 }, // brands
             'card-4': { x: 0, y: 7, w: 12, h: 5 }, // repeatGap
             'card-1': { x: 0, y: 12, w: 12, h: 7 } // trend
@@ -2700,8 +2700,8 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.salesGuide = true;
         sectionOpen.repeatGap = true;
         layouts = {
-            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
-            'card-1': { x: 0, y: 2, w: 12, h: 7 }, // trend
+            // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
+            'card-1': { x: 0, y: 0, w: 12, h: 7 }, // trend
             'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
             'card-2': { x: 0, y: 10, w: 6, h: 5 }, // brands
             'card-5': { x: 6, y: 10, w: 6, h: 5 }, // shops
@@ -5420,9 +5420,11 @@ var ExportReportBuilder = function ExportReportBuilder(props) {
   };
 
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+    className: "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto",
+    onClick: function() { return onClose(); }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-surface rounded-2xl border border-outline-variant p-6 flex flex-col gap-6 shadow-xl w-full max-w-4xl m-auto"
+    className: "bg-surface rounded-2xl border border-outline-variant p-6 flex flex-col gap-6 shadow-xl w-full max-w-4xl m-auto",
+    onClick: function(e) { return e.stopPropagation(); }
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between border-b border-outline-variant pb-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5729,8 +5731,8 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
   var labels = ['เดือนล่าสุด (M-1)','เดือนก่อนหน้า (M-2)','เดือนก่อนหน้า (M-3)'];
   var colors = ['#6d28d9','#7c3aed','#8b5cf6'];
   var total = localW[0]+localW[1]+localW[2];
-  return React.createElement('div', { className: 'status-modal-overlay' },
-    React.createElement('div', { className: 'status-modal s-info', style: { maxWidth:'460px' } },
+  return React.createElement('div', { className: 'status-modal-overlay', onClick: onClose },
+    React.createElement('div', { className: 'status-modal s-info', style: { maxWidth:'460px' }, onClick: function(e){e.stopPropagation();} },
       React.createElement('div', { className: 'status-modal-head' },
         React.createElement('div', { className: 'status-modal-title' }, 'ตั้งค่าสัดส่วนอัลกอริทึม'),
         React.createElement('button', { className: 'status-modal-close', onClick: onClose }, '\u00d7')
@@ -6276,7 +6278,14 @@ var App = function App() {
         if (timer) clearTimeout(timer);
         timer = setTimeout(function() {
             var gridEl = document.querySelector('.grid-stack');
-            if (!gridEl) return;
+            if (!gridEl) {
+                timer = setTimeout(initGrid, 200);
+                return;
+            }
+            if (typeof GridStack === 'undefined') {
+                timer = setTimeout(initGrid, 200);
+                return;
+            }
             
             // Destroy existing instance to prevent stale references when React re-renders
             if (gridEl.gridstack) {
@@ -7911,8 +7920,8 @@ var App = function App() {
                                           if (colName === 'SUB_CATEGORY') dbMap.model = idx;
                                           if (colName === 'SIZE') dbMap.size = idx;
                                           if (colName === 'BRAND_CODE') dbMap.sku = idx;
-                                          if (colName === 'REBATE') dbMap.rebate = idx;
-                                          if (colName === 'SET') dbMap.set = idx;
+                                          if (colName === 'REBATE' || colName === 'ประเภท REBATE') dbMap.rebate = idx;
+                                          if (colName === 'SET' || colName === 'ประเภท SET') dbMap.set = idx;
                                       });
                                   }
                                   targetSheetMetric = type === 'target' ? detectTargetMetricContext(options.sheetName) : 'value';
@@ -13747,9 +13756,11 @@ var App = function App() {
     };
 
     return /*#__PURE__*/React.createElement("div", {
-      className: "fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center fade-in"
+      className: "fixed inset-0 bg-black/50 z-50 flex items-center justify-center fade-in",
+      onClick: function() { return setShowFilterSettingsModal(false); }
     }, /*#__PURE__*/React.createElement("div", {
-      className: "bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]"
+      className: "bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]",
+      onClick: function(e) { return e.stopPropagation(); }
     }, /*#__PURE__*/React.createElement("div", {
       className: "p-4 border-b flex justify-between items-center"
     }, /*#__PURE__*/React.createElement("h2", {
@@ -13959,9 +13970,11 @@ var App = function App() {
       background: 'var(--bg)'
     }
   }, isChangePasswordModalOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 bg-on-background/50 backdrop-blur-sm flex items-center justify-center z-[100]"
+    className: "fixed inset-0 bg-on-background/50 backdrop-blur-sm flex items-center justify-center z-[100]",
+    onClick: () => setIsChangePasswordModalOpen(false)
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-surface-container-lowest p-6 rounded-2xl shadow-xl w-full max-w-md border border-outline-variant"
+    className: "bg-surface-container-lowest p-6 rounded-2xl shadow-xl w-full max-w-md border border-outline-variant",
+    onClick: (e) => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("h2", {
     className: "font-headline-md text-on-surface mb-4"
   }, "\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"), /*#__PURE__*/React.createElement("div", {
