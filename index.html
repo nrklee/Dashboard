@@ -3958,6 +3958,35 @@ var Icon = function Icon(_ref) {
   };
   return icons[name] || /*#__PURE__*/React.createElement("span", null);
 };
+
+var DateRangeFilter = function DateRangeFilter(_ref) {
+  var label = _ref.label,
+      startDate = _ref.startDate,
+      endDate = _ref.endDate,
+      onChange = _ref.onChange;
+
+  return /*#__PURE__*/React.createElement("div", {
+    className: "relative shrink-0 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-700 whitespace-nowrap px-1"
+  }, label, " :"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: startDate || '',
+    onChange: function(e) { onChange(e.target.value, endDate); },
+    className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-500"
+  }, "-"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: endDate || '',
+    onChange: function(e) { onChange(startDate, e.target.value); },
+    className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
+  }), (startDate || endDate) && /*#__PURE__*/React.createElement("button", {
+    onClick: function() { onChange('', ''); },
+    className: "text-xs text-slate-400 hover:text-red-500 ml-1 p-1 rounded hover:bg-slate-100 flex items-center justify-center",
+    title: "ล้างค่าวันที่"
+  }, /*#__PURE__*/React.createElement(Icon, { name: "X", size: 14 })));
+};
 var MultiSelect = function MultiSelect(_ref2) {
   var label = _ref2.label,
     _ref2$size = _ref2.size,
@@ -7996,204 +8025,132 @@ var App = function App() {
                         }();
                         parseSalesWorkbook = /*#__PURE__*/function () {
                           var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var workbookOptions, normalizeSheetName, sheetNames, metricDefs, monthlySheetTasks, yearlySheetTasks, explicitYearlySheetByMetric, explicitYearlyTasks, useExplicitYearlySheets, preferredYearHint, preferredMetricHint, preferredPeriodHint, salesUpdateMeta, monthlyEntries, cfgIndex, cfg, rows, monthlyUpdateLabel, monthlyMetaYear, yearlyEntries, _cfgIndex, _cfg, _rows, yearlyUpdateLabel, yearlyMetaYear, monthlyRows, yearlyRows, _t8, _t9, _t0, _t1;
+                            var salesUpdateMeta, monthly, yearly, sheetNames, sheet, rows, headerRowIdx, i, r, joined, headerRow, dbMap, _i, row, dateStr, parts, day, month, year, dateObj, amount, qty, ton, dimensions, id;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
-                                  workbookOptions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-                                  normalizeSheetName = function normalizeSheetName(name) {
-                                    return String(name || '').toLowerCase().replace(/\s+/g, '');
-                                  };
-                                  sheetNames = workbook.SheetNames || [];
-                                  metricDefs = [{
-                                    metricKey: 'sales',
-                                    monthKeywords: ['บาท'],
-                                    yearKeywords: ['บาท']
-                                  }, {
-                                    metricKey: 'qty',
-                                    monthKeywords: ['ชิ้น', 'qty'],
-                                    yearKeywords: ['ชิ้น', 'qty']
-                                  }, {
-                                    metricKey: 'ton',
-                                    monthKeywords: ['ตัน'],
-                                    yearKeywords: ['ตัน']
-                                  }];
-                                  monthlySheetTasks = [];
-                                  yearlySheetTasks = [];
-                                  explicitYearlySheetByMetric = {
-                                    sales: '',
-                                    qty: '',
-                                    ton: ''
-                                  };
-                                  sheetNames.forEach(function (sheetName) {
-                                    var normalized = normalizeSheetName(sheetName);
-                                    if (normalized === 'รายปีบาท') explicitYearlySheetByMetric.sales = sheetName;
-                                    if (normalized === 'รายปีชิ้น') explicitYearlySheetByMetric.qty = sheetName;
-                                    if (normalized === 'รายปีตัน') explicitYearlySheetByMetric.ton = sheetName;
-                                  });
-                                  explicitYearlyTasks = Object.entries(explicitYearlySheetByMetric).filter(function (_ref22) {
-                                    var _ref23 = _slicedToArray(_ref22, 2),
-                                      sheetName = _ref23[1];
-                                    return Boolean(sheetName);
-                                  }).map(function (_ref24) {
-                                    var _ref25 = _slicedToArray(_ref24, 2),
-                                      metricKey = _ref25[0],
-                                      sheetName = _ref25[1];
-                                    return {
-                                      metricKey: metricKey,
-                                      sheetName: sheetName
-                                    };
-                                  });
-                                  useExplicitYearlySheets = explicitYearlyTasks.length > 0;
-                                  preferredYearHint = normalizeYearLabel(workbookOptions.preferredYearHint || '');
-                                  preferredMetricHint = String(workbookOptions.preferredMetricHint || '').trim();
-                                  preferredPeriodHint = String(workbookOptions.preferredPeriodHint || '').trim();
-                                  sheetNames.forEach(function (sheetName) {
-                                    var normalized = normalizeSheetName(sheetName);
-                                    var isMonthly = normalized.includes('เดือน');
-                                    var yearFromSheetName = extractYearLabelFromText(sheetName) || preferredYearHint;
-                                    var taskCountBefore = monthlySheetTasks.length + yearlySheetTasks.length;
-                                    var isExplicitYearlyConfiguredSheet = explicitYearlyTasks.some(function (task) {
-                                      return task.sheetName === sheetName;
-                                    });
-                                    metricDefs.forEach(function (metric) {
-                                      var metricInMonth = metric.monthKeywords.some(function (keyword) {
-                                        return normalized.includes(keyword);
-                                      });
-                                      var metricInYear = metric.yearKeywords.some(function (keyword) {
-                                        return normalized.includes(keyword);
-                                      });
-                                      if (isMonthly && metricInMonth) {
-                                        monthlySheetTasks.push({
-                                          sheetName: sheetName,
-                                          metricKey: metric.metricKey,
-                                          forcedYear: yearFromSheetName
-                                        });
-                                        return;
-                                      }
-                                      if (!useExplicitYearlySheets && !isMonthly && metricInYear) {
-                                        var blockTargetName = normalized === 'target' || normalized === 'targets';
-                                        if (blockTargetName) return;
-                                        yearlySheetTasks.push({
-                                          sheetName: sheetName,
-                                          metricKey: metric.metricKey
-                                        });
-                                      }
-                                    });
-                                    if (preferredMetricHint && !isExplicitYearlyConfiguredSheet && monthlySheetTasks.length + yearlySheetTasks.length === taskCountBefore) {
-                                      var blockFallbackSheet = normalized === 'target' || normalized === 'targets' || normalized.includes('target');
-                                      if (!blockFallbackSheet) {
-                                        if (preferredPeriodHint === 'year' || !isMonthly && normalized.includes('รายปี')) {
-                                          yearlySheetTasks.push({
-                                            sheetName: sheetName,
-                                            metricKey: preferredMetricHint
-                                          });
-                                        } else {
-                                          monthlySheetTasks.push({
-                                            sheetName: sheetName,
-                                            metricKey: preferredMetricHint,
-                                            forcedYear: yearFromSheetName
-                                          });
-                                        }
-                                      }
-                                    }
-                                  });
-                                  if (useExplicitYearlySheets) {
-                                    explicitYearlyTasks.forEach(function (task) {
-                                      return yearlySheetTasks.push(task);
-                                    });
-                                  }
-                                  monthlySheetTasks.sort(function (a, b) {
-                                    var yearCmp = sortYearLabels(a.forcedYear || '0', b.forcedYear || '0');
-                                    if (yearCmp !== 0) return yearCmp;
-                                    return String(a.sheetName).localeCompare(String(b.sheetName), 'th');
-                                  });
                                   salesUpdateMeta = createEmptySalesUpdateMeta();
-                                  monthlyEntries = [];
-                                  cfgIndex = 0;
-                                case 1:
-                                  if (!(cfgIndex < monthlySheetTasks.length)) {
-                                    _context12.n = 6;
-                                    break;
-                                  }
-                                  cfg = monthlySheetTasks[cfgIndex];
-                                  if (workbook.Sheets[cfg.sheetName]) {
+                                  monthly = [];
+                                  yearly = [];
+                                  sheetNames = workbook.SheetNames || [];
+                                  if (!(sheetNames.length === 0)) {
                                     _context12.n = 2;
                                     break;
                                   }
-                                  return _context12.a(3, 5);
+                                  return _context12.a(2, { monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 2:
-                                  _context12.n = 3;
-                                  return sheetToRowsChunked(workbook.Sheets[cfg.sheetName]);
-                                case 3:
-                                  rows = _context12.v;
-                                  monthlyUpdateLabel = extractSheetUpdateLabel(workbook.Sheets[cfg.sheetName]);
-                                  monthlyMetaYear = normalizeYearLabel(cfg.forcedYear || preferredYearHint || currentYear);
-                                  if (monthlyUpdateLabel && monthlyMetaYear) {
-                                    salesUpdateMeta.monthly[cfg.metricKey][monthlyMetaYear] = monthlyUpdateLabel;
-                                  }
-                                  _t8 = appendRows;
-                                  _t9 = monthlyEntries;
+                                  sheet = workbook.Sheets[sheetNames[0]];
                                   _context12.n = 4;
-                                  return parseMetricSheet(rows, cfg.metricKey, 'month', {
-                                    forcedYear: cfg.forcedYear || preferredYearHint
-                                  });
+                                  return sheetToRowsChunked(sheet);
                                 case 4:
-                                  _t8(_t9, _context12.v);
-                                  _context12.n = 5;
-                                  return nextTick();
-                                case 5:
-                                  cfgIndex++;
-                                  _context12.n = 1;
-                                  break;
+                                  rows = _context12.v;
+                                  headerRowIdx = -1;
+                                  for (i = 0; i < Math.min(200, rows.length); i++) {
+                                      r = rows[i] || [];
+                                      joined = r.join(' ').toLowerCase();
+                                      if (joined.includes('sales_date') && (joined.includes('sales_amount') || joined.includes('qty') || joined.includes('ton'))) {
+                                          headerRowIdx = i;
+                                          break;
+                                      }
+                                  }
+                                  if (headerRowIdx !== -1) {
+                                    _context12.n = 6;
+                                    break;
+                                  }
+                                  return _context12.a(2, { monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 6:
-                                  yearlyEntries = [];
-                                  _cfgIndex = 0;
+                                  headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
+                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                  headerRow.forEach(function(colName, idx) {
+                                      if (colName === 'SALES_DATE') dbMap.date = idx;
+                                      if (colName === 'SALES_AMOUNT') dbMap.amount = idx;
+                                      if (colName === 'SALES_QTY') dbMap.qty = idx;
+                                      if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)') dbMap.ton = idx;
+                                      if (colName === 'REGION') dbMap.region = idx;
+                                      if (colName === 'SECTION') dbMap.province = idx; // EXPLICITLY SWAPPED
+                                      if (colName === 'PROVINCE') dbMap.district = idx; // EXPLICITLY SWAPPED
+                                      if (colName === 'CV_NAME') dbMap.cv = idx;
+                                      if (colName === 'CATEGORY') dbMap.group = idx;
+                                      if (colName === 'BRAND') dbMap.brand = idx;
+                                      if (colName === 'SUB_CATEGORY') dbMap.model = idx;
+                                      if (colName === 'SIZE') dbMap.size = idx;
+                                      if (colName === 'BRAND_CODE') dbMap.sku = idx;
+                                      if (colName === 'REBATE' || colName === 'ประเภท REBATE') dbMap.rebate = idx;
+                                      if (colName === 'SET' || colName === 'ประเภท SET') dbMap.set = idx;
+                                  });
+                                  _i = headerRowIdx + 1;
                                 case 7:
-                                  if (!(_cfgIndex < yearlySheetTasks.length)) {
+                                  if (!(_i < rows.length)) {
                                     _context12.n = 12;
                                     break;
                                   }
-                                  _cfg = yearlySheetTasks[_cfgIndex];
-                                  if (workbook.Sheets[_cfg.sheetName]) {
-                                    _context12.n = 8;
+                                  row = rows[_i] || [];
+                                  if (row.length === 0) {
+                                    _context12.n = 9;
                                     break;
                                   }
-                                  return _context12.a(3, 11);
-                                case 8:
-                                  _context12.n = 9;
-                                  return sheetToRowsChunked(workbook.Sheets[_cfg.sheetName]);
-                                case 9:
-                                  _rows = _context12.v;
-                                  yearlyUpdateLabel = extractSheetUpdateLabel(workbook.Sheets[_cfg.sheetName]);
-                                  yearlyMetaYear = normalizeYearLabel(extractYearLabelFromText(_cfg.sheetName) || preferredYearHint);
-                                  if (yearlyUpdateLabel) {
-                                    if (yearlyMetaYear) salesUpdateMeta.yearly[_cfg.metricKey][yearlyMetaYear] = yearlyUpdateLabel;
-                                    salesUpdateMeta.yearly[_cfg.metricKey].default = yearlyUpdateLabel;
+                                  dateStr = String(row[dbMap.date] || '').trim();
+                                  if (!dateStr) {
+                                    _context12.n = 9;
+                                    break;
                                   }
-                                  _t0 = appendRows;
-                                  _t1 = yearlyEntries;
-                                  _context12.n = 10;
-                                  return parseMetricSheet(_rows, _cfg.metricKey, 'year');
-                                case 10:
-                                  _t0(_t1, _context12.v);
-                                  _context12.n = 11;
-                                  return nextTick();
-                                case 11:
-                                  _cfgIndex++;
+                                  parts = dateStr.split('/');
+                                  if (parts.length < 3) {
+                                    _context12.n = 9;
+                                    break;
+                                  }
+                                  day = parseInt(parts[0], 10);
+                                  month = parseInt(parts[1], 10) - 1;
+                                  year = parseInt(parts[2], 10);
+                                  if (year > 2500) year -= 543;
+                                  dateObj = new Date(year, month, day);
+                                  if (isNaN(dateObj.getTime())) {
+                                    _context12.n = 9;
+                                    break;
+                                  }
+                                  amount = parseNumericValue(row[dbMap.amount]);
+                                  qty = parseNumericValue(row[dbMap.qty]);
+                                  ton = parseNumericValue(row[dbMap.ton]);
+                                  if (amount === 0 && qty === 0 && ton === 0) {
+                                    _context12.n = 9;
+                                    break;
+                                  }
+                                  dimensions = {
+                                      region: normalizeDimensionValue(row[dbMap.region]),
+                                      province: normalizeDimensionValue(row[dbMap.province]),
+                                      district: normalizeDistrictName(normalizeDimensionValue(row[dbMap.district])),
+                                      cv: normalizeDimensionValue(row[dbMap.cv]),
+                                      group: normalizeDimensionValue(row[dbMap.group]),
+                                      brand: normalizeDimensionValue(row[dbMap.brand]),
+                                      model: normalizeDimensionValue(row[dbMap.model]),
+                                      size: normalizeDimensionValue(row[dbMap.size]),
+                                      sku: normalizeDimensionValue(row[dbMap.sku])
+                                  };
+                                  dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
+                                  id = "m-" + Math.random();
+                                  monthly.push(_objectSpread({
+                                      id: id,
+                                      date: toLocalISOString(dateObj),
+                                      monthIndex: month,
+                                      year: String(year + 543),
+                                      sales: amount,
+                                      target: 0,
+                                      targetValue: 0,
+                                      targetTon: 0,
+                                      targetLevel: undefined,
+                                      qty: qty,
+                                      ton: ton
+                                  }, dimensions));
+                                case 9:
+                                  _i++;
                                   _context12.n = 7;
                                   break;
                                 case 12:
-                                  monthlyRows = mergeMetricEntries(monthlyEntries, 'month');
-                                  yearlyRows = mergeMetricEntries(yearlyEntries, 'year');
-                                  if (yearlyRows.length === 0 && monthlyRows.length > 0) {
-                                    yearlyRows = buildYearlyEntriesFromMonthly(monthlyRows);
+                                  yearly = buildYearlyEntriesFromMonthly(monthly);
+                                  if (monthly.length > 0) {
+                                      salesUpdateMeta.monthly.sales[monthly[0].year] = extractSheetUpdateLabel(sheet) || toLocalISOString(new Date()).substring(0, 10);
                                   }
-                                  return _context12.a(2, {
-                                    monthly: monthlyRows,
-                                    yearly: yearlyRows,
-                                    salesUpdateMeta: salesUpdateMeta
-                                  });
+                                  return _context12.a(2, { monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta });
                               }
                             }, _callee12);
                           }));
@@ -10104,6 +10061,15 @@ var App = function App() {
       if ((ignoredFilterKeys || []).includes(k)) return true;
       if (!v || v.length === 0) return true;
       var itemValue = getFilterItemValue(item, k);
+      if (k === 'dateRange') {
+        if (!item.date || !v || v.length !== 2) return true;
+        var itemDate = new Date(item.date);
+        var sd = v[0] ? new Date(v[0]) : null;
+        var ed = v[1] ? new Date(v[1]) : null;
+        if (sd && itemDate < sd) return false;
+        if (ed && itemDate > ed) return false;
+        return true;
+      }
       if (k === 'month') {
         if (!itemValue) return isTarget;
         return v.includes(itemValue);
@@ -13676,8 +13642,8 @@ var App = function App() {
     .filter(Boolean);
 
   var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
-    key: 'month',
-    label: 'เดือน'
+    key: 'dateRange',
+    label: getFilterLabel('SALES_DATE', 'ช่วงเวลา')
   }] : []), _toConsumableArray(dynamicFiltersDef));
 
   var FilterSettingsModal = function FilterSettingsModal() {
@@ -13951,7 +13917,7 @@ var App = function App() {
     style: {
       background: 'var(--bg)'
     }
-  }, isChangePasswordModalOpen && /*#__PURE__*/React.createElement("div", {
+  }, showFilterSettingsModal && /*#__PURE__*/React.createElement(FilterSettingsModal, null), isChangePasswordModalOpen && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 bg-on-background/50 backdrop-blur-sm flex items-center justify-center z-[100]",
     onClick: () => setIsChangePasswordModalOpen(false)
   }, /*#__PURE__*/React.createElement("div", {
@@ -14400,6 +14366,18 @@ var App = function App() {
   }, "·"), /*#__PURE__*/React.createElement("span", null, "อัปเดตล่าสุด ", googleTargetSyncLabel))), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
+    if (f.key === 'dateRange') {
+      var dateRangeVal = filters[f.key] || ['', ''];
+      return /*#__PURE__*/React.createElement(DateRangeFilter, {
+        key: f.key,
+        label: f.label,
+        startDate: dateRangeVal[0],
+        endDate: dateRangeVal[1],
+        onChange: function onChange(start, end) {
+          handleFilterChange(f.key, [start, end]);
+        }
+      });
+    }
     var isLockedFilter = Boolean(lockedFilters[f.key] && lockedFilters[f.key].length);
     return /*#__PURE__*/React.createElement(MultiSelect, _extends({
       key: f.key
