@@ -14592,7 +14592,7 @@ var App = function App() {
     sectionOpen: sectionOpen,
     setSectionOpen: setSectionOpen,
     toggleSection: toggleSection,
-    allData: { monthly: filteredSalesData || [] },
+    allData: { monthly: filteredData || [] },
     onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
   }),
       React.createElement(TargetMappingModal, {
@@ -15132,7 +15132,7 @@ customWidgets.map(function(widget) {
       React.createElement(CustomWidget, {
         key: widget.id,
         widget: widget,
-        allData: { monthly: filteredSalesData || [] },
+        allData: { monthly: filteredData || [] },
         onRemove: function() { setCustomWidgets(customWidgets.filter(function(w) { return w.id !== widget.id; })); }
       })
     )
