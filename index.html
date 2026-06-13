@@ -8885,7 +8885,7 @@ var App = function App() {
                             }
                             return rawTargets;
                         };
-\n                        parseTargetWorkbook = function (originalParseTargetWorkbook) {
+                        parseTargetWorkbook = function (originalParseTargetWorkbook) {
                           return function wrappedParseTargetWorkbook(workbook) {
                             var firstSheetName = workbook.SheetNames[0];
                             var rawTargets = window.XLSX ? window.XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {defval: ''}) : [];
