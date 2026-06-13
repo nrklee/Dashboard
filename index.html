@@ -1778,24 +1778,52 @@ function saveSettings(newSettings) {
 // ----------------------------------------------------------------------
 // 2. Intercept Login (ระบบ Authentication หน้าบ้าน)
 // ----------------------------------------------------------------------
+
+let currentUserRole = '';
+
+// ฟังก์ชันสำหรับดึงสิทธิ์จาก Firestore
+async function getUserRoleAndFilters(email) {
+    try {
+        const userRef = doc(db, 'users', email);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            const role = data.role || 'user';
+            const lockedFilters = role !== 'admin' && role !== 'super_admin' && data.areas && data.areas.length > 0 
+                ? { AREA: data.areas } : {};
+            return { role, lockedFilters };
+        } else {
+            // ถ้าเป็นผู้ใช้ใหม่ ยังไม่มีในฐานข้อมูล ให้กำหนดเป็น admin ชั่วคราวเพื่อให้เริ่มใช้ระบบได้
+            const role = 'admin';
+            await setDoc(userRef, { email, role, areas: [] });
+            return { role, lockedFilters: {} };
+        }
+    } catch(err) {
+        console.error("Error fetching role:", err);
+        return { role: 'admin', lockedFilters: {} }; // Fallback
+    }
+}
+
 window.interceptCallAuthWebApp = async function(mode, extraPayload) {
     if(!auth) throw new Error("Firebase ไม่พร้อมใช้งาน กรุณาตั้งค่า Config");
     
     if (mode === 'login') {
         const { username, password } = extraPayload;
         try {
-            // ใช้ Firebase Authentication สำหรับล็อกอิน (Admin เท่านั้น)
+            // ใช้ Firebase Authentication สำหรับล็อกอิน
             const userCredential = await signInWithEmailAndPassword(auth, username, password);
+            const { role, lockedFilters } = await getUserRoleAndFilters(userCredential.user.email);
+            currentUserRole = role;
             return {
                 ok: true,
                 auth: {
-                    user: { username: userCredential.user.email, role: 'admin' },
+                    user: { username: userCredential.user.email, role, lockedFilters },
                     token: await userCredential.user.getIdToken()
                 }
             };
         } catch (error) {
             console.error("Login Error:", error);
-            throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง (Admin เท่านั้น)');
+            throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
         }
     } 
     
@@ -1804,10 +1832,12 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
             const unsubscribe = onAuthStateChanged(auth, async (user) => {
                 unsubscribe();
                 if (user) {
+                    const { role, lockedFilters } = await getUserRoleAndFilters(user.email);
+                    currentUserRole = role;
                     resolve({
                         ok: true,
                         auth: {
-                            user: { username: user.email, role: 'admin' },
+                            user: { username: user.email, role, lockedFilters },
                             token: await user.getIdToken()
                         }
                     });
@@ -1917,6 +1947,7 @@ const observer = new MutationObserver((mutations) => {
 
                 if (isSettingsModal) {
                     injectColumnSettings(node);
+                    injectUserManagementSettings(node);
                 }
             }
         });
@@ -1942,7 +1973,7 @@ function injectColumnSettings(modalNode) {
                 <div style="max-height: 250px; overflow-y: auto; margin-top: 10px;" id="col-settings-list">
                     <!-- จะถูกสร้างด้วย JS -->
                 </div>
-                <button id="save-col-settings-btn" style="margin-top: 10px; background: #3b82f6; color: white; padding: 5px 15px; border-radius: 5px; font-size: 14px;">
+                <button id="save-col-settings-btn" style="margin-top: 10px; background: #3b82f6; color: white; padding: 5px 15px; border-radius: 5px; font-size: 14px; border: none; cursor: pointer;">
                     บันทึกการตั้งค่าคอลัมน์
                 </button>
             </details>
@@ -1979,6 +2010,89 @@ function injectColumnSettings(modalNode) {
         saveSettings(updated);
         alert('บันทึกการตั้งค่าคอลัมน์สำเร็จ');
     });
+}
+
+function injectUserManagementSettings(modalNode) {
+    if (currentUserRole !== 'admin' && currentUserRole !== 'super_admin') return;
+    if (modalNode.querySelector('#custom-user-management')) return;
+
+    const modalBody = modalNode.querySelector('.p-4') || modalNode.querySelector('div[class*="overflow-y-auto"]');
+    if (!modalBody) return;
+
+    const html = `
+        <div id="custom-user-management" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            <h4 style="font-weight: bold; margin-bottom: 10px; color: #1e293b;">จัดการสิทธิ์ผู้ใช้งาน (เฉพาะ Admin)</h4>
+            <details style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+                <summary style="cursor: pointer; font-weight: 500; color: #334155;">ตั้งค่า Role และ เขตพื้นที่ดูแล</summary>
+                
+                <div style="margin-top: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <input type="email" id="new-user-email" placeholder="อีเมลผู้ใช้" style="border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; flex: 1;">
+                        <select id="new-user-role" style="border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px;">
+                            <option value="user">User</option>
+                            <option value="area_admin">Area Admin</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" id="new-user-areas" placeholder="เขตที่ดูแล เช่น Bangkok, North (คั่นด้วยลูกน้ำ)" style="border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; flex: 1;">
+                        <button id="add-user-btn" style="background: #10b981; color: white; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; white-space: nowrap;">อัปเดตสิทธิ์</button>
+                    </div>
+                </div>
+
+                <div style="max-height: 250px; overflow-y: auto; font-size: 13px;" id="user-management-list">
+                    กำลังโหลด...
+                </div>
+            </details>
+        </div>
+    `;
+    modalBody.insertAdjacentHTML('beforeend', html);
+
+    loadUserList(modalNode);
+
+    modalNode.querySelector('#add-user-btn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('new-user-email').value.trim();
+        const role = document.getElementById('new-user-role').value;
+        const areasStr = document.getElementById('new-user-areas').value;
+        
+        if (!email) return alert('กรุณากรอกอีเมล');
+        
+        const areas = areasStr ? areasStr.split(',').map(a => a.trim()).filter(a => a) : [];
+        
+        try {
+            await setDoc(doc(collection(db, "users"), email), { email, role, areas }, { merge: true });
+            alert('อัปเดตข้อมูลผู้ใช้สำเร็จ');
+            loadUserList(modalNode);
+            document.getElementById('new-user-email').value = '';
+            document.getElementById('new-user-areas').value = '';
+        } catch (err) {
+            console.error(err);
+            alert('เกิดข้อผิดพลาด: ' + err.message);
+        }
+    });
+}
+
+async function loadUserList(modalNode) {
+    const listContainer = modalNode.querySelector('#user-management-list');
+    try {
+        const snapshot = await getDocs(collection(db, "users"));
+        listContainer.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding: 5px 0;';
+            item.innerHTML = `
+                <div>
+                    <strong>${data.email}</strong> <br/>
+                    <span style="font-size: 11px; color: #64748b;">Role: ${data.role} | เขต: ${data.areas && data.areas.length ? data.areas.join(', ') : 'ทั้งหมด'}</span>
+                </div>
+            `;
+            listContainer.appendChild(item);
+        });
+    } catch(err) {
+        listContainer.innerHTML = 'เกิดข้อผิดพลาดในการโหลดผู้ใช้';
+    }
 }
 
 </script>
@@ -6051,7 +6165,7 @@ var App = function App() {
     return normalizeLockedFilters(authUser && authUser.lockedFilters ? authUser.lockedFilters : {});
   }, [authUser && JSON.stringify(authUser.lockedFilters || {})]);
   var currentUserRole = String(authUser && authUser.role || '').trim().toLowerCase();
-  var isSalesRestrictedUser = currentUserRole === 'super_admin' || currentUserRole === 'admin';
+  var isSalesRestrictedUser = false; // ยกเลิกการบล็อกแอดมิน เนื่องจากตัด Google Sheets ออกแล้ว
   var _useStateAuthUsername = useState(''),
     _useStateAuthUsername2 = _slicedToArray(_useStateAuthUsername, 2),
     authUsername = _useStateAuthUsername2[0],
