@@ -14594,6 +14594,7 @@ var App = function App() {
     toggleSection: toggleSection,
     allData: { monthly: filteredSalesData || [] },
     onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
+  }),
       React.createElement(TargetMappingModal, {
         isOpen: isTargetMappingModalOpen,
         onClose: function() { setIsTargetMappingModalOpen(false); },
