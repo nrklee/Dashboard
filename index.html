@@ -2590,7 +2590,7 @@ var DISTRICT_ORDER = ['NE.3/1', 'NE.3/2', 'NE.3/3', 'NE.3/4', 'NE.3/5', 'NE.3/6'
 var COLUMN_KEYWORDS = {
   region: ['ภาค', 'region', 'zone'],
   province: ['จังหวัด', 'province', 'prov'],
-  district: ['เขต', 'อำเภอ', 'district', 'amphur', 'เขตการขาย'],
+  district: ['เขต', 'อำเภอ', 'district', 'amphur', 'เขตการขาย', 'section'],
   cv: ['cv', 'customer', 'shop', 'ร้านค้า', 'ตัวแทน', 'dealer', 'ลูกค้า'],
   group: ['กลุ่ม', 'group', 'category', 'cat', 'หมวด'],
   brand: ['แบรนด์', 'ยี่ห้อ', 'brand'],
@@ -6925,16 +6925,7 @@ var App = function App() {
       if (lastSync !== today) {
         // Trigger auto-sync once a day per user/device
         setTimeout(function() {
-          updateLoadingStatus('กำลังซิงค์ข้อมูล Sales ประจำวันจากระบบคลาวด์...', 50, true);
-          window.downloadSalesFromFirebase().then(function(file) {
-            return processAndStoreFile(file, 'sales', { silentStatus: true });
-          }).then(function() {
-            localStorage.setItem('salytix_last_sync_date', today);
-            finishLoadingStatus('ซิงค์ข้อมูล Sales ประจำวันสำเร็จ', 'success');
-          }).catch(function(err) {
-            console.error("Auto sync failed:", err);
-            finishLoadingStatus('ไม่สามารถซิงค์ข้อมูล Sales ล่าสุดได้', 'error');
-          });
+          syncSalesFromGoogleSheet(true);
         }, 1500); // small delay after login
       }
     }
@@ -13440,12 +13431,11 @@ var App = function App() {
       throw error;
     });
   };
-  var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet() {
+  var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet(isAutoSync) {
     var today = new Date().toISOString().split('T')[0];
-    var lastSync = localStorage.getItem('salytix_last_sync_date');
-    if (lastSync === today) {
-        alert("คุณได้ทำการซิงค์ข้อมูลของวันนี้ไปแล้ว เพื่อป้องกันการโหลดข้อมูลซ้ำซ้อน หากต้องการซิงค์ใหม่กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ครับ");
-        return;
+    if (isAutoSync === true) {
+        var lastSync = localStorage.getItem('salytix_last_sync_date');
+        if (lastSync === today) return;
     }
     if (window.downloadSalesFromFirebase) {
         updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
@@ -13453,6 +13443,10 @@ var App = function App() {
             return processAndStoreFile(file, 'sales', { silentStatus: false });
         }).then(function() {
             localStorage.setItem('salytix_last_sync_date', today);
+            var now = new Date();
+            var timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+            if (typeof setLastGoogleSheetSyncAt !== 'undefined') setLastGoogleSheetSyncAt(dateString + ' ' + timeString);
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
             finishLoadingStatus('เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
