@@ -2696,6 +2696,20 @@ window.applyDefaultLayout = function(type) {
             'card-3': { x: 0, y: 15, w: 6, h: 5 }, // salesGuide
             'card-4': { x: 6, y: 15, w: 6, h: 5 }  // repeatGap
         };
+        localStorage.removeItem('dashboard_custom_widgets');
+    } else if (type === 5) {
+        sectionOpen.kpi = false;
+        sectionOpen.trend = false;
+        sectionOpen.district = false;
+        sectionOpen.brands = false;
+        sectionOpen.shops = false;
+        sectionOpen.salesGuide = false;
+        sectionOpen.repeatGap = false;
+        layouts = {
+            'cw-pivot_default': { x: 0, y: 0, w: 12, h: 10 }
+        };
+        var defaultPivot = { id: 'pivot_default', chartType: 'Pivot', xAxisKey: 'district', yAxisKey: 'value' };
+        localStorage.setItem('dashboard_custom_widgets', JSON.stringify([defaultPivot]));
     }
 
     localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
@@ -5210,7 +5224,9 @@ var ScrollableBarChart = function ScrollableBarChart(_ref1) {
     color = _ref1.color,
     tooltipComponent = _ref1.tooltipComponent,
     _ref1$series = _ref1.series,
-    series = _ref1$series === void 0 ? null : _ref1$series;
+    series = _ref1$series === void 0 ? null : _ref1$series,
+    metric = _ref1.metric,
+    unit = _ref1.unit;
   var safeData = Array.isArray(data) ? data : [];
   var activeSeries = Array.isArray(series) && series.length > 0 ? series : [{
     dataKey: 'value',
@@ -5277,7 +5293,16 @@ var ScrollableBarChart = function ScrollableBarChart(_ref1) {
       maxBarSize: 20,
       fill: defaultSeriesColor,
       legendType: "rect"
-    }, safeData.map(function (entry, index) {
+    }, seriesIndex === 0 && /*#__PURE__*/React.createElement(LabelList, {
+      dataKey: seriesItem.dataKey,
+      position: "insideLeft",
+      fill: "#fff",
+      formatter: function formatter(value) {
+        if (!value) return '';
+        return formatValue(value, metric || 'value', unit || 'baht');
+      },
+      style: { fontSize: 10, fontWeight: 700 }
+    }), safeData.map(function (entry, index) {
       var fallbackColor = Array.isArray(color) ? color[index % color.length] : color;
       var seriesColor = isMultiSeries ? defaultSeriesColor : seriesItem.color || fallbackColor || defaultSeriesColor;
       var cellColor = !isMultiSeries && entry.name === 'อื่นๆ (Others)' ? OTHER_COLOR : seriesColor;
@@ -5354,7 +5379,16 @@ var TargetBarChart = function TargetBarChart(_ref10) {
     fill: "#3B82F6",
     radius: [0, 4, 4, 0],
     legendType: "rect"
-  })))));
+  }, /*#__PURE__*/React.createElement(LabelList, {
+      dataKey: "value",
+      position: "insideLeft",
+      fill: "#fff",
+      formatter: function formatter(value) {
+        if (!value) return '';
+        return formatValue(value, metric || 'value', unit || 'baht');
+      },
+      style: { fontSize: 10, fontWeight: 700 }
+  }))))));
 };
 
 // --- Main App ---
@@ -6148,7 +6182,8 @@ window.removeMockWidget = function(btn) {
                 React.createElement("option", { value: "Line" }, "Line Chart"),
                 React.createElement("option", { value: "Bar" }, "Bar Chart"),
                 React.createElement("option", { value: "Area" }, "Area Chart"),
-                React.createElement("option", { value: "Pie" }, "Pie Chart")
+                React.createElement("option", { value: "Pie" }, "Pie Chart"),
+                React.createElement("option", { value: "Pivot" }, "Pivot Table")
               )
             ),
             React.createElement("div", { className: "flex-1" },
@@ -6173,7 +6208,7 @@ window.removeMockWidget = function(btn) {
                 value: yAxisKey,
                 onChange: function(e) { setYAxisKey(e.target.value); }
               },
-                React.createElement("option", { value: "sales" }, "Sales (Value)"),
+                React.createElement("option", { value: "value" }, "Sales (Value)"),
                 React.createElement("option", { value: "qty" }, "Quantity")
               )
             )
@@ -6214,7 +6249,8 @@ var CustomWidget = function CustomWidget(_ref) {
     allData.monthly.forEach(function(item) {
       var k = item[widget.xAxisKey] || 'N/A';
       if (!grouped[k]) grouped[k] = { name: k, value: 0 };
-      grouped[k].value += Number(item[widget.yAxisKey]) || 0;
+      var yKey = widget.yAxisKey === 'sales' ? 'value' : widget.yAxisKey;
+      grouped[k].value += Number(item[yKey]) || 0;
     });
     var arr = Object.values(grouped);
     if (widget.xAxisKey === 'month') {
@@ -6239,19 +6275,39 @@ var CustomWidget = function CustomWidget(_ref) {
 
   var title = "Custom Chart: " + widget.chartType + " (" + widget.xAxisKey + " / " + widget.yAxisKey + ")";
 
-  return React.createElement("div", { className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border mb-6" },
+  return React.createElement("div", { className: "dashboard-card bg-white p-5 rounded-xl shadow-sm border mb-6 h-full flex flex-col" },
     React.createElement("div", { className: "flex justify-between items-center mb-4 major-section-head cursor-move" },
       React.createElement("h3", { className: "text-base font-bold text-slate-800" }, title),
       React.createElement("button", { className: "text-red-500 hover:text-red-700 text-xs font-medium", onClick: onRemove }, "\u0E25\u0E1A\u0E27\u0E34\u0E14\u0E40จ็ต")
     ),
+    React.createElement("div", { className: "flex-1 overflow-hidden" },
+    widget.chartType === 'Pivot' ?
+      React.createElement("div", { className: "overflow-auto h-full border rounded-lg border-slate-200" },
+        React.createElement("table", { className: "w-full text-sm text-left whitespace-nowrap" },
+          React.createElement("thead", { className: "bg-slate-100 text-slate-600 font-bold sticky top-0 shadow-sm z-10" },
+            React.createElement("tr", null,
+              React.createElement("th", { className: "px-4 py-3 border-b border-r" }, widget.xAxisKey === 'month' ? '\u0E40\u0E14\u0E37\u0E2D\u0E19' : widget.xAxisKey),
+              React.createElement("th", { className: "px-4 py-3 border-b text-right" }, widget.yAxisKey === 'value' || widget.yAxisKey === 'sales' ? '\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22' : widget.yAxisKey)
+            )
+          ),
+          React.createElement("tbody", { className: "divide-y divide-slate-100" },
+            previewData.map(function(row, idx) {
+              return React.createElement("tr", { key: idx, className: "hover:bg-slate-50 transition-colors" },
+                React.createElement("td", { className: "px-4 py-2 text-slate-800 font-medium border-r" }, row.name),
+                React.createElement("td", { className: "px-4 py-2 text-slate-600 text-right font-bold text-blue-600" }, Number(row.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+              );
+            })
+          )
+        )
+      ) :
     widget.chartType === 'Pie' ? 
-      React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+      React.createElement(ResponsiveContainer, { width: "100%", height: "100%", minHeight: 300 },
         React.createElement(PieChart, null,
           React.createElement(Pie, { data: previewData, dataKey: "value", nameKey: "name", cx: "50%", cy: "50%", outerRadius: 100, fill: "#3b82f6", label: true }),
           React.createElement(Tooltip, null)
         )
       ) : 
-      React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+      React.createElement(ResponsiveContainer, { width: "100%", height: "100%", minHeight: 300 },
         React.createElement(ChartElement, { data: previewData },
           React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
           React.createElement(XAxis, { dataKey: "name", interval: 0, stroke: "var(--text-sec)", height: 60, tick: { angle: -45, textAnchor: "end", fill: "var(--text-sec)", fontSize: 11 } }),
@@ -6260,6 +6316,7 @@ var CustomWidget = function CustomWidget(_ref) {
           React.createElement(DataElement, { type: "monotone", dataKey: "value", stroke: "#3b82f6", fill: "#3b82f6" })
         )
       )
+    )
   );
 };
 
@@ -6660,7 +6717,16 @@ var App = function App() {
     isAskingAI = _useState50[0],
     setIsAskingAI = _useState50[1];
   var [isCustomDashboardOpen, setIsCustomDashboardOpen] = useState(false);
-  var [customWidgets, setCustomWidgets] = useState([]);
+  var [customWidgets, setCustomWidgets] = useState(function() {
+    try {
+        var saved = localStorage.getItem('dashboard_custom_widgets');
+        if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [];
+  });
+  useEffect(function() {
+      localStorage.setItem('dashboard_custom_widgets', JSON.stringify(customWidgets));
+  }, [customWidgets]);
   var salesInputRef = useRef(null);
   var targetInputRef = useRef(null);
   var didAutoSyncRef = useRef(false);
@@ -14155,20 +14221,18 @@ var App = function App() {
       return setUnitMode('thousand');
     },
     className: "toggle-btn ".concat(unitMode === 'thousand' ? 'active' : '')
-  }, "พันบาท"))), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
-    className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
+  }, "พันบาท"))), /*#__PURE__*/React.createElement("button", {
+    onClick: syncSalesFromGoogleSheet,
+    className: "hidden md:flex px-3 py-1.5 text-xs rounded-lg items-center transition-colors cursor-pointer mr-2 shadow-sm border",
     style: {
       background: 'rgba(6, 95, 70, 0.96)',
       color: '#ecfdf5',
-      border: '1px solid rgba(167, 243, 208, 0.45)',
-      fontWeight: 700,
-      boxShadow: '0 6px 16px rgba(6, 95, 70, 0.18)'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Check",
-    size: 12,
-    className: "mr-1"
-  }), "Saved"), /*#__PURE__*/React.createElement("button", {
+      borderColor: 'rgba(167, 243, 208, 0.45)'
+    },
+    title: "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Firebase"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-[14px] mr-1"
+  }, "cloud_sync"), " Sync: ", googleSheetSyncLabel || 'Never'), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setIsCustomDashboardOpen(true);
     },
@@ -14191,7 +14255,8 @@ var App = function App() {
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, " 1. ผู้บริหาร"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. พนักงานขาย"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 3. สินค้า (Product Focus)"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม")
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table")
   )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
@@ -14263,7 +14328,7 @@ var App = function App() {
     sectionOpen: sectionOpen,
     setSectionOpen: setSectionOpen,
     toggleSection: toggleSection,
-    allData: allData,
+    allData: { monthly: filteredSalesData || [] },
     onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
   }), /*#__PURE__*/React.createElement(SalesGuideWeightModal, {
         isOpen: isSalesGuideWeightModalOpen,
@@ -14715,7 +14780,7 @@ customWidgets.map(function(widget) {
       React.createElement(CustomWidget, {
         key: widget.id,
         widget: widget,
-        allData: allData,
+        allData: { monthly: filteredSalesData || [] },
         onRemove: function() { setCustomWidgets(customWidgets.filter(function(w) { return w.id !== widget.id; })); }
       })
     )
