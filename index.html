@@ -6463,7 +6463,17 @@ var App = function App() {
     _useState24 = _slicedToArray(_useState23, 2),
     metricMode = _useState24[0],
     setMetricMode = _useState24[1];
-  var _useState25 = useState(function() { try { return JSON.parse(localStorage.getItem('dashboard_section_open')) || DEFAULT_SECTION_STATE; } catch(e) { return DEFAULT_SECTION_STATE; } }),
+  var _useState25 = useState(function() {
+      try {
+          var layouts = JSON.parse(localStorage.getItem('dashboard_layouts') || '{}');
+          var saved = JSON.parse(localStorage.getItem('dashboard_section_open'));
+          if (Object.keys(layouts).length === 0 || !saved) {
+              if (window.applyDefaultLayout) window.applyDefaultLayout(4);
+              return JSON.parse(localStorage.getItem('dashboard_section_open')) || DEFAULT_SECTION_STATE;
+          }
+          return saved;
+      } catch(e) { return DEFAULT_SECTION_STATE; }
+  }),
     _useState26 = _slicedToArray(_useState25, 2),
     sectionOpen = _useState26[0],
     setSectionOpen = _useState26[1];
@@ -13750,6 +13760,9 @@ var App = function App() {
     }))), /*#__PURE__*/React.createElement("div", {
       className: "p-4 border-t bg-slate-50 flex justify-end gap-2 rounded-b-lg"
     }, /*#__PURE__*/React.createElement("button", {
+      onClick: function onClick() { setItems(initialFilterSettings); },
+      className: "px-4 py-2 text-sm text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors mr-auto"
+    }, "คืนค่าเริ่มต้น"), /*#__PURE__*/React.createElement("button", {
       onClick: function onClick() { return setShowFilterSettingsModal(false); },
       className: "px-4 py-2 text-sm text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors"
     }, "ยกเลิก"), /*#__PURE__*/React.createElement("button", {
@@ -14099,7 +14112,7 @@ var App = function App() {
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-start xl:justify-center gap-4 flex-1 hidden lg:flex whitespace-nowrap flex-nowrap pl-2"
-  }, (activeTab === 'dashboard' || activeTab.startsWith('custom_dashboard_')) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
+  }, (['dashboard', 'rebate_program', 'point_program', 'target_match'].includes(activeTab) || activeTab.startsWith('custom_dashboard_')) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
