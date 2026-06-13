@@ -1713,19 +1713,18 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
     </script>
     <script>window.__dashboardBoot && (window.__dashboardBoot.phase = 'app');</script>
-<script>
-// firebase_service.js
+<script>\n// firebase_service.js
 // ใช้สำหรับจัดการ Firebase Authentication และ Firestore สำหรับ Salytix V2
 
 // 1. Firebase Configuration (ผู้ใช้ต้องนำ Config ของตนเองมาใส่ที่นี่)
 const firebaseConfig = {
-  apiKey: "AIzaSyCm6_UtPJANanuGyRy_Ef3VGllEJH7CbvQ",
-  authDomain: "salytix-dashboard.firebaseapp.com",
-  projectId: "salytix-dashboard",
-  storageBucket: "salytix-dashboard.firebasestorage.app",
-  messagingSenderId: "815101407643",
-  appId: "1:815101407643:web:090c0261c85da2d25b713e",
-  measurementId: "G-KDB97BDEEB"
+  apiKey: "AIzaSyAoGtdpYyqm8N88YV-HVNK0FZ57MqJs0ds",
+  authDomain: "salytix-dashboard-c7905.firebaseapp.com",
+  projectId: "salytix-dashboard-c7905",
+  storageBucket: "salytix-dashboard-c7905.firebasestorage.app",
+  messagingSenderId: "318147605241",
+  appId: "1:318147605241:web:2cf6d5e27ec2a230662828",
+  measurementId: "G-X2HTNXH2EN"
 };
 
 // นำเข้า Firebase SDK ผ่าน CDN ด้วย Dynamic Import เพื่อไม่ให้ block การทำงาน
@@ -1823,7 +1822,7 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
             };
         } catch (error) {
             console.error("Login Error:", error);
-            throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+            throw new Error(error.message);
         }
     } 
     
@@ -2047,7 +2046,7 @@ function injectUserManagementSettings(modalNode) {
             <h3 style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 18px;">จัดการสิทธิ์ผู้ใช้งาน (เฉพาะ Admin)</h3>
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
                 <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
-                    <label style="font-weight: bold; font-size: 14px; color: #334155; margin-bottom: 5px; display: block;">เพิ่มผู้ใช้งาน / ตั้งค่า Role และ เขตพื้นที่ดูแล</label>
+                    <label style="font-weight: bold; font-size: 14px; color: #334155; margin-bottom: 5px; display: block;">เพิ่มผู้ใช้งาน / ตั้งค่า Role และ สิทธิ์การเข้าถึงข้อมูล</label>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="email" id="new-user-email" placeholder="อีเมลผู้ใช้" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; flex: 1;">
                         <select id="new-user-role" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px;">
@@ -2056,9 +2055,15 @@ function injectUserManagementSettings(modalNode) {
                             <option value="admin">Admin</option>
                         </select>
                     </div>
-                    <div style="display: flex; gap: 5px; align-items: center;">
-                        <input type="text" id="new-user-areas" placeholder="เขตที่ดูแล เช่น Bangkok, North (คั่นด้วยลูกน้ำ)" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; flex: 1;">
-                        <button id="add-user-btn" style="background: #10b981; color: white; padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; white-space: nowrap; font-weight: bold;">อัปเดตสิทธิ์</button>
+                    
+                    <label style="font-weight: bold; font-size: 13px; color: #334155; margin-bottom: 5px; display: block;">ล็อกสิทธิ์การเข้าถึง (ติ๊กเลือกทั้งหมด (All) เพื่อดูได้ทุกข้อมูล)</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;" id="filter-dropdowns-container">
+                        <!-- Dropdowns will be generated here -->
+                        <span style="font-size: 12px; color: #ef4444;">* กรุณาเปิดโหลดข้อมูลยอดขายก่อน เพื่อให้รายชื่อภาค/เขตปรากฏ</span>
+                    </div>
+
+                    <div style="display: flex; gap: 5px; align-items: center; justify-content: flex-end;">
+                        <button id="add-user-btn" style="background: #10b981; color: white; padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; white-space: nowrap; font-weight: bold;">บันทึก / อัปเดตสิทธิ์</button>
                     </div>
                 </div>
 
@@ -2070,56 +2075,213 @@ function injectUserManagementSettings(modalNode) {
     `;
     modalBody.insertAdjacentHTML('beforeend', html);
 
-    loadUserList(modalNode);
+    // Generator function for dropdowns
+    function buildDropdown(key, label, items) {
+        if (!items) items = [];
+        const ddHtml = `
+        <div style="position: relative; flex: 1; min-width: 120px;" class="multi-select-dd" id="dd-wrapper-${key}">
+            <button type="button" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='none'?'block':'none'" 
+                style="width: 100%; text-align: left; background: white; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px;">
+                <span id="dd-label-${key}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${label} (All)</span>
+                <span style="font-size: 10px;">▼</span>
+            </button>
+            <div class="dropdown-content" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 10; padding: 5px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+                <label style="display: block; padding: 4px; cursor: pointer; font-weight: bold; border-bottom: 1px solid #eee; margin-bottom: 4px; font-size: 13px;">
+                    <input type="checkbox" class="cb-all" data-key="${key}" checked> ดูได้ทั้งหมด (All)
+                </label>
+                ${items.map(v => `
+                <label style="display: block; padding: 4px; cursor: pointer; font-size: 13px; color: #334155;">
+                    <input type="checkbox" class="cb-item" data-key="${key}" value="${v}"> ${v}
+                </label>`).join('')}
+            </div>
+        </div>
+        `;
+        return ddHtml;
+    }
 
-    modalNode.querySelector('#add-user-btn').addEventListener('click', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('new-user-email').value.trim();
-        const role = document.getElementById('new-user-role').value;
-        const areasStr = document.getElementById('new-user-areas').value;
-        
-        if (!email) return alert('กรุณากรอกอีเมล');
-        
-        const areas = areasStr ? areasStr.split(',').map(a => a.trim()).filter(a => a) : [];
-        
-        try {
-            await setDoc(doc(collection(db, "users"), email), { email, role, areas }, { merge: true });
-            alert('อัปเดตข้อมูลผู้ใช้สำเร็จ');
-            loadUserList(modalNode);
-            document.getElementById('new-user-email').value = '';
-            document.getElementById('new-user-areas').value = '';
-        } catch (err) {
-            console.error(err);
-            alert('เกิดข้อผิดพลาด: ' + err.message);
+    // Load available data for dropdowns
+    const container = modalBody.querySelector('#filter-dropdowns-container');
+    if (window.getUniqueSalesData) {
+        const uniqueData = window.getUniqueSalesData();
+        container.innerHTML = 
+            buildDropdown('region', 'ภาค (Region)', uniqueData.region) +
+            buildDropdown('province', 'จังหวัด (Province)', uniqueData.province) +
+            buildDropdown('district', 'เขต (District)', uniqueData.district) +
+            buildDropdown('brand', 'แบรนด์ (Brand)', uniqueData.brand);
+
+        // Add event listeners for checkbox logic
+        container.querySelectorAll('.multi-select-dd').forEach(dd => {
+            const cbAll = dd.querySelector('.cb-all');
+            const cbItems = dd.querySelectorAll('.cb-item');
+            const labelSpan = dd.querySelector('span[id^="dd-label-"]');
+            
+            const updateLabel = () => {
+                const checked = Array.from(cbItems).filter(cb => cb.checked).map(cb => cb.value);
+                if (cbAll.checked || checked.length === 0) {
+                    cbAll.checked = true;
+                    Array.from(cbItems).forEach(cb => cb.checked = false);
+                    labelSpan.textContent = labelSpan.textContent.split(' ')[0] + ' (All)';
+                } else {
+                    labelSpan.textContent = checked.length === 1 ? checked[0] : checked.length + ' selected';
+                }
+            };
+
+            cbAll.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    cbItems.forEach(cb => cb.checked = false);
+                } else {
+                    e.target.checked = true; // Prevent unchecking 'All' without selecting an item
+                }
+                updateLabel();
+            });
+
+            cbItems.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (cb.checked) cbAll.checked = false;
+                    updateLabel();
+                });
+            });
+        });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.multi-select-dd')) {
+            modalBody.querySelectorAll('.dropdown-content').forEach(dc => dc.style.display = 'none');
         }
     });
+
+    // Helper to get selected filters
+    function getSelectedFilters() {
+        const filters = { region: [], province: [], district: [], brand: [] };
+        if (!window.getUniqueSalesData) return filters; // UI not generated
+        
+        ['region', 'province', 'district', 'brand'].forEach(key => {
+            const dd = modalBody.querySelector(`#dd-wrapper-${key}`);
+            if (!dd) return;
+            const cbAll = dd.querySelector('.cb-all');
+            if (!cbAll.checked) {
+                const cbItems = dd.querySelectorAll('.cb-item:checked');
+                filters[key] = Array.from(cbItems).map(cb => cb.value);
+            }
+        });
+        return filters;
+    }
+
+    function setSelectedFilters(filters) {
+        if (!filters || !window.getUniqueSalesData) return;
+        ['region', 'province', 'district', 'brand'].forEach(key => {
+            const dd = modalBody.querySelector(`#dd-wrapper-${key}`);
+            if (!dd) return;
+            const cbAll = dd.querySelector('.cb-all');
+            const cbItems = dd.querySelectorAll('.cb-item');
+            
+            const selected = filters[key] || [];
+            if (selected.length === 0) {
+                cbAll.checked = true;
+                cbItems.forEach(cb => cb.checked = false);
+            } else {
+                cbAll.checked = false;
+                cbItems.forEach(cb => {
+                    cb.checked = selected.includes(cb.value);
+                });
+            }
+            // Trigger update label (using hack: dispatch event)
+            cbAll.dispatchEvent(new Event('change')); 
+            cbAll.checked = selected.length === 0; // Fix state after hack
+            if (selected.length > 0) {
+                const labelSpan = dd.querySelector('span[id^="dd-label-"]');
+                labelSpan.textContent = selected.length === 1 ? selected[0] : selected.length + ' selected';
+            }
+        });
+    }
+
+    // เพิ่มผู้ใช้หรืออัปเดต
+    const addBtn = modalBody.querySelector('#add-user-btn');
+    addBtn.addEventListener('click', () => {
+        const email = modalBody.querySelector('#new-user-email').value.trim();
+        const role = modalBody.querySelector('#new-user-role').value;
+        const lockedFilters = getSelectedFilters();
+
+        if (!email) return alert('กรุณากรอกอีเมล');
+
+        setDoc(doc(collection(db, "users"), email), {
+            role: role,
+            lockedFilters: lockedFilters,
+            updatedAt: new Date()
+        }, { merge: true })
+        .then(() => {
+            alert('บันทึกข้อมูลสิทธิ์เรียบร้อยแล้ว! (หมายเหตุ: รหัสผ่านเข้าสู่ระบบต้องไปสร้างใน Firebase Console แยกต่างหาก)');
+            modalBody.querySelector('#new-user-email').value = '';
+            setSelectedFilters({ region: [], province: [], district: [], brand: [] }); // Reset
+            loadUsers(modalNode);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('เกิดข้อผิดพลาด: ' + err.message);
+        });
+    });
+
+    // Global func สำหรับกดแก้ไขและลบ
+    window.editUser = function(email, role, lockedFiltersJSON) {
+        modalBody.querySelector('#new-user-email').value = email;
+        modalBody.querySelector('#new-user-role').value = role;
+        try {
+            const filters = JSON.parse(decodeURIComponent(lockedFiltersJSON));
+            setSelectedFilters(filters);
+        } catch(e) {
+            setSelectedFilters({ region: [], province: [], district: [], brand: [] });
+        }
+    };
+
+    window.deleteUser = async function(email) {
+        if (!confirm('ลบผู้ใช้ ' + email + '?')) return;
+        await deleteDoc(doc(collection(db, "users"), email));
+        loadUsers(modalNode);
+    };
+
+    loadUsers(modalNode);
 }
 
-async function loadUserList(modalNode) {
+async function loadUsers(modalNode) {
     const listContainer = modalNode.querySelector('#user-management-list');
     try {
         const snapshot = await getDocs(collection(db, "users"));
-        listContainer.innerHTML = '';
+        let listHtml = '<table style="width:100%; text-align:left; border-collapse: collapse;">';
+        listHtml += '<tr style="border-bottom: 1px solid #cbd5e1;"><th style="padding:8px;">Email</th><th style="padding:8px;">Role</th><th style="padding:8px;">Locked Filters</th><th style="padding:8px;">Action</th></tr>';
+        
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            const item = document.createElement('div');
-            item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding: 5px 0;';
-            item.innerHTML = `
-                <div>
-                    <strong>${data.email}</strong> <br/>
-                    <span style="font-size: 11px; color: #64748b;">Role: ${data.role} | เขต: ${data.areas && data.areas.length ? data.areas.join(', ') : 'ทั้งหมด'}</span>
-                </div>
+            let filtersStr = 'ดูได้ทั้งหมด (All)';
+            if (data.lockedFilters) {
+                const activeFilters = Object.entries(data.lockedFilters)
+                    .filter(([k, v]) => v && v.length > 0)
+                    .map(([k, v]) => `${k}: ${v.join(', ')}`);
+                if (activeFilters.length > 0) {
+                    filtersStr = activeFilters.join(' | ');
+                }
+            }
+
+            listHtml += `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding:8px;">${docSnap.id}</td>
+                <td style="padding:8px;"><span style="background:${data.role==='admin'?'#fee2e2':(data.role==='area_admin'?'#fef3c7':'#e0f2fe')}; padding: 2px 6px; border-radius: 4px; font-size:12px; font-weight:bold;">${data.role || 'user'}</span></td>
+                <td style="padding:8px; font-size:11px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${filtersStr}">${filtersStr}</td>
+                <td style="padding:8px;">
+                    <button onclick="window.editUser('${docSnap.id}', '${data.role}', '${encodeURIComponent(JSON.stringify(data.lockedFilters || {}))}')" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">แก้ไข</button>
+                    <button onclick="window.deleteUser('${docSnap.id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">ลบ</button>
+                </td>
+            </tr>
             `;
-            listContainer.appendChild(item);
         });
+        listHtml += '</table>';
+        listContainer.innerHTML = listHtml;
     } catch(err) {
-        listContainer.innerHTML = 'เกิดข้อผิดพลาดในการโหลดผู้ใช้';
+        listContainer.innerHTML = 'เกิดข้อผิดพลาดในการโหลดผู้ใช้: ' + err.message;
     }
 }
-
-</script>
-<script>
-"use strict";
+\n</script>
+<script>\n"use strict";
 
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
@@ -9730,6 +9892,36 @@ var App = function App() {
       return monthIndex === null || monthIndex < 0 || monthIndex > 11;
     });
   }, [filteredTargets]);
+
+  React.useEffect(function() {
+    window.getUniqueSalesData = function() {
+      var source = rawData || [];
+      var keys = ['region', 'province', 'district', 'brand'];
+      var result = { region: [], province: [], district: [], brand: [] };
+      
+      var getFilterItemValue = function(item, k) {
+         if (item[k]) return item[k];
+         if (item.properties && item.properties[k]) return item.properties[k];
+         var keys = Object.keys(item);
+         var caseInsensitiveKey = keys.find(function (key) {
+             return key.toLowerCase() === k.toLowerCase();
+         });
+         if (caseInsensitiveKey) return item[caseInsensitiveKey];
+         return undefined;
+      };
+
+      keys.forEach(function(k) {
+         var set = new Set();
+         source.forEach(function(row) {
+            var val = getFilterItemValue(row, k);
+            if (val && val !== '-') set.add(val);
+         });
+         result[k] = Array.from(set).sort();
+      });
+      return result;
+    };
+  }, [rawData]);
+
   var getUniqueValues = function getUniqueValues(key) {
     if (lockedFilters[key] && lockedFilters[key].length > 0) return lockedFilters[key];
     var context = rawData.filter(function (item) {
@@ -14298,8 +14490,7 @@ try {
       + '</div></div>';
   }
 }
-
-</script>
+\n</script>
 
     <!-- ===== MINIMAL LIGHT: DESIGN SYSTEM v2 ===== -->
     <style data-design="minimal-light">
@@ -14811,6 +15002,320 @@ try {
     })();
     </script>
 
-    <script src="target_match.js"></script>
+    <script>\n/**
+ * Target Match Module - Injected via Vanilla JS
+ * Connects with index.txt via window.TargetMatch
+ */
+
+window.TargetMatch = (function() {
+    let mergedData = null;
+    let profiles = JSON.parse(localStorage.getItem('targetMatchProfiles') || '[]');
+    let currentProfile = {
+        name: 'Default Target Profile',
+        mappings: {}, // "Group Name|Brand Name": "DB Brand"
+        rebateConfig: { percent: 0 },
+        pointConfig: {
+            unit: 'points', // 'points' or 'baht'
+            tiers: [
+                { threshold: 50000, reward: 100 }
+            ]
+        }
+    };
+    if (profiles.length > 0) {
+        currentProfile = profiles[0]; // load first for now
+    }
+    
+    // Expose config globally so Dashboard charts can read it easily
+    window.__TargetMatchActiveProfile = currentProfile;
+
+    let extractedGroups = []; // Array of { group: '', brand: '' }
+
+    function onTargetDataLoaded(data) {
+        mergedData = data;
+        console.log('[TargetMatch] Target Data Loaded. Extracting groups...');
+        extractGroupsAndBrands();
+        openModal();
+    }
+
+    function extractGroupsAndBrands() {
+        if (!mergedData || !mergedData.rawTargets) return;
+        const targetRows = mergedData.rawTargets;
+        
+        let map = new Map();
+        targetRows.forEach(row => {
+            // Group is typically in 'กลุ่มสินค้า' and brand in 'แบรนด์'
+            let group = row['กลุ่มสินค้า'] || row['Group'] || 'Uncategorized';
+            let brand = row['แบรนด์'] || row['Brand'] || 'Unknown Brand';
+            let key = group + '|' + brand;
+            if(!map.has(key)) {
+                map.set(key, { group, brand });
+            }
+        });
+        extractedGroups = Array.from(map.values());
+    }
+
+    function openModal() {
+        // Create modal DOM if not exists
+        let modal = document.getElementById('target-match-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'target-match-modal';
+            modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity';
+            document.body.appendChild(modal);
+        }
+        modal.style.display = 'flex';
+        renderUI();
+    }
+
+    function renderUI() {
+        let modal = document.getElementById('target-match-modal');
+        
+        let html = `
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600">account_tree</span>
+                    ตั้งค่า Target Match & กฎโบนัส
+                </h2>
+                <button onclick="TargetMatch.closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+                
+                <!-- Tree View Section -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 font-semibold text-slate-700">
+                        1. จับคู่กลุ่มสินค้าและแบรนด์ (Data Mapping)
+                    </div>
+                    <div class="p-4 flex flex-col gap-3" id="tm-tree-container">
+                        <!-- Rendered Tree -->
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Rebate Config -->
+                    <div class="border border-blue-100 rounded-xl overflow-hidden bg-blue-50/30 shadow-sm">
+                        <div class="bg-blue-100/50 px-4 py-3 border-b border-blue-100 font-semibold text-blue-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600 text-lg">percent</span>
+                            2. Rebate Program
+                        </div>
+                        <div class="p-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="tm-rebate-percent" value="${currentProfile.rebateConfig.percent}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                                <span class="text-gray-500 font-medium">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Point Program -->
+                    <div class="border border-amber-100 rounded-xl overflow-hidden bg-amber-50/30 shadow-sm">
+                        <div class="bg-amber-100/50 px-4 py-3 border-b border-amber-100 font-semibold text-amber-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-amber-600 text-lg">stars</span>
+                            3. Point Program (แบบขั้นบันได)
+                        </div>
+                        <div class="p-4 flex flex-col gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
+                                <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-white">
+                                    <option value="points" ${currentProfile.pointConfig.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
+                                    <option value="baht" ${currentProfile.pointConfig.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="border-t border-amber-200/50 pt-4">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
+                                <p class="text-xs text-gray-500 mb-3">*ยอดขายสะสมทะลุขั้นไหน จะได้รางวัลของขั้นนั้นบวกเพิ่มไปเรื่อยๆ</p>
+                                <div id="tm-tiers-container" class="flex flex-col gap-2 mb-3">
+                                    <!-- Rendered Tiers -->
+                                </div>
+                                <button onclick="TargetMatch.addTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-100 bg-slate-50 flex justify-end gap-3">
+                <button onclick="TargetMatch.closeModal()" class="px-5 py-2.5 text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
+                <button onclick="TargetMatch.saveConfig()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-sm transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    บันทึก & นำไปใช้ (Save & Apply)
+                </button>
+            </div>
+        </div>
+        `;
+        modal.innerHTML = html;
+        
+        renderTree();
+        renderTiers();
+    }
+
+    function renderTree() {
+        const container = document.getElementById('tm-tree-container');
+        if (!container) return;
+        
+        // Group by 'กลุ่มสินค้า'
+        let grouped = {};
+        extractedGroups.forEach(item => {
+            if (!grouped[item.group]) grouped[item.group] = [];
+            grouped[item.group].push(item.brand);
+        });
+
+        let html = '';
+        for (const [group, brands] of Object.entries(grouped)) {
+            html += `
+                <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm">
+                    <div class="font-bold text-slate-800 border-b border-gray-100 pb-2 mb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-gray-400">folder</span>
+                        ${group}
+                    </div>
+                    <div class="flex flex-col gap-2 pl-6 border-l-2 border-gray-100 ml-3 py-1">
+                        ${brands.map(brand => {
+                            let key = group + '|' + brand;
+                            let val = currentProfile.mappings[key] || '';
+                            return `
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-gray-400 text-sm">subdirectory_arrow_right</span>
+                                    <div class="w-1/3 text-sm text-gray-700 font-medium">${brand}</div>
+                                    <div class="flex-1 flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-gray-100">
+                                        <span class="text-xs text-gray-500 whitespace-nowrap pl-1">ผูกกับ:</span>
+                                        <input type="text" placeholder="พิมพ์ชื่อแบรนด์เป้าหมาย" 
+                                            class="tm-mapping-input flex-1 text-sm border border-gray-300 rounded py-1.5 px-2 focus:ring-blue-500 focus:border-blue-500 bg-white" 
+                                            data-key="${key}" value="${val}">
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (extractedGroups.length === 0) {
+            html = `<div class="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <span class="material-symbols-outlined text-gray-400 text-3xl mb-2 block">find_in_page</span>
+                        ไม่พบข้อมูล กลุ่มสินค้า/แบรนด์ ในไฟล์ Target ที่อัปโหลด
+                    </div>`;
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function renderTiers() {
+        const container = document.getElementById('tm-tiers-container');
+        if (!container) return;
+
+        let html = '';
+        currentProfile.pointConfig.tiers.forEach((tier, index) => {
+            html += `
+                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative group">
+                    <div class="absolute -left-2.5 -top-2.5 bg-amber-100 text-amber-700 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border border-amber-200">
+                        ${index + 1}
+                    </div>
+                    <div class="flex flex-col w-1/2 ml-2">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">ยอดขายถึง (Baht)</span>
+                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'threshold', this.value)" value="${tier.threshold}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                    <div class="flex flex-col w-1/2">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">รางวัลที่ได้</span>
+                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'reward', this.value)" value="${tier.reward}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                    <button onclick="TargetMatch.removeTier(${index})" class="mt-4 text-red-400 hover:text-red-600 transition-colors p-1" title="ลบเงื่อนไข">
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                </div>
+            `;
+        });
+        
+        if (currentProfile.pointConfig.tiers.length === 0) {
+            html = `<div class="text-sm text-gray-400 text-center py-2 italic">ยังไม่มีเงื่อนไขขั้นบันได</div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function addTier() {
+        // Find max threshold to suggest the next one
+        let maxThreshold = 0;
+        if (currentProfile.pointConfig.tiers.length > 0) {
+            maxThreshold = Math.max(...currentProfile.pointConfig.tiers.map(t => t.threshold));
+        }
+        currentProfile.pointConfig.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
+        
+        // Sort tiers by threshold
+        currentProfile.pointConfig.tiers.sort((a, b) => a.threshold - b.threshold);
+        renderTiers();
+    }
+
+    function removeTier(index) {
+        currentProfile.pointConfig.tiers.splice(index, 1);
+        renderTiers();
+    }
+
+    function updateTier(index, field, value) {
+        currentProfile.pointConfig.tiers[index][field] = Number(value);
+    }
+
+    function closeModal() {
+        let modal = document.getElementById('target-match-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function saveConfig() {
+        // Collect mappings
+        const inputs = document.querySelectorAll('.tm-mapping-input');
+        inputs.forEach(input => {
+            const key = input.getAttribute('data-key');
+            if (input.value.trim()) {
+                currentProfile.mappings[key] = input.value.trim();
+            } else {
+                delete currentProfile.mappings[key];
+            }
+        });
+
+        // Collect Rebate
+        const rebateInput = document.getElementById('tm-rebate-percent');
+        if(rebateInput) currentProfile.rebateConfig.percent = Number(rebateInput.value);
+
+        // Collect Point Unit
+        const unitInput = document.getElementById('tm-point-unit');
+        if(unitInput) currentProfile.pointConfig.unit = unitInput.value;
+
+        // Sort Tiers
+        currentProfile.pointConfig.tiers.sort((a, b) => a.threshold - b.threshold);
+
+        // Save
+        profiles[0] = currentProfile;
+        localStorage.setItem('targetMatchProfiles', JSON.stringify(profiles));
+        
+        // Update global variable for immediate dashboard sync
+        window.__TargetMatchActiveProfile = currentProfile;
+
+        // Trigger a custom event in case dashboard needs to re-render charts
+        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: currentProfile }));
+
+        alert('บันทึกการตั้งค่า Target Match สำเร็จ! ข้อมูลพร้อมถูกนำไปคำนวณกราฟ');
+        closeModal();
+    }
+
+    // Public API
+    return {
+        onTargetDataLoaded,
+        closeModal,
+        saveConfig,
+        addTier,
+        removeTier,
+        updateTier
+    };
+})();
+\n</script>
 </body>
 </html>
