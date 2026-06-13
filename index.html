@@ -6381,7 +6381,6 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   return React.createElement("div", { className: "status-modal-overlay z-[9999]" },
     React.createElement("datalist", { id: "db-brands-list" }, Array.from(dbBrands).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
     React.createElement("datalist", { id: "db-groups-list" }, Array.from(dbGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
-    React.createElement("datalist", { id: "db-districts-list" }, Array.from(dbDistricts).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
     React.createElement("div", { className: "status-modal flex flex-col", style: { width: '800px', maxWidth: '95vw', maxHeight: '90vh' } },
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
@@ -6395,7 +6394,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "พิมพ์เพื่อค้นหาชื่อที่มีในระบบยอดขาย หาก 1 เป้าหมายใช้คุมหลายแบรนด์ ให้ใช้เครื่องหมายจุลภาค (,) คั่น เช่น ", React.createElement("code", { className: "bg-white px-1 py-0.5 rounded text-blue-600" }, "SmartHeart, SmartHeart M&B"))
+                React.createElement("p", null, "เลือกเขตจาก Dropdown, พิมพ์กลุ่มสินค้า และหาก 1 เป้าหมายใช้คุมหลายแบรนด์ ให้กดปุ่ม ", React.createElement("strong", null, "+ เพิ่มแบรนด์"), " เพื่อเพิ่มช่องกรอกแบรนด์ได้ตามต้องการ")
             )
         ),
         
@@ -6411,18 +6410,20 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center gap-3 hover:border-blue-300 transition-colors" },
                         React.createElement("div", { className: "w-1/3 text-sm font-bold text-slate-700" }, dist),
                         React.createElement("span", { className: "material-symbols-outlined text-slate-300" }, "arrow_forward"),
-                        React.createElement("input", {
-                            type: "text",
-                            list: "db-districts-list",
-                            className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none",
-                            placeholder: "เช่น NE.3/1 หรือ N.4/1",
+                        React.createElement("select", {
+                            className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white",
                             value: val,
                             onChange: function(e) {
                                 var newMap = Object.assign({}, localMap);
                                 newMap[key] = e.target.value;
                                 setLocalMap(newMap);
                             }
-                        })
+                        }, 
+                            React.createElement("option", { value: "" }, "เลือกเขต..."),
+                            Array.from(dbDistricts).sort().map(function(d) {
+                                return React.createElement("option", { key: d, value: d }, d);
+                            })
+                        )
                     );
                 })
             )
@@ -6439,14 +6440,15 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var keyGrp = 'group||' + t.group;
                     var val = localMap[key] || '';
                     var valGrp = localMap[keyGrp] || '';
+                    var brandArray = val ? val.split(',') : [''];
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
-                        React.createElement("div", { className: "flex items-center gap-3" },
-                            React.createElement("div", { className: "w-1/3" },
+                        React.createElement("div", { className: "flex items-start gap-3" },
+                            React.createElement("div", { className: "w-1/3 mt-1" },
                                 React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
                                 React.createElement("div", { className: "text-sm text-slate-800 font-bold" }, t.brand),
                                 React.createElement("div", { className: "text-xs text-blue-500 mt-0.5 font-semibold" }, "เป้ารวม: ", t.val.toLocaleString())
                             ),
-                            React.createElement("div", { className: "flex items-center justify-center text-slate-300" },
+                            React.createElement("div", { className: "flex items-center justify-center text-slate-300 mt-2" },
                                 React.createElement("span", { className: "material-symbols-outlined" }, "arrow_forward")
                             ),
                             React.createElement("div", { className: "flex-1 flex flex-col gap-2" },
@@ -6465,20 +6467,50 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                         }
                                     })
                                 ),
-                                React.createElement("div", { className: "flex gap-2 items-center" },
-                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "ผูกแบรนด์"),
-                                    React.createElement("input", {
-                                        type: "text",
-                                        list: "db-brands-list",
-                                        className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-blue-50/30 outline-none",
-                                        placeholder: "ระบุแบรนด์ (คั่นด้วย , หากมีหลายตัว)",
-                                        value: val,
-                                        onChange: function(e) {
-                                            var newMap = Object.assign({}, localMap);
-                                            newMap[key] = e.target.value;
-                                            setLocalMap(newMap);
-                                        }
-                                    })
+                                React.createElement("div", { className: "flex gap-2 items-start" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ผูกแบรนด์"),
+                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                        brandArray.map(function(brandItem, bIdx) {
+                                            return React.createElement("div", { key: bIdx, className: "flex items-center gap-1" },
+                                                React.createElement("input", {
+                                                    type: "text",
+                                                    list: "db-brands-list",
+                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-blue-50/30 outline-none",
+                                                    placeholder: "ระบุแบรนด์",
+                                                    value: brandItem.trim(),
+                                                    onChange: function(e) {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = brandArray.slice();
+                                                        newArr[bIdx] = e.target.value;
+                                                        newMap[key] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }),
+                                                brandArray.length > 1 ? React.createElement("button", {
+                                                    type: "button",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded transition-colors flex items-center justify-center",
+                                                    title: "ลบแบรนด์",
+                                                    onClick: function() {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = brandArray.slice();
+                                                        newArr.splice(bIdx, 1);
+                                                        newMap[key] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                            );
+                                        }),
+                                        React.createElement("button", {
+                                            type: "button",
+                                            className: "self-start text-xs text-blue-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                            onClick: function() {
+                                                var newMap = Object.assign({}, localMap);
+                                                var currStr = newMap[key] || '';
+                                                newMap[key] = currStr ? currStr + ',' : ',';
+                                                setLocalMap(newMap);
+                                            }
+                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่มแบรนด์")
+                                    )
                                 )
                             )
                         )
@@ -14372,12 +14404,24 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "sync_alt"), "Import / Export"), 
-  /*#__PURE__*/React.createElement("button", {
-    onClick: function() { setActiveTab("target_match"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined"
-  }, "center_focus_strong"), "Target Match"), 
+  /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: function() { setActiveTab(activeTab === "target_match" ? "" : "target_match"); },
+      className: "flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
+    }, 
+      /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-3" },
+        /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "center_focus_strong"),
+        "Target Match"
+      ),
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: activeTab === 'target_match' ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
+    ),
+    activeTab === 'target_match' && /*#__PURE__*/React.createElement("div", { className: "flex flex-col pl-10 pr-4 mt-1 gap-1 mb-2" },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setIsTargetMappingModalOpen(true); },
+        className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2"
+      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " Setting Target")
+    )
+  ), 
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
     /*#__PURE__*/React.createElement("button", {
       onClick: function() { setIsSettingMenuOpen(!isSettingMenuOpen); },
@@ -14516,12 +14560,6 @@ var App = function App() {
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table")
   )), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() {
-      setIsTargetMappingModalOpen(true);
-    },
-    className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-amber-600 dark:bg-amber-500 text-white dark:text-white hover:bg-amber-700 dark:hover:bg-amber-400 rounded-lg shadow-sm transition-colors font-bold mr-2 border border-amber-700 dark:border-amber-400 whitespace-nowrap",
-    title: "Setting Target"
-  }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " Setting Target"), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
