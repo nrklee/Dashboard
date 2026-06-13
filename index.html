@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="light">
 <head>
+    <script>
+    // Force desktop view on all devices
+    (function() {
+        var metaViewport = document.querySelector('meta[name="viewport"]');
+        if (!metaViewport) {
+            metaViewport = document.createElement('meta');
+            metaViewport.name = 'viewport';
+            document.head.appendChild(metaViewport);
+        }
+        metaViewport.content = 'width=1440';
+    })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salytix - Data Management</title>
@@ -5431,7 +5444,7 @@ var App = function App() {
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
-  var _useStateSidebar = React.useState(false), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
+  var _useStateSidebar = React.useState(true), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
   var _useStateDashboardMenu = React.useState(true), isDashboardMenuOpen = _useStateDashboardMenu[0], setIsDashboardMenuOpen = _useStateDashboardMenu[1];
   var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
 
