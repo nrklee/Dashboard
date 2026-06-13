@@ -1774,12 +1774,50 @@ import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then((mod) 
 // ----------------------------------------------------------------------
 // การตั้งค่าคอลัมน์ (Column Settings) ทั้ง 42 คอลัมน์
 // ----------------------------------------------------------------------
-const defaultColumns = Array.from({length: 42}, (_, i) => ({
-    id: `col_${i+1}`,
-    originalName: i === 0 ? "SALES_QTY" : `Column ${i+1}`,
-    alias: i === 0 ? "SALES_QTY" : `Column ${i+1}`,
-    visible: true
-}));
+const defaultColumns = [
+{id:"col_1",originalName:"SALES_DATE",alias:"ยอดขายวันที่",visible:true},
+{id:"col_2",originalName:"SALES_DOC_NO",alias:"ออก INV วันที่",visible:true},
+{id:"col_3",originalName:"ORDER_DATE",alias:"คำสั่งซื้อวันที่",visible:true},
+{id:"col_4",originalName:"ORDER_DOC_NO",alias:"เลขที่ใบสั่งซื้อ",visible:true},
+{id:"col_5",originalName:"Warehouse",alias:"คลังสินค้า",visible:true},
+{id:"col_6",originalName:"REGION",alias:"ภาค",visible:true},
+{id:"col_7",originalName:"BOUNDARY",alias:"BOUNDARY",visible:true},
+{id:"col_8",originalName:"SECTION",alias:"จังหวัด",visible:true},
+{id:"col_9",originalName:"PROVINCE",alias:"เขตการขาย",visible:true},
+{id:"col_10",originalName:"CV_NAME",alias:"CV หลัก",visible:true},
+{id:"col_11",originalName:"SUB_CV_NAME",alias:"CV รอง",visible:true},
+{id:"col_12",originalName:"CV_TYPE",alias:"ประเภท",visible:true},
+{id:"col_13",originalName:"CATEGORY",alias:"กลุ่ม",visible:true},
+{id:"col_14",originalName:"SUB_CATEGORY",alias:"รุ่น",visible:true},
+{id:"col_15",originalName:"BRAND",alias:"แบรนด์",visible:true},
+{id:"col_16",originalName:"SIZE",alias:"ขนาด",visible:true},
+{id:"col_17",originalName:"BRAND_CODE",alias:"รหัสสินค้า",visible:true},
+{id:"col_18",originalName:"PRODUCT_CODE",alias:"Barcode",visible:true},
+{id:"col_19",originalName:"DESC_LOC",alias:"Skus",visible:true},
+{id:"col_20",originalName:"SALES_QTY",alias:"ยอดขาย (ชิ้น)",visible:true},
+{id:"col_21",originalName:"FREE_QTY",alias:"ยอดแถม (ชิ้น)",visible:true},
+{id:"col_22",originalName:"TOTAL_QTY",alias:"ยอดรวมซื้อแถม (ชิ้น)",visible:true},
+{id:"col_23",originalName:"SALES_QTY_MAS_UNIT",alias:"SALES_QTY_MAS_UNIT",visible:true},
+{id:"col_24",originalName:"FREE_QTY_MAS_UNIT",alias:"FREE_QTY_MAS_UNIT",visible:true},
+{id:"col_25",originalName:"TOTAL_QTY_MAS_UNIT",alias:"TOTAL_QTY_MAS_UNIT",visible:true},
+{id:"col_26",originalName:"SALES_WGH (tons)",alias:"SALES_WGH (tons)",visible:true},
+{id:"col_27",originalName:"FREE_WGH (tons)",alias:"ยอดขาย (ตัน)",visible:true},
+{id:"col_28",originalName:"TOTAL_WGH (tons)",alias:"ยอดแถม (ตัน)",visible:true},
+{id:"col_29",originalName:"SALES_AMOUNT",alias:"ยอดขาย (บาท)",visible:true},
+{id:"col_30",originalName:"DN_QTY_MAS_UNIT",alias:"DN_QTY_MAS_UNIT",visible:true},
+{id:"col_31",originalName:"DN_WGH (tons)",alias:"DN_WGH (tons)",visible:true},
+{id:"col_32",originalName:"DN_AMOUNT",alias:"DN_AMOUNT",visible:true},
+{id:"col_33",originalName:"CN_QTY_MAS_UNIT",alias:"CN_QTY_MAS_UNIT",visible:true},
+{id:"col_34",originalName:"CN_WGH (tons)",alias:"CN_WGH (tons)",visible:true},
+{id:"col_35",originalName:"CN_AMOUNT",alias:"CN_AMOUNT",visible:true},
+{id:"col_36",originalName:"ส่วนลดรับเอง",alias:"ส่วนลดรับเอง",visible:true},
+{id:"col_37",originalName:"ส่วนลดเงินสด",alias:"ส่วนลดเงินสด",visible:true},
+{id:"col_38",originalName:"Gr Segment",alias:"Gr Segment",visible:true},
+{id:"col_39",originalName:"Gr Price",alias:"Gr Price",visible:true},
+{id:"col_40",originalName:"Item Normal NET",alias:"Item Normal NET",visible:true},
+{id:"col_41",originalName:"Rebate",alias:"ประเภท Rebate",visible:true},
+{id:"col_42",originalName:"SET",alias:"ประเภท SET",visible:true}
+];
 
 let currentSettings = JSON.parse(localStorage.getItem('salytix_column_settings')) || defaultColumns;
 
@@ -1945,26 +1983,7 @@ window.uploadSalesToFirebase = async function(file) {
         const data = await file.arrayBuffer();
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rawArray = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        if (rawArray.length > 0) {
-            const fileHeaders = rawArray[0];
-            let updated = false;
-            fileHeaders.forEach((header, i) => {
-                if (i < currentSettings.length) {
-                    const hStr = header ? String(header).trim() : `Column ${i+1}`;
-                    if (currentSettings[i].originalName !== hStr) {
-                        if (currentSettings[i].alias === currentSettings[i].originalName || currentSettings[i].alias === `Column ${i+1}`) {
-                            currentSettings[i].alias = hStr;
-                        }
-                        currentSettings[i].originalName = hStr;
-                        updated = true;
-                    }
-                }
-            });
-            if (updated) {
-                localStorage.setItem('salytix_column_settings', JSON.stringify(currentSettings));
-            }
-        }
+
         // -------------------------------------------------------------
 
         // แปลงไฟล์เป็น Base64
@@ -2589,7 +2608,9 @@ var COLUMN_KEYWORDS = {
   brand: ['แบรนด์', 'ยี่ห้อ', 'brand'],
   model: ['รุ่น', 'model', 'สูตร'],
   size: ['ขนาด', 'size', 'weight', 'นน.', 'น้ำหนัก'],
-  sku: ['sku', 'item', 'code', 'product', 'รหัส', 'สินค้า']
+  sku: ['sku', 'item', 'code', 'product', 'รหัส', 'สินค้า'],
+  rebate: ['rebate'],
+  set: ['set']
 };
 
 
@@ -7596,8 +7617,11 @@ var App = function App() {
 	                            var isUpdateRow = row.some(function (cell) {
 	                              return cell.includes('ยอดขายอัปเดต') || cell.includes('updated');
 	                            });
-	                            var hasHeaderShape = score >= 3;
-	                            var rowScore = timeCount * 20 + score * 8 + Math.min(nonEmptyCount, 20) + (hasHeaderShape ? 40 : 0) - (isUpdateRow && !hasHeaderShape ? 80 : 0);
+	                            var isTransactionalHeader = row.some(function (cell) {
+	                              return cell === 'sales_date' || cell === 'sales_doc_no';
+	                            });
+	                            var hasHeaderShape = score >= 3 || isTransactionalHeader;
+	                            var rowScore = timeCount * 20 + score * 8 + Math.min(nonEmptyCount, 20) + (hasHeaderShape ? 40 : 0) - (isUpdateRow && !hasHeaderShape ? 80 : 0) + (isTransactionalHeader ? 200 : 0);
 	                            var hasTime = timeCount > 0 || rawRow.some(function (cell) {
 	                              return parseHeaderToType(cell);
 	                            });
@@ -7869,6 +7893,28 @@ var App = function App() {
                                   _findHeaderRow2 = findHeaderRow(rows), headerIdx = _findHeaderRow2.index, headerRow = _findHeaderRow2.row;
                                   _mapColumns2 = mapColumns(headerRow), map = _mapColumns2.map, timeCols = _mapColumns2.timeCols;
                                   usableTimeCols = dedupeTimeCols(timeCols);
+                                  var isTransactional = headerRow.some(function(c) { return String(c || '').toLowerCase().trim() === 'sales_date'; });
+                                  var dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                  if (isTransactional) {
+                                      headerRow.forEach(function(c, idx) {
+                                          var colName = String(c || '').toUpperCase().trim();
+                                          if (colName === 'SALES_DATE') dbMap.date = idx;
+                                          if (colName === 'SALES_AMOUNT') dbMap.amount = idx;
+                                          if (colName === 'SALES_QTY') dbMap.qty = idx;
+                                          if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)') dbMap.ton = idx;
+                                          if (colName === 'REGION') dbMap.region = idx;
+                                          if (colName === 'SECTION') dbMap.province = idx; // mapped to province
+                                          if (colName === 'PROVINCE') dbMap.district = idx; // mapped to district
+                                          if (colName === 'CV_NAME') dbMap.cv = idx;
+                                          if (colName === 'CATEGORY') dbMap.group = idx;
+                                          if (colName === 'BRAND') dbMap.brand = idx;
+                                          if (colName === 'SUB_CATEGORY') dbMap.model = idx;
+                                          if (colName === 'SIZE') dbMap.size = idx;
+                                          if (colName === 'BRAND_CODE') dbMap.sku = idx;
+                                          if (colName === 'REBATE') dbMap.rebate = idx;
+                                          if (colName === 'SET') dbMap.set = idx;
+                                      });
+                                  }
                                   targetSheetMetric = type === 'target' ? detectTargetMetricContext(options.sheetName) : 'value';
                                   targetSheetYear = type === 'target' ? extractYearLabelFromText(options.sheetName) || normalizeYearLabel(currentYear) : normalizeYearLabel(currentYear);
                                   salesSheetYear = type === 'sales' ? normalizeYearLabel(options.preferredYearHint || extractYearLabelFromText(options.sheetName) || currentYear) : '';
@@ -13584,38 +13630,175 @@ var App = function App() {
   var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
   var googleSheetSyncLabel = formatLastSyncLabel(lastGoogleSheetSyncAt);
   var googleTargetSyncLabel = formatLastSyncLabel(lastGoogleTargetSyncAt);
+  var getFilterLabel = function(dbKey, defaultLabel) {
+    try {
+      var settings = JSON.parse(localStorage.getItem('salytix_column_settings'));
+      if (settings && Array.isArray(settings)) {
+        var setting = settings.find(function(s) { return s.originalName === dbKey; });
+        if (setting && setting.alias) return setting.alias;
+      }
+    } catch(e) {}
+    return defaultLabel;
+  };
+
+  var ALL_POSSIBLE_FILTERS = [
+    { key: 'region', label: getFilterLabel('REGION', 'ภาค') },
+    { key: 'province', label: getFilterLabel('SECTION', 'จังหวัด') },
+    { key: 'district', label: getFilterLabel('PROVINCE', 'เขตการขาย') },
+    { key: 'cv', label: getFilterLabel('CV_NAME', 'CV หลัก') },
+    { key: 'group', label: getFilterLabel('CATEGORY', 'กลุ่ม') },
+    { key: 'brand', label: getFilterLabel('BRAND', 'แบรนด์') },
+    { key: 'model', label: getFilterLabel('SUB_CATEGORY', 'รุ่น') },
+    { key: 'size', label: getFilterLabel('SIZE', 'ขนาด') },
+    { key: 'sku', label: getFilterLabel('BRAND_CODE', 'รหัสสินค้า'), isWide: viewMode !== 'monthly' },
+    { key: 'rebate', label: getFilterLabel('Rebate', 'ประเภท Rebate') },
+    { key: 'set', label: getFilterLabel('SET', 'ประเภท SET') }
+  ];
+
+  var defaultFilterSettings = ALL_POSSIBLE_FILTERS.map(function(f) { return { key: f.key, visible: true }; });
+  var initialFilterSettings = [];
+  try {
+    initialFilterSettings = JSON.parse(localStorage.getItem('salytix_filter_settings'));
+  } catch(e) {}
+  if (!initialFilterSettings || !Array.isArray(initialFilterSettings) || initialFilterSettings.length === 0) {
+    initialFilterSettings = defaultFilterSettings;
+  }
+  defaultFilterSettings.forEach(function(def) {
+    if (!initialFilterSettings.find(function(s) { return s.key === def.key; })) {
+      initialFilterSettings.push(def);
+    }
+  });
+
+  var _React$useStateFS = React.useState(initialFilterSettings),
+      _React$useStateFS2 = _slicedToArray(_React$useStateFS, 2),
+      filterSettings = _React$useStateFS2[0],
+      setFilterSettings = _React$useStateFS2[1];
+      
+  var _React$useStateFModal = React.useState(false),
+      _React$useStateFModal2 = _slicedToArray(_React$useStateFModal, 2),
+      showFilterSettingsModal = _React$useStateFModal2[0],
+      setShowFilterSettingsModal = _React$useStateFModal2[1];
+
+  var dynamicFiltersDef = filterSettings
+    .filter(function(fs) { return fs.visible; })
+    .map(function(fs) { return ALL_POSSIBLE_FILTERS.find(function(f) { return f.key === fs.key; }); })
+    .filter(Boolean);
+
   var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
     key: 'month',
     label: 'เดือน'
-  }] : []), [{
-    key: 'region',
-    label: 'ภาค'
-  }, {
-    key: 'province',
-    label: 'จังหวัด'
-  }, {
-    key: 'district',
-    label: 'เขต'
-  }, {
-    key: 'cv',
-    label: 'CV (ลูกค้า)'
-  }, {
-    key: 'group',
-    label: 'กลุ่มสินค้า'
-  }, {
-    key: 'brand',
-    label: 'แบรนด์'
-  }, {
-    key: 'model',
-    label: 'รุ่น'
-  }, {
-    key: 'size',
-    label: 'ขนาด'
-  }, {
-    key: 'sku',
-    label: 'SKU',
-    isWide: viewMode !== 'monthly'
-  }]);
+  }] : []), _toConsumableArray(dynamicFiltersDef));
+
+  var FilterSettingsModal = function FilterSettingsModal() {
+    var _React$useStateFSModalItems = React.useState(filterSettings),
+        _React$useStateFSModalItems2 = _slicedToArray(_React$useStateFSModalItems, 2),
+        items = _React$useStateFSModalItems2[0],
+        setItems = _React$useStateFSModalItems2[1];
+        
+    var _React$useStateDrag = React.useState(null),
+        _React$useStateDrag2 = _slicedToArray(_React$useStateDrag, 2),
+        draggedIdx = _React$useStateDrag2[0],
+        setDraggedIdx = _React$useStateDrag2[1];
+
+    var handleDragStart = function handleDragStart(e, idx) {
+      setDraggedIdx(idx);
+      e.dataTransfer.effectAllowed = "move";
+    };
+
+    var handleDragOver = function handleDragOver(e, idx) {
+      e.preventDefault();
+      if (draggedIdx === null || draggedIdx === idx) return;
+      var newItems = _toConsumableArray(items);
+      var draggedItem = newItems[draggedIdx];
+      newItems.splice(draggedIdx, 1);
+      newItems.splice(idx, 0, draggedItem);
+      setDraggedIdx(idx);
+      setItems(newItems);
+    };
+
+    var handleDragEnd = function handleDragEnd() {
+      setDraggedIdx(null);
+    };
+
+    var toggleVisibility = function toggleVisibility(idx) {
+      var newItems = _toConsumableArray(items);
+      var item = _objectSpread({}, newItems[idx]);
+      item.visible = !item.visible;
+      newItems[idx] = item;
+      
+      if (item.visible) {
+        newItems.splice(idx, 1);
+        var lastVisibleIdx = -1;
+        for (var i = newItems.length - 1; i >= 0; i--) {
+          if (newItems[i].visible) {
+            lastVisibleIdx = i;
+            break;
+          }
+        }
+        newItems.splice(lastVisibleIdx + 1, 0, item);
+      }
+      setItems(newItems);
+    };
+
+    var saveAndClose = function saveAndClose() {
+      localStorage.setItem('salytix_filter_settings', JSON.stringify(items));
+      setFilterSettings(items);
+      setShowFilterSettingsModal(false);
+    };
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: "fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center fade-in"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "p-4 border-b flex justify-between items-center"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-lg font-bold text-slate-800"
+    }, "ตั้งค่าตัวกรอง (Smart Filters)"), /*#__PURE__*/React.createElement("button", {
+      onClick: function onClick() { return setShowFilterSettingsModal(false); },
+      className: "text-slate-500 hover:text-slate-800"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "X",
+      size: 20
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "p-4 overflow-y-auto flex-1"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-500 mb-4"
+    }, "ติ๊กเพื่อแสดง/ซ่อน และคลิกค้างที่ไอคอน ☰ เพื่อลากสลับตำแหน่งตัวกรอง"), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col gap-2"
+    }, items.map(function (item, index) {
+      var fDef = ALL_POSSIBLE_FILTERS.find(function (f) { return f.key === item.key; });
+      var label = fDef ? fDef.label : item.key;
+      return /*#__PURE__*/React.createElement("div", {
+        key: item.key,
+        draggable: true,
+        onDragStart: function onDragStart(e) { return handleDragStart(e, index); },
+        onDragOver: function onDragOver(e) { return handleDragOver(e, index); },
+        onDragEnd: handleDragEnd,
+        className: "flex items-center gap-3 p-3 border rounded-md bg-white cursor-move hover:border-slate-300 transition-colors " + (draggedIdx === index ? 'opacity-50 border-blue-500' : 'border-slate-200')
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: "Menu",
+        size: 16,
+        className: "text-slate-400 cursor-grab active:cursor-grabbing"
+      }), /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        className: "w-4 h-4 cursor-pointer accent-blue-600",
+        checked: item.visible,
+        onChange: function onChange() { return toggleVisibility(index); }
+      }), /*#__PURE__*/React.createElement("span", {
+        className: "text-sm " + (item.visible ? 'text-slate-700 font-medium' : 'text-slate-400 line-through')
+      }, label));
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "p-4 border-t bg-slate-50 flex justify-end gap-2 rounded-b-lg"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: function onClick() { return setShowFilterSettingsModal(false); },
+      className: "px-4 py-2 text-sm text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors"
+    }, "ยกเลิก"), /*#__PURE__*/React.createElement("button", {
+      onClick: saveAndClose,
+      className: "px-4 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+    }, "บันทึก"))));
+  };
+
   var handleViewModeChange = function handleViewModeChange(nextMode) {
     setViewMode(nextMode);
     if (nextMode === 'yearly' && (allData.yearly || []).length === 0) {
@@ -14187,7 +14370,14 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() { return toggleExpanded('filters'); },
     className: "text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.filters ? 'ย่อ' : 'ขยาย'), Object.keys(filters).length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, sectionExpanded.filters ? 'ย่อ' : 'ขยาย'), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { return setShowFilterSettingsModal(true); },
+    className: "text-slate-500 hover:text-slate-800 transition-colors",
+    title: "ตั้งค่าตัวกรอง"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Settings",
+    size: 16
+  })), Object.keys(filters).length > 0 && /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setFilters(buildLockedFiltersState(lockedFilters));
     },
