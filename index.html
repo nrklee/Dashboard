@@ -1930,32 +1930,56 @@ window.interceptHandleFileUpload = async function(event, type) {
 };
 
 // ----------------------------------------------------------------------
-// 4. Inject Dropdown Settings vào Modal "ตั้งค่าอัลกอริทึม"
+// 4. Standalone Settings Modals
 // ----------------------------------------------------------------------
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === 1) { // Element node
-                // ค้นหา Modal ตั้งค่าที่มีคำว่า "ตั้งค่าการวิเคราะห์ข้อมูล" หรือเกี่ยวข้อง
-                const modalTitles = node.querySelectorAll ? node.querySelectorAll('h3, h2, div') : [];
-                let isSettingsModal = false;
-                modalTitles.forEach(t => {
-                    if(t.textContent && t.textContent.includes('ตั้งค่าอัลกอริทึม') || t.textContent.includes('น้ำหนักความสำคัญ')) {
-                        isSettingsModal = true;
-                    }
-                });
 
-                if (isSettingsModal) {
-                    injectColumnSettings(node);
-                    injectUserManagementSettings(node);
-                }
-            }
-        });
-    });
-});
+window.openColumnSettingsModal = function() {
+    let m = document.getElementById('my-col-modal');
+    if(!m) {
+        m = document.createElement('div');
+        m.id = 'my-col-modal';
+        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        const inner = document.createElement('div');
+        inner.className = 'p-4';
+        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = 'X ปิด';
+        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
+        closeBtn.onclick = () => m.style.display = 'none';
+        inner.appendChild(closeBtn);
+        
+        m.appendChild(inner);
+        document.body.appendChild(m);
+        
+        injectColumnSettings(m);
+    }
+    m.style.display = 'flex';
+}
 
-// เริ่มสังเกตการณ์ DOM เพื่อรอให้ Modal เปิดขึ้นมา
-observer.observe(document.body, { childList: true, subtree: true });
+window.openUserManagementModal = function() {
+    let m = document.getElementById('my-user-modal');
+    if(!m) {
+        m = document.createElement('div');
+        m.id = 'my-user-modal';
+        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        const inner = document.createElement('div');
+        inner.className = 'p-4';
+        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = 'X ปิด';
+        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
+        closeBtn.onclick = () => m.style.display = 'none';
+        inner.appendChild(closeBtn);
+        
+        m.appendChild(inner);
+        document.body.appendChild(m);
+        
+        injectUserManagementSettings(m);
+    }
+    m.style.display = 'flex';
+}
 
 function injectColumnSettings(modalNode) {
     // ป้องกันการแทรกซ้ำ
@@ -1966,17 +1990,16 @@ function injectColumnSettings(modalNode) {
     if (!modalBody) return;
 
     const settingsHTML = `
-        <div id="custom-column-settings" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-            <h4 style="font-weight: bold; margin-bottom: 10px; color: #1e293b;">ตั้งค่าคอลัมน์ Excel (42 คอลัมน์)</h4>
-            <details style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
-                <summary style="cursor: pointer; font-weight: 500; color: #334155;">จัดการชื่อและซ่อนคอลัมน์</summary>
-                <div style="max-height: 250px; overflow-y: auto; margin-top: 10px;" id="col-settings-list">
+        <div id="custom-column-settings" style="margin-top: 10px; padding-top: 5px;">
+            <h3 style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 18px;">จัดการชื่อและซ่อนคอลัมน์ (42 คอลัมน์)</h3>
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
+                <div style="max-height: 400px; overflow-y: auto;" id="col-settings-list">
                     <!-- จะถูกสร้างด้วย JS -->
                 </div>
-                <button id="save-col-settings-btn" style="margin-top: 10px; background: #3b82f6; color: white; padding: 5px 15px; border-radius: 5px; font-size: 14px; border: none; cursor: pointer;">
+                <button id="save-col-settings-btn" style="margin-top: 15px; width: 100%; background: #3b82f6; color: white; padding: 10px 15px; border-radius: 5px; font-size: 14px; border: none; cursor: pointer; font-weight: bold;">
                     บันทึกการตั้งค่าคอลัมน์
                 </button>
-            </details>
+            </div>
         </div>
     `;
 
@@ -2020,30 +2043,29 @@ function injectUserManagementSettings(modalNode) {
     if (!modalBody) return;
 
     const html = `
-        <div id="custom-user-management" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-            <h4 style="font-weight: bold; margin-bottom: 10px; color: #1e293b;">จัดการสิทธิ์ผู้ใช้งาน (เฉพาะ Admin)</h4>
-            <details style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
-                <summary style="cursor: pointer; font-weight: 500; color: #334155;">ตั้งค่า Role และ เขตพื้นที่ดูแล</summary>
-                
-                <div style="margin-top: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">
-                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                        <input type="email" id="new-user-email" placeholder="อีเมลผู้ใช้" style="border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; flex: 1;">
-                        <select id="new-user-role" style="border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px;">
+        <div id="custom-user-management" style="margin-top: 10px; padding-top: 5px;">
+            <h3 style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 18px;">จัดการสิทธิ์ผู้ใช้งาน (เฉพาะ Admin)</h3>
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
+                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
+                    <label style="font-weight: bold; font-size: 14px; color: #334155; margin-bottom: 5px; display: block;">เพิ่มผู้ใช้งาน / ตั้งค่า Role และ เขตพื้นที่ดูแล</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="email" id="new-user-email" placeholder="อีเมลผู้ใช้" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; flex: 1;">
+                        <select id="new-user-role" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px;">
                             <option value="user">User</option>
                             <option value="area_admin">Area Admin</option>
                             <option value="admin">Admin</option>
                         </select>
                     </div>
                     <div style="display: flex; gap: 5px; align-items: center;">
-                        <input type="text" id="new-user-areas" placeholder="เขตที่ดูแล เช่น Bangkok, North (คั่นด้วยลูกน้ำ)" style="border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; flex: 1;">
-                        <button id="add-user-btn" style="background: #10b981; color: white; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; white-space: nowrap;">อัปเดตสิทธิ์</button>
+                        <input type="text" id="new-user-areas" placeholder="เขตที่ดูแล เช่น Bangkok, North (คั่นด้วยลูกน้ำ)" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; flex: 1;">
+                        <button id="add-user-btn" style="background: #10b981; color: white; padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; white-space: nowrap; font-weight: bold;">อัปเดตสิทธิ์</button>
                     </div>
                 </div>
 
-                <div style="max-height: 250px; overflow-y: auto; font-size: 13px;" id="user-management-list">
+                <div style="max-height: 350px; overflow-y: auto; font-size: 14px;" id="user-management-list">
                     กำลังโหลด...
                 </div>
-            </details>
+            </div>
         </div>
     `;
     modalBody.insertAdjacentHTML('beforeend', html);
@@ -5829,6 +5851,7 @@ var App = function App() {
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
   var _useStateSidebar = React.useState(true), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
   var _useStateDashboardMenu = React.useState(true), isDashboardMenuOpen = _useStateDashboardMenu[0], setIsDashboardMenuOpen = _useStateDashboardMenu[1];
+  var _useStateSettingMenu = React.useState(false), isSettingMenuOpen = _useStateSettingMenu[0], setIsSettingMenuOpen = _useStateSettingMenu[1];
   var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
 
   
@@ -13433,12 +13456,28 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "center_focus_strong"), "Target Match"), 
-  /*#__PURE__*/React.createElement("button", {
-    onClick: function() { setActiveTab("setting"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'setting' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined"
-  }, "settings"), "Setting")), /*#__PURE__*/React.createElement("div", {
+  /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: function() { setIsSettingMenuOpen(!isSettingMenuOpen); },
+      className: "flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-bold hover:bg-surface-container-high"
+    }, 
+      /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-3" },
+        /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "settings"), 
+        /*#__PURE__*/React.createElement("span", null, "Setting")
+      ),
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: isSettingMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
+    ),
+    isSettingMenuOpen && /*#__PURE__*/React.createElement("div", { className: "flex flex-col pl-10 pr-4 mt-1 gap-1" },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { if(window.openColumnSettingsModal) window.openColumnSettingsModal(); },
+        className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high"
+      }, "จัดการชื่อและซ่อนคอลัมน์"),
+      (!isSalesRestrictedUser && (currentUserRole === 'admin' || currentUserRole === 'super_admin')) && /*#__PURE__*/React.createElement("button", {
+        onClick: function() { if(window.openUserManagementModal) window.openUserManagementModal(); },
+        className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high"
+      }, "จัดการสิทธิ์ผู้ใช้งาน (เฉพาะ Admin)")
+    )
+  )), /*#__PURE__*/React.createElement("div", {
     className: "px-4 mt-auto mb-4"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#",
