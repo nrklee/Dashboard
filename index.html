@@ -8837,6 +8837,9 @@ var App = function App() {
             setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
             updateLoadingStatus(type === 'sales' ? 'อ่านไฟล์ยอดขายสำเร็จ กำลังบันทึกข้อมูล...' : 'อ่านไฟล์เป้าหมายสำเร็จ กำลังบันทึกข้อมูล...', 88, false);
+            if (type === 'sales' && window.interceptCallAuthWebApp) {
+              window.interceptCallAuthWebApp('upload_sales', { file: file }).catch(function(err){ console.error("Firebase upload_sales error:", err); });
+            }
             _context19.n = 8;
             return saveToStorage(mergedData);
           case 8:
