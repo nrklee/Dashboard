@@ -5981,6 +5981,7 @@ var App = function App() {
       nextData.salesUpdateMeta = normalizeSalesUpdateMeta(parsedData.salesUpdateMeta);
     } else {
       nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
+      nextData.rawTargets = parsedData.rawTargets || [];
     }
     return nextData;
   };
@@ -7761,11 +7762,16 @@ var App = function App() {
                         };
                         parseTargetWorkbook = function (originalParseTargetWorkbook) {
                           return function wrappedParseTargetWorkbook(workbook) {
+                            var firstSheetName = workbook.SheetNames[0];
+                            var rawTargets = window.XLSX ? window.XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {defval: ''}) : [];
                             var hasNnsSheet = (workbook.SheetNames || []).some(function (name) {
                               return String(name || '').toLowerCase().replace(/\s+/g, '') === 'nns';
                             });
-                            if (hasNnsSheet) return parseDistrictTargetWorkbook(workbook);
-                            throw new Error('รูปแบบไฟล์ Target ไม่ถูกต้อง กรุณาใช้ไฟล์ TG.NNS 26 NORTHEAST.xlsx');
+                            var resultPromise = hasNnsSheet ? parseDistrictTargetWorkbook(workbook) : Promise.resolve({ monthly: [], yearly: [] });
+                            return resultPromise.then(function(res) {
+                                res.rawTargets = rawTargets;
+                                return res;
+                            });
                           };
                         }(parseTargetWorkbook);
                         isCSV = file.name.toLowerCase().endsWith('.csv');
