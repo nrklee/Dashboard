@@ -5747,7 +5747,7 @@ var App = function App() {
     aiWebAppUrl = _useState44[0],
     setAIWebAppUrl = _useState44[1];
   var _useStateAuthToken = useState(function () {
-      return 'dummy_token';
+      return safeStorageGet(AUTH_SESSION_TOKEN_KEY) || '';
     }),
     _useStateAuthToken2 = _slicedToArray(_useStateAuthToken, 2),
     authSessionToken = _useStateAuthToken2[0],
@@ -5759,12 +5759,12 @@ var App = function App() {
     authSessionExpiresAt = _useStateAuthExpires2[0],
     setAuthSessionExpiresAt = _useStateAuthExpires2[1];
   var _useStateAuthUser = useState(function () {
-    try {
-      var raw = safeStorageGet(AUTH_USER_KEY);
-      return raw ? JSON.parse(raw) : { username: 'admin', role: 'admin' };
-    } catch (_err) {
-      return { username: 'admin', role: 'admin' };
-    }
+      try {
+        var raw = safeStorageGet(AUTH_USER_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_err) {
+        return null;
+      }
     }),
     _useStateAuthUser2 = _slicedToArray(_useStateAuthUser, 2),
     authUser = _useStateAuthUser2[0],
@@ -14389,104 +14389,5 @@ try {
     </script>
 
     <script src="target_match.js"></script>
-
-    <!-- ===== FIREBASE LOGIN & UPLOAD LOGIC ===== -->
-    <style>
-    /* Login Modal */
-    .auth-overlay { position:fixed;inset:0;background:#f8f9ff;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'Kanit',sans-serif; }
-    .auth-card { background:#ffffff;border:1px solid #c1c6d7;padding:2.5rem 2rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);width:100%;max-width:380px;text-align:center; }
-    .auth-card h2 { color:#0058bc; margin-bottom:1.5rem; font-size:1.6rem; }
-    .auth-input { width:100%;padding:0.85rem 1rem;margin-bottom:1rem;border:1px solid #c1c6d7;border-radius:8px;font-size:0.95rem;outline:none; }
-    .auth-input:focus { border-color:#0058bc; }
-    .auth-btn { width:100%;background:#0058bc;color:#fff;border:none;padding:0.85rem;border-radius:8px;font-size:1.05rem;cursor:pointer;font-weight:600; }
-    .auth-error { color:#ba1a1a; font-size:0.85rem; margin-top:0.75rem; display:none; }
-    .hidden { display:none !important; }
-    
-    /* Floating Admin Panel */
-    .admin-float-panel { position:fixed;bottom:20px;left:20px;z-index:99998;background:#fff;padding:12px 16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;font-family:'Kanit',sans-serif; }
-    .admin-email { font-size:0.85rem; font-weight:600; color:#334155; }
-    .admin-action-btn { background:#0058bc;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:6px; }
-    .admin-logout-btn { background:#e2e8f0;color:#475569;border:none;padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer; }
-    </style>
-
-    <div class="auth-overlay" id="auth-overlay">
-      <div class="auth-card">
-        <h2>📊 Salytix Login</h2>
-        <input type="email" id="login-email" class="auth-input" placeholder="Email" autocomplete="username" />
-        <input type="password" id="login-password" class="auth-input" placeholder="Password" autocomplete="current-password" />
-        <button class="auth-btn" id="login-btn">เข้าสู่ระบบ</button>
-        <div id="login-error" class="auth-error">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
-      </div>
-    </div>
-
-    <div class="admin-float-panel hidden" id="admin-panel">
-      <div class="admin-email" id="user-info"></div>
-      <button class="admin-action-btn" id="upload-btn" onclick="document.getElementById('excel-upload').click()">
-        <span class="material-symbols-outlined" style="font-size:18px;">upload_file</span> นำเข้าข้อมูล
-      </button>
-      <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" style="display:none;" />
-      <button class="admin-logout-btn" id="logout-btn">ออกจากระบบ</button>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-      import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyCm6_UtPJANanuGyRy_Ef3VGlLEJH7CbvQ",
-        authDomain: "salytix-dashboard.firebaseapp.com",
-        projectId: "salytix-dashboard",
-        storageBucket: "salytix-dashboard.firebasestorage.app",
-        messagingSenderId: "815101407643",
-        appId: "1:815101407643:web:090c0261c85da2d25b713e",
-        measurementId: "G-KDB97BDEEB"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-      window.db = db;
-
-      const authOverlay = document.getElementById('auth-overlay');
-      const adminPanel = document.getElementById('admin-panel');
-      const loginBtn = document.getElementById('login-btn');
-      const logoutBtn = document.getElementById('logout-btn');
-      const userInfo = document.getElementById('user-info');
-      const errorMsg = document.getElementById('login-error');
-
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          authOverlay.classList.add('hidden');
-          adminPanel.classList.remove('hidden');
-          userInfo.textContent = user.email;
-        } else {
-          authOverlay.classList.remove('hidden');
-          adminPanel.classList.add('hidden');
-        }
-      });
-
-      loginBtn.addEventListener('click', async () => {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-password').value;
-        if(!email || !pass) return;
-        loginBtn.textContent = 'กำลังตรวจสอบ...';
-        try {
-          await signInWithEmailAndPassword(auth, email, pass);
-          errorMsg.style.display = 'none';
-        } catch (error) {
-          errorMsg.style.display = 'block';
-        } finally {
-          loginBtn.textContent = 'เข้าสู่ระบบ';
-        }
-      });
-
-      document.getElementById('login-password').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') loginBtn.click();
-      });
-
-      logoutBtn.addEventListener('click', () => signOut(auth));
-    </script>
 </body>
 </html>
