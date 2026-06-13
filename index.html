@@ -731,6 +731,15 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
         ]);
     });
 
+    window.onerror = function(message, source, lineno, colno, error) {
+        if (bootState.mounted) return;
+        renderFallback('เกิดข้อผิดพลาดของสคริปต์ (JS Error)', [
+            'รายละเอียด: ' + message,
+            'ตำแหน่ง: บรรทัดที่ ' + lineno + ', คอลัมน์ ' + colno,
+            'Error: ' + (error ? error.stack : 'N/A')
+        ]);
+    };
+
     window.setTimeout(function () {
         if (!bootState.mounted) {
             renderFallback('กำลังโหลดนานกว่าปกติ', [
