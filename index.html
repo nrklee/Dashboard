@@ -3456,13 +3456,17 @@ var normalizeRegionName = function normalizeRegionName(region) {
 };
 var parseNumericValue = function parseNumericValue(value) {
   if (value === undefined || value === null || value === '') return 0;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value) || value > 100000000000) return 0;
+    return value;
+  }
   var cleaned = String(value).trim();
   if (!cleaned || cleaned === '-' || cleaned === '—') return 0;
   cleaned = cleaned.replace(/,/g, '');
   if (cleaned.startsWith('(') && cleaned.endsWith(')')) cleaned = "-".concat(cleaned.slice(1, -1));
   var parsed = parseFloat(cleaned);
-  return Number.isFinite(parsed) ? parsed : 0;
+  if (!Number.isFinite(parsed) || parsed > 100000000000) return 0;
+  return parsed;
 };
 var buildCompositeKey = function buildCompositeKey(item, timeType, timeValue) {
   var keys = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'];
