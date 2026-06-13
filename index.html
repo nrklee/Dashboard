@@ -1897,15 +1897,9 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
 };
 
 // ----------------------------------------------------------------------
-// 3. Intercept Excel Upload (ดักจับการอัปโหลดไฟล์ Sales 42 คอลัมน์)
+// 3. Firebase Excel Upload (อัปโหลดไฟล์ Sales 42 คอลัมน์ เข้า Firestore)
 // ----------------------------------------------------------------------
-window.interceptHandleFileUpload = async function(event, type) {
-    // เรารับจัดการเฉพาะการอัปโหลด 'sales'
-    if (type !== 'sales') {
-        return; // ปล่อยให้ React จัดการถ้าไม่ใช่ sales
-    }
-    
-    const file = event.target.files[0];
+window.uploadSalesToFirebase = async function(file) {
     if (!file) return;
 
     // แสดงแจ้งเตือนในหน้า UI (ถ้า React ฟังก์ชันยังทำงานอยู่)
@@ -8837,8 +8831,8 @@ var App = function App() {
             setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
             updateLoadingStatus(type === 'sales' ? 'อ่านไฟล์ยอดขายสำเร็จ กำลังบันทึกข้อมูล...' : 'อ่านไฟล์เป้าหมายสำเร็จ กำลังบันทึกข้อมูล...', 88, false);
-            if (type === 'sales' && window.interceptCallAuthWebApp) {
-              window.interceptCallAuthWebApp('upload_sales', { file: file }).catch(function(err){ console.error("Firebase upload_sales error:", err); });
+            if (type === 'sales' && window.uploadSalesToFirebase) {
+              window.uploadSalesToFirebase(file).catch(function(err){ console.error("Firebase upload error:", err); });
             }
             _context19.n = 8;
             return saveToStorage(mergedData);
