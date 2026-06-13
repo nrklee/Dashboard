@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="light">
 <head>
+    <script>
+    // Force desktop view on all devices
+    (function() {
+        var metaViewport = document.querySelector('meta[name="viewport"]');
+        if (!metaViewport) {
+            metaViewport = document.createElement('meta');
+            metaViewport.name = 'viewport';
+            document.head.appendChild(metaViewport);
+        }
+        metaViewport.content = 'width=1440';
+    })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salytix - Data Management</title>
@@ -77,6 +90,40 @@
         }
     </script>
     <style>
+        /* GLOBAL TOGGLE STYLES FIX */
+        .toggle-group {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0 !important;
+            flex-shrink: 0 !important;
+            border: 1px solid #5a73a3 !important;
+            border-radius: 999px !important;
+            padding: 2px !important;
+            background: #eef2fa !important;
+        }
+        .toggle-btn {
+            border: none !important;
+            border-radius: 999px !important;
+            color: #3b4e76 !important;
+            background: transparent !important;
+            transition: all 0.2s ease !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 5px 16px !important;
+            font-size: 13px !important;
+        }
+        .toggle-btn:hover {
+            color: #1a2a4b !important;
+        }
+        .toggle-btn.active {
+            background: #395eb5 !important;
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }
+
 /* ═══════════════════════════════════════════════════════════
    SALYTIX  ·  New Design System
    Accent: Violet  ·  Clean Minimal  ·  2025
@@ -525,7 +572,10 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
   .sales-guide-list-inner { min-width: 0; }
   .repeat-gap-list-inner { min-width: 0; }
 }
-    </style>
+    
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+</style>
 </head>
 <body>
     <div id="root"><div style="min-height:100vh;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;font-family:"IBM Plex Sans Thai",system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#0f172a;"><div style="text-align:center;max-width:420px;"><div style="width:44px;height:44px;border:4px solid #bfdbfe;border-top-color:#2563eb;border-radius:9999px;margin:0 auto 16px auto;animation:spin 1s linear infinite;"></div><div style="font-size:22px;font-weight:700;color:#1d4ed8;margin-bottom:8px;">กำลังเปิด Dashboard</div><div style="font-size:14px;line-height:1.7;color:#475569;">กำลังเตรียมระบบและโหลดข้อมูลที่บันทึกไว้เดิม</div></div></div></div>
@@ -931,8 +981,35 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
                 flex-shrink: 0;
             }
 
-            /* Toggle groups: don't shrink, keep natural width */
+            
+            .toggle-btn {
+                border: 1px solid var(--border) !important;
+                border-radius: 6px !important;
+                color: var(--text-sec) !important;
+                background: var(--surface-alt) !important;
+                transition: all 0.2s ease !important;
+                font-weight: 600 !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .toggle-btn:hover {
+                background: var(--bg-soft) !important;
+                border-color: var(--border) !important;
+                color: var(--text) !important;
+            }
+            .toggle-btn.active {
+                background: var(--accent) !important;
+                border-color: var(--accent-border) !important;
+                color: var(--accent-text, #fff) !important;
+                box-shadow: var(--shadow-sm) !important;
+            }
+/* Toggle groups: don't shrink, keep natural width */
             .toggle-group {
+                display: flex;
+                align-items: center;
+                gap: 6px;
                 flex-shrink: 0;
             }
 
@@ -1028,9 +1105,11 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
             }
 
             .filters-head-row {
-                align-items: flex-start !important;
+                display: flex !important;
+                align-items: center !important;
                 gap: 10px !important;
                 margin-bottom: 10px !important;
+                width: 100% !important;
             }
 
             .filters-title {
@@ -1043,11 +1122,10 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
             }
 
             .filters-head-actions {
-                width: 100%;
-                margin-left: 0 !important;
-                justify-content: flex-start !important;
+                width: auto !important;
+                margin-left: auto !important;
+                justify-content: flex-end !important;
                 gap: 8px !important;
-                row-gap: 8px !important;
             }
 
             .filters-head-actions button {
@@ -1118,7 +1196,33 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
                 font-size: 9.5px !important;
             }
             .toggle-group {
-                gap: 0 !important;
+                display: flex;
+                align-items: center;
+                flex-shrink: 0 !important;
+                gap: 6px !important;
+            }
+            .toggle-btn {
+                border: 1px solid var(--border) !important;
+                border-radius: 6px !important;
+                color: var(--text-sec) !important;
+                background: var(--surface-alt) !important;
+                transition: all 0.2s ease !important;
+                font-weight: 600 !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .toggle-btn:hover {
+                background: var(--bg-soft) !important;
+                border-color: var(--border) !important;
+                color: var(--text) !important;
+            }
+            .toggle-btn.active {
+                background: var(--accent) !important;
+                border-color: var(--accent-border) !important;
+                color: var(--accent-text, #fff) !important;
+                box-shadow: var(--shadow-sm) !important;
             }
 
             .ai-launch-btn {
@@ -1609,7 +1713,248 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
     </script>
     <script>window.__dashboardBoot && (window.__dashboardBoot.phase = 'app');</script>
-    <script>
+<script>
+// firebase_service.js
+// ใช้สำหรับจัดการ Firebase Authentication และ Firestore สำหรับ Salytix V2
+
+// 1. Firebase Configuration (ผู้ใช้ต้องนำ Config ของตนเองมาใส่ที่นี่)
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// นำเข้า Firebase SDK ผ่าน CDN ด้วย Dynamic Import เพื่อไม่ให้ block การทำงาน
+let app, auth, db;
+let signInWithEmailAndPassword, signOut, onAuthStateChanged;
+let collection, addDoc, getDocs, doc, setDoc, getDoc;
+
+import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then((mod) => {
+    app = mod.initializeApp(firebaseConfig);
+    return import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+}).then((mod) => {
+    auth = mod.getAuth(app);
+    signInWithEmailAndPassword = mod.signInWithEmailAndPassword;
+    signOut = mod.signOut;
+    onAuthStateChanged = mod.onAuthStateChanged;
+    return import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+}).then((mod) => {
+    db = mod.getFirestore(app);
+    collection = mod.collection;
+    addDoc = mod.addDoc;
+    getDocs = mod.getDocs;
+    doc = mod.doc;
+    setDoc = mod.setDoc;
+    getDoc = mod.getDoc;
+    console.log("Firebase Initialized Successfully.");
+}).catch(err => {
+    console.warn("กรุณาใส่ Firebase Config ที่ถูกต้องใน firebase_service.js", err);
+});
+
+// ----------------------------------------------------------------------
+// การตั้งค่าคอลัมน์ (Column Settings) ทั้ง 42 คอลัมน์
+// ----------------------------------------------------------------------
+const defaultColumns = Array.from({length: 42}, (_, i) => ({
+    id: `col_${i+1}`,
+    originalName: i === 0 ? "SALES_QTY" : `Column ${i+1}`,
+    alias: i === 0 ? "SALES_QTY" : `Column ${i+1}`,
+    visible: true
+}));
+
+let currentSettings = JSON.parse(localStorage.getItem('salytix_column_settings')) || defaultColumns;
+
+function saveSettings(newSettings) {
+    currentSettings = newSettings;
+    localStorage.setItem('salytix_column_settings', JSON.stringify(currentSettings));
+    // สามารถเพิ่มการบันทึกลง Firestore ได้ที่นี่
+}
+
+// ----------------------------------------------------------------------
+// 2. Intercept Login (ระบบ Authentication หน้าบ้าน)
+// ----------------------------------------------------------------------
+window.interceptCallAuthWebApp = async function(mode, extraPayload) {
+    if(!auth) throw new Error("Firebase ไม่พร้อมใช้งาน กรุณาตั้งค่า Config");
+    
+    if (mode === 'login') {
+        const { username, password } = extraPayload;
+        try {
+            // ใช้ Firebase Authentication สำหรับล็อกอิน (Admin เท่านั้น)
+            const userCredential = await signInWithEmailAndPassword(auth, username, password);
+            return {
+                ok: true,
+                auth: {
+                    user: { username: userCredential.user.email, role: 'admin' },
+                    token: await userCredential.user.getIdToken()
+                }
+            };
+        } catch (error) {
+            console.error("Login Error:", error);
+            return { ok: false, error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง (Admin เท่านั้น)' };
+        }
+    } 
+    
+    if (mode === 'verify_session') {
+        return new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                unsubscribe();
+                if (user) {
+                    resolve({
+                        ok: true,
+                        auth: {
+                            user: { username: user.email, role: 'admin' },
+                            token: await user.getIdToken()
+                        }
+                    });
+                } else {
+                    resolve({ ok: false, error: 'Session expired' });
+                }
+            });
+        });
+    }
+
+    if (mode === 'logout') {
+        await signOut(auth);
+        return { ok: true };
+    }
+
+    return { ok: false, error: 'คำสั่งนี้ถูกระงับการใช้งานใน V2' };
+};
+
+// ----------------------------------------------------------------------
+// 3. Intercept Excel Upload (ดักจับการอัปโหลดไฟล์ Sales 42 คอลัมน์)
+// ----------------------------------------------------------------------
+window.interceptHandleFileUpload = async function(event, type) {
+    // เรารับจัดการเฉพาะการอัปโหลด 'sales'
+    if (type !== 'sales') {
+        return; // ปล่อยให้ React จัดการถ้าไม่ใช่ sales
+    }
+    
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // แสดงแจ้งเตือนในหน้า UI (ถ้า React ฟังก์ชันยังทำงานอยู่)
+    console.log("เริ่มอัปโหลดไฟล์เข้าระบบ Firebase...");
+
+    try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+        console.log(`อ่านไฟล์สำเร็จ พบข้อมูล ${rows.length} แถว กำลังอัปโหลดเข้า Firestore...`);
+        
+        // อัปโหลดเข้า Firestore โดยใช้การตั้งค่า Column Settings
+        // TODO: Map ข้อมูลตาม currentSettings
+        /*
+        const batch = writeBatch(db);
+        rows.forEach((row, idx) => {
+            const mappedData = {};
+            currentSettings.forEach(col => {
+                if(col.visible) {
+                    mappedData[col.alias] = row[col.originalName] || '';
+                }
+            });
+            const docRef = doc(collection(db, "sales_data"));
+            batch.set(docRef, mappedData);
+        });
+        await batch.commit();
+        */
+       
+        alert(`อัปโหลดและประมวลผลข้อมูล ${rows.length} แถว สำเร็จ! (ระบบ V2 Firebase)`);
+        
+    } catch (error) {
+        console.error("Upload Error:", error);
+        alert("เกิดข้อผิดพลาดในการอัปโหลด: " + error.message);
+    }
+};
+
+// ----------------------------------------------------------------------
+// 4. Inject Dropdown Settings vào Modal "ตั้งค่าอัลกอริทึม"
+// ----------------------------------------------------------------------
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) { // Element node
+                // ค้นหา Modal ตั้งค่าที่มีคำว่า "ตั้งค่าการวิเคราะห์ข้อมูล" หรือเกี่ยวข้อง
+                const modalTitles = node.querySelectorAll ? node.querySelectorAll('h3, h2, div') : [];
+                let isSettingsModal = false;
+                modalTitles.forEach(t => {
+                    if(t.textContent && t.textContent.includes('ตั้งค่าอัลกอริทึม') || t.textContent.includes('น้ำหนักความสำคัญ')) {
+                        isSettingsModal = true;
+                    }
+                });
+
+                if (isSettingsModal) {
+                    injectColumnSettings(node);
+                }
+            }
+        });
+    });
+});
+
+// เริ่มสังเกตการณ์ DOM เพื่อรอให้ Modal เปิดขึ้นมา
+observer.observe(document.body, { childList: true, subtree: true });
+
+function injectColumnSettings(modalNode) {
+    // ป้องกันการแทรกซ้ำ
+    if (modalNode.querySelector('#custom-column-settings')) return;
+
+    // หาตำแหน่งแทรก (อาจเป็นล่างสุดของ Modal content)
+    const modalBody = modalNode.querySelector('.p-4') || modalNode.querySelector('div[class*="overflow-y-auto"]');
+    if (!modalBody) return;
+
+    const settingsHTML = `
+        <div id="custom-column-settings" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            <h4 style="font-weight: bold; margin-bottom: 10px; color: #1e293b;">ตั้งค่าคอลัมน์ Excel (42 คอลัมน์)</h4>
+            <details style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+                <summary style="cursor: pointer; font-weight: 500; color: #334155;">จัดการชื่อและซ่อนคอลัมน์</summary>
+                <div style="max-height: 250px; overflow-y: auto; margin-top: 10px;" id="col-settings-list">
+                    <!-- จะถูกสร้างด้วย JS -->
+                </div>
+                <button id="save-col-settings-btn" style="margin-top: 10px; background: #3b82f6; color: white; padding: 5px 15px; border-radius: 5px; font-size: 14px;">
+                    บันทึกการตั้งค่าคอลัมน์
+                </button>
+            </details>
+        </div>
+    `;
+
+    modalBody.insertAdjacentHTML('beforeend', settingsHTML);
+
+    const listContainer = modalNode.querySelector('#col-settings-list');
+    
+    // Render list
+    currentSettings.forEach((col, index) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px;';
+        
+        item.innerHTML = `
+            <input type="checkbox" id="chk_${col.id}" ${col.visible ? 'checked' : ''} style="cursor: pointer;">
+            <span style="width: 80px; color: #64748b;">ต้นฉบับ: ${col.originalName}</span>
+            <input type="text" id="alias_${col.id}" value="${col.alias}" placeholder="ชื่อที่ต้องการแสดง" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; flex: 1;">
+        `;
+        listContainer.appendChild(item);
+    });
+
+    // Handle Save
+    modalNode.querySelector('#save-col-settings-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        const updated = currentSettings.map(col => {
+            return {
+                ...col,
+                alias: document.getElementById(`alias_${col.id}`).value,
+                visible: document.getElementById(`chk_${col.id}`).checked
+            };
+        });
+        saveSettings(updated);
+        alert('บันทึกการตั้งค่าคอลัมน์สำเร็จ');
+    });
+}
+
+</script>
+<script>
 "use strict";
 
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
@@ -1708,6 +2053,32 @@ var COLUMN_KEYWORDS = {
   size: ['ขนาด', 'size', 'weight', 'นน.', 'น้ำหนัก'],
   sku: ['sku', 'item', 'code', 'product', 'รหัส', 'สินค้า']
 };
+
+
+(function(){
+    var layouts = localStorage.getItem('dashboard_layouts');
+    var isV2 = localStorage.getItem('dashboard_v2_init');
+    var shouldApplyDefault = false;
+    
+    if (!isV2) {
+        shouldApplyDefault = true;
+        localStorage.setItem('dashboard_v2_init', 'true');
+    } else if (!layouts) {
+        shouldApplyDefault = true;
+    } else {
+        try {
+            if (Object.keys(JSON.parse(layouts)).length === 0) {
+                shouldApplyDefault = true;
+            }
+        } catch(e) {}
+    }
+    
+    if (shouldApplyDefault) {
+        localStorage.setItem('dashboard_layouts', JSON.stringify({'card-0':{x:0,y:0,w:12,h:2},'card-1':{x:0,y:2,w:12,h:7},'card-6':{x:0,y:9,w:12,h:4},'card-2':{x:0,y:13,w:6,h:5},'card-5':{x:6,y:13,w:6,h:5},'card-3':{x:0,y:18,w:6,h:5},'card-4':{x:6,y:18,w:6,h:5}}));
+        localStorage.setItem('dashboard_section_open', JSON.stringify({filters:true,kpi:true,trend:true,salesGuide:true,repeatGap:true,brands:true,shops:true,district:true}));
+    }
+})();
+
 var DEFAULT_SECTION_STATE = {
   filters: true,
   kpi: true,
@@ -1718,6 +2089,80 @@ var DEFAULT_SECTION_STATE = {
   shops: true,
   district: true
 };
+
+window.applyDefaultLayout = function(type) {
+    var layouts = {};
+    var sectionOpen = {
+        filters: true,
+        kpi: true,
+        trend: false,
+        salesGuide: false,
+        repeatGap: false,
+        brands: false,
+        shops: false,
+        district: false
+    };
+
+    if (type === 1) { // 1. ผู้บริหาร
+        sectionOpen.trend = true;
+        sectionOpen.district = true;
+        sectionOpen.brands = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-1': { x: 0, y: 2, w: 12, h: 7 }, // trend
+            'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
+            'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
+        };
+    } else if (type === 2) { // 2. พนักงานขาย
+        sectionOpen.salesGuide = true;
+        sectionOpen.repeatGap = true;
+        sectionOpen.shops = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-3': { x: 0, y: 2, w: 6, h: 5 },  // salesGuide
+            'card-4': { x: 6, y: 2, w: 6, h: 5 },  // repeatGap
+            'card-5': { x: 0, y: 7, w: 12, h: 4 }  // shops
+        };
+    } else if (type === 3) { // 3. สินค้า (Product Focus)
+        sectionOpen.brands = true;
+        sectionOpen.repeatGap = true;
+        sectionOpen.trend = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-2': { x: 0, y: 2, w: 12, h: 5 }, // brands
+            'card-4': { x: 0, y: 7, w: 12, h: 5 }, // repeatGap
+            'card-1': { x: 0, y: 12, w: 12, h: 7 } // trend
+        };
+    } else if (type === 4) { // 4. ภาพรวม
+        sectionOpen.trend = true;
+        sectionOpen.district = true;
+        sectionOpen.brands = true;
+        sectionOpen.shops = true;
+        sectionOpen.salesGuide = true;
+        sectionOpen.repeatGap = true;
+        layouts = {
+            'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi
+            'card-1': { x: 0, y: 2, w: 12, h: 7 }, // trend
+            'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
+            'card-2': { x: 0, y: 10, w: 6, h: 5 }, // brands
+            'card-5': { x: 6, y: 10, w: 6, h: 5 }, // shops
+            'card-3': { x: 0, y: 15, w: 6, h: 5 }, // salesGuide
+            'card-4': { x: 6, y: 15, w: 6, h: 5 }  // repeatGap
+        };
+    }
+
+    localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
+    localStorage.setItem('dashboard_section_open', JSON.stringify(sectionOpen));
+    
+    if (typeof setSectionOpen === 'function') { setSectionOpen(sectionOpen); }
+    // Close dropdown
+    var details = document.querySelector('#default-layout-details');
+    if (details) details.removeAttribute('open');
+    
+    // Reload to apply new layout
+    window.location.reload();
+};
+
 var createEmptyRepeatGapFilters = function createEmptyRepeatGapFilters() {
   return {
     cv: [],
@@ -2964,6 +3409,8 @@ var Icon = function Icon(_ref) {
 };
 var MultiSelect = function MultiSelect(_ref2) {
   var label = _ref2.label,
+    _ref2$size = _ref2.size,
+    size = _ref2$size === void 0 ? 'md' : _ref2$size,
     options = _ref2.options,
     _ref2$selected = _ref2.selected,
     selected = _ref2$selected === void 0 ? [] : _ref2$selected,
@@ -3085,7 +3532,7 @@ var MultiSelect = function MultiSelect(_ref2) {
     className: "relative ".concat(isWide ? 'col-span-2' : ''),
     ref: dropdownRef
   }, !hideLabel && /*#__PURE__*/React.createElement("label", {
-    className: "block text-xs font-bold text-slate-700 mb-1"
+    className: "block font-bold text-slate-700 ".concat(size === 'sm' ? 'text-[11px] mb-0.5' : 'text-xs mb-1')
   }, label), /*#__PURE__*/React.createElement("button", {
     ref: buttonRef,
     onClick: function onClick() {
@@ -3093,7 +3540,7 @@ var MultiSelect = function MultiSelect(_ref2) {
       return setIsOpen(!isOpen);
     },
     disabled: disabled,
-    className: "w-full text-left p-2 border rounded-lg text-sm flex justify-between items-center transition-colors bg-white ".concat(disabled ? 'opacity-70 cursor-not-allowed' : '').concat(isOpen ? ' border-blue-500 ring-1 ring-blue-100' : ' border-slate-300 hover:bg-slate-50')
+    className: "w-full text-left border rounded-lg flex justify-between items-center transition-colors bg-white ".concat(size === 'sm' ? 'py-1 px-2 text-[11px]' : 'p-2 text-sm', " ").concat(disabled ? 'opacity-70 cursor-not-allowed' : '').concat(isOpen ? ' border-blue-500 ring-1 ring-blue-100' : ' border-slate-300 hover:bg-slate-50')
   }, /*#__PURE__*/React.createElement("span", {
     className: "truncate ".concat(selected.length === 0 ? 'text-slate-400' : 'text-blue-700 font-medium')
   }, summaryText), /*#__PURE__*/React.createElement(Icon, {
@@ -4741,7 +5188,24 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
             return React.createElement('div', { key: i },
               React.createElement('div', { style: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' } },
                 React.createElement('label', { style: { fontSize:'12px', fontWeight:700, color:'var(--text-sec)' } }, labels[i]),
-                React.createElement('span', { style: { fontSize:'15px', fontWeight:900, color: colors[i], minWidth:'40px', textAlign:'right' } }, localW[i]+'%')
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } },
+                  React.createElement('input', {
+                    type: 'number',
+                    min: 0,
+                    max: 100,
+                    value: localW[i] || 0,
+                    onChange: function(e) { 
+                      var val = parseInt(e.target.value);
+                      if (isNaN(val)) val = 0;
+                      if (val > 100) val = 100;
+                      if (val < 0) val = 0;
+                      handleSlider(i, val); 
+                    },
+                    className: 'focus:outline-none focus:ring-1 focus:ring-blue-500',
+                    style: { width: '48px', textAlign: 'center', fontSize: '14px', fontWeight: 800, color: colors[i], border: '1.5px solid var(--border)', borderRadius: '6px', padding: '2px', background: '#fff' }
+                  }),
+                  React.createElement('span', { style: { fontSize:'14px', fontWeight:800, color: colors[i] } }, '%')
+                )
               ),
               React.createElement('input', {
                 type:'range', min:0, max:100, step:1,
@@ -4770,10 +5234,22 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     onClose = _ref.onClose,
     sectionOpen = _ref.sectionOpen,
     toggleSection = _ref.toggleSection,
+    setSectionOpen = _ref.setSectionOpen,
     allData = _ref.allData,
     onAddWidget = _ref.onAddWidget;
     
-  var sectionTitles = {
+  
+  var sectionIcons = {
+    filters: "filter_alt",
+    kpi: "monitoring",
+    trend: "show_chart",
+    salesGuide: "lightbulb",
+    repeatGap: "shopping_cart_checkout",
+    brands: "pie_chart",
+    shops: "storefront",
+    district: "bar_chart"
+  };
+var sectionTitles = {
     filters: "ตัวกรอง (Smart Filters)",
     kpi: "สรุปภาพรวม KPI",
     trend: "กราฟแนวโน้มยอดขาย",
@@ -4830,6 +5306,124 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     return arr.slice(0, 50); // limit 50 points
   }, [allData, xAxisKey, yAxisKey]);
 
+  
+  useEffect(function() {
+    var timer;
+    if (activeTab === 'layout' && isOpen) {
+        timer = setTimeout(function() {
+            var mockGridEl = document.querySelector('#mock-grid');
+            if (!mockGridEl || !window.GridStack) return;
+            
+            if (mockGridEl.gridstack) {
+                try { mockGridEl.gridstack.destroy(false); } catch(e){}
+            }
+            
+            var mGrid = GridStack.init({
+                cellHeight: 80,
+                column: 12,
+                margin: 10,
+                acceptWidgets: false,
+                
+                
+                removable: true,
+                removeTimeout: 100
+            }, mockGridEl);
+            
+            window.toggleMockWidget = function(key) {
+                if (!mGrid) return;
+                var id = widgetMapping[key];
+                var node = mGrid.engine.nodes.find(function(n) { return n.id === id || (n.el && n.el.getAttribute('gs-id') === id); });
+                
+                if (!node) {
+                    var el = mGrid.addWidget({
+                        id: id,
+                        x: 0, y: 100,
+                        w: 12, h: 4,
+                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 hover:bg-red-50 rounded-full cursor-pointer material-symbols-outlined text-[20px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm text-slate-700">' + (sectionTitles[key] || key) + '</p></div>'
+                    });
+                    if (el) el.setAttribute('gs-id', id);
+                    
+                    if (typeof setSectionOpen === 'function') {
+                        setSectionOpen(function(prev) { var next = Object.assign({}, prev); next[key] = true; return next; });
+                    }
+                } else {
+                    if (node.el) {
+                        mGrid.removeWidget(node.el, true);
+                    }
+                    if (typeof setSectionOpen === 'function') {
+                        setSectionOpen(function(prev) { var next = Object.assign({}, prev); next[key] = false; return next; });
+                    }
+                }
+            };
+window.removeMockWidget = function(btn) {
+                var item = btn.closest('.grid-stack-item');
+                if (item && mGrid) {
+                    var id = item.getAttribute('gs-id');
+                    mGrid.removeWidget(item, true);
+                    if (id) {
+                        var widgetKey = Object.keys(widgetMapping).find(function(k) { return widgetMapping[k] === id; });
+                        if (widgetKey && typeof setSectionOpen === 'function') {
+                            setSectionOpen(function(prev) {
+                                var next = Object.assign({}, prev);
+                                next[widgetKey] = false;
+                                return next;
+                            });
+                        }
+                    }
+                }
+            };
+
+            
+            var layouts = {};
+            try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+            
+            var widgetMapping = {
+                trend: 'card-1',
+                brands: 'card-2',
+                salesGuide: 'card-3',
+                repeatGap: 'card-4',
+                shops: 'card-5',
+                district: 'card-6',
+                kpi: 'card-0'
+            };
+            
+            var initialNodes = [];
+            Object.keys(sectionOpen).forEach(function(key) {
+                if (sectionOpen[key] && widgetMapping[key]) {
+                    var id = widgetMapping[key];
+                    var saved = layouts[id];
+                    var w = saved ? saved.w : 12;
+                    var h = saved ? saved.h : 4;
+                    var x = saved ? saved.x : 0;
+                    var y = saved ? saved.y : undefined;
+                    initialNodes.push({
+                        id: id,
+                        x: x, y: y, w: w, h: h,
+                        content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[key] || key) + '</p></div>'
+                    });
+                }
+            });
+            
+            mGrid.load(initialNodes);
+            
+            mGrid.on('added', function(e, items) {
+                items.forEach(function(item) {
+                    if (item.el && item.el.getAttribute('data-widget')) {
+                        var widgetKey = item.el.getAttribute('data-widget');
+                        var id = widgetMapping[widgetKey];
+                        item.el.setAttribute('gs-id', id); item.id = id;
+                        var orig = document.querySelector('#available-widgets [data-widget="' + widgetKey + '"]');
+                        if (orig) orig.style.display = 'none';
+
+                        item.el.innerHTML = '<div class="grid-stack-item-content"><div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 cursor-pointer material-symbols-outlined text-[16px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[widgetKey] || 'widgets') + '</span><p class="font-bold text-center text-sm">' + (sectionTitles[widgetKey] || widgetKey) + '</p></div></div>';
+                    }
+                });
+            });
+        }, 100);
+    }
+    return function() { if (timer) clearTimeout(timer); };
+  }, [activeTab, isOpen]);
+
   var renderPreviewChart = function() {
     if (previewData.length === 0) return React.createElement("div", {className: "text-center text-slate-500 py-10"}, "No Data");
     
@@ -4868,7 +5462,7 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
   };
 
   return React.createElement("div", { className: "status-modal-overlay" },
-    React.createElement("div", { className: "status-modal", style: { width: '800px', maxWidth: '95vw' } },
+    React.createElement("div", { className: "status-modal", style: { width: activeTab === 'layout' ? '1200px' : '800px', maxWidth: '95vw' } },
       React.createElement("div", { className: "status-modal-head" },
         React.createElement("div", { className: "status-modal-title" }, "Custom Dashboard"),
         React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "\u00D7")
@@ -4884,31 +5478,80 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
             onClick: function() { setActiveTab('chart'); }
           }, "Chart Builder")
         ),
-        activeTab === 'layout' && React.createElement("div", null,
-          React.createElement("p", { className: "mb-4 text-sm text-slate-600" }, "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E40\u0E1B\u0E34\u0E14-\u0E1B\u0E34\u0E14\u0E01\u0E32\u0E23\u0E41\u0E2A\u0E14\u0E07\u0E1C\u0E25\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E2B\u0E31\u0E27\u0E02\u0E49\u0E2D\u0E1A\u0E19\u0E2B\u0E19\u0E49\u0E32 Dashboard"),
-          React.createElement("div", { className: "grid grid-cols-2 gap-4" },
-            Object.keys(sectionOpen).map(function(key) {
-              return React.createElement("label", { key: key, className: "flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded border border-slate-100" },
-                React.createElement("input", {
-                  type: "checkbox",
-                  checked: sectionOpen[key],
-                  onChange: function() { toggleSection(key); },
-                  className: "w-4 h-4 text-blue-600 rounded border-gray-300"
-                }),
-                React.createElement("span", { className: "text-sm font-medium text-slate-700 capitalize" }, sectionTitles[key] || key)
-              );
-            })
+                activeTab === 'layout' && React.createElement("div", { className: "flex h-[calc(100vh-200px)] gap-6" },
+          /* Left Sidebar: Available Widgets */
+          React.createElement("div", { className: "w-64 flex-shrink-0 bg-surface-alt rounded-lg p-4 border border-outline-variant overflow-y-auto" },
+            React.createElement("h3", { className: "font-bold text-on-surface mb-4" }, "หัวข้อที่พร้อมใช้งาน"),
+            React.createElement("p", { className: "text-xs text-on-surface-variant mb-4" }, "ลากกล่องด้านล่างไปวางในพื้นที่ด้านขวา"),
+            React.createElement("div", { id: "available-widgets", className: "flex flex-col gap-3" },
+              Object.keys(sectionTitles).map(function(key) {
+                var isOpen = sectionOpen[key];
+                return React.createElement("div", { 
+                  key: key, 
+                  className: "p-3 bg-surface rounded-lg border cursor-pointer transition-colors flex items-center justify-between " + (isOpen ? "border-primary bg-blue-50/30" : "border-outline-variant hover:border-primary"),
+                  onClick: function() { window.toggleMockWidget(key); }
+                }, 
+                  React.createElement("div", { className: "flex items-center gap-3 h-full" },
+                    React.createElement("span", { className: "material-symbols-outlined text-xl opacity-60" }, sectionIcons[key] || 'widgets'),
+                    React.createElement("span", { className: "font-medium" }, sectionTitles[key] || key)
+                  ),
+                  React.createElement("div", { className: "flex items-center" },
+                    isOpen ? React.createElement("span", { className: "material-symbols-outlined text-primary text-xl" }, "check_circle") : 
+                             React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-xl" }, "radio_button_unchecked")
+                  )
+                );
+              })
+            )
           ),
-          React.createElement("div", { className: "mt-6 pt-4 border-t border-slate-100 flex justify-end" },
-            React.createElement("button", {
-              className: "px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors border border-red-100",
-              onClick: function() {
-                if (window.confirm('รีเซ็ต layout กลับค่าเริ่มต้น?')) {
-                  localStorage.removeItem('dashboard_layouts');
-                  window.location.reload();
-                }
-              }
-            }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "grid_view"), " รีเซ็ต Layout")
+          /* Right Side: Grid Canvas */
+          React.createElement("div", { className: "flex-1 flex flex-col bg-bg rounded-lg border border-outline-variant overflow-hidden" },
+            React.createElement("div", { className: "bg-surface p-3 border-b border-outline-variant flex justify-between items-center" },
+              React.createElement("h3", { className: "font-bold text-on-surface" }, "พื้นที่จำลอง Dashboard"),
+              React.createElement("div", { className: "flex gap-2" },
+                React.createElement("button", {
+                  className: "px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-bold border border-red-100",
+                  onClick: function() {
+                    if (window.confirm('รีเซ็ต layout กลับค่าเริ่มต้น?')) {
+                      localStorage.removeItem('dashboard_layouts');
+                      window.location.reload();
+                    }
+                  }
+                }, "รีเซ็ต Layout"),
+                React.createElement("button", {
+                  className: "px-4 py-1.5 bg-primary text-on-primary hover:bg-on-primary-fixed-variant rounded-md text-xs font-bold shadow-sm",
+                  onClick: function() {
+                    var mockGridEl = document.querySelector('#mock-grid');
+                    if (mockGridEl && mockGridEl.gridstack) {
+                        var layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {};
+                        var newSectionOpen = {};
+                        var nodes = mockGridEl.gridstack.engine.nodes;
+                        nodes.forEach(function(node) {
+                            var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
+                            if (id) {
+                                var widgetKey = id.replace('card-', '');
+                                if (widgetKey === '1') newSectionOpen.trend = true;
+                                else if (widgetKey === '2') newSectionOpen.brands = true;
+                                else if (widgetKey === '3') newSectionOpen.salesGuide = true;
+                                else if (widgetKey === '4') newSectionOpen.repeatGap = true;
+                                else if (widgetKey === '5') newSectionOpen.shops = true;
+                                else if (widgetKey === '6') newSectionOpen.district = true;
+                                else if (widgetKey === '0') newSectionOpen.kpi = true;
+                                layouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
+                            }
+                        });
+                        
+                        localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
+                        localStorage.setItem('dashboard_section_open', JSON.stringify(newSectionOpen));
+                        window.location.reload();
+
+                    }
+                  }
+                }, "บันทึกและรีเฟรช")
+              )
+            ),
+            React.createElement("div", { className: "flex-1 overflow-y-auto p-4 custom-scrollbar" },
+                React.createElement("div", { id: "mock-grid", className: "grid-stack" })
+            )
           )
         ),
         activeTab === 'chart' && React.createElement("div", { className: "flex flex-col gap-4" },
@@ -5042,7 +5685,10 @@ var App = function App() {
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
-  var _useStateSidebar = React.useState(false), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
+  var _useStateSidebar = React.useState(true), isSidebarOpen = _useStateSidebar[0], setIsSidebarOpen = _useStateSidebar[1];
+  var _useStateDashboardMenu = React.useState(true), isDashboardMenuOpen = _useStateDashboardMenu[0], setIsDashboardMenuOpen = _useStateDashboardMenu[1];
+  var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
+
   
   React.useEffect(function() {
     var timer;
@@ -5093,7 +5739,7 @@ var App = function App() {
                 var initialLayouts = {};
                 try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
                 engineNodes.forEach(function(node) {
-                    var id = node.el ? node.el.getAttribute('gs-id') : null;
+                    var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
                     if (id) {
                         initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
                     }
@@ -5136,7 +5782,7 @@ var App = function App() {
       var h = saved ? saved.h : (defH || 4);
       var x = (saved && saved.x != null) ? saved.x : 0;
       var y = (saved && saved.y != null) ? saved.y : undefined;
-      return { className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": w, "gs-h": h };
+      return { key: id, className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": w, "gs-h": h };
   };
 
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:init';
@@ -5227,7 +5873,7 @@ var App = function App() {
     _useState24 = _slicedToArray(_useState23, 2),
     metricMode = _useState24[0],
     setMetricMode = _useState24[1];
-  var _useState25 = useState(DEFAULT_SECTION_STATE),
+  var _useState25 = useState(function() { try { return JSON.parse(localStorage.getItem('dashboard_section_open')) || DEFAULT_SECTION_STATE; } catch(e) { return DEFAULT_SECTION_STATE; } }),
     _useState26 = _slicedToArray(_useState25, 2),
     sectionOpen = _useState26[0],
     setSectionOpen = _useState26[1];
@@ -5589,6 +6235,7 @@ var App = function App() {
       nextData.salesUpdateMeta = normalizeSalesUpdateMeta(parsedData.salesUpdateMeta);
     } else {
       nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
+      nextData.rawTargets = parsedData.rawTargets || [];
     }
     return nextData;
   };
@@ -7369,11 +8016,16 @@ var App = function App() {
                         };
                         parseTargetWorkbook = function (originalParseTargetWorkbook) {
                           return function wrappedParseTargetWorkbook(workbook) {
+                            var firstSheetName = workbook.SheetNames[0];
+                            var rawTargets = window.XLSX ? window.XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {defval: ''}) : [];
                             var hasNnsSheet = (workbook.SheetNames || []).some(function (name) {
                               return String(name || '').toLowerCase().replace(/\s+/g, '') === 'nns';
                             });
-                            if (hasNnsSheet) return parseDistrictTargetWorkbook(workbook);
-                            throw new Error('รูปแบบไฟล์ Target ไม่ถูกต้อง กรุณาใช้ไฟล์ TG.NNS 26 NORTHEAST.xlsx');
+                            var resultPromise = hasNnsSheet ? parseDistrictTargetWorkbook(workbook) : Promise.resolve({ monthly: [], yearly: [] });
+                            return resultPromise.then(function(res) {
+                                res.rawTargets = rawTargets;
+                                return res;
+                            });
                           };
                         }(parseTargetWorkbook);
                         isCSV = file.name.toLowerCase().endsWith('.csv');
@@ -7723,6 +8375,7 @@ var App = function App() {
             latestStoredData = _t16;
             mergedData = mergeParsedDataByType(latestStoredData, type, parsedData);
             setAllData(mergedData);
+            if (type === 'target' && window.TargetMatch) { window.TargetMatch.onTargetDataLoaded(mergedData); }
             persistUploadedFileName(type, file.name || '');
             setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
@@ -10871,7 +11524,7 @@ var App = function App() {
       rows: rows
     };
   };
-  var callAuthWebApp = /*#__PURE__*/function () {
+  var callAuthWebApp = window.interceptCallAuthWebApp || /*#__PURE__*/function () {
     var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(mode, extraPayload) {
       var payload, result, errorMessage;
       return _regenerator().w(function (_context12) {
@@ -11788,10 +12441,7 @@ var App = function App() {
       setAuthSessionExpiresAt(String(auth.expiresAt || ''));
       setAuthUser(auth.user);
       setAuthPassword('');
-      setStatusInfo({
-        type: 'success',
-        message: 'เข้าสู่ระบบสำเร็จ'
-      });
+      
       return result;
     }).catch(function (error) {
       setAuthError(error && error.message ? error.message : 'เข้าสู่ระบบไม่สำเร็จ');
@@ -12368,7 +13018,9 @@ var App = function App() {
   };
   var toggleSection = function toggleSection(sectionKey) {
     setSectionOpen(function (prev) {
-      return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, sectionKey, !prev[sectionKey]));
+      var nextState = _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, sectionKey, !prev[sectionKey]));
+      localStorage.setItem('dashboard_section_open', JSON.stringify(nextState));
+      return nextState;
     });
   };
   var allSectionsExpanded = Object.values(sectionOpen).every(Boolean);
@@ -12378,6 +13030,7 @@ var App = function App() {
     Object.keys(DEFAULT_SECTION_STATE).forEach(function (key) {
       nextState[key] = targetState;
     });
+    localStorage.setItem('dashboard_section_open', JSON.stringify(nextState));
     setSectionOpen(nextState);
   };
   if (isLoading) return /*#__PURE__*/React.createElement("div", {
@@ -12567,27 +13220,80 @@ var App = function App() {
   }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 px-4 flex-1"
   }, 
-  /*#__PURE__*/React.createElement("button", {
-    onClick: function() { setActiveTab("dashboard"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'dashboard' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined"
-  }, "dashboard"), "\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"), 
+  /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: function() { setIsDashboardMenuOpen(!isDashboardMenuOpen); },
+      className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-bold hover:bg-surface-container-high w-full text-left"
+    }, 
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "dashboard"), 
+      /*#__PURE__*/React.createElement("span", { className: "flex-1" }, "Dashboard"),
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: isDashboardMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
+    ),
+    isDashboardMenuOpen && /*#__PURE__*/React.createElement("div", { className: "flex flex-col pl-10 pr-4 mt-1 gap-1" },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setActiveTab("dashboard"); },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors " + (activeTab === 'dashboard' ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+      }, "1. Overview"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setActiveTab("rebate_program"); },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors " + (activeTab === 'rebate_program' ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+      }, "2. Rebate Program"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { setActiveTab("point_program"); },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors " + (activeTab === 'point_program' ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+      }, "3. Point Program"),
+      customDashboards.map(function(cd, i) {
+        var id = "custom_dashboard_" + i;
+        return /*#__PURE__*/React.createElement("button", {
+          key: id,
+          onClick: function() { setActiveTab(id); },
+          className: "text-left px-3 py-2 rounded-lg text-sm transition-colors flex justify-between items-center group " + (activeTab === id ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
+        }, 
+          /*#__PURE__*/React.createElement("span", null, (4 + i) + ". " + cd),
+          /*#__PURE__*/React.createElement("span", {
+             onClick: function(e) {
+                 e.stopPropagation();
+                 if(window.confirm("ยืนยันการลบ Dashboard " + cd + "?")) {
+                     var newDashboards = [].concat(customDashboards);
+                     newDashboards.splice(i, 1);
+                     setCustomDashboards(newDashboards);
+                     localStorage.setItem('custom_dashboards', JSON.stringify(newDashboards));
+                     if(activeTab === id) setActiveTab("dashboard");
+                 }
+             },
+             className: "material-symbols-outlined text-[14px] opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+          }, "delete")
+        );
+      }),
+      (customDashboards.length < 5) && /*#__PURE__*/React.createElement("button", {
+        onClick: function() { 
+          var name = window.prompt("ตั้งชื่อ Dashboard ใหม่ (New Create)");
+          if (name && name.trim()) {
+            var newDashboards = [].concat(customDashboards, [name.trim()]);
+            setCustomDashboards(newDashboards);
+            localStorage.setItem('custom_dashboards', JSON.stringify(newDashboards));
+            setActiveTab("custom_dashboard_" + (newDashboards.length - 1));
+          }
+        },
+        className: "text-left px-3 py-2 rounded-lg text-sm transition-colors text-blue-600 font-medium hover:bg-blue-50 mt-1 flex items-center gap-1"
+      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "add"), "New Create")
+    )
+  ), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("import_export"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "sync_alt"), "Import / Export"), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("target_match"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "center_focus_strong"), "Target Match"), 
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("setting"); },
-    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'setting' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-medium hover:bg-surface-container-high')
+    className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'setting' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
   }, "settings"), "Setting")), /*#__PURE__*/React.createElement("div", {
@@ -12622,8 +13328,8 @@ var App = function App() {
     onClick: function() { setIsSidebarOpen(!isSidebarOpen); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[22px]" }, "menu"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center gap-2 flex-1 hidden lg:flex"
-  }, activeTab === 'dashboard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-start xl:justify-center gap-4 flex-1 hidden lg:flex whitespace-nowrap flex-nowrap pl-2"
+  }, (activeTab === 'dashboard' || activeTab.startsWith('custom_dashboard_')) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ยอดขาย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -12631,13 +13337,13 @@ var App = function App() {
       return handleViewModeChange('monthly');
     },
     className: "toggle-btn ".concat(viewMode === 'monthly' ? 'active' : '')
-  }, "รายเดือน"), /*#__PURE__*/React.createElement("button", {
+  }, "เดือน"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
       return handleViewModeChange('yearly');
     },
     className: "toggle-btn ".concat(viewMode === 'yearly' ? 'active' : '')
-  }, "รายปี")), /*#__PURE__*/React.createElement("div", {
+  }, "ปี"))), /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "ประเภท:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12654,7 +13360,7 @@ var App = function App() {
       return setMetricMode('ton');
     },
     className: "toggle-btn ".concat(metricMode === 'ton' ? 'active' : '')
-  }, "ตัน")), metricMode === 'value' && /*#__PURE__*/React.createElement("div", {
+  }, "ตัน"))), metricMode === 'value' && /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 whitespace-nowrap flex-shrink-0" }, /*#__PURE__*/React.createElement("span", { className: "text-[11px] font-bold opacity-60 uppercase tracking-wide whitespace-nowrap flex-shrink-0" }, "หน่วย:"), /*#__PURE__*/React.createElement("div", {
     className: "toggle-group"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -12666,7 +13372,7 @@ var App = function App() {
       return setUnitMode('thousand');
     },
     className: "toggle-btn ".concat(unitMode === 'thousand' ? 'active' : '')
-  }, "พันบาท")), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
+  }, "พันบาท"))), isUsingSavedData && /*#__PURE__*/React.createElement("div", {
     className: "hidden md:flex px-2 py-1 text-xs rounded items-center",
     style: {
       background: 'rgba(6, 95, 70, 0.96)',
@@ -12685,7 +13391,25 @@ var App = function App() {
     },
     className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-blue-600 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-700 dark:hover:bg-blue-400 rounded-lg shadow-sm transition-colors font-bold mr-2 border border-blue-700 dark:border-blue-400 whitespace-nowrap",
     title: "Custom Dashboard"
-  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(Icon, { name: "Sliders", size: 14 }), " Custom Dashboard"),
+  /*#__PURE__*/React.createElement("details", {
+    id: "default-layout-details",
+    className: "relative group cursor-pointer mr-2",
+    style: { listStyle: 'none' }
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-slate-100 dark:bg-surface-alt text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg shadow-sm transition-colors font-bold border border-slate-300 dark:border-slate-600 whitespace-nowrap",
+    title: "Default Layouts",
+    style: { listStyle: 'none' }
+  }, /*#__PURE__*/React.createElement(Icon, { name: "ViewQuilt", size: 14 }), " Default Layout"),
+  /*#__PURE__*/React.createElement("div", {
+    className: "absolute right-0 mt-2 w-56 bg-white dark:bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
+  },
+    /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wide border-b border-outline-variant/30 mb-1" }, "เลือกเทมเปลต"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, " 1. ผู้บริหาร"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. พนักงานขาย"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 3. สินค้า (Product Focus)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม")
+  )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
       return setIsAIPanelOpen(true);
@@ -12754,6 +13478,7 @@ var App = function App() {
     isOpen: isCustomDashboardOpen,
     onClose: function() { return setIsCustomDashboardOpen(false); },
     sectionOpen: sectionOpen,
+    setSectionOpen: setSectionOpen,
     toggleSection: toggleSection,
     allData: allData,
     onAddWidget: function(w) { setCustomWidgets([].concat(customWidgets, [w])); }
@@ -12814,7 +13539,7 @@ var App = function App() {
   })) : (sectionOpen.filters !== false ? /*#__PURE__*/React.createElement("div", {
     className: "dashboard-filters bg-white border-b border-slate-200 p-4 shadow-sm z-10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "filters-head-row mb-2"
+    className: "filters-head-row mb-2 flex items-center justify-between w-full flex-nowrap"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "Filter",
     size: 16,
@@ -12834,7 +13559,7 @@ var App = function App() {
   }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"))), sectionExpanded.filters && /*#__PURE__*/React.createElement("div", {
     className: "filters-panel-content fade-in flex-1 min-h-0 flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "filters-source-meta text-[13px] text-slate-500 mb-3"
+    className: "filters-source-meta text-[13px] text-slate-500 mb-3 flex flex-wrap gap-x-4 gap-y-1 items-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "filters-source-meta-row"
   }, /*#__PURE__*/React.createElement("span", {
@@ -12867,7 +13592,7 @@ var App = function App() {
       }
     }));
   })))) : null), /*#__PURE__*/React.createElement("main", {
-    className: "dashboard-main overflow-y-auto p-5 bg-slate-50 flex-col " + (activeTab === 'dashboard' ? 'flex flex-1' : 'hidden')
+    className: "dashboard-main overflow-y-auto p-5 bg-slate-50 flex-col " + ((activeTab === 'dashboard' || activeTab.startsWith('custom_dashboard_')) ? 'flex flex-1' : 'hidden')
   }, (sectionOpen.kpi ? /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -12933,7 +13658,7 @@ var App = function App() {
     className: "text-lg font-bold whitespace-nowrap"
   }, totalCVCount.toLocaleString(), " CV")))) : null), /*#__PURE__*/React.createElement("div", {
     className: "grid-stack"
-  }, (sectionOpen.trend ? /*#__PURE__*/React.createElement("div", getGridProps("card-1", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  }, (sectionOpen.trend ? /*#__PURE__*/React.createElement("div", getGridProps("card-1", 12, 7), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head cursor-move"
@@ -12948,7 +13673,7 @@ var App = function App() {
     name: sectionExpanded.trend ? "ChevronUp" : "ChevronDown",
     size: 14
   }))), sectionExpanded.trend && /*#__PURE__*/React.createElement("div", {
-    className: "fade-in flex flex-col h-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
+    className: "fade-in flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("p", {
@@ -13171,7 +13896,7 @@ var App = function App() {
     unit: unitMode
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 text-right mt-1"
-  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null)), 
+  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null), 
 customWidgets.map(function(widget) {
   return React.createElement("div", getGridProps("cw-" + widget.id, 12, 4),
     React.createElement("div", { className: "grid-stack-item-content" },
@@ -13202,7 +13927,8 @@ customWidgets.map(function(widget) {
 }, salesGuideSummary.reason) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "mb-3 flex items-center gap-2"
 }, /*#__PURE__*/React.createElement("div", {
-  className: "flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 text-[11px] font-medium text-slate-600 shadow-sm"
+  onClick: function onClick() { return setIsSalesGuideWeightModalOpen(true); },
+  className: "flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 text-[11px] font-medium text-slate-600 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-colors"
 }, /*#__PURE__*/React.createElement(Icon, {
   name: "Settings2", size: 12, className: "text-slate-400"
 }), "ตั้งค่าอัลกอริทึม: ", /*#__PURE__*/React.createElement("span", {
@@ -13229,15 +13955,14 @@ customWidgets.map(function(widget) {
 }))), sectionExpanded.repeatGap && /*#__PURE__*/React.createElement("div", {
   className: "repeat-gap-content w-full fade-in flex flex-col flex-1 min-h-0"
 }, /*#__PURE__*/React.createElement("div", {
-  className: "mb-4 flex flex-wrap gap-3 p-4 bg-slate-50/50 rounded-lg border border-slate-100"
-}, /*#__PURE__*/React.createElement("div", {
+  className: "mb-2 flex flex-wrap gap-2 px-3 py-2 bg-slate-50/50 rounded-lg border border-slate-100"
+}, repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("div", {
   className: "flex items-center gap-2 w-full mb-1"
-}, /*#__PURE__*/React.createElement("span", {
-  className: "text-sm font-bold text-slate-700"
-}, ""), repeatGapActiveFilterCount > 0 && /*#__PURE__*/React.createElement("button", {
+}, /*#__PURE__*/React.createElement("button", {
   onClick: clearRepeatGapFilters,
   className: "text-[11px] text-blue-600 hover:text-blue-700 hover:underline px-2 py-0.5 rounded bg-blue-50"
 }, "\u0E25\u0E49\u0E32\u0E07\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07 (", repeatGapActiveFilterCount, ")")), /*#__PURE__*/React.createElement(MultiSelect, {
+  size: "sm",
   label: "CV (\u0E23\u0E2B\u0E31\u0E2A\u0E25\u0E39\u0E01\u0E04\u0E49\u0E32)",
   options: repeatGapCvOptions,
   selected: repeatGapFilters.cv,
@@ -13245,6 +13970,7 @@ customWidgets.map(function(widget) {
     return handleRepeatGapFilterChange('cv', val);
   }
 }), /*#__PURE__*/React.createElement(MultiSelect, {
+  size: "sm",
   label: "\u0E01\u0E25\u0E38\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32",
   options: repeatGapItemsForGroupOptions,
   selected: repeatGapFilters.group,
@@ -13252,6 +13978,7 @@ customWidgets.map(function(widget) {
     return handleRepeatGapFilterChange('group', val);
   }
 }), /*#__PURE__*/React.createElement(MultiSelect, {
+  size: "sm",
   label: "\u0E41\u0E1A\u0E23\u0E19\u0E14\u0E4C",
   options: repeatGapItemsForBrandOptions,
   selected: repeatGapFilters.brand,
@@ -13259,6 +13986,7 @@ customWidgets.map(function(widget) {
     return handleRepeatGapFilterChange('brand', val);
   }
 }), /*#__PURE__*/React.createElement(MultiSelect, {
+  size: "sm",
   label: "\u0E02\u0E19\u0E32\u0E14",
   options: repeatGapItemsForSizeOptions,
   selected: repeatGapFilters.size,
@@ -13266,6 +13994,7 @@ customWidgets.map(function(widget) {
     return handleRepeatGapFilterChange('size', val);
   }
 }), /*#__PURE__*/React.createElement(MultiSelect, {
+  size: "sm",
   label: "\u0E23\u0E30\u0E22\u0E30\u0E40\u0E27\u0E25\u0E32 (Gap)",
   options: repeatGapItemsForGapMonthOptions,
   selected: repeatGapFilters.gapMonths,
@@ -13319,7 +14048,7 @@ customWidgets.map(function(widget) {
     data: districtData,
     metric: metricMode,
     unit: unitMode
-  }))))) : null)))));
+  }))))) : null))))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
@@ -13388,7 +14117,8 @@ try {
       + '</div></div>';
   }
 }
-    </script>
+
+</script>
 
     <!-- ===== MINIMAL LIGHT: DESIGN SYSTEM v2 ===== -->
     <style data-design="minimal-light">
@@ -13436,7 +14166,7 @@ try {
         [data-theme="light"] .stat-box                { background:var(--bg-soft)!important; border-color:var(--border)!important; }
         [data-theme="light"] .status-bar.s-info       { background:var(--accent-soft)!important; color:var(--accent-text)!important; }
         [data-theme="light"] .dashboard-filters       { background:#fff!important; border-color:var(--border)!important; }
-        [data-theme="light"] .dashboard-header .toggle-group     { background:rgba(255,255,255,.14)!important; border-color:rgba(255,255,255,.22)!important; }
+        
         [data-theme="light"] .dashboard-header .toggle-btn       { color:rgba(255,255,255,.72)!important; }
         [data-theme="light"] .dashboard-header .toggle-btn.active{ background:rgba(255,255,255,.22)!important; color:#fff!important; }
         [data-theme="light"] .logout-btn              { border-color:rgba(220,38,38,.28)!important; background:rgba(220,38,38,.05)!important; color:#ef4444!important; }
@@ -13900,5 +14630,6 @@ try {
     })();
     </script>
 
+    <script src="target_match.js"></script>
 </body>
 </html>
