@@ -8115,6 +8115,7 @@ var App = function App() {
             latestStoredData = _t16;
             mergedData = mergeParsedDataByType(latestStoredData, type, parsedData);
             setAllData(mergedData);
+            if (type === 'target' && window.TargetMatch) { window.TargetMatch.onTargetDataLoaded(mergedData); }
             persistUploadedFileName(type, file.name || '');
             setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
@@ -14368,5 +14369,6 @@ try {
     })();
     </script>
 
+    <script src="target_match.js"></script>
 </body>
 </html>
