@@ -13893,6 +13893,16 @@ var App = function App() {
     isLoading: isAskingAI,
     canEditWebAppUrl: String((authUser && authUser.role) || "").trim().toLowerCase() === "admin"
   }), /*#__PURE__*/React.createElement("input", {
+    ref: salesInputRef,
+    type: "file",
+    accept: ".xlsx,.xls,.csv",
+    style: {
+      display: 'none'
+    },
+    onChange: function onChange(event) {
+      return handleFileUpload(event, 'sales');
+    }
+  }), /*#__PURE__*/React.createElement("input", {
     ref: targetInputRef,
     type: "file",
     accept: ".xlsx,.xls,.csv",
