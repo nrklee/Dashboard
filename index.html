@@ -1741,6 +1741,7 @@ const firebaseConfig = {
 let app, auth, db;
 let signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, sendPasswordResetEmail;
 let collection, addDoc, getDocs, doc, setDoc, getDoc, writeBatch, serverTimestamp, query, orderBy, where;
+let collection, addDoc, getDocs, doc, setDoc, getDoc, writeBatch, serverTimestamp, query, orderBy, where;
 
 import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then((mod) => {
     app = mod.initializeApp(firebaseConfig);
@@ -1897,22 +1898,44 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
 };
 
 // ----------------------------------------------------------------------
-// 3. Firebase Excel Upload (อัปโหลดไฟล์ Sales 42 คอลัมน์ เข้า Firestore)
+// 3. Firebase Excel Upload & Download (อัปโหลด/ดาวน์โหลด Sales ผ่าน Firestore Base64)
 // ----------------------------------------------------------------------
+
+// Helper function to convert File to Base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// Helper function to convert Base64 to File
+function base64ToFile(base64String, fileName) {
+    const arr = base64String.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], fileName, { type: mime });
+}
+
 window.uploadSalesToFirebase = async function(file) {
     if (!file) return;
 
-    // แสดงแจ้งเตือนในหน้า UI (ถ้า React ฟังก์ชันยังทำงานอยู่)
-    console.log("เริ่มอัปโหลดไฟล์เข้าระบบ Firebase...");
-    alert("ระบบกำลังอัปโหลดข้อมูลเข้าสู่ Firebase (กรุณารอสักครู่)...");
-
+    console.log("เริ่มบีบอัดและอัปโหลดไฟล์เข้าระบบ Firebase Database...");
+    
     try {
+        if (!db) throw new Error("Firebase Database ยังไม่พร้อมใช้งาน");
+
+        // --- ดึงชื่อคอลัมน์จากไฟล์จริงเพื่ออัปเดต Column Settings ---
         const data = await file.arrayBuffer();
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
-        
-        // --- ดึงชื่อคอลัมน์จากไฟล์จริง ---
         const rawArray = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         if (rawArray.length > 0) {
             const fileHeaders = rawArray[0];
@@ -1921,7 +1944,6 @@ window.uploadSalesToFirebase = async function(file) {
                 if (i < currentSettings.length) {
                     const hStr = header ? String(header).trim() : `Column ${i+1}`;
                     if (currentSettings[i].originalName !== hStr) {
-                        // ถ้าเคยเป็นค่าเดิม ให้เปลี่ยน alias ตามด้วย
                         if (currentSettings[i].alias === currentSettings[i].originalName || currentSettings[i].alias === `Column ${i+1}`) {
                             currentSettings[i].alias = hStr;
                         }
@@ -1934,43 +1956,48 @@ window.uploadSalesToFirebase = async function(file) {
                 localStorage.setItem('salytix_column_settings', JSON.stringify(currentSettings));
             }
         }
-        // -----------------------------
+        // -------------------------------------------------------------
 
-        console.log(`อ่านไฟล์สำเร็จ พบข้อมูล ${rows.length} แถว กำลังอัปโหลดเข้า Firestore...`);
+        // แปลงไฟล์เป็น Base64
+        const base64Data = await fileToBase64(file);
         
-        // อัปโหลดเข้า Firestore โดยใช้การตั้งค่า Column Settings
-        const BATCH_LIMIT = 400;
-        let batch = writeBatch(db);
-        let count = 0;
+        // บันทึกลง Firestore Document เดียว (ใช้โควต้า 1 Write)
+        const docRef = doc(db, "app_data", "latest_sales");
+        await setDoc(docRef, {
+            fileData: base64Data,
+            fileName: file.name || "latest_sales.xlsx",
+            updatedAt: serverTimestamp()
+        });
         
-        for (let idx = 0; idx < rows.length; idx++) {
-            const row = rows[idx];
-            const mappedData = {};
-            currentSettings.forEach(col => {
-                if(col.visible) {
-                    mappedData[col.alias] = row[col.originalName] !== undefined ? row[col.originalName] : '';
-                }
-            });
-            const docRef = doc(collection(db, "sales_data"));
-            batch.set(docRef, mappedData);
-            count++;
-            
-            if (count === BATCH_LIMIT) {
-                await batch.commit();
-                batch = writeBatch(db);
-                count = 0;
-            }
-        }
-        
-        if (count > 0) {
-            await batch.commit();
-        }
-       
-        alert(`อัปโหลดและประมวลผลข้อมูล ${rows.length} แถว สำเร็จ! (ระบบ V2 Firebase)`);
-        
+        alert("อัปโหลดไฟล์ Sales ขึ้นฐานข้อมูลสำเร็จแล้ว! (ประหยัดโควต้า 100%)");
     } catch (error) {
         console.error("Upload Error:", error);
         alert("เกิดข้อผิดพลาดในการอัปโหลด: " + error.message);
+    }
+};
+
+window.downloadSalesFromFirebase = async function() {
+    try {
+        if (!db) throw new Error("Firebase Database ยังไม่พร้อมใช้งาน");
+        
+        const docRef = doc(db, "app_data", "latest_sales");
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error("ยังไม่มีข้อมูลยอดขายในระบบ");
+        }
+        
+        const data = docSnap.data();
+        if (!data.fileData) {
+            throw new Error("ข้อมูลยอดขายไม่สมบูรณ์");
+        }
+        
+        // แปลง Base64 กลับเป็นไฟล์ Excel
+        const file = base64ToFile(data.fileData, data.fileName || "latest_sales.xlsx");
+        return file;
+    } catch (error) {
+        console.error("Download Error:", error);
+        throw error;
     }
 };
 
@@ -6809,6 +6836,28 @@ var App = function App() {
       return mergeFiltersWithLocks(prev, lockedFilters);
     });
   }, [authUser && authUser.username, JSON.stringify(lockedFilters)]);
+  useEffect(function () {
+    if (authUser && window.downloadSalesFromFirebase) {
+      var today = new Date().toISOString().split('T')[0];
+      var lastSync = localStorage.getItem('salytix_last_sync_date');
+      if (lastSync !== today) {
+        // Trigger auto-sync once a day per user/device
+        setTimeout(function() {
+          updateLoadingStatus('กำลังซิงค์ข้อมูล Sales ประจำวันจากระบบคลาวด์...', 50, true);
+          window.downloadSalesFromFirebase().then(function(file) {
+            return processAndStoreFile(file, 'sales', { silentStatus: true });
+          }).then(function() {
+            localStorage.setItem('salytix_last_sync_date', today);
+            finishLoadingStatus('ซิงค์ข้อมูล Sales ประจำวันสำเร็จ', 'success');
+          }).catch(function(err) {
+            console.error("Auto sync failed:", err);
+            finishLoadingStatus('ไม่สามารถซิงค์ข้อมูล Sales ล่าสุดได้', 'error');
+          });
+        }, 1500); // small delay after login
+      }
+    }
+  }, [authUser]);
+
   useEffect(function () {
     if (!authSessionToken || !authUser) return undefined;
     var cancelled = false;
@@ -13285,17 +13334,25 @@ var App = function App() {
     });
   };
   var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet() {
-    return syncGoogleSheetSourceAsUpload({
-      mode: 'sync_sales_source',
-      type: 'sales',
-      statusLabel: 'ข้อมูลยอดขาย',
-      defaultFileName: 'google-sheet-sales.xlsx',
-      sourceLabel: GOOGLE_SHEET_SOURCE_LABEL,
-      notReadyMessage: 'กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูลยอดขาย',
-      restrictedMessage: 'บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดูยอดขาย',
-      missingSourceMessage: 'ยังไม่ได้ตั้งค่าลิงก์ยอดขายสำหรับผู้ใช้นี้',
-      syncedAtSetter: setLastGoogleSheetSyncAt
-    });
+    var today = new Date().toISOString().split('T')[0];
+    var lastSync = localStorage.getItem('salytix_last_sync_date');
+    if (lastSync === today) {
+        alert("คุณได้ทำการซิงค์ข้อมูลของวันนี้ไปแล้ว เพื่อป้องกันการโหลดข้อมูลซ้ำซ้อน หากต้องการซิงค์ใหม่กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ครับ");
+        return;
+    }
+    if (window.downloadSalesFromFirebase) {
+        updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
+        window.downloadSalesFromFirebase().then(function(file) {
+            return processAndStoreFile(file, 'sales', { silentStatus: false });
+        }).then(function() {
+            localStorage.setItem('salytix_last_sync_date', today);
+        }).catch(function(err) {
+            console.error("Manual sync failed:", err);
+            finishLoadingStatus('เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
+        });
+    } else {
+        alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
+    }
   };
   var syncTargetFromGoogleSheet = function syncTargetFromGoogleSheet() {
     return syncGoogleSheetSourceAsUpload({
