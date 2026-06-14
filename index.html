@@ -6361,19 +6361,25 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   var targetList = Object.values(uniqueTargets);
   var districtList = Object.keys(uniqueDistricts);
   
-  // Create unique list of options from allData
   var dbBrands = new Set();
   var dbGroups = new Set();
+  var dbModels = new Set();
+  var dbSkus = new Set();
   var dbDistricts = new Set();
   var groupBrandsMap = {};
+  var brandGroupsMap = {};
   if (allData && allData.monthly) {
       allData.monthly.forEach(function(row) {
           if (row.brand) dbBrands.add(row.brand);
           if (row.group) dbGroups.add(row.group);
+          if (row.model) dbModels.add(row.model);
+          if (row.sku) dbSkus.add(row.sku);
           if (row.district) dbDistricts.add(row.district);
           if (row.group && row.brand) {
               if (!groupBrandsMap[row.group]) groupBrandsMap[row.group] = new Set();
               groupBrandsMap[row.group].add(row.brand);
+              if (!brandGroupsMap[row.brand]) brandGroupsMap[row.brand] = new Set();
+              brandGroupsMap[row.brand].add(row.group);
           }
       });
   }
@@ -6382,14 +6388,20 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     setMappings(localMap);
     if (onSaveAndProcess) onSaveAndProcess(localMap);
   };
+  
+  var checkRequiresAdvancedFields = function(groupStr) {
+      var str = String(groupStr || '').toLowerCase();
+      var needsModel = str.includes('ปลา') || str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า');
+      var needsSku = str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า');
+      return { needsModel: needsModel, needsSku: needsSku };
+  };
 
   return React.createElement("div", { className: "status-modal-overlay z-[9999]" },
-    React.createElement("datalist", { id: "db-groups-list" }, Array.from(dbGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
     React.createElement("div", { className: "status-modal flex flex-col", style: { width: '800px', maxWidth: '95vw', maxHeight: '90vh' } },
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
-            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม และ แบรนด์)"
+            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU)"
         ),
         React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "X")
       ),
@@ -6398,7 +6410,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "เลือกเขตจาก Dropdown, พิมพ์กลุ่มสินค้า (เมื่อเลือกกลุ่มสินค้าแล้ว ตัวเลือกแบรนด์จะกรองตามกลุ่มนั้นๆ) และหาก 1 เป้าหมายใช้คุมหลายแบรนด์ ให้กดปุ่ม ", React.createElement("strong", null, "+ เพิ่มแบรนด์"), " เพื่อเพิ่มช่องกรอกแบรนด์ได้ตามต้องการ")
+                React.createElement("p", null, "เลือกเขตและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น")
             )
         ),
         
@@ -6411,7 +6423,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                 districtList.map(function(dist, idx) {
                     var key = 'dist||' + dist;
                     var val = localMap[key] || '';
-                    return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center gap-3 hover:border-blue-300 transition-colors" },
+                    return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center gap-3" },
                         React.createElement("div", { className: "w-1/3 text-sm font-bold text-slate-700" }, dist),
                         React.createElement("span", { className: "material-symbols-outlined text-slate-300" }, "arrow_forward"),
                         React.createElement("select", {
@@ -6436,23 +6448,51 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
         React.createElement("div", null,
             React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
                 React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "category"),
-                "2. จับคู่กลุ่มสินค้า และ แบรนด์"
+                "2. จับคู่กลุ่มสินค้า, แบรนด์, รุ่น, SKU"
             ),
             React.createElement("div", { className: "space-y-3" },
                 targetList.map(function(t, idx) {
-                    var key = 'brand||' + t.group + '||' + t.brand;
+                    var keyBrand = 'brand||' + t.group + '||' + t.brand;
                     var keyGrp = 'group||' + t.group + '||' + t.brand;
+                    var keyModel = 'model||' + t.group + '||' + t.brand;
+                    var keySku = 'sku||' + t.group + '||' + t.brand;
+                    
                     var legacyKeyGrp = 'group||' + t.group;
-                    var val = localMap[key] || '';
+                    
+                    var valBrand = localMap[keyBrand] || '';
                     var valGrp = localMap[keyGrp] !== undefined ? localMap[keyGrp] : (localMap[legacyKeyGrp] || '');
-                    var brandArray = val ? val.split(',') : [''];
-                    var datalistId = "db-brands-list-" + idx;
+                    var valModel = localMap[keyModel] || '';
+                    var valSku = localMap[keySku] || '';
+                    
+                    var brandArray = valBrand ? valBrand.split(',') : [''];
+                    var modelArray = valModel ? valModel.split(',') : [''];
+                    var skuArray = valSku ? valSku.split(',') : [''];
+                    
                     var availableBrands = valGrp && groupBrandsMap[valGrp] ? Array.from(groupBrandsMap[valGrp]) : Array.from(dbBrands);
                     
+                    var availableGroups = new Set();
+                    var hasBrandFilter = false;
+                    brandArray.forEach(function(b) {
+                        var bStr = b.trim();
+                        if (bStr && brandGroupsMap[bStr]) {
+                            hasBrandFilter = true;
+                            brandGroupsMap[bStr].forEach(function(g) { availableGroups.add(g); });
+                        }
+                    });
+                    if (!hasBrandFilter) {
+                        availableGroups = dbGroups;
+                    }
+                    
+                    // Determine if advanced fields are needed
+                    var req = checkRequiresAdvancedFields(valGrp || t.group);
+                    
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
-                        React.createElement("datalist", { id: datalistId }, availableBrands.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-brands-list-" + idx }, availableBrands.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-groups-list-" + idx }, Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-models-list-" + idx }, Array.from(dbModels).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-skus-list-" + idx }, Array.from(dbSkus).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("div", { className: "flex items-start gap-3" },
-                            React.createElement("div", { className: "w-1/3 mt-1" },
+                            React.createElement("div", { className: "w-1/4 mt-1" },
                                 React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
                                 React.createElement("div", { className: "text-sm text-slate-800 font-bold" }, t.brand),
                                 React.createElement("div", { className: "text-xs text-blue-500 mt-0.5 font-semibold" }, "เป้ารวม: ", t.val.toLocaleString())
@@ -6465,9 +6505,9 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "กลุ่มสินค้า"),
                                     React.createElement("input", {
                                         type: "text",
-                                        list: "db-groups-list",
-                                        className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none",
-                                        placeholder: "จับคู่กลุ่ม (ถ้ามี)",
+                                        list: "db-groups-list-" + idx,
+                                        className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
+                                        placeholder: "จับคู่กลุ่ม",
                                         value: valGrp,
                                         onChange: function(e) {
                                             var newMap = Object.assign({}, localMap);
@@ -6483,27 +6523,32 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             return React.createElement("div", { key: bIdx, className: "flex items-center gap-1" },
                                                 React.createElement("input", {
                                                     type: "text",
-                                                    list: datalistId,
-                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-blue-50/30 outline-none",
+                                                    list: "db-brands-list-" + idx,
+                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-blue-50 outline-none",
                                                     placeholder: "ระบุแบรนด์",
                                                     value: brandItem.trim(),
                                                     onChange: function(e) {
                                                         var newMap = Object.assign({}, localMap);
                                                         var newArr = brandArray.slice();
-                                                        newArr[bIdx] = e.target.value;
-                                                        newMap[key] = newArr.join(',');
+                                                        var bStr = e.target.value;
+                                                        newArr[bIdx] = bStr;
+                                                        newMap[keyBrand] = newArr.join(',');
+                                                        var trimmed = bStr.trim();
+                                                        var currentGrp = newMap[keyGrp] !== undefined ? newMap[keyGrp] : (newMap[legacyKeyGrp] || '');
+                                                        if (!currentGrp && brandGroupsMap[trimmed] && brandGroupsMap[trimmed].size === 1) {
+                                                            newMap[keyGrp] = Array.from(brandGroupsMap[trimmed])[0];
+                                                        }
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
                                                 brandArray.length > 1 ? React.createElement("button", {
                                                     type: "button",
-                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded transition-colors flex items-center justify-center",
-                                                    title: "ลบแบรนด์",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
                                                     onClick: function() {
                                                         var newMap = Object.assign({}, localMap);
                                                         var newArr = brandArray.slice();
                                                         newArr.splice(bIdx, 1);
-                                                        newMap[key] = newArr.join(',');
+                                                        newMap[keyBrand] = newArr.join(',');
                                                         setLocalMap(newMap);
                                                     }
                                                 }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
@@ -6514,13 +6559,101 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             className: "self-start text-xs text-blue-600 flex items-center gap-1 mt-1 hover:underline font-bold",
                                             onClick: function() {
                                                 var newMap = Object.assign({}, localMap);
-                                                var currStr = newMap[key] || '';
-                                                newMap[key] = currStr ? currStr + ',' : ',';
+                                                var currStr = newMap[keyBrand] || '';
+                                                newMap[keyBrand] = currStr ? currStr + ',' : ',';
                                                 setLocalMap(newMap);
                                             }
                                         }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่มแบรนด์")
                                     )
-                                )
+                                ),
+                                req.needsModel ? React.createElement("div", { className: "flex gap-2 items-start" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุรุ่น"),
+                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                        modelArray.map(function(modelItem, mIdx) {
+                                            return React.createElement("div", { key: mIdx, className: "flex items-center gap-1" },
+                                                React.createElement("input", {
+                                                    type: "text",
+                                                    list: "db-models-list-" + idx,
+                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-green-500 bg-green-50 outline-none",
+                                                    placeholder: "ระบุรุ่น (Model)",
+                                                    value: modelItem.trim(),
+                                                    onChange: function(e) {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = modelArray.slice();
+                                                        newArr[mIdx] = e.target.value;
+                                                        newMap[keyModel] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }),
+                                                modelArray.length > 1 ? React.createElement("button", {
+                                                    type: "button",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                    onClick: function() {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = modelArray.slice();
+                                                        newArr.splice(mIdx, 1);
+                                                        newMap[keyModel] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                            );
+                                        }),
+                                        React.createElement("button", {
+                                            type: "button",
+                                            className: "self-start text-xs text-green-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                            onClick: function() {
+                                                var newMap = Object.assign({}, localMap);
+                                                var currStr = newMap[keyModel] || '';
+                                                newMap[keyModel] = currStr ? currStr + ',' : ',';
+                                                setLocalMap(newMap);
+                                            }
+                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่มรุ่น")
+                                    )
+                                ) : null,
+                                req.needsSku ? React.createElement("div", { className: "flex gap-2 items-start" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุ SKU"),
+                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                        skuArray.map(function(skuItem, sIdx) {
+                                            return React.createElement("div", { key: sIdx, className: "flex items-center gap-1" },
+                                                React.createElement("input", {
+                                                    type: "text",
+                                                    list: "db-skus-list-" + idx,
+                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-orange-500 bg-orange-50 outline-none",
+                                                    placeholder: "ระบุ SKU",
+                                                    value: skuItem.trim(),
+                                                    onChange: function(e) {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = skuArray.slice();
+                                                        newArr[sIdx] = e.target.value;
+                                                        newMap[keySku] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }),
+                                                skuArray.length > 1 ? React.createElement("button", {
+                                                    type: "button",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                    onClick: function() {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = skuArray.slice();
+                                                        newArr.splice(sIdx, 1);
+                                                        newMap[keySku] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                            );
+                                        }),
+                                        React.createElement("button", {
+                                            type: "button",
+                                            className: "self-start text-xs text-orange-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                            onClick: function() {
+                                                var newMap = Object.assign({}, localMap);
+                                                var currStr = newMap[keySku] || '';
+                                                newMap[keySku] = currStr ? currStr + ',' : ',';
+                                                setLocalMap(newMap);
+                                            }
+                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม SKU")
+                                    )
+                                ) : null
                             )
                         )
                     );
@@ -6541,7 +6674,6 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     )
   );
 };
-
 var App = function App() {
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
@@ -6550,6 +6682,7 @@ var App = function App() {
   var _useStateDashboardMenu = React.useState(true), isDashboardMenuOpen = _useStateDashboardMenu[0], setIsDashboardMenuOpen = _useStateDashboardMenu[1];
   var _useStateSettingMenu = React.useState(false), isSettingMenuOpen = _useStateSettingMenu[0], setIsSettingMenuOpen = _useStateSettingMenu[1];
   var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
+  var _useStateTargetUploadConfirm = React.useState(null), targetUploadConfirm = _useStateTargetUploadConfirm[0], setTargetUploadConfirm = _useStateTargetUploadConfirm[1];
 
   
   React.useEffect(function() {
@@ -7126,7 +7259,7 @@ var App = function App() {
   var isIOSDevice = detectIOSLike();
   var isHTMLViewerApp = typeof navigator !== 'undefined' && /html\s*viewer/i.test(navigator.userAgent || '');
   var useDirectUploadInput = isIOSDevice || isHTMLViewerApp || !hasFileSystemAccess;
-  var mergeParsedDataByType = function mergeParsedDataByType(baseData, type, parsedData) {
+  var mergeParsedDataByType = function mergeParsedDataByType(baseData, type, parsedData, isAppend) {
     if (!parsedData) return baseData;
     var nextData = normalizeAllDataShape(baseData);
     if (type === 'sales') {
@@ -7134,8 +7267,13 @@ var App = function App() {
       nextData.yearly = parsedData.yearly || [];
       nextData.salesUpdateMeta = normalizeSalesUpdateMeta(parsedData.salesUpdateMeta);
     } else {
-      nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
-      nextData.rawTargets = parsedData.rawTargets || [];
+      if (isAppend) {
+        nextData.targets = [].concat(_toConsumableArray(baseData.targets || []), _toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
+        nextData.rawTargets = [].concat(_toConsumableArray(baseData.rawTargets || []), _toConsumableArray(parsedData.rawTargets || []));
+      } else {
+        nextData.targets = [].concat(_toConsumableArray(parsedData.monthly || []), _toConsumableArray(parsedData.yearly || []));
+        nextData.rawTargets = parsedData.rawTargets || [];
+      }
     }
     return nextData;
   };
@@ -9255,7 +9393,7 @@ var App = function App() {
         while (1) switch (_context19.p = _context19.n) {
           case 0:
             options = _args19.length > 2 && _args19[2] !== undefined ? _args19[2] : {};
-            _options$fileHandle = options.fileHandle, fileHandle = _options$fileHandle === void 0 ? null : _options$fileHandle, _options$bindHandle = options.bindHandle, bindHandle = _options$bindHandle === void 0 ? false : _options$bindHandle, _options$silentStatus = options.silentStatus, silentStatus = _options$silentStatus === void 0 ? false : _options$silentStatus;
+            _options$fileHandle = options.fileHandle, fileHandle = _options$fileHandle === void 0 ? null : _options$fileHandle, _options$bindHandle = options.bindHandle, bindHandle = _options$bindHandle === void 0 ? false : _options$bindHandle, _options$silentStatus = options.silentStatus, silentStatus = _options$silentStatus === void 0 ? false : _options$silentStatus, _options$isAppend = options.isAppend, isAppend = _options$isAppend === void 0 ? false : _options$isAppend;
             if (file) {
               _context19.n = 1;
               break;
@@ -9298,13 +9436,14 @@ var App = function App() {
           case 7:
             latestStoredData = _t16;
             if (type === 'target' && parsedData.tg26RawTargets && parsedData.tg26RawTargets.length > 0) {
+                window._tg26IsAppend = isAppend;
                 setPendingTG26Data(parsedData.tg26RawTargets);
                 setIsTargetMappingModalOpen(true);
                 finishLoadingStatus('อ่านไฟล์เป้าหมาย TG.26 สำเร็จ กรุณาตั้งค่าการจับคู่ (Mapping)', 'success');
                 setIsLoading(false);
                 return _context19.a(2, true);
             }
-            mergedData = mergeParsedDataByType(latestStoredData, type, parsedData);
+            mergedData = mergeParsedDataByType(latestStoredData, type, parsedData, isAppend);
             setAllData(mergedData);
             if (type === 'target' && window.TargetMatch) { window.TargetMatch.onTargetDataLoaded(mergedData); }
             persistUploadedFileName(type, file.name || '');
@@ -9571,6 +9710,11 @@ var App = function App() {
             }
             return _context22.a(2);
           case 1:
+            if (type === 'target' && (allData.targets || []).length > 0) {
+              setTargetUploadConfirm({ file: file, type: type });
+              event.target.value = '';
+              return _context22.a(2);
+            }
             _context22.n = 2;
             return processAndStoreFile(file, type, {
               bindHandle: false,
@@ -10472,6 +10616,13 @@ var App = function App() {
       if (isTarget && (itemValue === null || itemValue === undefined || itemValue === '' || itemValue === '-')) {
         return true;
       }
+      
+      // Support checking multi-mapped target rows (separated by ||)
+      if (isTarget && typeof itemValue === 'string' && itemValue.includes('||')) {
+          var subVals = itemValue.split('||');
+          return subVals.some(function(sub) { return v.includes(sub); });
+      }
+      
       return v.includes(itemValue);
     });
   };
@@ -14633,7 +14784,30 @@ var App = function App() {
     type: "button",
     className: "status-modal-action",
     onClick: closeStatusPopup
-  }, "\u0E1B\u0E34\u0E14")))), /*#__PURE__*/React.createElement(CustomDashboardModal, {
+  }, "\u0E1B\u0E34\u0E14")))),
+  targetUploadConfirm && React.createElement("div", { className: "status-modal-overlay z-[9999]" },
+    React.createElement("div", { className: "status-modal flex flex-col p-6 text-center shadow-xl", style: { width: '450px', maxWidth: '90vw' } },
+        React.createElement("div", { className: "w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4" },
+            React.createElement("span", { className: "material-symbols-outlined text-blue-600 text-2xl" }, "cloud_upload")
+        ),
+        React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-2" }, "พบข้อมูลเป้าหมายเดิม"),
+        React.createElement("p", { className: "text-sm text-slate-600 mb-6" }, "มีข้อมูลเป้าหมายเดิมอยู่ในระบบแล้ว คุณต้องการอัปโหลดข้อมูลใหม่นี้อย่างไร?"),
+        React.createElement("div", { className: "flex flex-col gap-2" },
+            React.createElement("button", { className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2", onClick: function() { 
+                var file = targetUploadConfirm.file;
+                setTargetUploadConfirm(null);
+                processAndStoreFile(file, 'target', { silentStatus: false, isAppend: true });
+            } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)"),
+            React.createElement("button", { className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1", onClick: function() { 
+                var file = targetUploadConfirm.file;
+                setTargetUploadConfirm(null);
+                processAndStoreFile(file, 'target', { silentStatus: false, isAppend: false });
+            } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
+            React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() { setTargetUploadConfirm(null); } }, "ยกเลิก")
+        )
+    )
+  ),
+  /*#__PURE__*/React.createElement(CustomDashboardModal, {
     isOpen: isCustomDashboardOpen,
     onClose: function() { return setIsCustomDashboardOpen(false); },
     sectionOpen: sectionOpen,
@@ -14661,20 +14835,29 @@ var App = function App() {
                     var brandKey = 'brand||' + row.group + '||' + row.brand;
                     var groupKey = 'group||' + row.group + '||' + row.brand;
                     var legacyGroupKey = 'group||' + row.group;
+                    var modelKey = 'model||' + row.group + '||' + row.brand;
+                    var skuKey = 'sku||' + row.group + '||' + row.brand;
                     var distKey = 'dist||' + row.district;
                     
                     var mapBrandVal = newMap[brandKey] || '';
                     var mapGroupVal = newMap[groupKey] !== undefined ? newMap[groupKey] : (newMap[legacyGroupKey] || '');
+                    var mapModelVal = newMap[modelKey] || '';
+                    var mapSkuVal = newMap[skuKey] || '';
                     var mapDistVal = newMap[distKey] || row.district;
                     
                     if (mapBrandVal.trim() !== '') {
                         var mappedBrands = mapBrandVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                        var mappedModelsStr = mapModelVal.trim() !== '' ? mapModelVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedSkusStr = mapSkuVal.trim() !== '' ? mapSkuVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
+                        
                         if (mappedBrands.length > 0) {
                             var mappedBrandStr = mappedBrands.join('||');
                             mappedTargets.push(Object.assign({}, row, {
                                 district: mapDistVal,
                                 group: mapGroupVal || 'Total Target',
                                 brand: mappedBrandStr,
+                                model: mappedModelsStr,
+                                sku: mappedSkusStr,
                                 targetLevel: 'brand',
                                 targetValue: row.value,
                                 targetTon: 0,
@@ -14689,11 +14872,12 @@ var App = function App() {
                             }));
                         }
                     } else if (mapDistVal !== '') {
-                        // Keep as district level target if no brand mapped
                          mappedTargets.push(Object.assign({}, row, {
                                 district: mapDistVal,
                                 group: 'Total Target',
                                 brand: 'Total Target',
+                                model: '-',
+                                sku: '-',
                                 targetLevel: 'district',
                                 targetValue: row.value,
                                 targetTon: 0,
@@ -14710,10 +14894,30 @@ var App = function App() {
                 });
                 
                 var newAllData = Object.assign({}, allData);
+                var tg26IsAppend = window._tg26IsAppend || false;
+                
+                if (!tg26IsAppend) {
+                    if (newAllData.monthly) {
+                        newAllData.monthly = newAllData.monthly.map(function(m) {
+                            var nm = Object.assign({}, m);
+                            if (nm.id && nm.id.startsWith('tg26-')) {
+                                nm.targetValue = 0;
+                                nm.target = 0;
+                            }
+                            return nm;
+                        }).filter(function(m) { return m.sales > 0 || m.qty > 0 || m.ton > 0 || m.targetValue > 0; });
+                    }
+                    newAllData.targets = mappedTargets.slice();
+                    newAllData.rawTargets = pendingTG26Data.slice();
+                } else {
+                    newAllData.targets = [].concat(newAllData.targets || [], mappedTargets);
+                    newAllData.rawTargets = [].concat(newAllData.rawTargets || [], pendingTG26Data);
+                }
+                
                 if (!newAllData.monthly) newAllData.monthly = [];
                 mappedTargets.forEach(function(t) {
                     var existing = newAllData.monthly.find(function(m) {
-                        return m.district === t.district && m.brand === t.brand && m.monthIndex === t.monthIndex && m.year === t.year;
+                        return m.district === t.district && m.brand === t.brand && m.model === t.model && m.sku === t.sku && m.monthIndex === t.monthIndex && m.year === t.year;
                     });
                     if (existing) {
                         existing.targetValue = (existing.targetValue || 0) + t.targetValue;
