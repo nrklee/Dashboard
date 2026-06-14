@@ -20,6 +20,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500&family=Kanit:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack-all.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
           darkMode: "class",
@@ -6422,21 +6424,6 @@ var App = function App() {
   React.useEffect(function() {
     var timer;
     
-    var loadGridStack = function() {
-        if (!window.GridStack) {
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack.min.css';
-            document.head.appendChild(link);
-            var script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack-all.js';
-            script.onload = function() { initGrid(); };
-            document.head.appendChild(script);
-        } else {
-            initGrid();
-        }
-    };
-    
     var initGrid = function() {
         if (timer) clearTimeout(timer);
         timer = setTimeout(function() {
@@ -6445,8 +6432,9 @@ var App = function App() {
                 timer = setTimeout(initGrid, 200);
                 return;
             }
-            if (typeof GridStack === 'undefined') {
-                timer = setTimeout(initGrid, 200);
+            if (typeof window.GridStack === 'undefined') {
+                console.warn("GridStack is not loaded yet. Retrying in 500ms.");
+                timer = setTimeout(initGrid, 500);
                 return;
             }
             
@@ -6456,50 +6444,57 @@ var App = function App() {
             }
             
             // Initialize fresh GridStack
-            var grid = GridStack.init({
-                cellHeight: 80,
-                column: 12,
-                margin: 10,
-                handle: '.major-section-head',
-                float: false,
-                animate: true,
-                disableOneColumnMode: true,
-                resizable: {
-                    handles: 'se'
+            try {
+                var grid = window.GridStack.init({
+                    cellHeight: 80,
+                    column: 12,
+                    margin: 10,
+                    handle: '.major-section-head',
+                    float: false,
+                    animate: true,
+                    disableOneColumnMode: true,
+                    resizable: {
+                        handles: 'se'
+                    }
+                }, gridEl);
+                
+                // Add a class so fallback CSS can be disabled
+                gridEl.classList.add('grid-stack-instance');
+                
+                // Force save initial layout so React's next render gets the auto-placed coordinates
+                var engineNodes = grid.engine.nodes;
+                if (engineNodes && engineNodes.length > 0) {
+                    var initialLayouts = {};
+                    try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+                    engineNodes.forEach(function(node) {
+                        var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
+                        if (id) {
+                            initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
+                        }
+                    });
+                    localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
                 }
-            }, gridEl);
-            
-            // Force save initial layout so React's next render gets the auto-placed coordinates
-            var engineNodes = grid.engine.nodes;
-            if (engineNodes && engineNodes.length > 0) {
-                var initialLayouts = {};
-                try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-                engineNodes.forEach(function(node) {
-                    var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
-                    if (id) {
-                        initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
-                    }
+                
+                // Save layout on change
+                grid.on('change', function(event, items) {
+                    if (!items) return;
+                    var layouts = {};
+                    try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+                    items.forEach(function(item) {
+                        var id = item.el ? item.el.getAttribute('gs-id') : null;
+                        if (id) {
+                            layouts[id] = { x: item.x, y: item.y, w: item.w, h: item.h };
+                        }
+                    });
+                    localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
                 });
-                localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
+            } catch (err) {
+                console.error("GridStack init error:", err);
             }
-            
-            // Save layout on change
-            grid.on('change', function(event, items) {
-                if (!items) return;
-                var layouts = {};
-                try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-                items.forEach(function(item) {
-                    var id = item.el ? item.el.getAttribute('gs-id') : null;
-                    if (id) {
-                        layouts[id] = { x: item.x, y: item.y, w: item.w, h: item.h };
-                    }
-                });
-                localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
-            });
         }, 100);
     };
     
-    loadGridStack();
+    initGrid();
     
     return function() {
         if (timer) clearTimeout(timer);
