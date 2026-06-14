@@ -8238,11 +8238,12 @@ var App = function App() {
                         }();
                         parseSalesWorkbook = /*#__PURE__*/function () {
                           var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var salesUpdateMeta, monthly, yearly, sheetNames, sheet, rows, headerRowIdx, i, r, joined, headerRow, dbMap, _i, row, dateStr, parts, day, month, year, dateObj, amount, qty, ton, dimensions, id;
+                            var salesUpdateMeta, daily, monthly, yearly, sheetNames, sheet, rows, headerRowIdx, i, r, joined, headerRow, dbMap, _i, row, dateStr, parts, day, month, year, dateObj, amount, qty, ton, dimensions, id;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
                                   salesUpdateMeta = createEmptySalesUpdateMeta();
+                                  daily = [];
                                   monthly = [];
                                   yearly = [];
                                   sheetNames = workbook.SheetNames || [];
@@ -8250,7 +8251,7 @@ var App = function App() {
                                     _context12.n = 2;
                                     break;
                                   }
-                                  return _context12.a(2, { monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
+                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 2:
                                   sheet = workbook.Sheets[sheetNames[0]];
                                   _context12.n = 4;
@@ -8270,7 +8271,7 @@ var App = function App() {
                                     _context12.n = 6;
                                     break;
                                   }
-                                  return _context12.a(2, { monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
+                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 6:
                                   headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
                                   dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
@@ -8341,9 +8342,10 @@ var App = function App() {
                                   };
                                   dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
                                   id = "m-" + Math.random();
-                                  monthly.push(_objectSpread({
+                                  var dataRow = _objectSpread({
                                       id: id,
                                       date: toLocalISOString(dateObj),
+                                      day: day,
                                       monthIndex: month,
                                       year: String(year + 543),
                                       sales: amount,
@@ -8353,7 +8355,9 @@ var App = function App() {
                                       targetLevel: undefined,
                                       qty: qty,
                                       ton: ton
-                                  }, dimensions));
+                                  }, dimensions);
+                                  monthly.push(dataRow);
+                                  daily.push(_objectSpread({}, dataRow, { id: "d-" + Math.random() }));
                                 case 9:
                                   _i++;
                                   _context12.n = 7;
@@ -8363,7 +8367,7 @@ var App = function App() {
                                   if (monthly.length > 0) {
                                       salesUpdateMeta.monthly.sales[monthly[0].year] = extractSheetUpdateLabel(sheet) || toLocalISOString(new Date()).substring(0, 10);
                                   }
-                                  return _context12.a(2, { monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta });
+                                  return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta });
                               }
                             }, _callee12);
                           }));
@@ -8857,6 +8861,7 @@ var App = function App() {
                         }(parseTargetWorkbook);
                         isCSV = file.name.toLowerCase().endsWith('.csv');
                         parsed = {
+                          daily: [],
                           monthly: [],
                           yearly: []
                         };
@@ -8867,6 +8872,7 @@ var App = function App() {
                               while (1) switch (_context15.n) {
                                 case 0:
                                   genericParsed = {
+                                    daily: [],
                                     monthly: [],
                                     yearly: []
                                   };
@@ -8887,6 +8893,7 @@ var App = function App() {
                                   }, parseOptions));
                                 case 3:
                                   sheetRes = _context15.v;
+                                  appendRows(genericParsed.daily, sheetRes.daily);
                                   appendRows(genericParsed.monthly, sheetRes.monthly);
                                   appendRows(genericParsed.yearly, sheetRes.yearly);
                                   _context15.n = 4;
@@ -12986,6 +12993,9 @@ var App = function App() {
       return candidate && candidate.parsedData;
     });
     return {
+      daily: selectedCandidates.reduce(function (mergedRows, candidate) {
+        return mergedRows.concat(candidate.parsedData.daily || []);
+      }, []),
       monthly: selectedCandidates.reduce(function (mergedRows, candidate) {
         return mergedRows.concat(candidate.parsedData.monthly || []);
       }, []),
@@ -12999,7 +13009,7 @@ var App = function App() {
   };
   var hasParsedSalesContent = function hasParsedSalesContent(parsedData) {
     var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
-    return (safeData.monthly || []).length > 0 || (safeData.yearly || []).length > 0;
+    return (safeData.daily || []).length > 0 || (safeData.monthly || []).length > 0 || (safeData.yearly || []).length > 0;
   };
   var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
     var userSourceConfig = authUser && authUser.sourceConfig && _typeof(authUser.sourceConfig) === 'object' ? authUser.sourceConfig : {};
