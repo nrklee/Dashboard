@@ -1734,12 +1734,13 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 let supabase;
 
-import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then((mod) => {
-    supabase = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// กำหนดค่า Supabase ทันทีโดยใช้ไลบรารีที่โหลดมาจาก <script> ใน index.html
+if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log("Supabase Initialized Successfully.");
-}).catch(err => {
-    console.warn("ไม่สามารถโหลด Supabase ได้:", err);
-});
+} else {
+    console.warn("ไม่สามารถโหลด Supabase ได้ (ไม่พบ window.supabase)");
+}
 
 // การตั้งค่าคอลัมน์ (Column Settings) ทั้ง 42 คอลัมน์
 // ----------------------------------------------------------------------
