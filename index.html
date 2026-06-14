@@ -5606,9 +5606,10 @@ var sectionTitles = {
     if (!allData || !allData.monthly) return [];
     var grouped = {};
     allData.monthly.forEach(function(item) {
-      var k = item[xAxisKey] || 'N/A';
+      var k = xAxisKey === 'month' && item.monthIndex !== undefined ? String(item.monthIndex + 1) : (item[xAxisKey] || 'N/A');
       if (!grouped[k]) grouped[k] = { name: k, value: 0 };
-      grouped[k].value += Number(item[yAxisKey]) || 0;
+      var yKey = yAxisKey === 'value' ? 'sales' : yAxisKey;
+      grouped[k].value += Number(item[yKey]) || 0;
     });
     var arr = Object.values(grouped);
     if (xAxisKey === 'month') {
@@ -5951,9 +5952,9 @@ var CustomWidget = function CustomWidget(_ref) {
     if (!allData || !allData.monthly) return [];
     var grouped = {};
     allData.monthly.forEach(function(item) {
-      var k = item[widget.xAxisKey] || 'N/A';
+      var k = widget.xAxisKey === 'month' && item.monthIndex !== undefined ? String(item.monthIndex + 1) : (item[widget.xAxisKey] || 'N/A');
       if (!grouped[k]) grouped[k] = { name: k, value: 0 };
-      var yKey = widget.yAxisKey === 'sales' ? 'value' : widget.yAxisKey;
+      var yKey = widget.yAxisKey === 'value' ? 'sales' : widget.yAxisKey;
       grouped[k].value += Number(item[yKey]) || 0;
     });
     var arr = Object.values(grouped);
