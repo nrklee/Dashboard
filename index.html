@@ -6817,7 +6817,8 @@ var App = function App() {
   }, [statusInfo.loading, statusInfo.startedAt]);
   var isIOSDevice = detectIOSLike();
   var isHTMLViewerApp = typeof navigator !== 'undefined' && /html\s*viewer/i.test(navigator.userAgent || '');
-  var useDirectUploadInput = isIOSDevice || isHTMLViewerApp || !hasFileSystemAccess;
+  var isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent || '');
+  var useDirectUploadInput = isIOSDevice || isHTMLViewerApp || !hasFileSystemAccess || isSafari;
   var mergeParsedDataByType = function mergeParsedDataByType(baseData, type, parsedData, isAppend) {
     if (!parsedData) return baseData;
     var nextData = normalizeAllDataShape(baseData);
