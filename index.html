@@ -2901,6 +2901,17 @@ var sortYearLabels = function sortYearLabels(a, b) {
   var aNum = Number(a);
   var bNum = Number(b);
   if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+  var parseMonthYear = function(str) {
+    var parts = String(str).split(' ');
+    if (parts.length === 2) {
+      var mIdx = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'].indexOf(parts[0]);
+      if (mIdx !== -1) return (Number(parts[1]) || 0) * 100 + mIdx;
+    }
+    return null;
+  };
+  var aMonthYear = parseMonthYear(a);
+  var bMonthYear = parseMonthYear(b);
+  if (aMonthYear !== null && bMonthYear !== null) return aMonthYear - bMonthYear;
   return String(a).localeCompare(String(b), 'th');
 };
 var extractYearLabelFromText = function extractYearLabelFromText(text) {
@@ -3225,6 +3236,18 @@ var getMonthIndexFromItem = function getMonthIndexFromItem(item) {
   if (!dateStr) return null;
   var d = new Date(dateStr);
   return Number.isFinite(d.getTime()) ? d.getMonth() : null;
+};
+var getMonthYearLabelFromItem = function getMonthYearLabelFromItem(item) {
+  var dateStr = String((item === null || item === void 0 ? void 0 : item.date) || '').trim();
+  if (!dateStr) return 'ไม่ระบุ';
+  var m = dateStr.match(/^(\d{4})-(\d{2})-\d{2}$/);
+  if (m) {
+     var monthIdx = Number(m[2]) - 1;
+     var thMonthShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'][monthIdx];
+     var thYear = Number(m[1]) > 2500 ? Number(m[1]) : Number(m[1]) + 543;
+     return thMonthShort + ' ' + (thYear % 100);
+  }
+  return 'ไม่ระบุ';
 };
 var getYearLabelFromItem = function getYearLabelFromItem(item) {
   var fallbackToCurrent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
@@ -10654,6 +10677,30 @@ var App = function App() {
       });
     });
   };
+  var activeDailyMonths = useMemo(function () {
+    if (viewMode !== 'daily') return [];
+    var monthsSet = new Set();
+    filteredData.forEach(function (item) {
+      if (item.date) {
+        monthsSet.add(getMonthYearLabelFromItem(item));
+      }
+    });
+    return Array.from(monthsSet).sort(function(a,b){
+      var getDateForSort = function(str) {
+        var parts = str.split(' ');
+        if(parts.length !== 2) return 0;
+        var mIdx = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'].indexOf(parts[0]);
+        var y = Number(parts[1]) || 0;
+        return y * 100 + mIdx;
+      };
+      return getDateForSort(a) - getDateForSort(b);
+    });
+  }, [viewMode, filteredData]);
+
+  var activeChartSeries = useMemo(function () {
+    return viewMode === 'daily' ? activeDailyMonths : activeTrendYears;
+  }, [viewMode, activeDailyMonths, activeTrendYears]);
+
   var chartData = useMemo(function () {
     if (viewMode === 'monthly' || viewMode === 'daily') {
       var _grouped = {};
@@ -10661,53 +10708,53 @@ var App = function App() {
         for (var i = 1; i <= 31; i++) {
           var key = String(i).padStart(2, '0');
           _grouped[key] = { sortKey: key, name: String(i), day: i };
-          activeTrendYears.forEach(function (yearLabel) {
-            _grouped[key]["sales_".concat(yearLabel)] = 0;
-            _grouped[key]["target_".concat(yearLabel)] = 0;
+          activeChartSeries.forEach(function (seriesLabel) {
+            _grouped[key]["sales_".concat(seriesLabel)] = 0;
+            _grouped[key]["target_".concat(seriesLabel)] = 0;
           });
         }
         filteredData.forEach(function (item) {
           if (!item.day) return;
-          var yearLabel = getYearLabelFromItem(item);
-          if (!activeTrendYears.includes(yearLabel)) return;
+          var seriesLabel = getMonthYearLabelFromItem(item);
+          if (!activeChartSeries.includes(seriesLabel)) return;
           var key = String(item.day).padStart(2, '0');
           if (_grouped[key]) {
-            _grouped[key]["sales_".concat(yearLabel)] = (_grouped[key]["sales_".concat(yearLabel)] || 0) + getValue(item);
+            _grouped[key]["sales_".concat(seriesLabel)] = (_grouped[key]["sales_".concat(seriesLabel)] || 0) + getValue(item);
           }
         });
       } else {
         THAI_MONTHS.forEach(function (monthLabel, index) {
           var key = String(index).padStart(2, '0');
           _grouped[key] = { sortKey: key, name: monthLabel, monthIndex: index };
-          activeTrendYears.forEach(function (yearLabel) {
-            _grouped[key]["sales_".concat(yearLabel)] = 0;
-            _grouped[key]["target_".concat(yearLabel)] = 0;
+          activeChartSeries.forEach(function (seriesLabel) {
+            _grouped[key]["sales_".concat(seriesLabel)] = 0;
+            _grouped[key]["target_".concat(seriesLabel)] = 0;
           });
         });
         filteredMonthlyTrendData.forEach(function (item) {
           var monthIndex = getMonthIndexFromItem(item);
           if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
-          var yearLabel = getYearLabelFromItem(item);
-          if (!activeTrendYears.includes(yearLabel)) return;
+          var seriesLabel = getYearLabelFromItem(item);
+          if (!activeChartSeries.includes(seriesLabel)) return;
           var key = String(monthIndex).padStart(2, '0');
-          _grouped[key]["sales_".concat(yearLabel)] = (_grouped[key]["sales_".concat(yearLabel)] || 0) + getValue(item);
+          _grouped[key]["sales_".concat(seriesLabel)] = (_grouped[key]["sales_".concat(seriesLabel)] || 0) + getValue(item);
         });
         trendMonthlyTargets.forEach(function (item) {
           if (metricMode === 'qty') return;
           var monthIndex = getMonthIndexFromItem(item);
           if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
-          var yearLabel = getYearLabelFromItem(item);
-          if (!activeTrendYears.includes(yearLabel)) return;
+          var seriesLabel = getYearLabelFromItem(item);
+          if (!activeChartSeries.includes(seriesLabel)) return;
           var key = String(monthIndex).padStart(2, '0');
-          _grouped[key]["target_".concat(yearLabel)] = (_grouped[key]["target_".concat(yearLabel)] || 0) + getTarget(item);
+          _grouped[key]["target_".concat(seriesLabel)] = (_grouped[key]["target_".concat(seriesLabel)] || 0) + getTarget(item);
         });
       }
-      if (metricMode !== 'qty' && activeTrendYears.length > 0) {
+      if (metricMode !== 'qty' && activeChartSeries.length > 0) {
         Object.values(_grouped).forEach(function (row) {
-          activeTrendYears.forEach(function (yearLabel) {
-            var salesVal = Number(row["sales_".concat(yearLabel)] || 0);
-            var targetVal = Number(row["target_".concat(yearLabel)] || 0);
-            row["pct_vs_target_".concat(yearLabel)] = targetVal > 0 ? salesVal / targetVal * 100 : null;
+          activeChartSeries.forEach(function (seriesLabel) {
+            var salesVal = Number(row["sales_".concat(seriesLabel)] || 0);
+            var targetVal = Number(row["target_".concat(seriesLabel)] || 0);
+            row["pct_vs_target_".concat(seriesLabel)] = targetVal > 0 ? salesVal / targetVal * 100 : null;
           });
         });
       }
@@ -10758,7 +10805,7 @@ var App = function App() {
       }
     }
     return sorted;
-  }, [viewMode, filteredData, filteredMonthlyTrendData, trendMonthlyTargets, trendYearlyTargets, activeTrendYears, metricMode]);
+  }, [viewMode, filteredData, filteredMonthlyTrendData, trendMonthlyTargets, trendYearlyTargets, activeTrendYears, metricMode, activeChartSeries]);
   var monthlyYearStats = useMemo(function () {
     var map = {};
     var ensureYear = function ensureYear(yearLabel) {
@@ -13918,8 +13965,8 @@ var App = function App() {
       label: getFilterLabel('YEAR', 'ปี')
     }] : []),
     _toConsumableArray(viewMode === 'daily' ? [{
-      key: 'monthRange',
-      label: getFilterLabel('SALES_MONTH', 'ช่วงเดือน')
+      key: 'dateRange',
+      label: getFilterLabel('SALES_DATE', 'ช่วงเวลา')
     }] : []),
     _toConsumableArray(dynamicFiltersDef)
   );
