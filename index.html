@@ -2270,9 +2270,8 @@ var DEFAULT_TARGET_SPREADSHEET_URL = '';
 var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
 var AUTH_SESSION_EXPIRES_AT_KEY = 'dashboardAuthSessionExpiresAt';
 var AUTH_USER_KEY = 'dashboardAuthUser';
-var GOOGLE_SHEET_LAST_SYNC_PREFIX = 'googleSheetLastSyncAt';
+var SUPABASE_LAST_SYNC_PREFIX = 'supabaseLastSyncAt';
 var GOOGLE_SHEET_SOURCE_LABEL = 'Google Sheet Sales';
-var GOOGLE_TARGET_LAST_SYNC_PREFIX = 'googleTargetLastSyncAt';
 var GOOGLE_TARGET_SOURCE_LABEL = 'Google Sheet Target';
 var MAX_SIZE_MB = 200;
 var COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
@@ -5348,11 +5347,9 @@ var ImportExportScreen = function ImportExportScreen(props) {
   var exportCustomSalesReport = props.exportCustomSalesReport;
   var allData = props.allData;
   var effectiveYearlyData = props.effectiveYearlyData;
-  var googleSheetSyncLabel = props.googleSheetSyncLabel;
-  var syncSalesFromGoogleSheet = props.syncSalesFromGoogleSheet;
+  var supabaseSyncLabel = props.supabaseSyncLabel;
+  var syncSalesFromSupabase = props.syncSalesFromSupabase;
   var openFilePickerForType = props.openFilePickerForType;
-  var googleTargetSyncLabel = props.googleTargetSyncLabel;
-  var syncTargetFromGoogleSheet = props.syncTargetFromGoogleSheet;
   var exportSalesDatabase = props.exportSalesDatabase;
   var salesDataRowsCount = props.salesDataRowsCount;
   var exportTargetTemplate = props.exportTargetTemplate;
@@ -5387,11 +5384,11 @@ var ImportExportScreen = function ImportExportScreen(props) {
     className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
   }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Supabase \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
     className: "font-medium"
-  }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), googleSheetSyncLabel), /*#__PURE__*/React.createElement("div", {
+  }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), supabaseSyncLabel), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     className: "w-full flex items-center justify-center gap-2 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-lg py-3 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98]",
-    onClick: syncSalesFromGoogleSheet
+    onClick: syncSalesFromSupabase
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-lg"
   }, "cloud_sync"), "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Supabase"), /*#__PURE__*/React.createElement("button", {
@@ -5411,16 +5408,9 @@ var ImportExportScreen = function ImportExportScreen(props) {
     className: "font-title-lg text-on-surface"
   }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22 (Target Data)")), /*#__PURE__*/React.createElement("p", {
     className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
-  }, "\u0E14\u0E36\u0E07 Target \u0E08\u0E32\u0E01 Google Sheet \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
-    className: "font-medium"
-  }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), googleTargetSyncLabel), /*#__PURE__*/React.createElement("div", {
+  }, "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C Target \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E40\u0E1B\u0E23\u0E35\u0E22\u0E1A\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E01\u0E31\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "w-full flex items-center justify-center gap-2 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-lg py-3 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98]",
-    onClick: syncTargetFromGoogleSheet
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-lg"
-  }, "cloud_sync"), "Refresh Target Data Link"), /*#__PURE__*/React.createElement("button", {
     className: "w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg py-3 px-4 rounded-xl border border-outline-variant transition-all active:scale-[0.98]",
     onClick: function onClick() {
       return openFilePickerForType('target');
@@ -6701,12 +6691,8 @@ var App = function App() {
     setUploadedFileNames = _useState38[1];
   var _useStateSourceSync = useState(''),
     _useStateSourceSync2 = _slicedToArray(_useStateSourceSync, 2),
-    lastGoogleSheetSyncAt = _useStateSourceSync2[0],
-    setLastGoogleSheetSyncAt = _useStateSourceSync2[1];
-  var _useStateTargetSourceSync = useState(''),
-    _useStateTargetSourceSync2 = _slicedToArray(_useStateTargetSourceSync, 2),
-    lastGoogleTargetSyncAt = _useStateTargetSourceSync2[0],
-    setLastGoogleTargetSyncAt = _useStateTargetSourceSync2[1];
+    lastSupabaseSyncAt = _useStateSourceSync2[0],
+    setLastSupabaseSyncAt = _useStateSourceSync2[1];
   var _useState39 = useState(function () {
       try {
         return sanitizeSalesGuideWeights(JSON.parse(safeStorageGet(SALES_GUIDE_WEIGHTS_KEY) || 'null'));
@@ -6755,10 +6741,7 @@ var App = function App() {
     return getScopedStorageKey(DATA_KEY, authUser && authUser.username);
   }, [authUser && authUser.username]);
   var activeLastSyncKey = useMemo(function () {
-    return getScopedStorageKey(GOOGLE_SHEET_LAST_SYNC_PREFIX, authUser && authUser.username);
-  }, [authUser && authUser.username]);
-  var activeTargetLastSyncKey = useMemo(function () {
-    return getScopedStorageKey(GOOGLE_TARGET_LAST_SYNC_PREFIX, authUser && authUser.username);
+    return getScopedStorageKey(SUPABASE_LAST_SYNC_PREFIX, authUser && authUser.username);
   }, [authUser && authUser.username]);
   var lockedFilters = useMemo(function () {
     return normalizeLockedFilters(authUser && authUser.lockedFilters ? authUser.lockedFilters : {});
@@ -7032,12 +7015,8 @@ var App = function App() {
   }, [aiWebAppUrl]);
   useEffect(function () {
     if (!authUser || !authUser.username) return;
-    if (lastGoogleSheetSyncAt) safeStorageSet(activeLastSyncKey, lastGoogleSheetSyncAt);else safeStorageRemove(activeLastSyncKey);
-  }, [lastGoogleSheetSyncAt, activeLastSyncKey, authUser && authUser.username]);
-  useEffect(function () {
-    if (!authUser || !authUser.username) return;
-    if (lastGoogleTargetSyncAt) safeStorageSet(activeTargetLastSyncKey, lastGoogleTargetSyncAt);else safeStorageRemove(activeTargetLastSyncKey);
-  }, [lastGoogleTargetSyncAt, activeTargetLastSyncKey, authUser && authUser.username]);
+    if (lastSupabaseSyncAt) safeStorageSet(activeLastSyncKey, lastSupabaseSyncAt);else safeStorageRemove(activeLastSyncKey);
+  }, [lastSupabaseSyncAt, activeLastSyncKey, authUser && authUser.username]);
   useEffect(function () {
     if (authSessionToken) safeStorageSet(AUTH_SESSION_TOKEN_KEY, authSessionToken);else safeStorageRemove(AUTH_SESSION_TOKEN_KEY);
   }, [authSessionToken]);
@@ -7049,18 +7028,11 @@ var App = function App() {
   }, [authUser]);
   useEffect(function () {
     if (!authUser || !authUser.username) {
-      setLastGoogleSheetSyncAt('');
+      setLastSupabaseSyncAt('');
       return;
     }
-    setLastGoogleSheetSyncAt(safeStorageGet(activeLastSyncKey) || '');
+    setLastSupabaseSyncAt(safeStorageGet(activeLastSyncKey) || '');
   }, [authUser && authUser.username, activeLastSyncKey]);
-  useEffect(function () {
-    if (!authUser || !authUser.username) {
-      setLastGoogleTargetSyncAt('');
-      return;
-    }
-    setLastGoogleTargetSyncAt(safeStorageGet(activeTargetLastSyncKey) || '');
-  }, [authUser && authUser.username, activeTargetLastSyncKey]);
   useEffect(function () {
     var load = /*#__PURE__*/function () {
       var _ref11 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
@@ -7121,8 +7093,7 @@ var App = function App() {
     if (!isSalesRestrictedUser) return;
     setAllData(normalizeAllDataShape());
     setIsUsingSavedData(false);
-    setLastGoogleSheetSyncAt('');
-    setLastGoogleTargetSyncAt('');
+    setLastSupabaseSyncAt('');
     setFilters({});
   }, [isSalesRestrictedUser, authUser && authUser.username]);
   useEffect(function () {
@@ -7138,7 +7109,7 @@ var App = function App() {
       if (lastSync !== today) {
         // Trigger auto-sync once a day per user/device
         setTimeout(function() {
-          syncSalesFromGoogleSheet(true);
+          syncSalesFromSupabase(true);
         }, 1500); // small delay after login
       }
     }
@@ -7316,7 +7287,7 @@ var App = function App() {
             setFilters(buildLockedFiltersState(lockedFilters));
             persistUploadedFileName('sales', '');
             persistUploadedFileName('target', '');
-            setLastGoogleSheetSyncAt('');
+            setLastSupabaseSyncAt('');
             showStatus('ล้างข้อมูลทั้งหมดแล้ว', 'success');
             _context9.n = 3;
             break;
@@ -10146,7 +10117,7 @@ var App = function App() {
             setAllData(newData);
             persistUploadedFileName('sales', '');
             setFilters(buildLockedFiltersState(lockedFilters));
-            setLastGoogleSheetSyncAt('');
+            setLastSupabaseSyncAt('');
             setSelectedTrendYears([]);
             setRepeatGapFilters(createEmptyRepeatGapFilters());
             _context23.n = 1;
@@ -10181,8 +10152,7 @@ var App = function App() {
             setAllData(newData);
             persistUploadedFileName('target', '');
             setFilters(buildLockedFiltersState(lockedFilters));
-            setLastGoogleTargetSyncAt('');
-            _context24.n = 1;
+                    _context24.n = 1;
             return idb.remove(TARGET_HANDLE_KEY);
           case 1:
             _context24.n = 2;
@@ -12815,15 +12785,6 @@ var App = function App() {
     if (/^[a-zA-Z0-9-_]{20,}$/.test(text) && text.indexOf('/') < 0) return text;
     return '';
   };
-  var extractDriveFolderIdFromUrl = function extractDriveFolderIdFromUrl(sourceUrl) {
-    var text = String(sourceUrl || '').trim();
-    if (!text) return '';
-    var folderMatch = text.match(/\/folders\/([a-zA-Z0-9-_]+)/i) || text.match(/folders\/([a-zA-Z0-9-_]+)/i);
-    if (folderMatch && folderMatch[1]) return folderMatch[1];
-    var idMatch = text.match(/[?&](?:folder|folderId)=([a-zA-Z0-9-_]+)/i);
-    if (idMatch && idMatch[1]) return idMatch[1];
-    return '';
-  };
   var buildGoogleSheetExportUrl = function buildGoogleSheetExportUrl(sourceUrl) {
     var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
     if (!spreadsheetId) {
@@ -12841,7 +12802,6 @@ var App = function App() {
   var isLikelyDirectSourceFileUrl = function isLikelyDirectSourceFileUrl(sourceUrl) {
     var safeUrl = String(sourceUrl || '').trim();
     if (!safeUrl) return false;
-    if (extractDriveFolderIdFromUrl(safeUrl)) return false;
     if (extractSpreadsheetIdFromUrl(safeUrl)) return true;
     if (extractDriveFileIdFromUrl(safeUrl)) return true;
     if (/\.xlsx(?:[?#].*)?$/i.test(safeUrl) || /\.xlsm?(?:[?#].*)?$/i.test(safeUrl) || /\.csv(?:[?#].*)?$/i.test(safeUrl)) return true;
@@ -12937,48 +12897,6 @@ var App = function App() {
     if (text.includes('รายเดือน') || text.includes('เดือน') || text.includes('monthly')) return 'month';
     return '';
   };
-  var inferParsedSalesYearHint = function inferParsedSalesYearHint(parsedData) {
-    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
-    var yearCandidates = [].concat(_toConsumableArray((safeData.monthly || []).map(function (item) {
-      return getYearLabelFromItem(item);
-    })), _toConsumableArray((safeData.yearly || []).map(function (item) {
-      return getYearLabelFromItem(item, false);
-    })), _toConsumableArray(Object.keys(normalizeSalesUpdateMeta(safeData.salesUpdateMeta).monthly.sales || {})), _toConsumableArray(Object.keys(normalizeSalesUpdateMeta(safeData.salesUpdateMeta).yearly.sales || {}).filter(function (key) {
-      return key !== 'default';
-    }))).filter(function (yearLabel) {
-      return yearLabel && isReasonableYearLabel(yearLabel);
-    });
-    if (!yearCandidates.length) return '';
-    return yearCandidates.sort(function (a, b) {
-      return sortYearLabels(b, a);
-    })[0];
-  };
-  var getParsedSalesCoverageScore = function getParsedSalesCoverageScore(parsedData) {
-    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
-    var monthlyMetrics = new Set();
-    var yearlyMetrics = new Set();
-    (safeData.monthly || []).forEach(function (item) {
-      if (Number(item && item.sales || 0) !== 0) monthlyMetrics.add('sales');
-      if (Number(item && item.qty || 0) !== 0) monthlyMetrics.add('qty');
-      if (Number(item && item.ton || 0) !== 0) monthlyMetrics.add('ton');
-    });
-    (safeData.yearly || []).forEach(function (item) {
-      if (Number(item && item.sales || 0) !== 0) yearlyMetrics.add('sales');
-      if (Number(item && item.qty || 0) !== 0) yearlyMetrics.add('qty');
-      if (Number(item && item.ton || 0) !== 0) yearlyMetrics.add('ton');
-    });
-    return monthlyMetrics.size * 100 + yearlyMetrics.size * 10 + (safeData.monthly || []).length * 0.001 + (safeData.yearly || []).length * 0.0001;
-  };
-  var getParsedSalesPrimaryTotal = function getParsedSalesPrimaryTotal(parsedData) {
-    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
-    var yearlySales = (safeData.yearly || []).reduce(function (sum, item) {
-      return sum + Number(item && item.sales || 0);
-    }, 0);
-    if (yearlySales > 0) return yearlySales;
-    return (safeData.monthly || []).reduce(function (sum, item) {
-      return sum + Number(item && item.sales || 0);
-    }, 0);
-  };
   var mergeSalesUpdateMetaValues = function mergeSalesUpdateMetaValues(baseMeta, nextMeta) {
     var mergedMeta = normalizeSalesUpdateMeta(baseMeta);
     var normalizedNext = normalizeSalesUpdateMeta(nextMeta);
@@ -12987,44 +12905,6 @@ var App = function App() {
       mergedMeta.yearly[metricKey] = _objectSpread(_objectSpread({}, mergedMeta.yearly[metricKey]), normalizedNext.yearly[metricKey] || {});
     });
     return mergedMeta;
-  };
-  var combineParsedSalesFolderResults = function combineParsedSalesFolderResults(candidates) {
-    var selectedCandidates = (Array.isArray(candidates) ? candidates : []).filter(function (candidate) {
-      return candidate && candidate.parsedData;
-    });
-    return {
-      daily: selectedCandidates.reduce(function (mergedRows, candidate) {
-        return mergedRows.concat(candidate.parsedData.daily || []);
-      }, []),
-      monthly: selectedCandidates.reduce(function (mergedRows, candidate) {
-        return mergedRows.concat(candidate.parsedData.monthly || []);
-      }, []),
-      yearly: selectedCandidates.reduce(function (mergedRows, candidate) {
-        return mergedRows.concat(candidate.parsedData.yearly || []);
-      }, []),
-      salesUpdateMeta: selectedCandidates.reduce(function (mergedMeta, candidate) {
-        return mergeSalesUpdateMetaValues(mergedMeta, candidate.parsedData.salesUpdateMeta);
-      }, createEmptySalesUpdateMeta())
-    };
-  };
-  var hasParsedSalesContent = function hasParsedSalesContent(parsedData) {
-    var safeData = parsedData && _typeof(parsedData) === 'object' ? parsedData : {};
-    return (safeData.daily || []).length > 0 || (safeData.monthly || []).length > 0 || (safeData.yearly || []).length > 0;
-  };
-  var resolveConfiguredSourceUrl = function resolveConfiguredSourceUrl(mode, defaultUrl) {
-    var userSourceConfig = authUser && authUser.sourceConfig && _typeof(authUser.sourceConfig) === 'object' ? authUser.sourceConfig : {};
-    var fallbackUrl = String(mode === 'sync_target_source' ? userSourceConfig.targetUrl || defaultUrl || '' : userSourceConfig.salesUrl || defaultUrl || '').trim();
-    if (!authUser || !authSessionToken || !DEFAULT_BOUND_WEB_APP_URL.trim()) {
-      return Promise.resolve(fallbackUrl);
-    }
-    return callAIWebApp(mode, '', {}, {
-      resolveOnly: true
-    }).then(function (result) {
-      var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-      return String(sourceInfo.spreadsheetUrl || fallbackUrl || '').trim();
-    }).catch(function () {
-      return fallbackUrl;
-    });
   };
   var parseFileNameFromDisposition = function parseFileNameFromDisposition(dispositionValue) {
     var safeValue = String(dispositionValue || '');
@@ -13488,233 +13368,7 @@ var App = function App() {
       message: 'ออกจากระบบแล้ว'
     });
   };
-  var syncGoogleSheetSourceAsUpload = function syncGoogleSheetSourceAsUpload(options) {
-    var mode = String(options && options.mode || '').trim();
-    var type = String(options && options.type || '').trim();
-    var statusLabel = String(options && options.statusLabel || 'ข้อมูล').trim();
-    var defaultFileName = String(options && options.defaultFileName || 'source.xlsx').trim() || 'source.xlsx';
-    var sourceLabel = String(options && options.sourceLabel || 'Google Sheet').trim() || 'Google Sheet';
-    var notReadyMessage = String(options && options.notReadyMessage || 'กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล').trim();
-    var restrictedMessage = String(options && options.restrictedMessage || 'บัญชีนี้ไม่มีสิทธิ์โหลดข้อมูล').trim();
-    var missingSourceMessage = String(options && options.missingSourceMessage || 'ยังไม่ได้ตั้งค่าลิงก์ข้อมูล').trim();
-    var syncedAtSetter = options && typeof options.syncedAtSetter === 'function' ? options.syncedAtSetter : null;
-    var resolvedSourceUrl = '';
-    var directFetchError = null;
-    var folderId = '';
-    if (!authUser || !authSessionToken) {
-      showStatus(notReadyMessage, 'error');
-      return Promise.resolve(null);
-    }
-    if (isSalesRestrictedUser) {
-      showStatus(restrictedMessage, 'error');
-      return Promise.resolve(null);
-    }
-    setIsLoading(true);
-    startLoadingStatus("กำลังเตรียมลิงก์".concat(statusLabel, "..."), 6, true);
-    return resolveConfiguredSourceUrl(mode, '').then(function (sourceUrl) {
-      resolvedSourceUrl = String(sourceUrl || '').trim();
-      if (!resolvedSourceUrl) {
-        throw new Error(missingSourceMessage);
-      }
-      folderId = type === 'sales' ? extractDriveFolderIdFromUrl(resolvedSourceUrl) : '';
-      if (folderId) {
-        updateLoadingStatus("กำลังอ่านรายการไฟล์".concat(statusLabel, " จากโฟลเดอร์..."), 12, false);
-        return callAIWebApp(mode, '', {}, {
-          folderManifest: true,
-          sourceUrl: resolvedSourceUrl,
-          folderId: folderId
-        }).then(function (manifestResult) {
-          var manifestSource = manifestResult && manifestResult.source && _typeof(manifestResult.source) === 'object' ? manifestResult.source : {};
-          var entries = Array.isArray(manifestResult && manifestResult.entries) ? manifestResult.entries : [];
-          var folderDisplayName = String(manifestSource.spreadsheetName || manifestSource.fileName || 'Sales Folder').trim() || 'Sales Folder';
-          var candidates = [];
-          var failedEntries = [];
-          var processEntryAt = function processEntryAt(entryIndex) {
-            var entry, sourceFileName, workbookSheetName, preferredYearHint, preferredMetricHint, preferredPeriodHint;
-            if (entryIndex >= entries.length) return Promise.resolve();
-            entry = entries[entryIndex] || {};
-            sourceFileName = String(entry.fileName || defaultFileName).trim() || defaultFileName;
-            updateLoadingStatus("กำลังโหลด".concat(statusLabel, " จากโฟลเดอร์ (").concat(entryIndex + 1, "/").concat(entries.length, ")"), 16 + Math.round(entryIndex / Math.max(entries.length, 1) * 24), false);
-            return loadChunkedSheetRows(mode, sourceFileName, {
-              sourceUrl: resolvedSourceUrl,
-              folderId: folderId,
-              folderFileId: String(entry.fileId || '').trim(),
-              folderPath: String(entry.folderPath || '').trim(),
-              folderFileName: sourceFileName,
-              folderMimeType: String(entry.mimeType || '').trim(),
-              workbookRows: false,
-              forceFile: true
-            }).then(function (result) {
-              var builtFile = buildFileFromSyncResult(result, sourceFileName);
-              if (!builtFile) return null;
-              workbookSheetName = Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0 ? String(result.workbookSheets[0].name || '').trim() : '';
-              preferredYearHint = extractPreferredSalesYearHint(entry.folderPath || '', sourceFileName, workbookSheetName);
-              preferredMetricHint = extractPreferredSalesMetricHint(entry.folderPath || '', sourceFileName, workbookSheetName) || 'sales';
-              preferredPeriodHint = extractPreferredSalesPeriodHint(entry.folderPath || '', sourceFileName, workbookSheetName) || 'month';
-              updateLoadingStatus("กำลังอ่านไฟล์ ".concat(sourceFileName, "..."), 22 + Math.round((entryIndex + 1) / Math.max(entries.length, 1) * 38), false);
-              return processFile(builtFile, 'sales', {
-                preferredYearHint: preferredYearHint,
-                preferredMetricHint: preferredMetricHint,
-                preferredPeriodHint: preferredPeriodHint
-              }).then(function (parsedData) {
-                var inferredYearHint, coverageScore, totalSales;
-                if (!hasParsedSalesContent(parsedData)) {
-                  failedEntries.push({
-                    fileName: sourceFileName,
-                    reason: 'อ่านไฟล์ได้ แต่ไม่พบหัวตารางยอดขาย/เดือน/ปีที่ระบบรู้จัก'
-                  });
-                  return null;
-                }
-                inferredYearHint = preferredYearHint || inferParsedSalesYearHint(parsedData);
-                coverageScore = getParsedSalesCoverageScore(parsedData);
-                totalSales = getParsedSalesPrimaryTotal(parsedData);
-                candidates.push({
-                  yearHint: inferredYearHint || "__UNSPECIFIED__:".concat(entryIndex),
-                  parsedData: parsedData,
-                  headerCompleteness: 1,
-                  coverageScore: coverageScore,
-                  totalSales: totalSales,
-                  entryCount: (parsedData.monthly || []).length + (parsedData.yearly || []).length,
-                  fileName: sourceFileName,
-                  folderPath: String(entry.folderPath || '').trim()
-                });
-                return null;
-              }).catch(function (parseError) {
-                console.warn('skip sales folder file after parse failure', sourceFileName, parseError);
-                failedEntries.push({
-                  fileName: sourceFileName,
-                  reason: parseError && parseError.message ? parseError.message : 'parser อ่านไฟล์ไม่ได้'
-                });
-                return null;
-              });
-            }).catch(function (entryError) {
-              console.warn('skip sales folder file after source load failure', sourceFileName, entryError);
-              failedEntries.push({
-                fileName: sourceFileName,
-                reason: entryError && entryError.message ? entryError.message : 'โหลดไฟล์จากโฟลเดอร์ไม่ได้'
-              });
-              return null;
-            }).then(function () {
-              return processEntryAt(entryIndex + 1);
-            });
-          };
-          if (!entries.length) {
-            throw new Error('ไม่พบไฟล์ยอดขายในโฟลเดอร์หรือโฟลเดอร์ย่อย');
-          }
-          return processEntryAt(0).then(function () {
-            var inMemoryRowsCount, latestStoredDataPromise;
-            if (!candidates.length) {
-              var failedSummary = failedEntries.slice(0, 5).map(function (item) {
-                return "".concat(item.fileName || 'ไม่ทราบชื่อไฟล์', ": ").concat(item.reason || 'อ่านไม่ได้');
-              }).join(' | ');
-              throw new Error("พบไฟล์ยอดขายในโฟลเดอร์ ".concat(entries.length, " ไฟล์ แต่ parser อ่านข้อมูลไม่ได้ทั้งหมด").concat(failedSummary ? " ตัวอย่าง: ".concat(failedSummary) : ''));
-            }
-            var combinedParsedData = combineParsedSalesFolderResults(candidates);
-            if (!hasParsedSalesContent(combinedParsedData)) {
-              throw new Error('รวมข้อมูลยอดขายจากโฟลเดอร์ไม่สำเร็จ');
-            }
-            inMemoryRowsCount = (allData.monthly || []).length + (allData.yearly || []).length + (allData.targets || []).length;
-            latestStoredDataPromise = inMemoryRowsCount > 0 ? Promise.resolve(allData) : idb.load(activeDataKey).then(function (storedData) {
-              return storedData || allData;
-            });
-            return latestStoredDataPromise.then(function (latestStoredData) {
-              var mergedData = mergeParsedDataByType(latestStoredData, 'sales', combinedParsedData);
-              setAllData(mergedData);
-              persistUploadedFileName('sales', "".concat(sourceLabel, " \u00B7 ").concat(folderDisplayName));
-              setFilters(buildLockedFiltersState(lockedFilters));
-              setRepeatGapFilters(createEmptyRepeatGapFilters());
-              updateLoadingStatus("กำลังบันทึก".concat(statusLabel, " จากโฟลเดอร์..."), 92, false);
-              return saveToStorage(mergedData).then(function (saved) {
-                if (!saved) {
-                  throw new Error('บันทึกข้อมูลยอดขายจากโฟลเดอร์ไม่สำเร็จ');
-                }
-                if (syncedAtSetter) syncedAtSetter(manifestSource.syncedAt || new Date().toISOString());
-                var skippedCount = Math.max(entries.length - candidates.length, 0);
-                finishLoadingStatus("อัปโหลดและรวม".concat(statusLabel, " จากโฟลเดอร์สำเร็จ (อ่านได้ ").concat(candidates.length, "/").concat(entries.length, " \u0E44\u0E1F\u0E25\u0E4C)").concat(skippedCount ? " \u0E02\u0E49\u0E32\u0E21 ".concat(skippedCount, " \u0E44\u0E1F\u0E25\u0E4C\u0E17\u0E35\u0E48\u0E2D\u0E48\u0E32\u0E19\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49") : ''), 'success');
-                return true;
-              });
-            });
-          });
-        });
-      }
-      if (!isLikelyDirectSourceFileUrl(resolvedSourceUrl) || isOneDriveSourceUrl(resolvedSourceUrl)) {
-        return null;
-      }
-      updateLoadingStatus("กำลังดึงไฟล์".concat(statusLabel, " จากลิงก์ต้นทาง..."), 18, false);
-      return fetchSourceLinkFile(resolvedSourceUrl, defaultFileName, statusLabel).then(function (directFile) {
-        return {
-          file: directFile,
-          sourceDisplayName: directFile && directFile.name ? directFile.name : defaultFileName,
-          syncedAt: new Date().toISOString(),
-          transport: 'direct-file'
-        };
-      }).catch(function (error) {
-        directFetchError = error;
-        return null;
-      });
-    }).then(function (directPayload) {
-      if (directPayload) {
-        return directPayload;
-      }
-      if (folderId) {
-        return null;
-      }
-      if (resolvedSourceUrl && directFetchError) {
-        updateLoadingStatus("ดึงไฟล์".concat(statusLabel, " ตรงไม่สำเร็จ กำลังสลับไปโหลดผ่าน Google Apps Script..."), 28, false);
-      } else {
-        updateLoadingStatus("กำลังโหลด".concat(statusLabel, " ผ่าน Google Apps Script..."), 20, true);
-      }
-      return loadChunkedSheetRows(mode, statusLabel).then(function (result) {
-        var sourceInfo, builtFile, sourceDisplayName;
-        if (!result || !result.csv && !Array.isArray(result.rows) && !result.fileBase64 && !result.fileChunkBase64 && !(Array.isArray(result.workbookSheets) && result.workbookSheets.length > 0)) {
-          throw new Error(result && result.error ? result.error : "ไม่พบ".concat(statusLabel, " จาก Google Sheet"));
-        }
-        sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-        builtFile = buildFileFromSyncResult(result, defaultFileName);
-        if (!builtFile) {
-          throw new Error("ไม่สามารถเตรียมไฟล์".concat(statusLabel, " จาก Google Apps Script ได้"));
-        }
-        sourceDisplayName = String(sourceInfo.fileName || sourceInfo.sheetName || sourceInfo.spreadsheetName || builtFile.name || defaultFileName).trim() || defaultFileName;
-        updateLoadingStatus("โหลด".concat(statusLabel, " ผ่าน Google Apps Script สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์..."), 56, false);
-        return {
-          file: builtFile,
-          sourceDisplayName: sourceDisplayName,
-          syncedAt: sourceInfo.syncedAt || new Date().toISOString(),
-          transport: sourceInfo.transport || 'apps-script'
-        };
-      });
-    }).then(function (payload) {
-      if (folderId && payload === true) {
-        return payload;
-      }
-      var sourceDisplayName = String(payload && payload.sourceDisplayName || payload && payload.file && payload.file.name || defaultFileName).trim() || defaultFileName;
-      updateLoadingStatus("เตรียมไฟล์".concat(statusLabel, " สำเร็จ กำลังอ่านข้อมูลเหมือนอัปโหลดไฟล์..."), 62, false);
-      return processAndStoreFile(payload.file, type, {
-        bindHandle: false,
-        silentStatus: true
-      }).then(function (ok) {
-        var displayName;
-        if (!ok) {
-          throw new Error("โหลดไฟล์".concat(statusLabel, " สำเร็จแล้ว แต่ parser อ่านข้อมูลไม่สำเร็จ (").concat(sourceDisplayName, ")"));
-        }
-        displayName = "".concat(sourceLabel, " \u00B7 ").concat(sourceDisplayName);
-        persistUploadedFileName(type, displayName);
-        if (syncedAtSetter) syncedAtSetter(payload && payload.syncedAt ? payload.syncedAt : new Date().toISOString());
-        finishLoadingStatus("โหลดและแปลง".concat(statusLabel, " สำเร็จ (").concat(sourceDisplayName, ")"), 'success');
-        return payload.file;
-      });
-    }).catch(function (error) {
-      finishLoadingStatus(error && error.message ? error.message : "ดึง".concat(statusLabel, " จากลิงก์ไม่สำเร็จ"), 'error');
-      return null;
-    }).then(function (result) {
-      setIsLoading(false);
-      return result;
-    }, function (error) {
-      setIsLoading(false);
-      throw error;
-    });
-  };
-  var syncSalesFromGoogleSheet = function syncSalesFromGoogleSheet(isAutoSync) {
+  var syncSalesFromSupabase = function syncSalesFromSupabase(isAutoSync) {
     var today = new Date().toISOString().split('T')[0];
     if (isAutoSync === true) {
         var lastSync = localStorage.getItem('salytix_last_sync_date');
@@ -13737,7 +13391,7 @@ var App = function App() {
             var now = new Date();
             var timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-            if (typeof setLastGoogleSheetSyncAt !== 'undefined') setLastGoogleSheetSyncAt(dateString + ' ' + timeString);
+            if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
             if (!isAutoSync) {
                 finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
             }
@@ -13750,19 +13404,6 @@ var App = function App() {
     } else {
         if (!isAutoSync) alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
     }
-  };
-  var syncTargetFromGoogleSheet = function syncTargetFromGoogleSheet() {
-    return syncGoogleSheetSourceAsUpload({
-      mode: 'sync_target_source',
-      type: 'target',
-      statusLabel: 'ข้อมูล Target',
-      defaultFileName: 'google-sheet-target.xlsx',
-      sourceLabel: GOOGLE_TARGET_SOURCE_LABEL,
-      notReadyMessage: 'กรุณาเข้าสู่ระบบก่อนรีเฟรชข้อมูล Target',
-      restrictedMessage: 'บัญชีผู้ดูแลส่วนกลางไม่มีสิทธิ์โหลดหรือดู Target',
-      missingSourceMessage: 'ยังไม่ได้ตั้งค่าลิงก์ Target สำหรับผู้ใช้นี้',
-      syncedAtSetter: setLastGoogleTargetSyncAt
-    });
   };
   var applyAIAction = function applyAIAction(actionPayload) {
     if (!actionPayload || _typeof(actionPayload) !== 'object') return;
@@ -13915,8 +13556,7 @@ var App = function App() {
   var targetDataRowsCount = (allData.targets || []).length;
   var uploadedSalesFileLabel = uploadedFileNames.sales || GOOGLE_SHEET_SOURCE_LABEL;
   var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
-  var googleSheetSyncLabel = formatLastSyncLabel(lastGoogleSheetSyncAt);
-  var googleTargetSyncLabel = formatLastSyncLabel(lastGoogleTargetSyncAt);
+  var supabaseSyncLabel = formatLastSyncLabel(lastSupabaseSyncAt);
   var getFilterLabel = function(dbKey, defaultLabel) {
     try {
       var settings = JSON.parse(localStorage.getItem('salytix_column_settings'));
@@ -14509,7 +14149,7 @@ var App = function App() {
     },
     className: "toggle-btn ".concat(unitMode === 'thousand' ? 'active' : '')
   }, "พันบาท"))), /*#__PURE__*/React.createElement("button", {
-    onClick: syncSalesFromGoogleSheet,
+    onClick: syncSalesFromSupabase,
     className: "hidden md:flex px-3 py-1.5 text-xs rounded-lg items-center transition-colors cursor-pointer mr-2 shadow-sm border",
     style: {
       background: 'rgba(6, 95, 70, 0.96)',
@@ -14519,7 +14159,7 @@ var App = function App() {
     title: "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Supabase"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[14px] mr-1"
-  }, "cloud_sync"), " Sync: ", googleSheetSyncLabel || 'Never'), /*#__PURE__*/React.createElement("button", {
+  }, "cloud_sync"), " Sync: ", supabaseSyncLabel || 'Never'), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setIsCustomDashboardOpen(true);
     },
@@ -14818,10 +14458,9 @@ var App = function App() {
     exportCustomSalesReport: exportCustomSalesReport,
     allData: allData,
     effectiveYearlyData: effectiveYearlyData,
-    googleSheetSyncLabel: googleSheetSyncLabel,
-    syncSalesFromGoogleSheet: syncSalesFromGoogleSheet,
+    supabaseSyncLabel: supabaseSyncLabel,
+    syncSalesFromSupabase: syncSalesFromSupabase,
     openFilePickerForType: openFilePickerForType,
-    googleTargetSyncLabel: googleTargetSyncLabel,
     syncTargetFromGoogleSheet: syncTargetFromGoogleSheet,
     exportSalesDatabase: exportSalesDatabase,
     salesDataRowsCount: salesDataRowsCount,
@@ -14869,15 +14508,13 @@ var App = function App() {
     className: "filters-source-badge bg-slate-100 px-1 rounded"
   }, uploadedSalesFileLabel), /*#__PURE__*/React.createElement("span", {
     className: "filters-source-sep"
-  }, "·"), /*#__PURE__*/React.createElement("span", null, "อัปเดตล่าสุด ", googleSheetSyncLabel)), /*#__PURE__*/React.createElement("div", {
+  }, "·"), /*#__PURE__*/React.createElement("span", null, "อัปเดตล่าสุด ", supabaseSyncLabel)), /*#__PURE__*/React.createElement("div", {
     className: "filters-source-meta-row"
   }, /*#__PURE__*/React.createElement("span", {
     className: "filters-source-label"
   }, "Target"), /*#__PURE__*/React.createElement("code", {
     className: "filters-source-badge bg-slate-100 px-1 rounded"
-  }, uploadedTargetFileLabel), /*#__PURE__*/React.createElement("span", {
-    className: "filters-source-sep"
-  }, "·"), /*#__PURE__*/React.createElement("span", null, "อัปเดตล่าสุด ", googleTargetSyncLabel))), /*#__PURE__*/React.createElement("div", {
+  }, uploadedTargetFileLabel))), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
     if (f.key === 'dateRange' || f.key === 'monthRange') {
