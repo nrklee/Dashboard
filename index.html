@@ -1868,7 +1868,7 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
             console.error("Login Error:", error);
             
             if (error.message.includes("Invalid login credentials")) {
-                throw new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+                throw new Error("Supabase Error: " + error.message);
             }
             throw new Error(error.message);
 
