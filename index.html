@@ -2938,16 +2938,20 @@ var parseHeaderToType = function parseHeaderToType(header) {
   if (slashDate) {
     var slashMonth = Number(slashDate[2]);
     if (slashMonth >= 1 && slashMonth <= 12) return {
-      type: 'month',
-      value: slashMonth - 1
+      type: 'date',
+      day: Number(slashDate[1]),
+      monthIndex: slashMonth - 1,
+      year: Number(slashDate[3])
     };
   }
   var isoDate = normalizedText.match(/^(20\d{2}|25\d{2})[\/.-](\d{1,2})[\/.-](\d{1,2})$/);
   if (isoDate) {
     var isoMonth = Number(isoDate[2]);
     if (isoMonth >= 1 && isoMonth <= 12) return {
-      type: 'month',
-      value: isoMonth - 1
+      type: 'date',
+      day: Number(isoDate[3]),
+      monthIndex: isoMonth - 1,
+      year: Number(isoDate[1])
     };
   }
   var directYear = lowerStr.match(/^(25\d{2}|20\d{2})$/);
@@ -3681,6 +3685,8 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
   var label = _ref.label,
       startDate = _ref.startDate,
       endDate = _ref.endDate,
+      _ref$type = _ref.type,
+      type = _ref$type === void 0 ? 'date' : _ref$type,
       onChange = _ref.onChange;
 
   return /*#__PURE__*/React.createElement("div", {
@@ -3688,14 +3694,14 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-slate-700 whitespace-nowrap px-1"
   }, label, " :"), /*#__PURE__*/React.createElement("input", {
-    type: "date",
+    type: type,
     value: startDate || '',
     onChange: function(e) { onChange(e.target.value, endDate); },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
   }, "-"), /*#__PURE__*/React.createElement("input", {
-    type: "date",
+    type: type,
     value: endDate || '',
     onChange: function(e) { onChange(startDate, e.target.value); },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
@@ -6963,6 +6969,7 @@ var App = function App() {
     if (!parsedData) return baseData;
     var nextData = normalizeAllDataShape(baseData);
     if (type === 'sales') {
+      nextData.daily = parsedData.daily || [];
       nextData.monthly = parsedData.monthly || [];
       nextData.yearly = parsedData.yearly || [];
       nextData.salesUpdateMeta = normalizeSalesUpdateMeta(parsedData.salesUpdateMeta);
@@ -7191,17 +7198,24 @@ var App = function App() {
     }).filter(Boolean);
   }, [allData.yearly]);
   var rawData = useMemo(function () {
-    var source = viewMode === 'monthly' ? allData.monthly || [] : effectiveYearlyData;
+    var source;
+    if (viewMode === 'daily') {
+      source = allData.daily || [];
+    } else if (viewMode === 'monthly') {
+      source = allData.monthly || [];
+    } else {
+      source = effectiveYearlyData || [];
+    }
     return (source || []).filter(function (row) {
       return row && _typeof(row) === 'object';
     });
-  }, [allData.monthly, effectiveYearlyData, viewMode]);
+  }, [allData.monthly, allData.daily, effectiveYearlyData, viewMode]);
   var fullSalesRowsForAI = useMemo(function () {
-    var source = (allData.monthly || []).length > 0 ? allData.monthly || [] : effectiveYearlyData || [];
+    var source = (allData.daily || []).length > 0 ? allData.daily || [] : (allData.monthly || []).length > 0 ? allData.monthly || [] : effectiveYearlyData || [];
     return (source || []).filter(function (row) {
       return row && _typeof(row) === 'object';
     });
-  }, [allData.monthly, effectiveYearlyData]);
+  }, [allData.monthly, allData.daily, effectiveYearlyData]);
   var targetData = useMemo(function () {
     return (Array.isArray(allData.targets) ? allData.targets : []).filter(function (row) {
       return isReasonableYearLabel(getYearLabelFromItem(row, false) || getYearLabelFromItem(row));
@@ -8084,6 +8098,7 @@ var App = function App() {
                                   targetSheetYear = type === 'target' ? extractYearLabelFromText(options.sheetName) || normalizeYearLabel(currentYear) : normalizeYearLabel(currentYear);
                                   salesSheetYear = type === 'sales' ? normalizeYearLabel(options.preferredYearHint || extractYearLabelFromText(options.sheetName) || currentYear) : '';
                                   results = {
+                                    daily: [],
                                     monthly: [],
                                     yearly: [],
                                     salesUpdateMeta: createEmptySalesUpdateMeta()
@@ -8139,6 +8154,27 @@ var App = function App() {
                                       qty: 0,
                                       ton: 0
                                     }, dimensions));
+                                  } else if (t.type === 'date') {
+                                    date = new Date(toCEYear(t.year), t.monthIndex, t.day);
+                                    targetValue = type === 'target' ? targetSheetMetric === 'ton' ? 0 : val : 0;
+                                    targetTon = type === 'target' ? targetSheetMetric === 'ton' ? val : 0 : 0;
+                                    var dataRow = _objectSpread({
+                                      id: "d-".concat(Math.random()),
+                                      date: toLocalISOString(date),
+                                      monthIndex: t.monthIndex,
+                                      monthStr: THAI_MONTHS[t.monthIndex] || String(t.monthIndex + 1),
+                                      day: t.day,
+                                      year: normalizeYearLabel(t.year),
+                                      sales: type === 'target' ? 0 : val,
+                                      target: targetValue,
+                                      targetValue: targetValue,
+                                      targetTon: targetTon,
+                                      targetLevel: type === 'target' ? 'total' : undefined,
+                                      qty: 0,
+                                      ton: 0
+                                    }, dimensions);
+                                    results.daily.push(dataRow);
+                                    results.monthly.push(_objectSpread({}, dataRow, { id: "m-".concat(Math.random()) }));
                                   } else if (t.type === 'year') {
                                     targetValue = type === 'target' ? targetSheetMetric === 'ton' ? 0 : val : 0;
                                     targetTon = type === 'target' ? targetSheetMetric === 'ton' ? val : 0 : 0;
@@ -9140,8 +9176,8 @@ var App = function App() {
             if (type === 'target' && parsedData.tg26RawTargets && parsedData.tg26RawTargets.length > 0) {
                 window._tg26IsAppend = isAppend;
                 setPendingTG26Data(parsedData.tg26RawTargets);
-                setIsTargetMappingModalOpen(true);
-                finishLoadingStatus('อ่านไฟล์เป้าหมาย TG.26 สำเร็จ กรุณาตั้งค่าการจับคู่ (Mapping)', 'success');
+                // setIsTargetMappingModalOpen(true);
+                finishLoadingStatus('อ่านไฟล์เป้าหมายสำเร็จ กรุณาไปตั้งค่าการจับคู่ข้อมูลที่เมนู "Target Match"', 'success');
                 setIsLoading(false);
                 return _context19.a(2, true);
             }
@@ -10293,11 +10329,16 @@ var App = function App() {
       if ((ignoredFilterKeys || []).includes(k)) return true;
       if (!v || v.length === 0) return true;
       var itemValue = getFilterItemValue(item, k);
-      if (k === 'dateRange') {
+      if (k === 'dateRange' || k === 'monthRange') {
         if (!item.date || !v || v.length !== 2) return true;
         var itemDate = new Date(item.date);
         var sd = v[0] ? new Date(v[0]) : null;
         var ed = v[1] ? new Date(v[1]) : null;
+        if (ed && v[1].length === 7 && v[1].includes('-')) {
+            ed = new Date(ed.getFullYear(), ed.getMonth() + 1, 0, 23, 59, 59, 999);
+        } else if (ed) {
+            ed.setHours(23, 59, 59, 999);
+        }
         if (sd && itemDate < sd) return false;
         if (ed && itemDate > ed) return false;
         return true;
@@ -10537,7 +10578,7 @@ var App = function App() {
     })))).sort(sortYearLabels);
   }, [filteredYearlyTrendData, trendYearlyTargets]);
   var trendYearsAvailable = useMemo(function () {
-    return viewMode === 'monthly' ? monthlyTrendYearsAvailable : yearlyTrendYearsAvailable;
+    return viewMode === 'monthly' || viewMode === 'daily' ? monthlyTrendYearsAvailable : yearlyTrendYearsAvailable;
   }, [viewMode, monthlyTrendYearsAvailable, yearlyTrendYearsAvailable]);
   var trendYearsDisplay = useMemo(function () {
     return _toConsumableArray(trendYearsAvailable).sort(function (a, b) {
@@ -10575,7 +10616,7 @@ var App = function App() {
   var salesSourceUpdateLabel = useMemo(function () {
     var metricKey = metricMode === 'qty' ? 'qty' : metricMode === 'ton' ? 'ton' : 'sales';
     var salesUpdateMeta = normalizeSalesUpdateMeta(allData && allData.salesUpdateMeta);
-    if (viewMode === 'monthly') {
+    if (viewMode === 'monthly' || viewMode === 'daily') {
       var monthlyMetricMap = salesUpdateMeta.monthly && salesUpdateMeta.monthly[metricKey] ? salesUpdateMeta.monthly[metricKey] : {};
       var monthlyCandidates = activeTrendYears.length > 0 ? activeTrendYears : _toConsumableArray(trendYearsAvailable).sort(function (a, b) {
         return sortYearLabels(b, a);
@@ -10614,37 +10655,53 @@ var App = function App() {
     });
   };
   var chartData = useMemo(function () {
-    if (viewMode === 'monthly') {
+    if (viewMode === 'monthly' || viewMode === 'daily') {
       var _grouped = {};
-      THAI_MONTHS.forEach(function (monthLabel, index) {
-        var key = String(index).padStart(2, '0');
-        _grouped[key] = {
-          sortKey: key,
-          name: monthLabel,
-          monthIndex: index
-        };
-        activeTrendYears.forEach(function (yearLabel) {
-          _grouped[key]["sales_".concat(yearLabel)] = 0;
-          _grouped[key]["target_".concat(yearLabel)] = 0;
+      if (viewMode === 'daily') {
+        for (var i = 1; i <= 31; i++) {
+          var key = String(i).padStart(2, '0');
+          _grouped[key] = { sortKey: key, name: String(i), day: i };
+          activeTrendYears.forEach(function (yearLabel) {
+            _grouped[key]["sales_".concat(yearLabel)] = 0;
+            _grouped[key]["target_".concat(yearLabel)] = 0;
+          });
+        }
+        filteredData.forEach(function (item) {
+          if (!item.day) return;
+          var yearLabel = getYearLabelFromItem(item);
+          if (!activeTrendYears.includes(yearLabel)) return;
+          var key = String(item.day).padStart(2, '0');
+          if (_grouped[key]) {
+            _grouped[key]["sales_".concat(yearLabel)] = (_grouped[key]["sales_".concat(yearLabel)] || 0) + getValue(item);
+          }
         });
-      });
-      filteredMonthlyTrendData.forEach(function (item) {
-        var monthIndex = getMonthIndexFromItem(item);
-        if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
-        var yearLabel = getYearLabelFromItem(item);
-        if (!activeTrendYears.includes(yearLabel)) return;
-        var key = String(monthIndex).padStart(2, '0');
-        _grouped[key]["sales_".concat(yearLabel)] = (_grouped[key]["sales_".concat(yearLabel)] || 0) + getValue(item);
-      });
-      trendMonthlyTargets.forEach(function (item) {
-        if (metricMode === 'qty') return;
-        var monthIndex = getMonthIndexFromItem(item);
-        if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
-        var yearLabel = getYearLabelFromItem(item);
-        if (!activeTrendYears.includes(yearLabel)) return;
-        var key = String(monthIndex).padStart(2, '0');
-        _grouped[key]["target_".concat(yearLabel)] = (_grouped[key]["target_".concat(yearLabel)] || 0) + getTarget(item);
-      });
+      } else {
+        THAI_MONTHS.forEach(function (monthLabel, index) {
+          var key = String(index).padStart(2, '0');
+          _grouped[key] = { sortKey: key, name: monthLabel, monthIndex: index };
+          activeTrendYears.forEach(function (yearLabel) {
+            _grouped[key]["sales_".concat(yearLabel)] = 0;
+            _grouped[key]["target_".concat(yearLabel)] = 0;
+          });
+        });
+        filteredMonthlyTrendData.forEach(function (item) {
+          var monthIndex = getMonthIndexFromItem(item);
+          if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
+          var yearLabel = getYearLabelFromItem(item);
+          if (!activeTrendYears.includes(yearLabel)) return;
+          var key = String(monthIndex).padStart(2, '0');
+          _grouped[key]["sales_".concat(yearLabel)] = (_grouped[key]["sales_".concat(yearLabel)] || 0) + getValue(item);
+        });
+        trendMonthlyTargets.forEach(function (item) {
+          if (metricMode === 'qty') return;
+          var monthIndex = getMonthIndexFromItem(item);
+          if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
+          var yearLabel = getYearLabelFromItem(item);
+          if (!activeTrendYears.includes(yearLabel)) return;
+          var key = String(monthIndex).padStart(2, '0');
+          _grouped[key]["target_".concat(yearLabel)] = (_grouped[key]["target_".concat(yearLabel)] || 0) + getTarget(item);
+        });
+      }
       if (metricMode !== 'qty' && activeTrendYears.length > 0) {
         Object.values(_grouped).forEach(function (row) {
           activeTrendYears.forEach(function (yearLabel) {
@@ -10712,7 +10769,7 @@ var App = function App() {
       };
       return map[yearLabel];
     };
-    filteredMonthlyTrendData.forEach(function (item) {
+    (viewMode === 'daily' ? filteredData : filteredMonthlyTrendData).forEach(function (item) {
       var monthIndex = getMonthIndexFromItem(item);
       if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return;
       var yearLabel = getYearLabelFromItem(item);
@@ -10764,10 +10821,10 @@ var App = function App() {
       if (prevSales > 0) rows[i].growthPct = (rows[i].salesTotal - prevSales) / prevSales * 100;
     }
     return rows;
-  }, [filteredMonthlyTrendData, trendMonthlyTargets, metricMode]);
+  }, [viewMode, filteredData, filteredMonthlyTrendData, trendMonthlyTargets, metricMode]);
   var yearlyTrendStats = useMemo(function () {
     var rows = [];
-    if (viewMode === 'monthly') {
+    if (viewMode === 'monthly' || viewMode === 'daily') {
       rows = monthlyYearStats.map(function (row) {
         return {
           year: row.year,
@@ -10995,7 +11052,7 @@ var App = function App() {
     });
   }, [filteredData, selectedYearsScope]);
   var filteredTargetsByView = useMemo(function () {
-    return viewMode === 'monthly' ? monthlyFilteredTargets : yearlyFilteredTargets;
+    return viewMode === 'monthly' || viewMode === 'daily' ? monthlyFilteredTargets : yearlyFilteredTargets;
   }, [viewMode, monthlyFilteredTargets, yearlyFilteredTargets]);
   var scopedTargets = useMemo(function () {
     if (!selectedYearsScope || selectedYearsScope.length === 0) return filteredTargetsByView;
@@ -13601,7 +13658,9 @@ var App = function App() {
         if (lastSync === today) return;
     }
     if (window.downloadSalesFromSupabase) {
-        updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
+        if (!isAutoSync) {
+            updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
+        }
         window.downloadSalesFromSupabase().then(function(finalData) {
             if (finalData && finalData.monthly) {
                 setAllData(finalData);
@@ -13616,13 +13675,17 @@ var App = function App() {
             var timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
             if (typeof setLastGoogleSheetSyncAt !== 'undefined') setLastGoogleSheetSyncAt(dateString + ' ' + timeString);
-            finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
+            if (!isAutoSync) {
+                finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
+            }
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
-            finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
+            if (!isAutoSync) {
+                finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
+            }
         });
     } else {
-        alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
+        if (!isAutoSync) alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
     }
   };
   var syncTargetFromGoogleSheet = function syncTargetFromGoogleSheet() {
@@ -13845,10 +13908,21 @@ var App = function App() {
     .map(function(fs) { return ALL_POSSIBLE_FILTERS.find(function(f) { return f.key === fs.key; }); })
     .filter(Boolean);
 
-  var filtersDef = [].concat(_toConsumableArray(viewMode === 'monthly' ? [{
-    key: 'dateRange',
-    label: getFilterLabel('SALES_DATE', 'ช่วงเวลา')
-  }] : []), _toConsumableArray(dynamicFiltersDef));
+  var filtersDef = [].concat(
+    _toConsumableArray(viewMode === 'monthly' ? [{
+      key: 'dateRange',
+      label: getFilterLabel('SALES_DATE', 'ช่วงเวลา')
+    }] : []), 
+    _toConsumableArray(viewMode === 'yearly' ? [{
+      key: 'year',
+      label: getFilterLabel('YEAR', 'ปี')
+    }] : []),
+    _toConsumableArray(viewMode === 'daily' ? [{
+      key: 'monthRange',
+      label: getFilterLabel('SALES_MONTH', 'ช่วงเดือน')
+    }] : []),
+    _toConsumableArray(dynamicFiltersDef)
+  );
 
   var FilterSettingsModal = function FilterSettingsModal() {
     var _React$useStateFSModalItems = React.useState(filterSettings),
@@ -14327,6 +14401,12 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
+      return handleViewModeChange('daily');
+    },
+    className: "toggle-btn ".concat(viewMode === 'daily' ? 'active' : '')
+  }, "วัน"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
       return handleViewModeChange('monthly');
     },
     className: "toggle-btn ".concat(viewMode === 'monthly' ? 'active' : '')
@@ -14737,11 +14817,12 @@ var App = function App() {
   }, "·"), /*#__PURE__*/React.createElement("span", null, "อัปเดตล่าสุด ", googleTargetSyncLabel))), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
-    if (f.key === 'dateRange') {
+    if (f.key === 'dateRange' || f.key === 'monthRange') {
       var dateRangeVal = filters[f.key] || ['', ''];
       return /*#__PURE__*/React.createElement(DateRangeFilter, {
         key: f.key,
         label: f.label,
+        type: f.key === 'monthRange' ? 'month' : 'date',
         startDate: dateRangeVal[0],
         endDate: dateRangeVal[1],
         onChange: function onChange(start, end) {
@@ -14848,11 +14929,11 @@ var App = function App() {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mb-2"
-  }, viewMode === 'monthly' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
+  }, viewMode === 'monthly' || viewMode === 'daily' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, trendYearsDisplay.length === 0 ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
-  }, viewMode === 'monthly' ? 'ยังไม่มีข้อมูลรายเดือน' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
+  }, viewMode === 'monthly' ? 'ยังไม่มีข้อมูลรายเดือน' : viewMode === 'daily' ? 'ยังไม่มีข้อมูลรายวัน' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
     var checked = activeTrendYears.includes(yearLabel);
     return /*#__PURE__*/React.createElement("button", {
       key: yearLabel,
@@ -14913,7 +14994,7 @@ var App = function App() {
       metric: metricMode,
       unit: unitMode
     })
-  }), /*#__PURE__*/React.createElement(Legend, null), viewMode === 'monthly' ? /*#__PURE__*/React.createElement(React.Fragment, null, metricMode !== 'qty' && activeTrendYears.map(function (yearLabel, index) {
+  }), /*#__PURE__*/React.createElement(Legend, null), viewMode === 'monthly' || viewMode === 'daily' ? /*#__PURE__*/React.createElement(React.Fragment, null, metricMode !== 'qty' && activeTrendYears.map(function (yearLabel, index) {
     var hasTarget = chartData.some(function (row) {
       return Number(row["target_".concat(yearLabel)] || 0) > 0;
     });
