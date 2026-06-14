@@ -1789,11 +1789,21 @@ const defaultColumns = [
 {id:"col_42",originalName:"SET",alias:"ประเภท SET",visible:true}
 ];
 
-let currentSettings = JSON.parse(localStorage.getItem('salytix_column_settings')) || defaultColumns;
+let currentSettings = defaultColumns;
+try {
+    const saved = localStorage.getItem('salytix_column_settings');
+    if (saved) currentSettings = JSON.parse(saved);
+} catch (e) {
+    console.warn("Cannot access localStorage", e);
+}
 
 function saveSettings(newSettings) {
     currentSettings = newSettings;
-    localStorage.setItem('salytix_column_settings', JSON.stringify(currentSettings));
+    try {
+        localStorage.setItem('salytix_column_settings', JSON.stringify(currentSettings));
+    } catch (e) {
+        console.warn("Cannot save to localStorage", e);
+    }
     // สามารถเพิ่มการบันทึกลง Firestore ได้ที่นี่
 }
 
