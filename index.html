@@ -1736,8 +1736,33 @@ let supabase;
 
 // กำหนดค่า Supabase ทันทีโดยใช้ไลบรารีที่โหลดมาจาก <script> ใน index.html
 if (window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log("Supabase Initialized Successfully.");
+    let storageToUse;
+    try {
+        localStorage.setItem('__test__', '1');
+        localStorage.removeItem('__test__');
+        storageToUse = window.localStorage;
+    } catch (e) {
+        // Fallback in memory storage for Safari Private mode
+        storageToUse = {
+            _data: {},
+            setItem: function(id, val) { return this._data[id] = String(val); },
+            getItem: function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : null; },
+            removeItem: function(id) { return delete this._data[id]; },
+            clear: function() { return this._data = {}; }
+        };
+    }
+    
+    try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                storage: storageToUse,
+                persistSession: true
+            }
+        });
+        console.log("Supabase Initialized Successfully.");
+    } catch (err) {
+        console.warn("Supabase Client Initialization Failed:", err);
+    }
 } else {
     console.warn("ไม่สามารถโหลด Supabase ได้ (ไม่พบ window.supabase)");
 }
@@ -1881,6 +1906,7 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
                 token: session.access_token
             }
         };
+    }
 
     if (mode === 'change_password_public' || mode === 'change_password') {
         const { username, currentPassword, newPassword } = extraPayload;
