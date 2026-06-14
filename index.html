@@ -2347,8 +2347,8 @@ window.applyDefaultLayout = function(type) {
         layouts = {
             // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
             'card-1': { x: 0, y: 0, w: 12, h: 7 }, // trend
-            'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
-            'card-2': { x: 0, y: 10, w: 12, h: 5 } // brands
+            'card-6': { x: 0, y: 7, w: 12, h: 4 }, // district
+            'card-2': { x: 0, y: 11, w: 12, h: 5 } // brands
         };
     } else if (type === 2) { // 2. พนักงานขาย
         sectionOpen.salesGuide = true;
@@ -2356,9 +2356,9 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.shops = true;
         layouts = {
             // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
-            'card-3': { x: 0, y: 2, w: 6, h: 5 },  // salesGuide
-            'card-4': { x: 6, y: 2, w: 6, h: 5 },  // repeatGap
-            'card-5': { x: 0, y: 7, w: 12, h: 4 }  // shops
+            'card-3': { x: 0, y: 0, w: 6, h: 5 },  // salesGuide
+            'card-4': { x: 6, y: 0, w: 6, h: 5 },  // repeatGap
+            'card-5': { x: 0, y: 5, w: 12, h: 4 }  // shops
         };
     } else if (type === 3) { // 3. สินค้า (Product Focus)
         sectionOpen.brands = true;
@@ -2366,9 +2366,9 @@ window.applyDefaultLayout = function(type) {
         sectionOpen.trend = true;
         layouts = {
             // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
-            'card-2': { x: 0, y: 2, w: 12, h: 5 }, // brands
-            'card-4': { x: 0, y: 7, w: 12, h: 5 }, // repeatGap
-            'card-1': { x: 0, y: 12, w: 12, h: 7 } // trend
+            'card-2': { x: 0, y: 0, w: 12, h: 5 }, // brands
+            'card-4': { x: 0, y: 5, w: 12, h: 5 }, // repeatGap
+            'card-1': { x: 0, y: 10, w: 12, h: 7 } // trend
         };
     } else if (type === 4) { // 4. ภาพรวม
         sectionOpen.trend = true;
@@ -2380,11 +2380,11 @@ window.applyDefaultLayout = function(type) {
         layouts = {
             // 'card-0': { x: 0, y: 0, w: 12, h: 2 }, // kpi (removed from gridstack)
             'card-1': { x: 0, y: 0, w: 12, h: 7 }, // trend
-            'card-6': { x: 0, y: 6, w: 12, h: 4 }, // district
-            'card-2': { x: 0, y: 10, w: 6, h: 5 }, // brands
-            'card-5': { x: 6, y: 10, w: 6, h: 5 }, // shops
-            'card-3': { x: 0, y: 15, w: 6, h: 5 }, // salesGuide
-            'card-4': { x: 6, y: 15, w: 6, h: 5 }  // repeatGap
+            'card-6': { x: 0, y: 7, w: 12, h: 4 }, // district
+            'card-2': { x: 0, y: 11, w: 6, h: 5 }, // brands
+            'card-5': { x: 6, y: 11, w: 6, h: 5 }, // shops
+            'card-3': { x: 0, y: 16, w: 6, h: 5 }, // salesGuide
+            'card-4': { x: 6, y: 16, w: 6, h: 5 }  // repeatGap
         };
         localStorage.removeItem('dashboard_custom_widgets');
     } else if (type === 5) {
@@ -7085,7 +7085,12 @@ var App = function App() {
               _context6.p = 0;
               setIsLoading(true);
               _context6.n = 2;
-              return idb.load(activeDataKey);
+              return idb.load(activeDataKey).then(function(d) {
+                if (!d && activeDataKey !== DATA_KEY) {
+                  return idb.load(DATA_KEY);
+                }
+                return d;
+              });
             case 2:
               data = _context6.v;
               if (data) {
