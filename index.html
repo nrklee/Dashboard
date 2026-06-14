@@ -9711,8 +9711,7 @@ var App = function App() {
             return _context22.a(2);
           case 1:
             if (type === 'target' && (allData.targets || []).length > 0) {
-              setTargetUploadConfirm({ file: file, type: type });
-              event.target.value = '';
+              setTargetUploadConfirm({ file: file, type: type, inputElement: event.target });
               return _context22.a(2);
             }
             _context22.n = 2;
@@ -14795,15 +14794,22 @@ var App = function App() {
         React.createElement("div", { className: "flex flex-col gap-2" },
             React.createElement("button", { className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2", onClick: function() { 
                 var file = targetUploadConfirm.file;
+                var inputEl = targetUploadConfirm.inputElement;
+                if (inputEl) inputEl.value = '';
                 setTargetUploadConfirm(null);
                 processAndStoreFile(file, 'target', { silentStatus: false, isAppend: true });
             } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)"),
             React.createElement("button", { className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1", onClick: function() { 
                 var file = targetUploadConfirm.file;
+                var inputEl = targetUploadConfirm.inputElement;
+                if (inputEl) inputEl.value = '';
                 setTargetUploadConfirm(null);
                 processAndStoreFile(file, 'target', { silentStatus: false, isAppend: false });
             } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
-            React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() { setTargetUploadConfirm(null); } }, "ยกเลิก")
+            React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() { 
+                if (targetUploadConfirm && targetUploadConfirm.inputElement) targetUploadConfirm.inputElement.value = '';
+                setTargetUploadConfirm(null); 
+            } }, "ยกเลิก")
         )
     )
   ),
