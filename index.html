@@ -3719,14 +3719,20 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
   }, label, " :"), /*#__PURE__*/React.createElement("input", {
     type: type,
     value: startDate || '',
-    onChange: function(e) { onChange(e.target.value, endDate); },
+    onChange: function(e) { 
+      onChange(e.target.value, endDate); 
+      if (e.target && e.target.blur) e.target.blur();
+    },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
   }, "-"), /*#__PURE__*/React.createElement("input", {
     type: type,
     value: endDate || '',
-    onChange: function(e) { onChange(startDate, e.target.value); },
+    onChange: function(e) { 
+      onChange(startDate, e.target.value); 
+      if (e.target && e.target.blur) e.target.blur();
+    },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
   }), (startDate || endDate) && /*#__PURE__*/React.createElement("button", {
     onClick: function() { onChange('', ''); },
@@ -14972,15 +14978,15 @@ var App = function App() {
     size: 14
   }))), sectionExpanded.trend && /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, viewMode !== 'daily' && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mb-2"
-  }, viewMode === 'monthly' || viewMode === 'daily' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
+  }, viewMode === 'monthly' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, trendYearsDisplay.length === 0 ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
-  }, viewMode === 'monthly' ? 'ยังไม่มีข้อมูลรายเดือน' : viewMode === 'daily' ? 'ยังไม่มีข้อมูลรายวัน' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
+  }, viewMode === 'monthly' ? 'ยังไม่มีข้อมูลรายเดือน' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
     var checked = activeTrendYears.includes(yearLabel);
     return /*#__PURE__*/React.createElement("button", {
       key: yearLabel,
@@ -15041,7 +15047,7 @@ var App = function App() {
       metric: metricMode,
       unit: unitMode
     })
-  }), /*#__PURE__*/React.createElement(Legend, null), viewMode === 'monthly' || viewMode === 'daily' ? /*#__PURE__*/React.createElement(React.Fragment, null, metricMode !== 'qty' && activeTrendYears.map(function (yearLabel, index) {
+  }), /*#__PURE__*/React.createElement(Legend, null), viewMode === 'monthly' || viewMode === 'daily' ? /*#__PURE__*/React.createElement(React.Fragment, null, metricMode !== 'qty' && activeChartSeries.map(function (yearLabel, index) {
     var hasTarget = chartData.some(function (row) {
       return Number(row["target_".concat(yearLabel)] || 0) > 0;
     });
@@ -15057,8 +15063,8 @@ var App = function App() {
       strokeWidth: 1.8,
       dot: false
     });
-  }), activeTrendYears.map(function (yearLabel, index) {
-    var sortedYears = [].concat(activeTrendYears).sort(function(a,b) { return b.localeCompare(a); });
+  }), activeChartSeries.map(function (yearLabel, index) {
+    var sortedYears = [].concat(activeChartSeries).sort(function(a,b) { return b.localeCompare(a); });
     var isLatest = yearLabel === sortedYears[0];
     var isPrev = yearLabel === sortedYears[1];
     var strokeColor = isLatest ? '#2563eb' : (isPrev ? '#8b5cf6' : COLORS[index % COLORS.length]);
