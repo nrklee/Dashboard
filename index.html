@@ -1722,6 +1722,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
     </script>
     <script>window.__dashboardBoot && (window.__dashboardBoot.phase = 'app');</script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // supabase_service.js
 // ใช้สำหรับจัดการ Supabase Authentication และ Database สำหรับ Salytix V2
@@ -13869,7 +13871,7 @@ var App = function App() {
             if (typeof setLastGoogleSheetSyncAt !== 'undefined') setLastGoogleSheetSyncAt(dateString + ' ' + timeString);
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
-            finishLoadingStatus('เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
+            finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
         });
     } else {
         alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
