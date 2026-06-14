@@ -1723,55 +1723,22 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </script>
     <script>window.__dashboardBoot && (window.__dashboardBoot.phase = 'app');</script>
 <script>
-// firebase_service.js
-// ใช้สำหรับจัดการ Firebase Authentication และ Firestore สำหรับ Salytix V2
+// supabase_service.js
+// ใช้สำหรับจัดการ Supabase Authentication และ Database สำหรับ Salytix V2
 
-// 1. Firebase Configuration (ผู้ใช้ต้องนำ Config ของตนเองมาใส่ที่นี่)
-const firebaseConfig = {
-  apiKey: "AIzaSyAoGtdpYyqm8N88YV-HVNK0FZ57MqJs0ds",
-  authDomain: "salytix-dashboard-c7905.firebaseapp.com",
-  projectId: "salytix-dashboard-c7905",
-  storageBucket: "salytix-dashboard-c7905.firebasestorage.app",
-  messagingSenderId: "318147605241",
-  appId: "1:318147605241:web:2cf6d5e27ec2a230662828",
-  measurementId: "G-X2HTNXH2EN"
-};
+// 1. Supabase Configuration (ผู้ใช้ต้องนำ Config ของตนเองมาใส่ที่นี่)
+const SUPABASE_URL = "https://jquixmbtmmnvpkqdmqfo.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdWl4bWJ0bW1udnBrcWRtcWZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTEwNTIsImV4cCI6MjA5Njk4NzA1Mn0.fXuydbALdr1mb7DpYrfuqSCGJ_EyI_0kpD3yqcIGlh8";
 
-// นำเข้า Firebase SDK ผ่าน CDN ด้วย Dynamic Import เพื่อไม่ให้ block การทำงาน
-let app, auth, db;
-let signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, sendPasswordResetEmail;
-let collection, addDoc, getDocs, doc, setDoc, getDoc, writeBatch, serverTimestamp, query, orderBy, where;
+let supabase;
 
-import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then((mod) => {
-    app = mod.initializeApp(firebaseConfig);
-    return import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
-}).then((mod) => {
-    auth = mod.getAuth(app);
-    signInWithEmailAndPassword = mod.signInWithEmailAndPassword;
-    signOut = mod.signOut;
-    onAuthStateChanged = mod.onAuthStateChanged;
-    updatePassword = mod.updatePassword;
-    sendPasswordResetEmail = mod.sendPasswordResetEmail;
-    return import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-}).then((mod) => {
-    db = mod.getFirestore(app);
-    collection = mod.collection;
-    addDoc = mod.addDoc;
-    getDocs = mod.getDocs;
-    doc = mod.doc;
-    setDoc = mod.setDoc;
-    getDoc = mod.getDoc;
-    writeBatch = mod.writeBatch;
-    serverTimestamp = mod.serverTimestamp;
-    query = mod.query;
-    orderBy = mod.orderBy;
-    where = mod.where;
-    console.log("Firebase Initialized Successfully.");
+import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then((mod) => {
+    supabase = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log("Supabase Initialized Successfully.");
 }).catch(err => {
-    console.warn("กรุณาใส่ Firebase Config ที่ถูกต้องใน firebase_service.js", err);
+    console.warn("ไม่สามารถโหลด Supabase ได้:", err);
 });
 
-// ----------------------------------------------------------------------
 // การตั้งค่าคอลัมน์ (Column Settings) ทั้ง 42 คอลัมน์
 // ----------------------------------------------------------------------
 const defaultColumns = [
@@ -1833,7 +1800,28 @@ function saveSettings(newSettings) {
 
 let currentUserRole = '';
 
-// ฟังก์ชันสำหรับดึงสิทธิ์จาก Firestore
+
+// ฟังก์ชันสำหรับดึงสิทธิ์จาก Supabase
+async function getUserRoleAndFilters(email) {
+    if(!supabase) return { role: 'admin', lockedFilters: {} };
+    try {
+        const { data, error } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
+        if (data) {
+            const role = data.role || 'user';
+            const lockedFilters = role !== 'admin' && role !== 'super_admin' && data.areas && data.areas.length > 0 
+                ? { AREA: data.areas } : {};
+            return { role, lockedFilters };
+        } else {
+            const role = 'admin';
+            await supabase.from('users').insert({ email, role, areas: [] });
+            return { role, lockedFilters: {} };
+        }
+    } catch(err) {
+        console.error("Error fetching role:", err);
+        return { role: 'admin', lockedFilters: {} };
+    }
+}
+
 async function getUserRoleAndFilters(email) {
     try {
         const userRef = doc(db, 'users', email);
@@ -1857,21 +1845,23 @@ async function getUserRoleAndFilters(email) {
 }
 
 window.interceptCallAuthWebApp = async function(mode, extraPayload) {
-    if(!auth) throw new Error("Firebase ไม่พร้อมใช้งาน กรุณาตั้งค่า Config");
+    if(!auth) throw new Error("Supabase ไม่พร้อมใช้งาน กรุณาตั้งค่า Config");
     
     if (mode === 'login') {
         const { username, password } = extraPayload;
         try {
-            // ใช้ Firebase Authentication สำหรับล็อกอิน
-            const userCredential = await signInWithEmailAndPassword(auth, username, password);
+            // ใช้ Supabase Authentication สำหรับล็อกอิน
+            const { data: authData, error } = await supabase.auth.signInWithPassword({ email: username, password });
+            if (error) throw error;
+            const user = authData.user;
             window.logUsageHistory(username, "LOGIN");
-            const { role, lockedFilters } = await getUserRoleAndFilters(userCredential.user.email);
+            const { role, lockedFilters } = await getUserRoleAndFilters(user.email);
             currentUserRole = role;
             return {
                 ok: true,
                 auth: {
-                    user: { username: userCredential.user.email, role, lockedFilters },
-                    token: await userCredential.user.getIdToken()
+                    user: { username: user.email, role, lockedFilters },
+                    token: await authData.session.access_token
                 }
             };
         } catch (error) {
@@ -1881,20 +1871,20 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
     } 
     
     if (mode === 'verify_session') {
-        return new Promise((resolve, reject) => {
-            const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                unsubscribe();
-                if (user) {
-                    const { role, lockedFilters } = await getUserRoleAndFilters(user.email);
-                    currentUserRole = role;
-                    resolve({
-                        ok: true,
-                        auth: {
-                            user: { username: user.email, role, lockedFilters },
-                            token: await user.getIdToken()
-                        }
-                    });
-                } else {
+        if(!supabase) throw new Error('Supabase not loaded');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) throw new Error('Session expired');
+        const user = session.user;
+        const { role, lockedFilters } = await getUserRoleAndFilters(user.email);
+        currentUserRole = role;
+        return {
+            ok: true,
+            auth: {
+                user: { username: user.email, role, lockedFilters },
+                token: session.access_token
+            }
+        };
+    } else {
                     reject(new Error('Session expired'));
                 }
             });
@@ -1904,30 +1894,34 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
     if (mode === 'change_password_public' || mode === 'change_password') {
         const { username, currentPassword, newPassword } = extraPayload;
         try {
-            // Sign in to get the current user object securely
-            const userCredential = await signInWithEmailAndPassword(auth, username, currentPassword);
-            await updatePassword(userCredential.user, newPassword);
+            const { data, error } = await supabase.auth.signInWithPassword({ email: username, password: currentPassword });
+            if (error) throw error;
+            const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+            if (updateError) throw updateError;
             return { ok: true };
         } catch (error) {
             console.error("Change Password Error:", error);
             throw new Error('รหัสผ่านปัจจุบันไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
         }
     }
+    }
 
     if (mode === 'reset_password' || mode === 'forgot_password') {
         const { username } = extraPayload;
         try {
-            await sendPasswordResetEmail(auth, username);
+            const { error } = await supabase.auth.resetPasswordForEmail(username);
+            if (error) throw error;
             throw new Error('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว! (กรุณาเช็คใน Inbox หรือ Junk) ไม่ต้องกรอก Reset Code ที่นี่');
         } catch (error) {
-            if (error.message.includes('ส่งลิงก์')) throw error;
+            if (error.message && error.message.includes('ส่งลิงก์')) throw error;
             console.error("Reset Password Error:", error);
             throw new Error('ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ กรุณาตรวจสอบอีเมลอีกครั้ง');
         }
     }
+    }
 
     if (mode === 'logout') {
-        await signOut(auth);
+        await supabase.auth.signOut();
         return { ok: true };
     }
 
@@ -1935,7 +1929,7 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
 };
 
 // ----------------------------------------------------------------------
-// 3. Firebase Excel Upload & Download (อัปโหลด/ดาวน์โหลด Sales ผ่าน Firestore Base64)
+// 3. Supabase Excel Upload & Download (อัปโหลด/ดาวน์โหลด Sales ผ่าน Firestore Base64)
 // ----------------------------------------------------------------------
 
 // Helper function to convert File to Base64
@@ -1961,7 +1955,7 @@ function base64ToFile(base64String, fileName) {
     return new File([u8arr], fileName, { type: mime });
 }
 
-window.uploadSalesToFirebase = async function(file) {
+window.uploadSalesToSupabase = async function(file) {
     if (!file) return;
 
     // Create a custom full-screen loading overlay
@@ -1977,7 +1971,7 @@ window.uploadSalesToFirebase = async function(file) {
     document.body.appendChild(overlay);
     
     try {
-        if (!db) throw new Error("Firebase Database ยังไม่พร้อมใช้งาน");
+        if (!db) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
 
         // --- ดึงชื่อคอลัมน์จากไฟล์จริงเพื่ออัปเดต Column Settings ---
         const data = await file.arrayBuffer();
@@ -2014,7 +2008,7 @@ window.uploadSalesToFirebase = async function(file) {
         overlay.remove();
         
         // Success overlay removed to prevent duplicate modals, app_core.js will show its own StatusModal.
-        console.log(`Firebase upload successful. Split into ${totalChunks} chunks.`);
+        console.log(`Supabase upload successful. Split into ${totalChunks} chunks.`);
         
         console.log(`อัปโหลดไฟล์ Sales สำเร็จ! (แบ่งเป็น ${totalChunks} ท่อน)`);
         
@@ -2025,9 +2019,9 @@ window.uploadSalesToFirebase = async function(file) {
     }
 };
 
-window.downloadSalesFromFirebase = async function() {
+window.downloadSalesFromSupabase = async function() {
     try {
-        if (!db) throw new Error("Firebase Database ยังไม่พร้อมใช้งาน");
+        if (!db) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
         
         // ดึง Metadata เพื่อดูจำนวนท่อน
         const metaRef = doc(db, "app_data", "latest_sales_meta");
@@ -2369,7 +2363,7 @@ function injectUserManagementSettings(modalNode) {
             updatedAt: new Date()
         }, { merge: true })
         .then(() => {
-            alert('บันทึกข้อมูลสิทธิ์เรียบร้อยแล้ว! (หมายเหตุ: รหัสผ่านเข้าสู่ระบบต้องไปสร้างใน Firebase Console แยกต่างหาก)');
+            alert('บันทึกข้อมูลสิทธิ์เรียบร้อยแล้ว! (หมายเหตุ: รหัสผ่านเข้าสู่ระบบต้องไปสร้างใน Supabase Console แยกต่างหาก)');
             modalBody.querySelector('#new-user-email').value = '';
             setSelectedFilters({ region: [], province: [], district: [], brand: [] }); // Reset
             loadUsers(modalNode);
@@ -2409,7 +2403,7 @@ async function loadUsers(modalNode) {
         listHtml += '<tr style="border-bottom: 1px solid #cbd5e1;"><th style="padding:8px;">Email</th><th style="padding:8px;">Role</th><th style="padding:8px;">Locked Filters</th><th style="padding:8px;">Action</th></tr>';
         
         snapshot.forEach(docSnap => {
-            const data = docSnap.data();
+            const data = docSnap;
             let filtersStr = 'ดูได้ทั้งหมด (All)';
             if (data.lockedFilters) {
                 const activeFilters = Object.entries(data.lockedFilters)
@@ -2422,12 +2416,12 @@ async function loadUsers(modalNode) {
 
             listHtml += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding:8px;">${docSnap.id}</td>
+                <td style="padding:8px;">${docSnap.email}</td>
                 <td style="padding:8px;"><span style="background:${data.role==='admin'?'#fee2e2':(data.role==='area_admin'?'#fef3c7':'#e0f2fe')}; padding: 2px 6px; border-radius: 4px; font-size:12px; font-weight:bold;">${data.role || 'user'}</span></td>
                 <td style="padding:8px; font-size:11px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${filtersStr}">${filtersStr}</td>
                 <td style="padding:8px;">
-                    <button onclick="window.editUser('${docSnap.id}', '${data.role}', '${encodeURIComponent(JSON.stringify(data.lockedFilters || {}))}')" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">แก้ไข</button>
-                    <button onclick="window.deleteUser('${docSnap.id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">ลบ</button>
+                    <button onclick="window.editUser('${docSnap.email}', '${data.role}', '${encodeURIComponent(JSON.stringify(data.lockedFilters || {}))}')" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">แก้ไข</button>
+                    <button onclick="window.deleteUser('${docSnap.email}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">ลบ</button>
                 </td>
             </tr>
             `;
@@ -5658,7 +5652,7 @@ var ImportExportScreen = function ImportExportScreen(props) {
     className: "font-title-lg text-on-surface"
   }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (Sales Data)")), /*#__PURE__*/React.createElement("p", {
     className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
-  }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Firebase \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+  }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Supabase \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
     className: "font-medium"
   }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), googleSheetSyncLabel), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
@@ -5667,7 +5661,7 @@ var ImportExportScreen = function ImportExportScreen(props) {
     onClick: syncSalesFromGoogleSheet
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-lg"
-  }, "cloud_sync"), "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Firebase"), /*#__PURE__*/React.createElement("button", {
+  }, "cloud_sync"), "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Supabase"), /*#__PURE__*/React.createElement("button", {
     className: "w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg py-3 px-4 rounded-xl border border-outline-variant transition-all active:scale-[0.98]",
     onClick: function onClick() {
       return openFilePickerForType('sales');
@@ -7396,7 +7390,7 @@ var App = function App() {
     });
   }, [authUser && authUser.username, JSON.stringify(lockedFilters)]);
   useEffect(function () {
-    if (authUser && window.downloadSalesFromFirebase) {
+    if (authUser && window.downloadSalesFromSupabase) {
       var today = new Date().toISOString().split('T')[0];
       var lastSync = localStorage.getItem('salytix_last_sync_date');
       if (lastSync !== today) {
@@ -9450,8 +9444,8 @@ var App = function App() {
             setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
             updateLoadingStatus(type === 'sales' ? 'อ่านไฟล์ยอดขายสำเร็จ กำลังบันทึกข้อมูล...' : 'อ่านไฟล์เป้าหมายสำเร็จ กำลังบันทึกข้อมูล...', 88, false);
-            if (type === 'sales' && window.uploadSalesToFirebase) {
-              window.uploadSalesToFirebase(file).catch(function(err){ console.error("Firebase upload error:", err); });
+            if (type === 'sales' && window.uploadSalesToSupabase) {
+              window.uploadSalesToSupabase(file).catch(function(err){ console.error("Supabase upload error:", err); });
             }
             _context19.n = 8;
             return saveToStorage(mergedData);
@@ -13928,9 +13922,9 @@ var App = function App() {
         var lastSync = localStorage.getItem('salytix_last_sync_date');
         if (lastSync === today) return;
     }
-    if (window.downloadSalesFromFirebase) {
+    if (window.downloadSalesFromSupabase) {
         updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
-        window.downloadSalesFromFirebase().then(function(file) {
+        window.downloadSalesFromSupabase().then(function(file) {
             return processAndStoreFile(file, 'sales', { silentStatus: false });
         }).then(function() {
             localStorage.setItem('salytix_last_sync_date', today);
@@ -14690,7 +14684,7 @@ var App = function App() {
       color: '#ecfdf5',
       borderColor: 'rgba(167, 243, 208, 0.45)'
     },
-    title: "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Firebase"
+    title: "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Supabase"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[14px] mr-1"
   }, "cloud_sync"), " Sync: ", googleSheetSyncLabel || 'Never'), /*#__PURE__*/React.createElement("button", {
