@@ -9146,7 +9146,7 @@ var App = function App() {
             }
             mergedData = mergeParsedDataByType(latestStoredData, type, parsedData, isAppend);
             setAllData(mergedData);
-            if (type === 'target' && window.TargetMatch) { window.TargetMatch.onTargetDataLoaded(mergedData); }
+            if (type === 'target' && window.TargetMatch) { window.TargetMatch.setTargetData(mergedData); }
             persistUploadedFileName(type, file.name || '');
             setFilters(buildLockedFiltersState(lockedFilters));
             if (type === 'sales') setRepeatGapFilters(createEmptyRepeatGapFilters());
@@ -13604,7 +13604,7 @@ var App = function App() {
         window.downloadSalesFromSupabase().then(function(finalData) {
             if (finalData && finalData.monthly) {
                 setAllData(finalData);
-                if (window.TargetMatch) window.TargetMatch.onTargetDataLoaded(finalData);
+                if (window.TargetMatch && window.TargetMatch.setTargetData) window.TargetMatch.setTargetData(finalData);
                 setFilters(buildLockedFiltersState(lockedFilters));
                 setRepeatGapFilters(createEmptyRepeatGapFilters());
                 return saveToStorage(finalData);
@@ -14256,7 +14256,11 @@ var App = function App() {
       /*#__PURE__*/React.createElement("button", {
         onClick: function() { setIsTargetMappingModalOpen(true); },
         className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2"
-      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " Setting Target")
+      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " จับคู่ข้อมูลดิบ (Data Mapping)"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { if(window.TargetMatch) window.TargetMatch.openModal(); },
+        className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2 mt-1"
+      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "16px" } }, "stars"), " ตั้งค่ากฎโบนัส (Bonus Rules)")
     )
   ), 
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
@@ -15831,6 +15835,11 @@ window.TargetMatch = (function() {
         openModal();
     }
 
+    function setTargetData(data) {
+        mergedData = data;
+        extractGroupsAndBrands();
+    }
+
     function extractGroupsAndBrands() {
         if (!mergedData || !mergedData.rawTargets) return;
         const targetRows = mergedData.rawTargets;
@@ -16103,6 +16112,8 @@ window.TargetMatch = (function() {
     // Public API
     return {
         onTargetDataLoaded,
+        setTargetData,
+        openModal,
         closeModal,
         saveConfig,
         addTier,
