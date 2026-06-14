@@ -1845,7 +1845,7 @@ async function getUserRoleAndFilters(email) {
 }
 
 window.interceptCallAuthWebApp = async function(mode, extraPayload) {
-    if(!auth) throw new Error("Supabase ไม่พร้อมใช้งาน กรุณาตั้งค่า Config");
+    if(!supabase) throw new Error("Supabase ไม่พร้อมใช้งาน");
     
     if (mode === 'login') {
         const { username, password } = extraPayload;
@@ -1866,7 +1866,12 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
             };
         } catch (error) {
             console.error("Login Error:", error);
+            
+            if (error.message.includes("Invalid login credentials")) {
+                throw new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+            }
             throw new Error(error.message);
+
         }
     } 
     
