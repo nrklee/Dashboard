@@ -1822,27 +1822,6 @@ async function getUserRoleAndFilters(email) {
     }
 }
 
-async function getUserRoleAndFilters(email) {
-    try {
-        const userRef = doc(db, 'users', email);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-            const data = userSnap.data();
-            const role = data.role || 'user';
-            const lockedFilters = role !== 'admin' && role !== 'super_admin' && data.areas && data.areas.length > 0 
-                ? { AREA: data.areas } : {};
-            return { role, lockedFilters };
-        } else {
-            // ถ้าเป็นผู้ใช้ใหม่ ยังไม่มีในฐานข้อมูล ให้กำหนดเป็น admin ชั่วคราวเพื่อให้เริ่มใช้ระบบได้
-            const role = 'admin';
-            await setDoc(userRef, { email, role, areas: [] });
-            return { role, lockedFilters: {} };
-        }
-    } catch(err) {
-        console.error("Error fetching role:", err);
-        return { role: 'admin', lockedFilters: {} }; // Fallback
-    }
-}
 
 window.interceptCallAuthWebApp = async function(mode, extraPayload) {
     if(!supabase) throw new Error("Supabase ไม่พร้อมใช้งาน");
@@ -1889,13 +1868,7 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
                 token: session.access_token
             }
         };
-    } else {
-                    reject(new Error('Session expired'));
-                }
-            });
-        });
-    }
-    
+
     if (mode === 'change_password_public' || mode === 'change_password') {
         const { username, currentPassword, newPassword } = extraPayload;
         try {
@@ -1922,7 +1895,6 @@ window.interceptCallAuthWebApp = async function(mode, extraPayload) {
             console.error("Reset Password Error:", error);
             throw new Error('ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ กรุณาตรวจสอบอีเมลอีกครั้ง');
         }
-    }
     }
 
     if (mode === 'logout') {
