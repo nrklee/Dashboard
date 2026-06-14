@@ -1728,47 +1728,251 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 // supabase_service.js
 // ใช้สำหรับจัดการ Supabase Authentication และ Database สำหรับ Salytix V2
 
-// 1. Supabase Configuration (ผู้ใช้ต้องนำ Config ของตนเองมาใส่ที่นี่)
-const SUPABASE_URL = "https://jquixmbtmmnvpkqdmqfo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdWl4bWJ0bW1udnBrcWRtcWZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTEwNTIsImV4cCI6MjA5Njk4NzA1Mn0.fXuydbALdr1mb7DpYrfuqSCGJ_EyI_0kpD3yqcIGlh8";
+try {
+    // 1. กำหนดฟังก์ชันทันทีเพื่อไม่ให้ app_core.js หาไม่เจอ
+    window.interceptCallAuthWebApp = async function(mode, extraPayload) {
+        if(!window.supabase) throw new Error("Supabase ไม่พร้อมใช้งาน");
+        
+        if (mode === 'login') {
+            const { username, password } = extraPayload;
+            try {
+                // ใช้ Supabase Authentication สำหรับล็อกอิน
+                const { data: authData, error } = await window.supabase.auth.signInWithPassword({ email: username, password });
+                if (error) throw error;
+                const user = authData.user;
+                
+                // ดึงสิทธิ์
+                let role = 'admin';
+                let lockedFilters = {};
+                try {
+                    const { data: roleData } = await window.supabase.from('users').select('*').eq('email', user.email).maybeSingle();
+                    if (roleData) {
+                        role = roleData.role || 'user';
+                        lockedFilters = role !== 'admin' && role !== 'super_admin' && roleData.areas && roleData.areas.length > 0 ? { AREA: roleData.areas } : {};
+                    } else {
+                        await window.supabase.from('users').insert({ email: user.email, role: 'admin', areas: [] });
+                    }
+                } catch(e) {}
+                
+                try {
+                    await window.supabase.from('usage_logs').insert({ email: username, action: "LOGIN" });
+                } catch(e) {}
 
-let supabase;
-
-// กำหนดค่า Supabase ทันทีโดยใช้ไลบรารีที่โหลดมาจาก <script> ใน index.html
-if (window.supabase) {
-    let storageToUse;
-    try {
-        localStorage.setItem('__test__', '1');
-        localStorage.removeItem('__test__');
-        storageToUse = window.localStorage;
-    } catch (e) {
-        // Fallback in memory storage for Safari Private mode
-        storageToUse = {
-            _data: {},
-            setItem: function(id, val) { return this._data[id] = String(val); },
-            getItem: function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : null; },
-            removeItem: function(id) { return delete this._data[id]; },
-            clear: function() { return this._data = {}; }
-        };
-    }
-    
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                storage: storageToUse,
-                persistSession: true
+                return {
+                    ok: true,
+                    auth: {
+                        user: { username: user.email, role, lockedFilters },
+                        token: await authData.session.access_token
+                    }
+                };
+            } catch (error) {
+                console.error("Login Error:", error);
+                if (error.message && error.message.includes("Invalid login credentials")) {
+                    throw new Error("Supabase Error: " + error.message);
+                }
+                throw new Error(error && error.message ? error.message : "ล็อกอินไม่สำเร็จ");
             }
-        });
-        console.log("Supabase Initialized Successfully.");
-    } catch (err) {
-        console.warn("Supabase Client Initialization Failed:", err);
+        } 
+        
+        if (mode === 'verify_session') {
+            const { data: { session }, error } = await window.supabase.auth.getSession();
+            if (error || !session) throw new Error('Session expired');
+            const user = session.user;
+            
+            let role = 'admin';
+            let lockedFilters = {};
+            try {
+                const { data: roleData } = await window.supabase.from('users').select('*').eq('email', user.email).maybeSingle();
+                if (roleData) {
+                    role = roleData.role || 'user';
+                    lockedFilters = role !== 'admin' && role !== 'super_admin' && roleData.areas && roleData.areas.length > 0 ? { AREA: roleData.areas } : {};
+                }
+            } catch(e) {}
+
+            return {
+                ok: true,
+                auth: {
+                    user: { username: user.email, role, lockedFilters },
+                    token: session.access_token
+                }
+            };
+        }
+
+        if (mode === 'change_password_public' || mode === 'change_password') {
+            const { username, currentPassword, newPassword } = extraPayload;
+            try {
+                const { data, error } = await window.supabase.auth.signInWithPassword({ email: username, password: currentPassword });
+                if (error) throw error;
+                const { error: updateError } = await window.supabase.auth.updateUser({ password: newPassword });
+                if (updateError) throw updateError;
+                return { ok: true };
+            } catch (error) {
+                throw new Error('รหัสผ่านปัจจุบันไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+            }
+        }
+
+        if (mode === 'reset_password' || mode === 'forgot_password') {
+            const { username } = extraPayload;
+            try {
+                const { error } = await window.supabase.auth.resetPasswordForEmail(username);
+                if (error) throw error;
+                throw new Error('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว! (กรุณาเช็คใน Inbox หรือ Junk) ไม่ต้องกรอก Reset Code ที่นี่');
+            } catch (error) {
+                if (error.message && error.message.includes('ส่งลิงก์')) throw error;
+                throw new Error('ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ กรุณาตรวจสอบอีเมลอีกครั้ง');
+            }
+        }
+
+        if (mode === 'logout') {
+            await window.supabase.auth.signOut();
+            return { ok: true };
+        }
+
+        throw new Error('คำสั่งนี้ถูกระงับการใช้งานใน V2');
+    };
+
+    // 2. Supabase Configuration
+    const SUPABASE_URL = "https://jquixmbtmmnvpkqdmqfo.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdWl4bWJ0bW1udnBrcWRtcWZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTEwNTIsImV4cCI6MjA5Njk4NzA1Mn0.fXuydbALdr1mb7DpYrfuqSCGJ_EyI_0kpD3yqcIGlh8";
+
+    if (window.supabase) {
+        let storageToUse;
+        try {
+            localStorage.setItem('__test__', '1');
+            localStorage.removeItem('__test__');
+            storageToUse = window.localStorage;
+        } catch (e) {
+            storageToUse = {
+                _data: {},
+                setItem: function(id, val) { return this._data[id] = String(val); },
+                getItem: function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : null; },
+                removeItem: function(id) { return delete this._data[id]; },
+                clear: function() { return this._data = {}; }
+            };
+        }
+        
+        try {
+            window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    storage: storageToUse,
+                    persistSession: true
+                }
+            });
+            console.log("Supabase Initialized Successfully.");
+        } catch (err) {
+            console.warn("Supabase Client Initialization Failed:", err);
+        }
+    } else {
+        console.warn("ไม่สามารถโหลด Supabase ได้ (ไม่พบ window.supabase)");
     }
-} else {
-    console.warn("ไม่สามารถโหลด Supabase ได้ (ไม่พบ window.supabase)");
+} catch (globalErr) {
+    console.error("Critical Error in supabase_service.js:", globalErr);
 }
 
-// การตั้งค่าคอลัมน์ (Column Settings) ทั้ง 42 คอลัมน์
-// ----------------------------------------------------------------------
+window.uploadSalesToSupabase = async function(file) {
+    if (!file) return;
+
+    // Create a custom full-screen loading overlay
+    const overlay = document.createElement('div');
+    overlay.innerHTML = `
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;">
+            <div style="font-size:24px;margin-bottom:15px;font-weight:bold;">☁️ กำลังอัปโหลดไฟล์ยอดขายขึ้นคลาวด์...</div>
+            <div style="font-size:16px;color:#ccc;margin-bottom:30px;">กรุณารอสักครู่ และห้ามปิดหน้าต่างนี้จนกว่าจะเสร็จสมบูรณ์</div>
+            <div style="border:5px solid #f3f3f3;border-top:5px solid #3b82f6;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;"></div>
+            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    try {
+        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
+
+        const data = await file.arrayBuffer();
+        const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+        
+        const CHUNK_SIZE = 900000; 
+        const totalChunks = Math.ceil(base64Data.length / CHUNK_SIZE);
+        
+        const rowsToInsert = [];
+        rowsToInsert.push({
+            id: "latest_sales_meta",
+            data: JSON.stringify({
+                fileName: file.name || "latest_sales.xlsx",
+                totalChunks: totalChunks
+            })
+        });
+        
+        for (let i = 0; i < totalChunks; i++) {
+            const chunkStr = base64Data.substring(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+            rowsToInsert.push({
+                id: `latest_sales_chunk_${i}`,
+                data: JSON.stringify({ chunkData: chunkStr })
+            });
+        }
+        
+        const { error: upsertError } = await window.supabase.from('app_data').upsert(rowsToInsert);
+        if (upsertError) throw upsertError;
+        
+        overlay.remove();
+        console.log(`อัปโหลดไฟล์ Sales สำเร็จ! (แบ่งเป็น ${totalChunks} ท่อน)`);
+        
+    } catch (error) {
+        overlay.remove();
+        console.error("Upload Error:", error);
+        alert("เกิดข้อผิดพลาดในการอัปโหลด: " + error.message);
+    }
+};
+
+window.downloadSalesFromSupabase = async function() {
+    try {
+        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
+        
+        const { data: metaDataRow, error: metaError } = await window.supabase.from('app_data').select('*').eq('id', 'latest_sales_meta').maybeSingle();
+        if (metaError) throw metaError;
+        
+        if (!metaDataRow) throw new Error("ยังไม่มีข้อมูลยอดขายในระบบ (ไม่พบ Meta)");
+        
+        const metaData = JSON.parse(metaDataRow.data);
+        const totalChunks = metaData.totalChunks || 0;
+        
+        if (totalChunks === 0) throw new Error("ข้อมูลยอดขายไม่สมบูรณ์ (จำนวนท่อน = 0)");
+        
+        const chunkIds = [];
+        for (let i = 0; i < totalChunks; i++) {
+            chunkIds.push(`latest_sales_chunk_${i}`);
+        }
+        
+        const { data: chunkRows, error: chunkError } = await window.supabase.from('app_data').select('*').in('id', chunkIds);
+        if (chunkError) throw chunkError;
+        
+        let fullBase64 = "";
+        for (let i = 0; i < totalChunks; i++) {
+            const chunkRow = chunkRows.find(r => r.id === `latest_sales_chunk_${i}`);
+            if (!chunkRow) throw new Error(`ข้อมูลยอดขายหายไปท่อนที่ ${i}`);
+            const chunkParsed = JSON.parse(chunkRow.data);
+            fullBase64 += chunkParsed.chunkData;
+        }
+        
+        const arr = fullBase64.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], metaData.fileName || "latest_sales.xlsx", { type: mime });
+    } catch (error) {
+        console.error("Download Error:", error);
+        throw error;
+    }
+};
+
 const defaultColumns = [
 {id:"col_1",originalName:"SALES_DATE",alias:"ยอดขายวันที่",visible:true},
 {id:"col_2",originalName:"SALES_DOC_NO",alias:"ออก INV วันที่",visible:true},
@@ -1829,265 +2033,7 @@ function saveSettings(newSettings) {
     } catch (e) {
         console.warn("Cannot save to localStorage", e);
     }
-    // สามารถเพิ่มการบันทึกลง Firestore ได้ที่นี่
 }
-
-// ----------------------------------------------------------------------
-// 2. Intercept Login (ระบบ Authentication หน้าบ้าน)
-// ----------------------------------------------------------------------
-
-let currentUserRole = '';
-
-
-// ฟังก์ชันสำหรับดึงสิทธิ์จาก Supabase
-async function getUserRoleAndFilters(email) {
-    if(!supabase) return { role: 'admin', lockedFilters: {} };
-    try {
-        const { data, error } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
-        if (data) {
-            const role = data.role || 'user';
-            const lockedFilters = role !== 'admin' && role !== 'super_admin' && data.areas && data.areas.length > 0 
-                ? { AREA: data.areas } : {};
-            return { role, lockedFilters };
-        } else {
-            const role = 'admin';
-            await supabase.from('users').insert({ email, role, areas: [] });
-            return { role, lockedFilters: {} };
-        }
-    } catch(err) {
-        console.error("Error fetching role:", err);
-        return { role: 'admin', lockedFilters: {} };
-    }
-}
-
-
-window.interceptCallAuthWebApp = async function(mode, extraPayload) {
-    if(!supabase) throw new Error("Supabase ไม่พร้อมใช้งาน");
-    
-    if (mode === 'login') {
-        const { username, password } = extraPayload;
-        try {
-            // ใช้ Supabase Authentication สำหรับล็อกอิน
-            const { data: authData, error } = await supabase.auth.signInWithPassword({ email: username, password });
-            if (error) throw error;
-            const user = authData.user;
-            window.logUsageHistory(username, "LOGIN");
-            const { role, lockedFilters } = await getUserRoleAndFilters(user.email);
-            currentUserRole = role;
-            return {
-                ok: true,
-                auth: {
-                    user: { username: user.email, role, lockedFilters },
-                    token: await authData.session.access_token
-                }
-            };
-        } catch (error) {
-            console.error("Login Error:", error);
-            
-            if (error.message.includes("Invalid login credentials")) {
-                throw new Error("Supabase Error: " + error.message);
-            }
-            throw new Error(error.message);
-
-        }
-    } 
-    
-    if (mode === 'verify_session') {
-        if(!supabase) throw new Error('Supabase not loaded');
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error || !session) throw new Error('Session expired');
-        const user = session.user;
-        const { role, lockedFilters } = await getUserRoleAndFilters(user.email);
-        currentUserRole = role;
-        return {
-            ok: true,
-            auth: {
-                user: { username: user.email, role, lockedFilters },
-                token: session.access_token
-            }
-        };
-    }
-
-    if (mode === 'change_password_public' || mode === 'change_password') {
-        const { username, currentPassword, newPassword } = extraPayload;
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email: username, password: currentPassword });
-            if (error) throw error;
-            const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-            if (updateError) throw updateError;
-            return { ok: true };
-        } catch (error) {
-            console.error("Change Password Error:", error);
-            throw new Error('รหัสผ่านปัจจุบันไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
-        }
-    }
-    }
-
-    if (mode === 'reset_password' || mode === 'forgot_password') {
-        const { username } = extraPayload;
-        try {
-            const { error } = await supabase.auth.resetPasswordForEmail(username);
-            if (error) throw error;
-            throw new Error('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว! (กรุณาเช็คใน Inbox หรือ Junk) ไม่ต้องกรอก Reset Code ที่นี่');
-        } catch (error) {
-            if (error.message && error.message.includes('ส่งลิงก์')) throw error;
-            console.error("Reset Password Error:", error);
-            throw new Error('ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ กรุณาตรวจสอบอีเมลอีกครั้ง');
-        }
-    }
-
-    if (mode === 'logout') {
-        await supabase.auth.signOut();
-        return { ok: true };
-    }
-
-    throw new Error('คำสั่งนี้ถูกระงับการใช้งานใน V2');
-};
-
-// ----------------------------------------------------------------------
-// 3. Supabase Excel Upload & Download (อัปโหลด/ดาวน์โหลด Sales ผ่าน Firestore Base64)
-// ----------------------------------------------------------------------
-
-// Helper function to convert File to Base64
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-}
-
-// Helper function to convert Base64 to File
-function base64ToFile(base64String, fileName) {
-    const arr = base64String.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], fileName, { type: mime });
-}
-
-window.uploadSalesToSupabase = async function(file) {
-    if (!file) return;
-
-    // Create a custom full-screen loading overlay
-    const overlay = document.createElement('div');
-    overlay.innerHTML = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;">
-            <div style="font-size:24px;margin-bottom:15px;font-weight:bold;">☁️ กำลังอัปโหลดไฟล์ยอดขายขึ้นคลาวด์...</div>
-            <div style="font-size:16px;color:#ccc;margin-bottom:30px;">กรุณารอสักครู่ และห้ามปิดหน้าต่างนี้จนกว่าจะเสร็จสมบูรณ์</div>
-            <div style="border:5px solid #f3f3f3;border-top:5px solid #3b82f6;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;"></div>
-            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    try {
-        if (!supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
-
-        // --- ดึงชื่อคอลัมน์จากไฟล์จริงเพื่ออัปเดต Column Settings ---
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-
-        // -------------------------------------------------------------
-
-        // แปลงไฟล์เป็น Base64
-        const base64Data = await fileToBase64(file);
-        
-        // แบ่งไฟล์เป็นท่อนๆ (Chunking) ขนาดท่อนละไม่เกิน 900KB (900,000 ตัวอักษร)
-        const CHUNK_SIZE = 900000; 
-        const totalChunks = Math.ceil(base64Data.length / CHUNK_SIZE);
-        
-        const rowsToInsert = [];
-        
-        // เซฟ Metadata ก่อนว่ามีกี่ท่อน
-        rowsToInsert.push({
-            id: "latest_sales_meta",
-            data: JSON.stringify({
-                fileName: file.name || "latest_sales.xlsx",
-                totalChunks: totalChunks
-            })
-        });
-        
-        // เซฟข้อมูลแต่ละท่อน
-        for (let i = 0; i < totalChunks; i++) {
-            const chunkStr = base64Data.substring(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-            rowsToInsert.push({
-                id: `latest_sales_chunk_${i}`,
-                data: JSON.stringify({ chunkData: chunkStr })
-            });
-        }
-        
-        const { error: upsertError } = await supabase.from('app_data').upsert(rowsToInsert);
-        if (upsertError) throw upsertError;
-        
-        overlay.remove();
-        
-        // Success overlay removed to prevent duplicate modals, app_core.js will show its own StatusModal.
-        console.log(`Supabase upload successful. Split into ${totalChunks} chunks.`);
-        
-        console.log(`อัปโหลดไฟล์ Sales สำเร็จ! (แบ่งเป็น ${totalChunks} ท่อน)`);
-        
-    } catch (error) {
-        overlay.remove();
-        console.error("Upload Error:", error);
-        alert("เกิดข้อผิดพลาดในการอัปโหลด: " + error.message);
-    }
-};
-
-window.downloadSalesFromSupabase = async function() {
-    try {
-        if (!supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
-        
-        // ดึง Metadata เพื่อดูจำนวนท่อน
-        const { data: metaDataRow, error: metaError } = await supabase.from('app_data').select('*').eq('id', 'latest_sales_meta').maybeSingle();
-        if (metaError) throw metaError;
-        
-        if (!metaDataRow) {
-            throw new Error("ยังไม่มีข้อมูลยอดขายในระบบ (ไม่พบ Meta)");
-        }
-        
-        const metaData = JSON.parse(metaDataRow.data);
-        const totalChunks = metaData.totalChunks || 0;
-        
-        if (totalChunks === 0) {
-            throw new Error("ข้อมูลยอดขายไม่สมบูรณ์ (จำนวนท่อน = 0)");
-        }
-        
-        const chunkIds = [];
-        for (let i = 0; i < totalChunks; i++) {
-            chunkIds.push(`latest_sales_chunk_${i}`);
-        }
-        
-        // โหลดข้อมูลทุกท่อน
-        const { data: chunkRows, error: chunkError } = await supabase.from('app_data').select('*').in('id', chunkIds);
-        if (chunkError) throw chunkError;
-        
-        let fullBase64 = "";
-        for (let i = 0; i < totalChunks; i++) {
-            const chunkRow = chunkRows.find(r => r.id === `latest_sales_chunk_${i}`);
-            if (!chunkRow) throw new Error(`ข้อมูลยอดขายหายไปท่อนที่ ${i}`);
-            const chunkParsed = JSON.parse(chunkRow.data);
-            fullBase64 += chunkParsed.chunkData;
-        }
-        
-        // แปลง Base64 กลับเป็นไฟล์ Excel
-        const file = base64ToFile(fullBase64, metaData.fileName || "latest_sales.xlsx");
-        return file;
-    } catch (error) {
-        console.error("Download Error:", error);
-        throw error;
-    }
-};
-
-// ----------------------------------------------------------------------
-// 4. Standalone Settings Modals
-// ----------------------------------------------------------------------
 
 window.openColumnSettingsModal = function() {
     let m = document.getElementById('my-col-modal');
@@ -2105,408 +2051,11 @@ window.openColumnSettingsModal = function() {
         closeBtn.onclick = () => m.style.display = 'none';
         inner.appendChild(closeBtn);
         
-        const resetBtn = document.createElement('button');
-        resetBtn.innerHTML = 'คืนค่าเดิม (Reset)';
-        resetBtn.style.cssText = 'position:absolute;top:15px;right:80px;background:#64748b;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
-        resetBtn.onclick = () => {
-            if(confirm('ต้องการคืนค่าชื่อคอลัมน์กลับเป็นชื่อต้นฉบับใช่หรือไม่?')) {
-                currentSettings = currentSettings.map(col => ({ ...col, alias: col.originalName }));
-                localStorage.setItem('salytix_column_settings', JSON.stringify(currentSettings));
-                const listContainer = m.querySelector('#col-settings-list');
-                if (listContainer) {
-                    currentSettings.forEach(col => {
-                        const input = m.querySelector(`#alias_${col.id}`);
-                        if (input) input.value = col.alias;
-                    });
-                }
-            }
-        };
-        inner.appendChild(resetBtn);
-        
         m.appendChild(inner);
         document.body.appendChild(m);
-        
-        injectColumnSettings(m);
     }
     m.style.display = 'flex';
 }
-
-window.openUserManagementModal = function() {
-    let m = document.getElementById('my-user-modal');
-    if(!m) {
-        m = document.createElement('div');
-        m.id = 'my-user-modal';
-        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-        const inner = document.createElement('div');
-        inner.className = 'p-4';
-        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = 'X ปิด';
-        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
-        closeBtn.onclick = () => m.style.display = 'none';
-        inner.appendChild(closeBtn);
-        
-        m.appendChild(inner);
-        document.body.appendChild(m);
-        
-        injectUserManagementSettings(m);
-    }
-    m.style.display = 'flex';
-}
-
-function injectColumnSettings(modalNode) {
-    // ป้องกันการแทรกซ้ำ
-    if (modalNode.querySelector('#custom-column-settings')) return;
-
-    // หาตำแหน่งแทรก (อาจเป็นล่างสุดของ Modal content)
-    const modalBody = modalNode.querySelector('.p-4') || modalNode.querySelector('div[class*="overflow-y-auto"]');
-    if (!modalBody) return;
-
-    const settingsHTML = `
-        <div id="custom-column-settings" style="margin-top: 10px; padding-top: 5px;">
-            <h3 style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 18px;">จัดการชื่อและซ่อนคอลัมน์ (42 คอลัมน์)</h3>
-            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
-                <div style="max-height: 400px; overflow-y: auto;" id="col-settings-list">
-                    <!-- จะถูกสร้างด้วย JS -->
-                </div>
-                <button id="save-col-settings-btn" style="margin-top: 15px; width: 100%; background: #3b82f6; color: white; padding: 10px 15px; border-radius: 5px; font-size: 14px; border: none; cursor: pointer; font-weight: bold;">
-                    บันทึกการตั้งค่าคอลัมน์
-                </button>
-            </div>
-        </div>
-    `;
-
-    modalBody.insertAdjacentHTML('beforeend', settingsHTML);
-
-    const listContainer = modalNode.querySelector('#col-settings-list');
-    
-    // Render list
-    currentSettings.forEach((col, index) => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px;';
-        
-        item.innerHTML = `
-            <input type="checkbox" id="chk_${col.id}" ${col.visible ? 'checked' : ''} style="cursor: pointer;">
-            <span style="width: 80px; color: #64748b;">ต้นฉบับ: ${col.originalName}</span>
-            <input type="text" id="alias_${col.id}" value="${col.alias}" placeholder="ชื่อที่ต้องการแสดง" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; flex: 1;">
-        `;
-        listContainer.appendChild(item);
-    });
-
-    // Handle Save
-    modalNode.querySelector('#save-col-settings-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        const updated = currentSettings.map(col => {
-            return {
-                ...col,
-                alias: document.getElementById(`alias_${col.id}`).value,
-                visible: document.getElementById(`chk_${col.id}`).checked
-            };
-        });
-        saveSettings(updated);
-        alert('บันทึกการตั้งค่าคอลัมน์สำเร็จ');
-    });
-}
-
-function injectUserManagementSettings(modalNode) {
-    if (currentUserRole !== 'admin' && currentUserRole !== 'super_admin') return;
-    if (modalNode.querySelector('#custom-user-management')) return;
-
-    const modalBody = modalNode.querySelector('.p-4') || modalNode.querySelector('div[class*="overflow-y-auto"]');
-    if (!modalBody) return;
-
-    const html = `
-        <div id="custom-user-management" style="margin-top: 10px; padding-top: 5px;">
-            <h3 style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 18px;">จัดการสิทธิ์ผู้ใช้งาน (เฉพาะ Admin)</h3>
-            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
-                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
-                    <label style="font-weight: bold; font-size: 14px; color: #334155; margin-bottom: 5px; display: block;">เพิ่มผู้ใช้งาน / ตั้งค่า Role และ สิทธิ์การเข้าถึงข้อมูล</label>
-                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                        <input type="email" id="new-user-email" placeholder="อีเมลผู้ใช้" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; flex: 1;">
-                        <select id="new-user-role" style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px;">
-                            <option value="user">User</option>
-                            <option value="area_admin">Area Admin</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    
-                    <label style="font-weight: bold; font-size: 13px; color: #334155; margin-bottom: 5px; display: block;">ล็อกสิทธิ์การเข้าถึง (ติ๊กเลือกทั้งหมด (All) เพื่อดูได้ทุกข้อมูล)</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;" id="filter-dropdowns-container">
-                        <!-- Dropdowns will be generated here -->
-                        <span style="font-size: 12px; color: #ef4444;">* กรุณาเปิดโหลดข้อมูลยอดขายก่อน เพื่อให้รายชื่อภาค/เขตปรากฏ</span>
-                    </div>
-
-                    <div style="display: flex; gap: 5px; align-items: center; justify-content: flex-end;">
-                        <button id="add-user-btn" style="background: #10b981; color: white; padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; white-space: nowrap; font-weight: bold;">บันทึก / อัปเดตสิทธิ์</button>
-                    </div>
-                </div>
-
-                <div style="max-height: 350px; overflow-y: auto; font-size: 14px;" id="user-management-list">
-                    กำลังโหลด...
-                </div>
-            </div>
-        </div>
-    `;
-    modalBody.insertAdjacentHTML('beforeend', html);
-
-    // Generator function for dropdowns
-    function buildDropdown(key, label, items) {
-        if (!items) items = [];
-        const ddHtml = `
-        <div style="position: relative; flex: 1; min-width: 120px;" class="multi-select-dd" id="dd-wrapper-${key}">
-            <button type="button" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='none'?'block':'none'" 
-                style="width: 100%; text-align: left; background: white; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px;">
-                <span id="dd-label-${key}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${label} (All)</span>
-                <span style="font-size: 10px;">▼</span>
-            </button>
-            <div class="dropdown-content" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 10; padding: 5px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                <label style="display: block; padding: 4px; cursor: pointer; font-weight: bold; border-bottom: 1px solid #eee; margin-bottom: 4px; font-size: 13px;">
-                    <input type="checkbox" class="cb-all" data-key="${key}" checked> ดูได้ทั้งหมด (All)
-                </label>
-                ${items.map(v => `
-                <label style="display: block; padding: 4px; cursor: pointer; font-size: 13px; color: #334155;">
-                    <input type="checkbox" class="cb-item" data-key="${key}" value="${v}"> ${v}
-                </label>`).join('')}
-            </div>
-        </div>
-        `;
-        return ddHtml;
-    }
-
-    // Load available data for dropdowns
-    const container = modalBody.querySelector('#filter-dropdowns-container');
-    if (window.getUniqueSalesData) {
-        const uniqueData = window.getUniqueSalesData();
-        container.innerHTML = 
-            buildDropdown('region', 'ภาค (Region)', uniqueData.region) +
-            buildDropdown('province', 'จังหวัด (Province)', uniqueData.province) +
-            buildDropdown('district', 'เขต (District)', uniqueData.district) +
-            buildDropdown('brand', 'แบรนด์ (Brand)', uniqueData.brand);
-
-        // Add event listeners for checkbox logic
-        container.querySelectorAll('.multi-select-dd').forEach(dd => {
-            const cbAll = dd.querySelector('.cb-all');
-            const cbItems = dd.querySelectorAll('.cb-item');
-            const labelSpan = dd.querySelector('span[id^="dd-label-"]');
-            
-            const updateLabel = () => {
-                const checked = Array.from(cbItems).filter(cb => cb.checked).map(cb => cb.value);
-                if (cbAll.checked || checked.length === 0) {
-                    cbAll.checked = true;
-                    Array.from(cbItems).forEach(cb => cb.checked = false);
-                    labelSpan.textContent = labelSpan.textContent.split(' ')[0] + ' (All)';
-                } else {
-                    labelSpan.textContent = checked.length === 1 ? checked[0] : checked.length + ' selected';
-                }
-            };
-
-            cbAll.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    cbItems.forEach(cb => cb.checked = false);
-                } else {
-                    e.target.checked = true; // Prevent unchecking 'All' without selecting an item
-                }
-                updateLabel();
-            });
-
-            cbItems.forEach(cb => {
-                cb.addEventListener('change', () => {
-                    if (cb.checked) cbAll.checked = false;
-                    updateLabel();
-                });
-            });
-        });
-    }
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.multi-select-dd')) {
-            modalBody.querySelectorAll('.dropdown-content').forEach(dc => dc.style.display = 'none');
-        }
-    });
-
-    // Helper to get selected filters
-    function getSelectedFilters() {
-        const filters = { region: [], province: [], district: [], brand: [] };
-        if (!window.getUniqueSalesData) return filters; // UI not generated
-        
-        ['region', 'province', 'district', 'brand'].forEach(key => {
-            const dd = modalBody.querySelector(`#dd-wrapper-${key}`);
-            if (!dd) return;
-            const cbAll = dd.querySelector('.cb-all');
-            if (!cbAll.checked) {
-                const cbItems = dd.querySelectorAll('.cb-item:checked');
-                filters[key] = Array.from(cbItems).map(cb => cb.value);
-            }
-        });
-        return filters;
-    }
-
-    function setSelectedFilters(filters) {
-        if (!filters || !window.getUniqueSalesData) return;
-        ['region', 'province', 'district', 'brand'].forEach(key => {
-            const dd = modalBody.querySelector(`#dd-wrapper-${key}`);
-            if (!dd) return;
-            const cbAll = dd.querySelector('.cb-all');
-            const cbItems = dd.querySelectorAll('.cb-item');
-            
-            const selected = filters[key] || [];
-            if (selected.length === 0) {
-                cbAll.checked = true;
-                cbItems.forEach(cb => cb.checked = false);
-            } else {
-                cbAll.checked = false;
-                cbItems.forEach(cb => {
-                    cb.checked = selected.includes(cb.value);
-                });
-            }
-            // Trigger update label (using hack: dispatch event)
-            cbAll.dispatchEvent(new Event('change')); 
-            cbAll.checked = selected.length === 0; // Fix state after hack
-            if (selected.length > 0) {
-                const labelSpan = dd.querySelector('span[id^="dd-label-"]');
-                labelSpan.textContent = selected.length === 1 ? selected[0] : selected.length + ' selected';
-            }
-        });
-    }
-
-    // เพิ่มผู้ใช้หรืออัปเดต
-    const addBtn = modalBody.querySelector('#add-user-btn');
-    addBtn.addEventListener('click', () => {
-        const email = modalBody.querySelector('#new-user-email').value.trim();
-        const role = modalBody.querySelector('#new-user-role').value;
-        const lockedFilters = getSelectedFilters();
-
-        if (!email) return alert('กรุณากรอกอีเมล');
-
-        supabase.from('users').upsert({
-            email: email,
-            role: role,
-            locked_filters: lockedFilters
-        })
-        .then(({ error }) => {
-            if (error) throw error;
-            alert('บันทึกข้อมูลสิทธิ์เรียบร้อยแล้ว! (หมายเหตุ: รหัสผ่านเข้าสู่ระบบต้องไปสร้างใน Supabase Console แยกต่างหาก)');
-            modalBody.querySelector('#new-user-email').value = '';
-            setSelectedFilters({ region: [], province: [], district: [], brand: [] }); // Reset
-            loadUsers(modalNode);
-        })
-        .catch(err => {
-            console.error(err);
-            alert('เกิดข้อผิดพลาด: ' + err.message);
-        });
-    });
-
-    // Global func สำหรับกดแก้ไขและลบ
-    window.editUser = function(email, role, lockedFiltersJSON) {
-        modalBody.querySelector('#new-user-email').value = email;
-        modalBody.querySelector('#new-user-role').value = role;
-        try {
-            const filters = JSON.parse(decodeURIComponent(lockedFiltersJSON));
-            setSelectedFilters(filters);
-        } catch(e) {
-            setSelectedFilters({ region: [], province: [], district: [], brand: [] });
-        }
-    };
-
-    window.deleteUser = async function(email) {
-        if (!confirm('ลบผู้ใช้ ' + email + '?')) return;
-        await supabase.from('users').delete().eq('email', email);
-        loadUsers(modalNode);
-    };
-
-    loadUsers(modalNode);
-}
-
-async function loadUsers(modalNode) {
-    const listContainer = modalNode.querySelector('#user-management-list');
-    try {
-        const { data: users, error } = await supabase.from('users').select('*');
-        if (error) throw error;
-        let listHtml = '<table style="width:100%; text-align:left; border-collapse: collapse;">';
-        listHtml += '<tr style="border-bottom: 1px solid #cbd5e1;"><th style="padding:8px;">Email</th><th style="padding:8px;">Role</th><th style="padding:8px;">Locked Filters</th><th style="padding:8px;">Action</th></tr>';
-        
-        users.forEach(data => {
-            let filtersStr = 'ดูได้ทั้งหมด (All)';
-            if (data.locked_filters) {
-                const activeFilters = Object.entries(data.locked_filters)
-                    .filter(([k, v]) => v && v.length > 0)
-                    .map(([k, v]) => `${k}: ${v.join(', ')}`);
-                if (activeFilters.length > 0) {
-                    filtersStr = activeFilters.join(' | ');
-                }
-            }
-
-            listHtml += `
-            <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding:8px;">${data.email}</td>
-                <td style="padding:8px;"><span style="background:${data.role==='admin'?'#fee2e2':(data.role==='area_admin'?'#fef3c7':'#e0f2fe')}; padding: 2px 6px; border-radius: 4px; font-size:12px; font-weight:bold;">${data.role || 'user'}</span></td>
-                <td style="padding:8px; font-size:11px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${filtersStr}">${filtersStr}</td>
-                <td style="padding:8px;">
-                    <button onclick="window.editUser('${data.email}', '${data.role}', '${encodeURIComponent(JSON.stringify(data.locked_filters || {}))}')" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">แก้ไข</button>
-                    <button onclick="window.deleteUser('${data.email}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size:12px;">ลบ</button>
-                </td>
-            </tr>
-            `;
-        });
-        listHtml += '</table>';
-        listContainer.innerHTML = listHtml;
-    } catch(err) {
-        listContainer.innerHTML = 'เกิดข้อผิดพลาดในการโหลดผู้ใช้: ' + err.message;
-    }
-}
-
-// ----------------------------------------------------------------------
-// 6. Usage History Logging
-// ----------------------------------------------------------------------
-window.logUsageHistory = async function(email, actionName) {
-    if (!supabase) return;
-    try {
-        await supabase.from('usage_logs').insert({
-            email: email,
-            action: actionName
-        });
-    } catch(err) {
-        console.warn("Failed to log usage:", err);
-    }
-};
-
-window.exportUsageHistory = async function() {
-    if (!supabase) return;
-    try {
-        const { data: rows, error } = await supabase.from('usage_logs').select('*').order('timestamp', { ascending: false });
-        if (error) throw error;
-        const data = [];
-        rows.forEach(row => {
-            let dateStr = "";
-            if (row.timestamp) {
-                dateStr = new Date(row.timestamp).toLocaleString('th-TH');
-            }
-            data.push({
-                "Date/Time": dateStr,
-                "Email": row.email || "",
-                "Action": row.action || ""
-            });
-        });
-        
-        if (data.length === 0) {
-            alert("ไม่พบประวัติการเข้าใช้งาน");
-            return;
-        }
-        
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Usage History");
-        
-        const dateSuffix = new Date().toISOString().slice(0,10).replace(/-/g, "");
-        XLSX.writeFile(wb, `Usage_History_${dateSuffix}.xlsx`);
-        
-    } catch(err) {
-        console.error("Export Usage History Error:", err);
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
-    }
-};
 
 </script>
 <script>
