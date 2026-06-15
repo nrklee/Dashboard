@@ -10338,8 +10338,18 @@ var App = function App() {
       if (k === 'dateRange' || k === 'monthRange') {
         if (!item.date || !v || v.length !== 2) return true;
         var itemDate = new Date(item.date);
+        if (Number.isNaN(itemDate.getTime())) return true;
+        if (itemDate.getFullYear() > 2500) {
+            itemDate.setFullYear(itemDate.getFullYear() - 543);
+        }
         var sd = v[0] ? new Date(v[0]) : null;
+        if (sd && sd.getFullYear() > 2500) {
+            sd.setFullYear(sd.getFullYear() - 543);
+        }
         var ed = v[1] ? new Date(v[1]) : null;
+        if (ed && ed.getFullYear() > 2500) {
+            ed.setFullYear(ed.getFullYear() - 543);
+        }
         if (sd) {
             sd.setHours(0, 0, 0, 0);
         }
