@@ -2271,8 +2271,6 @@ var AUTH_SESSION_TOKEN_KEY = 'dashboardAuthSessionToken';
 var AUTH_SESSION_EXPIRES_AT_KEY = 'dashboardAuthSessionExpiresAt';
 var AUTH_USER_KEY = 'dashboardAuthUser';
 var SUPABASE_LAST_SYNC_PREFIX = 'supabaseLastSyncAt';
-var GOOGLE_SHEET_SOURCE_LABEL = 'Google Sheet Sales';
-var GOOGLE_TARGET_SOURCE_LABEL = 'Google Sheet Target';
 var MAX_SIZE_MB = 200;
 var COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
 var OTHER_COLOR = '#94a3b8';
@@ -3232,7 +3230,7 @@ var columnLettersToIndex = function columnLettersToIndex(letters) {
 var getMonthIndexFromItem = function getMonthIndexFromItem(item) {
   if (item && Number.isFinite(Number(item.monthIndex))) return Number(item.monthIndex);
   var dateStr = String((item === null || item === void 0 ? void 0 : item.date) || '').trim();
-  var m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  var m = dateStr.match(/^(\d{4})-(\d{2})-\d{2}/);
   if (m) return Number(m[2]) - 1;
   if (!dateStr) return null;
   var d = new Date(dateStr);
@@ -3241,11 +3239,19 @@ var getMonthIndexFromItem = function getMonthIndexFromItem(item) {
 var getMonthYearLabelFromItem = function getMonthYearLabelFromItem(item) {
   var dateStr = String((item === null || item === void 0 ? void 0 : item.date) || '').trim();
   if (!dateStr) return 'ไม่ระบุ';
-  var m = dateStr.match(/^(\d{4})-(\d{2})-\d{2}$/);
+  var m = dateStr.match(/^(\d{4})-(\d{2})-\d{2}/);
   if (m) {
      var monthIdx = Number(m[2]) - 1;
      var thMonthShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'][monthIdx];
      var thYear = Number(m[1]) > 2500 ? Number(m[1]) : Number(m[1]) + 543;
+     return thMonthShort + ' ' + (thYear % 100);
+  }
+  var d = new Date(dateStr);
+  if (Number.isFinite(d.getTime())) {
+     var monthIdx = d.getMonth();
+     var thMonthShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'][monthIdx];
+     var fullYear = d.getFullYear();
+     var thYear = fullYear > 2500 ? fullYear : fullYear + 543;
      return thMonthShort + ' ' + (thYear % 100);
   }
   return 'ไม่ระบุ';
@@ -3255,7 +3261,7 @@ var getYearLabelFromItem = function getYearLabelFromItem(item) {
   var direct = String((item === null || item === void 0 ? void 0 : item.year) || '').trim();
   if (direct) return normalizeYearLabel(direct);
   var dateStr = String((item === null || item === void 0 ? void 0 : item.date) || '').trim();
-  var m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  var m = dateStr.match(/^(\d{4})-(\d{2})-\d{2}/);
   if (m) return normalizeYearLabel(m[1]);
   if (!dateStr) {
     return fallbackToCurrent ? normalizeYearLabel(new Date().getFullYear()) : '';
@@ -5373,16 +5379,16 @@ var ImportExportScreen = function ImportExportScreen(props) {
   }, "\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 \u0E2A\u0E48\u0E07\u0E2D\u0E2D\u0E01 \u0E41\u0E25\u0E30\u0E25\u0E49\u0E32\u0E07\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E41\u0E25\u0E30\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5"
+    className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5 lg:col-span-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-primary text-xl"
   }, "payments"), /*#__PURE__*/React.createElement("h3", {
     className: "font-title-lg text-on-surface"
-  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 (Sales Data)")), /*#__PURE__*/React.createElement("p", {
+  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E41\u0E25\u0E30\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22 (Database Sync)")), /*#__PURE__*/React.createElement("p", {
     className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
-  }, "\u0E14\u0E36\u0E07 Sales \u0E08\u0E32\u0E01 Supabase \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+  }, "\u0E14\u0E36\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E08\u0E32\u0E01 Supabase \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 cache \u0E15\u0E32\u0E21 user", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
     className: "font-medium"
   }, "\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14: "), supabaseSyncLabel), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
@@ -5391,33 +5397,7 @@ var ImportExportScreen = function ImportExportScreen(props) {
     onClick: syncSalesFromSupabase
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-lg"
-  }, "cloud_sync"), "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Supabase"), /*#__PURE__*/React.createElement("button", {
-    className: "w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg py-3 px-4 rounded-xl border border-outline-variant transition-all active:scale-[0.98]",
-    onClick: function onClick() {
-      return openFilePickerForType('sales');
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-lg"
-  }, "upload_file"), "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Sales (\u0E44\u0E1F\u0E25\u0E4C Excel/CSV)"))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3 mb-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-primary text-xl"
-  }, "ads_click"), /*#__PURE__*/React.createElement("h3", {
-    className: "font-title-lg text-on-surface"
-  }, "\u0E41\u0E2B\u0E25\u0E48\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22 (Target Data)")), /*#__PURE__*/React.createElement("p", {
-    className: "text-body-sm text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/50"
-  }, "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E1F\u0E25\u0E4C Target \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E40\u0E1B\u0E23\u0E35\u0E22\u0E1A\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E01\u0E31\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22"), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-3"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg py-3 px-4 rounded-xl border border-outline-variant transition-all active:scale-[0.98]",
-    onClick: function onClick() {
-      return openFilePickerForType('target');
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "material-symbols-outlined text-lg"
-  }, "upload_file"), "\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14 Target (\u0E44\u0E1F\u0E25\u0E4C Excel/CSV)")))), /*#__PURE__*/React.createElement("div", {
+  }, "cloud_sync"), "\u0E0B\u0E34\u0E07\u0E04\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E31\u0E1A Supabase"))), /*#__PURE__*/React.createElement("div", {
     className: "bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col gap-5 lg:col-span-2 mt-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mb-2"
@@ -5476,7 +5456,7 @@ var ImportExportScreen = function ImportExportScreen(props) {
     allData: allData,
     onClose: function() { setShowBuilder(false); },
     onExport: function(config) { exportCustomSalesReport(config); }
-  }));
+  })));
 };
 
 
@@ -8279,14 +8259,32 @@ var App = function App() {
                                     _context12.n = 9;
                                     break;
                                   }
-                                  parts = dateStr.split('/');
-                                  if (parts.length < 3) {
-                                    _context12.n = 9;
-                                    break;
+                                  if (dateStr.includes('-')) {
+                                      var isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                                      if (isoMatch) {
+                                          year = parseInt(isoMatch[1], 10);
+                                          month = parseInt(isoMatch[2], 10) - 1;
+                                          day = parseInt(isoMatch[3], 10);
+                                      } else {
+                                          var d = new Date(dateStr);
+                                          year = d.getFullYear();
+                                          month = d.getMonth();
+                                          day = d.getDate();
+                                      }
+                                  } else if (dateStr.includes('/')) {
+                                      parts = dateStr.split('/');
+                                      if (parts.length >= 3) {
+                                          day = parseInt(parts[0], 10);
+                                          month = parseInt(parts[1], 10) - 1;
+                                          year = parseInt(parts[2], 10);
+                                      }
                                   }
-                                  day = parseInt(parts[0], 10);
-                                  month = parseInt(parts[1], 10) - 1;
-                                  year = parseInt(parts[2], 10);
+                                  
+                                  if (year === undefined || isNaN(year) || isNaN(month) || isNaN(day)) {
+                                      _context12.n = 9;
+                                      break;
+                                  }
+                                  
                                   if (year > 2500) year -= 543;
                                   dateObj = new Date(year, month, day);
                                   if (isNaN(dateObj.getTime())) {
@@ -12725,503 +12723,6 @@ var App = function App() {
       throw new Error("ตรวจสอบ Apps Script ไม่สำเร็จ: ".concat(message));
     });
   };
-  var base64ToUint8Array = function base64ToUint8Array(base64Text) {
-    var cleanText = String(base64Text || '').replace(/\s+/g, '');
-    if (!cleanText) return new Uint8Array(0);
-    var binaryText = atob(cleanText);
-    var output = new Uint8Array(binaryText.length);
-    for (var i = 0; i < binaryText.length; i++) {
-      output[i] = binaryText.charCodeAt(i);
-    }
-    return output;
-  };
-  var normalizeBridgeRowMatrix = function normalizeBridgeRowMatrix(rows) {
-    return Array.isArray(rows) ? rows.map(function (row) {
-      return (Array.isArray(row) ? row : []).map(function (cell) {
-        return cell === undefined || cell === null ? '' : cell;
-      });
-    }) : [];
-  };
-  var sanitizeWorkbookSheetName = function sanitizeWorkbookSheetName(sheetName) {
-    var usedNames = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var rawName = String(sheetName || '').trim() || 'Sheet';
-    var cleaned = rawName.replace(/[\\/?*:[\]]/g, ' ').replace(/\s+/g, ' ').trim() || 'Sheet';
-    var baseName = cleaned.slice(0, 31) || 'Sheet';
-    var nextName = baseName;
-    var suffix = 1;
-    while (usedNames[nextName]) {
-      var tail = "_".concat(suffix);
-      nextName = "".concat(baseName.slice(0, Math.max(1, 31 - tail.length))).concat(tail);
-      suffix += 1;
-    }
-    usedNames[nextName] = true;
-    return nextName;
-  };
-  var buildWorkbookFileFromSheets = function buildWorkbookFileFromSheets(workbookSheets, defaultFileName) {
-    var sourceInfo = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var normalizedSheets = Array.isArray(workbookSheets) ? workbookSheets : [];
-    if (!normalizedSheets.length) return null;
-    var workbook = XLSX.utils.book_new();
-    var usedSheetNames = {};
-    normalizedSheets.forEach(function (sheet, sheetIndex) {
-      var sheetRows = normalizeBridgeRowMatrix(sheet && sheet.rows);
-      var worksheet = XLSX.utils.aoa_to_sheet(sheetRows.length ? sheetRows : [[]]);
-      var safeSheetName = sanitizeWorkbookSheetName(sheet && sheet.name ? sheet.name : "Sheet".concat(sheetIndex + 1), usedSheetNames);
-      XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName);
-    });
-    var workbookArray = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-    var fileName = String(defaultFileName || sourceInfo.fileName || sourceInfo.spreadsheetName || 'source.xlsx').trim() || 'source.xlsx';
-    if (!/\.xlsx$/i.test(fileName)) fileName = "".concat(fileName, ".xlsx");
-    var workbookBlob = new Blob([workbookArray], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    return new File([workbookBlob], fileName, {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-  };
-  var extractSpreadsheetIdFromUrl = function extractSpreadsheetIdFromUrl(sourceUrl) {
-    var match = String(sourceUrl || '').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/i);
-    return match ? match[1] : '';
-  };
-  var extractDriveFileIdFromUrl = function extractDriveFileIdFromUrl(sourceUrl) {
-    var text = String(sourceUrl || '').trim();
-    if (!text) return '';
-    var spreadsheetId = extractSpreadsheetIdFromUrl(text);
-    if (spreadsheetId) return spreadsheetId;
-    var fileMatch = text.match(/\/file\/d\/([a-zA-Z0-9-_]+)/i);
-    if (fileMatch && fileMatch[1]) return fileMatch[1];
-    var idMatch = text.match(/[?&]id=([a-zA-Z0-9-_]+)/i);
-    if (idMatch && idMatch[1]) return idMatch[1];
-    if (/^[a-zA-Z0-9-_]{20,}$/.test(text) && text.indexOf('/') < 0) return text;
-    return '';
-  };
-  var buildGoogleSheetExportUrl = function buildGoogleSheetExportUrl(sourceUrl) {
-    var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
-    if (!spreadsheetId) {
-      throw new Error('ไม่พบ Spreadsheet ID จากลิงก์ต้นทาง');
-    }
-    return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/export?format=xlsx");
-  };
-  var buildGoogleSheetCsvExportUrl = function buildGoogleSheetCsvExportUrl(sourceUrl) {
-    var spreadsheetId = extractSpreadsheetIdFromUrl(sourceUrl);
-    if (!spreadsheetId) {
-      throw new Error('ไม่พบ Spreadsheet ID จากลิงก์ต้นทาง');
-    }
-    return "https://docs.google.com/spreadsheets/d/".concat(encodeURIComponent(spreadsheetId), "/gviz/tq?tqx=out:csv");
-  };
-  var isLikelyDirectSourceFileUrl = function isLikelyDirectSourceFileUrl(sourceUrl) {
-    var safeUrl = String(sourceUrl || '').trim();
-    if (!safeUrl) return false;
-    if (extractSpreadsheetIdFromUrl(safeUrl)) return true;
-    if (extractDriveFileIdFromUrl(safeUrl)) return true;
-    if (/\.xlsx(?:[?#].*)?$/i.test(safeUrl) || /\.xlsm?(?:[?#].*)?$/i.test(safeUrl) || /\.csv(?:[?#].*)?$/i.test(safeUrl)) return true;
-    if (/\/export\?/i.test(safeUrl) || /[?&]export=download/i.test(safeUrl) || /\/uc\?/i.test(safeUrl)) return true;
-    return /^https?:\/\//i.test(safeUrl);
-  };
-  var isOneDriveSourceUrl = function isOneDriveSourceUrl(sourceUrl) {
-    var safeUrl = String(sourceUrl || '').trim();
-    return /^https?:\/\/(?:1drv\.ms|onedrive\.live\.com|.*\.sharepoint\.com)\//i.test(safeUrl);
-  };
-  var inferFileNameFromSourceUrl = function inferFileNameFromSourceUrl(sourceUrl, fallbackFileName) {
-    var safeUrl = String(sourceUrl || '').trim();
-    if (!safeUrl) return String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx';
-    var fileNameMatch = safeUrl.match(/\/([^/?#]+?\.(?:xlsx|xlsm|xls|csv))(?:[?#]|$)/i);
-    if (fileNameMatch && fileNameMatch[1]) {
-      try {
-        return decodeURIComponent(fileNameMatch[1]).trim();
-      } catch (_error2) {
-        return String(fileNameMatch[1]).trim();
-      }
-    }
-    return String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx';
-  };
-  var buildDirectSourceFetchInfo = function buildDirectSourceFetchInfo(sourceUrl, fallbackFileName) {
-    var safeUrl = String(sourceUrl || '').trim();
-    var spreadsheetId = extractSpreadsheetIdFromUrl(safeUrl);
-    if (spreadsheetId) {
-      return {
-        requestUrl: buildGoogleSheetExportUrl(safeUrl),
-        kind: 'google-sheet-export',
-        fileName: String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx'
-      };
-    }
-    var driveFileId = extractDriveFileIdFromUrl(safeUrl);
-    if (driveFileId) {
-      return {
-        requestUrl: "https://drive.google.com/uc?export=download&id=".concat(encodeURIComponent(driveFileId)),
-        kind: 'drive-file',
-        fileName: inferFileNameFromSourceUrl(safeUrl, fallbackFileName)
-      };
-    }
-    if (!/^https?:\/\//i.test(safeUrl)) {
-      throw new Error('ลิงก์ต้นทางไม่ถูกต้อง');
-    }
-    return {
-      requestUrl: safeUrl,
-      kind: 'direct-file',
-      fileName: inferFileNameFromSourceUrl(safeUrl, fallbackFileName)
-    };
-  };
-  var buildDirectSourceFetchCandidates = function buildDirectSourceFetchCandidates(sourceUrl, fallbackFileName) {
-    var safeUrl = String(sourceUrl || '').trim();
-    var preferredFileName = String(fallbackFileName || 'source.xlsx').trim() || 'source.xlsx';
-    var spreadsheetId = extractSpreadsheetIdFromUrl(safeUrl);
-    var primaryInfo, csvFileName, directInfo;
-    if (spreadsheetId) {
-      primaryInfo = buildDirectSourceFetchInfo(safeUrl, preferredFileName);
-      csvFileName = preferredFileName.replace(/\.(xlsx|xlsm?|csv)$/i, '') || 'source';
-      csvFileName = "".concat(csvFileName, ".csv");
-      return [primaryInfo, {
-        requestUrl: buildGoogleSheetCsvExportUrl(safeUrl),
-        kind: 'google-sheet-csv',
-        fileName: csvFileName
-      }];
-    }
-    directInfo = buildDirectSourceFetchInfo(safeUrl, preferredFileName);
-    return [directInfo];
-  };
-  var extractPreferredSalesYearHint = function extractPreferredSalesYearHint(folderPath, fileName, sheetName) {
-    var sources = [folderPath, fileName, sheetName];
-    for (var i = 0; i < sources.length; i++) {
-      var yearLabel = extractYearLabelFromText(sources[i]);
-      if (yearLabel) return normalizeYearLabel(yearLabel);
-    }
-    return '';
-  };
-  var extractPreferredSalesMetricHint = function extractPreferredSalesMetricHint(folderPath, fileName, sheetName) {
-    var text = [folderPath, fileName, sheetName].map(function (value) {
-      return String(value || '').toLowerCase();
-    }).join(' ').replace(/\s+/g, '');
-    if (!text) return '';
-    if (text.includes('ตัน') || text.includes('ton')) return 'ton';
-    if (text.includes('ชิ้น') || text.includes('qty') || text.includes('quantity') || text.includes('จำนวน')) return 'qty';
-    if (text.includes('บาท') || text.includes('sales') || text.includes('value') || text.includes('ยอดขาย')) return 'sales';
-    return '';
-  };
-  var extractPreferredSalesPeriodHint = function extractPreferredSalesPeriodHint(folderPath, fileName, sheetName) {
-    var text = [folderPath, fileName, sheetName].map(function (value) {
-      return String(value || '').toLowerCase();
-    }).join(' ').replace(/\s+/g, '');
-    if (!text) return '';
-    if (text.includes('รายปี') || text.includes('yearly') || text.includes('annual')) return 'year';
-    if (text.includes('รายเดือน') || text.includes('เดือน') || text.includes('monthly')) return 'month';
-    return '';
-  };
-  var mergeSalesUpdateMetaValues = function mergeSalesUpdateMetaValues(baseMeta, nextMeta) {
-    var mergedMeta = normalizeSalesUpdateMeta(baseMeta);
-    var normalizedNext = normalizeSalesUpdateMeta(nextMeta);
-    ['sales', 'qty', 'ton'].forEach(function (metricKey) {
-      mergedMeta.monthly[metricKey] = _objectSpread(_objectSpread({}, mergedMeta.monthly[metricKey]), normalizedNext.monthly[metricKey] || {});
-      mergedMeta.yearly[metricKey] = _objectSpread(_objectSpread({}, mergedMeta.yearly[metricKey]), normalizedNext.yearly[metricKey] || {});
-    });
-    return mergedMeta;
-  };
-  var parseFileNameFromDisposition = function parseFileNameFromDisposition(dispositionValue) {
-    var safeValue = String(dispositionValue || '');
-    if (!safeValue) return '';
-    var utfMatch = safeValue.match(/filename\*=UTF-8''([^;]+)/i);
-    if (utfMatch && utfMatch[1]) {
-      try {
-        return decodeURIComponent(utfMatch[1]).trim();
-      } catch (_error) {}
-    }
-    var basicMatch = safeValue.match(/filename=\"?([^\";]+)\"?/i);
-    return basicMatch && basicMatch[1] ? String(basicMatch[1]).trim() : '';
-  };
-  var fetchSourceLinkFile = function fetchSourceLinkFile(sourceUrl, fallbackFileName, statusLabel) {
-    var fetchCandidates = buildDirectSourceFetchCandidates(sourceUrl, fallbackFileName);
-    var lastError = null;
-    var attemptFetch = function attemptFetch(index) {
-      var fetchInfo, controller, timeoutId;
-      if (index >= fetchCandidates.length) {
-        throw lastError || new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ"));
-      }
-      fetchInfo = fetchCandidates[index];
-      controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      timeoutId = controller ? window.setTimeout(function () {
-        return controller.abort();
-      }, 240000) : null;
-      return fetch(fetchInfo.requestUrl, {
-        method: 'GET',
-        redirect: 'follow',
-        cache: 'no-store',
-        credentials: 'omit',
-        mode: 'cors',
-        referrerPolicy: 'no-referrer',
-        signal: controller ? controller.signal : undefined
-      }).then(function (response) {
-        var dispositionName = parseFileNameFromDisposition(response.headers.get('content-disposition'));
-        if (!response.ok) {
-          throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ไม่สำเร็จ (HTTP ").concat(response.status, ")"));
-        }
-        return response.blob().then(function (blob) {
-          var inferredMimeType;
-          if (!blob || !blob.size) {
-            throw new Error("ไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ว่างเปล่าหรือไม่มีข้อมูล"));
-          }
-          inferredMimeType = blob.type || (/csv$/i.test(fetchInfo.fileName || '') ? 'text/csv;charset=utf-8' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-          return new File([blob], dispositionName || fetchInfo.fileName || fallbackFileName || 'source.xlsx', {
-            type: inferredMimeType
-          });
-        });
-      }).catch(function (error) {
-        if (error && error.name === 'AbortError') {
-          throw new Error("โหลดไฟล์".concat(statusLabel || 'ข้อมูล', " จากลิงก์ใช้เวลานานเกินไป"));
-        }
-        lastError = error;
-        if (index + 1 < fetchCandidates.length) {
-          return attemptFetch(index + 1);
-        }
-        throw error;
-      }).finally(function () {
-        if (timeoutId) window.clearTimeout(timeoutId);
-      });
-    };
-    return attemptFetch(0);
-  };
-  var buildFileFromSyncResult = function buildFileFromSyncResult(result, defaultFileName) {
-    var sourceInfo = result && result.source && _typeof(result.source) === 'object' ? result.source : {};
-    var workbookFile, rowMatrix, workbook, worksheet, workbookArray, workbookBlob, csvText, csvBlob, binaryBytes, fileName, fileMimeType, fileBlob;
-    if (Array.isArray(result && result.workbookSheets) && result.workbookSheets.length > 0) {
-      workbookFile = buildWorkbookFileFromSheets(result.workbookSheets, defaultFileName, sourceInfo);
-      if (workbookFile) return workbookFile;
-    }
-    if (result && result.fileBase64) {
-      binaryBytes = base64ToUint8Array(result.fileBase64);
-      fileName = String(result.fileName || sourceInfo.fileName || defaultFileName || 'source.xlsx');
-      fileMimeType = String(result.mimeType || sourceInfo.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      fileBlob = new Blob([binaryBytes], {
-        type: fileMimeType
-      });
-      return new File([fileBlob], fileName, {
-        type: fileMimeType
-      });
-    }
-    rowMatrix = Array.isArray(result && result.rows) ? result.rows.map(function (row) {
-      return (Array.isArray(row) ? row : []).map(function (cell) {
-        return cell === undefined || cell === null ? '' : cell;
-      });
-    }) : [];
-    if (rowMatrix.length > 0) {
-      workbook = XLSX.utils.book_new();
-      worksheet = XLSX.utils.aoa_to_sheet(rowMatrix);
-      XLSX.utils.book_append_sheet(workbook, worksheet, sourceInfo.sheetName || 'Sheet1');
-      workbookArray = XLSX.write(workbook, {
-        bookType: 'xlsx',
-        type: 'array'
-      });
-      workbookBlob = new Blob([workbookArray], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
-      return new File([workbookBlob], defaultFileName || 'source.xlsx', {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
-    }
-    csvText = String(result && result.csv || '');
-    csvBlob = new Blob([csvText], {
-      type: 'text/csv;charset=utf-8'
-    });
-    return new File([csvBlob], (defaultFileName || 'source').replace(/\.xlsx$/i, '.csv'), {
-      type: 'text/csv;charset=utf-8'
-    });
-  };
-  var loadChunkedSheetRows = /*#__PURE__*/function () {
-    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(mode, statusLabel) {
-      var rowChunkSize, fileChunkSize,
-        extraPayload,
-        shouldUseWorkbookRows,
-        firstResult,
-        sourceInfo,
-        totalChunks,
-        aggregatedFileBase64,
-        workbookSheetMap,
-        aggregatedWorkbookSheets,
-        appendWorkbookSheets,
-        nextSheetIndex,
-        nextRowOffset,
-        totalRows,
-        processedRows,
-        hasMore,
-        headerRow,
-        aggregatedRows,
-        initialRows,
-        _i3,
-        chunkResult,
-        chunkRows;
-      return _regenerator().w(function (_context14) {
-        while (1) switch (_context14.n) {
-          case 0:
-            rowChunkSize = 350;
-            fileChunkSize = 350000;
-            extraPayload = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-            shouldUseWorkbookRows = !(extraPayload && (extraPayload.workbookRows === false || String(extraPayload.workbookRows || '').toLowerCase() === 'false'));
-            startLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet..."), 12, true);
-            _context14.n = 1;
-            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
-              chunkIndex: 0,
-              chunkSize: rowChunkSize,
-              fileChunkSize: fileChunkSize,
-              workbookRows: shouldUseWorkbookRows
-            }));
-          case 1:
-            firstResult = _context14.v;
-            sourceInfo = firstResult && firstResult.source && _typeof(firstResult.source) === 'object' ? firstResult.source : {};
-            totalChunks = Number(sourceInfo.totalChunks || 1);
-            if (!(sourceInfo.transport === 'file-chunk' || !firstResult.fileBase64 && firstResult.fileChunkBase64 && totalChunks > 1)) {
-              _context14.n = 6;
-              break;
-            }
-            aggregatedFileBase64 = String(firstResult.fileChunkBase64 || '');
-            _i3 = 1;
-          case 2:
-            if (!(_i3 < totalChunks)) {
-              _context14.n = 5;
-              break;
-            }
-            updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 12 + Math.round((_i3 + 1) / Math.max(totalChunks, 1) * 36), false);
-            _context14.n = 3;
-            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
-              chunkIndex: _i3,
-              chunkSize: rowChunkSize,
-              fileChunkSize: fileChunkSize,
-              workbookRows: shouldUseWorkbookRows,
-              totalChunks: totalChunks,
-              fileName: sourceInfo.fileName || '',
-              mimeType: sourceInfo.mimeType || ''
-            }));
-          case 3:
-            chunkResult = _context14.v;
-            aggregatedFileBase64 += String(chunkResult.fileChunkBase64 || '');
-          case 4:
-            _i3++;
-            _context14.n = 2;
-            break;
-          case 5:
-            firstResult.fileBase64 = aggregatedFileBase64;
-            return _context14.a(2, firstResult);
-          case 6:
-            if (!(sourceInfo.transport === 'workbook-rows-chunk' || Array.isArray(firstResult.workbookSheets) && firstResult.workbookSheets.length > 0)) {
-              _context14.n = 13;
-              break;
-            }
-            workbookSheetMap = {};
-            aggregatedWorkbookSheets = [];
-            appendWorkbookSheets = function appendWorkbookSheets(workbookSheets) {
-              (Array.isArray(workbookSheets) ? workbookSheets : []).forEach(function (sheet, sheetIndex) {
-                var rawName = String(sheet && sheet.name || '').trim() || "Sheet".concat(sheetIndex + 1);
-                var normalizedRows = normalizeBridgeRowMatrix(sheet && sheet.rows);
-                var targetSheet = workbookSheetMap[rawName];
-                if (!targetSheet) {
-                  targetSheet = {
-                    name: rawName,
-                    rows: [],
-                    lastRow: Number(sheet && sheet.lastRow || 0),
-                    lastColumn: Number(sheet && sheet.lastColumn || 0)
-                  };
-                  workbookSheetMap[rawName] = targetSheet;
-                  aggregatedWorkbookSheets.push(targetSheet);
-                }
-                if (Number(sheet && sheet.lastRow || 0) > targetSheet.lastRow) targetSheet.lastRow = Number(sheet && sheet.lastRow || 0);
-                if (Number(sheet && sheet.lastColumn || 0) > targetSheet.lastColumn) targetSheet.lastColumn = Number(sheet && sheet.lastColumn || 0);
-                if (normalizedRows.length > 0) targetSheet.rows = targetSheet.rows.concat(normalizedRows);
-              });
-            };
-            appendWorkbookSheets(firstResult.workbookSheets);
-            nextSheetIndex = Number(sourceInfo.nextSheetIndex || 0);
-            nextRowOffset = Number(sourceInfo.nextRowOffset || 0);
-            totalRows = Math.max(0, Number(sourceInfo.totalRows || 0));
-            processedRows = Math.max(0, Number(sourceInfo.processedRows || 0));
-            hasMore = Boolean(sourceInfo.hasMore);
-            _i3 = 1;
-          case 7:
-            if (!hasMore) {
-              _context14.n = 12;
-              break;
-            }
-            updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(totalRows > 0 ? Math.min(100, Math.round(processedRows / Math.max(totalRows, 1) * 100)) : _i3, "%)"), 12 + Math.round((totalRows > 0 ? processedRows / Math.max(totalRows, 1) : Math.min(_i3 / 12, 1)) * 36), false);
-            _context14.n = 8;
-            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
-              workbookRows: shouldUseWorkbookRows,
-              chunkSize: rowChunkSize,
-              fileChunkSize: fileChunkSize,
-              workbookSheetIndex: nextSheetIndex,
-              workbookRowOffset: nextRowOffset
-            }));
-          case 8:
-            chunkResult = _context14.v;
-            appendWorkbookSheets(chunkResult && chunkResult.workbookSheets);
-            sourceInfo = chunkResult && chunkResult.source && _typeof(chunkResult.source) === 'object' ? chunkResult.source : sourceInfo;
-            nextSheetIndex = Number(sourceInfo.nextSheetIndex || 0);
-            nextRowOffset = Number(sourceInfo.nextRowOffset || 0);
-            totalRows = Math.max(totalRows, Number(sourceInfo.totalRows || 0));
-            processedRows = Math.max(processedRows, Number(sourceInfo.processedRows || 0));
-            hasMore = Boolean(sourceInfo.hasMore);
-          case 9:
-            _i3 += 1;
-            _context14.n = 7;
-            break;
-          case 10:
-            break;
-          case 11:
-            break;
-          case 12:
-            firstResult.source = _objectSpread(_objectSpread({}, sourceInfo), {}, {
-              transport: 'workbook-rows-chunk',
-              hasMore: false,
-              sheetName: '',
-              fileName: String(sourceInfo.fileName || sourceInfo.spreadsheetName || 'source.xlsx').trim() || 'source.xlsx'
-            });
-            firstResult.workbookSheets = aggregatedWorkbookSheets;
-            firstResult.rows = [];
-            return _context14.a(2, firstResult);
-          case 13:
-            initialRows = normalizeBridgeRowMatrix(firstResult.rows);
-            if (!(sourceInfo.transport === 'rows-chunk' || totalChunks > 1)) {
-              _context14.n = 19;
-              break;
-            }
-            headerRow = Array.isArray(firstResult.header) ? firstResult.header.map(function (cell) {
-              return cell === undefined || cell === null ? '' : cell;
-            }) : initialRows.length > 0 ? initialRows[0] : [];
-            aggregatedRows = initialRows.length > 0 ? initialRows.slice(1) : [];
-            _i3 = 1;
-          case 14:
-            if (!(_i3 < totalChunks)) {
-              _context14.n = 18;
-              break;
-            }
-            updateLoadingStatus("กำลังโหลด".concat(statusLabel || 'ข้อมูล', " จาก Google Sheet (").concat(_i3 + 1, "/").concat(totalChunks, ")"), 12 + Math.round((_i3 + 1) / Math.max(totalChunks, 1) * 36), false);
-            _context14.n = 15;
-            return callAIWebApp(mode, '', {}, _objectSpread(_objectSpread({}, extraPayload), {}, {
-              chunkIndex: _i3,
-              chunkSize: rowChunkSize,
-              fileChunkSize: fileChunkSize,
-              workbookRows: shouldUseWorkbookRows
-            }));
-          case 15:
-            chunkResult = _context14.v;
-            chunkRows = normalizeBridgeRowMatrix(chunkResult.rows);
-            if (chunkRows.length > 0) aggregatedRows = aggregatedRows.concat(chunkRows);
-          case 16:
-            _i3++;
-            _context14.n = 14;
-            break;
-          case 17:
-            break;
-          case 18:
-            firstResult.rows = [headerRow].concat(aggregatedRows);
-          case 19:
-            return _context14.a(2, firstResult);
-        }
-      }, _callee14);
-    }));
-    return function loadChunkedSheetRows(_x5, _x6) {
-      return _ref14.apply(this, arguments);
-    };
-  }();
   useEffect(function () {
     setIsAuthChecking(false);
   }, []);
@@ -13567,8 +13068,6 @@ var App = function App() {
   })).size;
   var salesDataRowsCount = (allData.monthly || []).length + (effectiveYearlyData || []).length;
   var targetDataRowsCount = (allData.targets || []).length;
-  var uploadedSalesFileLabel = uploadedFileNames.sales || GOOGLE_SHEET_SOURCE_LABEL;
-  var uploadedTargetFileLabel = uploadedFileNames.target || GOOGLE_TARGET_SOURCE_LABEL;
   var supabaseSyncLabel = formatLastSyncLabel(lastSupabaseSyncAt);
   var getFilterLabel = function(dbKey, defaultLabel) {
     try {
@@ -14117,12 +13616,6 @@ var App = function App() {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
-      return handleViewModeChange('daily');
-    },
-    className: "toggle-btn ".concat(viewMode === 'daily' ? 'active' : '')
-  }, "วัน"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: function onClick() {
       return handleViewModeChange('monthly');
     },
     className: "toggle-btn ".concat(viewMode === 'monthly' ? 'active' : '')
@@ -14516,17 +14009,11 @@ var App = function App() {
     className: "filters-source-meta-row"
   }, /*#__PURE__*/React.createElement("span", {
     className: "filters-source-label"
-  }, "ยอดขาย"), /*#__PURE__*/React.createElement("code", {
-    className: "filters-source-badge bg-slate-100 px-1 rounded"
-  }, uploadedSalesFileLabel), /*#__PURE__*/React.createElement("span", {
-    className: "filters-source-sep"
-  }, "·"), /*#__PURE__*/React.createElement("span", null, "อัปเดตล่าสุด ", supabaseSyncLabel)), /*#__PURE__*/React.createElement("div", {
-    className: "filters-source-meta-row"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "filters-source-label"
-  }, "Target"), /*#__PURE__*/React.createElement("code", {
-    className: "filters-source-badge bg-slate-100 px-1 rounded"
-  }, uploadedTargetFileLabel))), /*#__PURE__*/React.createElement("div", {
+  }, "Supabase Sync"), /*#__PURE__*/React.createElement("span", {
+    className: "filters-source-sep ml-2"
+  }, "·"), /*#__PURE__*/React.createElement("span", {
+    className: "ml-2"
+  }, "อัปเดตล่าสุด ", supabaseSyncLabel))), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
     if (f.key === 'dateRange' || f.key === 'monthRange') {
