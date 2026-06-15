@@ -10340,6 +10340,9 @@ var App = function App() {
         var itemDate = new Date(item.date);
         var sd = v[0] ? new Date(v[0]) : null;
         var ed = v[1] ? new Date(v[1]) : null;
+        if (sd) {
+            sd.setHours(0, 0, 0, 0);
+        }
         if (ed && v[1].length === 7 && v[1].includes('-')) {
             ed = new Date(ed.getFullYear(), ed.getMonth() + 1, 0, 23, 59, 59, 999);
         } else if (ed) {
