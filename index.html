@@ -2026,6 +2026,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                 return {
                     year_label: String(row.year || ''),
                     month_index: Number(row.monthIndex || 0),
+                    day: Number(row.day || 0),
                     region: row.region || '',
                     province: row.province || '',
                     district: row.district || '',
@@ -2041,6 +2042,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                 return {
                     year_label: String(row.year || ''),
                     month_index: Number(row.monthIndex || 0),
+                    day: Number(row.day || 0),
                     region: row.region || '',
                     province: row.province || '',
                     district: row.district || '',
@@ -2112,6 +2114,7 @@ window.downloadSalesFromSupabase = async function() {
         // Wait, the javascript SDK's default limit is 1000, we should override it or paginate.
         let allMonthly = [];
         let allYearly = [];
+        let allDaily = [];
         
         // Fetch Monthly
         let hasMore = true;
@@ -2144,12 +2147,34 @@ window.downloadSalesFromSupabase = async function() {
             }
         }
         
+        // Fetch Daily
+        hasMore = true;
+        start = 0;
+        while(hasMore) {
+            const { data, error } = await window.supabase.from('dashboard_daily_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allDaily = allDaily.concat(data);
+                start += limit;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
+        
         // Map DB columns back to frontend expected object format
-        const mapRow = (r, isYearly) => {
+        const mapRow = (r, isYearly, isDaily) => {
             const isTargetRow = r.id.startsWith('t');
             const d = new Date();
             // Create a fake date for filtering purposes
-            const dateStr = isYearly ? `${r.year}-01-01T00:00:00.000Z` : `${r.year}-${String(r.month_index + 1).padStart(2,'0')}-01T00:00:00.000Z`;
+            let dateStr = `${r.year}-01-01T00:00:00.000Z`;
+            if (!isYearly) {
+                if (isDaily) {
+                    dateStr = `${r.year}-${String(r.month_index + 1).padStart(2,'0')}-${String(r.day || 1).padStart(2,'0')}T00:00:00.000Z`;
+                } else {
+                    dateStr = `${r.year}-${String(r.month_index + 1).padStart(2,'0')}-01T00:00:00.000Z`;
+                }
+            }
             
             const obj = {
                 id: r.id,
@@ -2174,12 +2199,16 @@ window.downloadSalesFromSupabase = async function() {
                 obj.monthIndex = Number(r.month_index);
                 obj.date = dateStr;
             }
+            if (isDaily) {
+                obj.day = Number(r.day || 0);
+            }
             return obj;
         };
         
         const finalData = {
-            monthly: allMonthly.map(r => mapRow(r, false)),
-            yearly: allYearly.map(r => mapRow(r, true))
+            monthly: allMonthly.map(r => mapRow(r, false, false)),
+            yearly: allYearly.map(r => mapRow(r, true, false)),
+            daily: allDaily.map(r => mapRow(r, false, true))
         };
         
         return finalData;
