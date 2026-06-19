@@ -10605,18 +10605,7 @@ return _context20.a(2, false);
   var getUniqueValues = function getUniqueValues(key) {
     if (lockedFilters[key] && lockedFilters[key].length > 0) return lockedFilters[key];
     var context = rawData.filter(function (item) {
-      return item && _typeof(item) === 'object' && Object.entries(filters).every(function (_ref42) {
-        var _ref43 = _slicedToArray(_ref42, 2),
-          k = _ref43[0],
-          v = _ref43[1];
-        if (k === key || !v || v.length === 0) return true;
-        var itemValue = getFilterItemValue(item, k);
-        if (k === 'month') {
-          if (!itemValue) return true;
-          return v.includes(itemValue);
-        }
-        return v.includes(itemValue);
-      });
+      return item && _typeof(item) === 'object' && matchesFilters(item, false, [key]);
     });
     if (key === 'month') {
       return THAI_MONTHS.filter(function (monthLabel) {
