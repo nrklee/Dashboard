@@ -8296,19 +8296,20 @@ var App = function App() {
                                   headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
                                   dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
                                   headerRow.forEach(function(colName, idx) {
-                                      if (colName === 'SALES_DATE') dbMap.date = idx;
-                                      if (colName === 'SALES_AMOUNT') dbMap.amount = idx;
-                                      if (colName === 'SALES_QTY') dbMap.qty = idx;
-                                      if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)') dbMap.ton = idx;
-                                      if (colName === 'REGION') dbMap.region = idx;
-                                      if (colName === 'SECTION') dbMap.province = idx; // EXPLICITLY SWAPPED
-                                      if (colName === 'PROVINCE') dbMap.district = idx; // EXPLICITLY SWAPPED
-                                      if (colName === 'CV_NAME') dbMap.cv = idx;
-                                      if (colName === 'CATEGORY') dbMap.group = idx;
-                                      if (colName === 'BRAND') dbMap.brand = idx;
-                                      if (colName === 'SUB_CATEGORY') dbMap.model = idx;
-                                      if (colName === 'SIZE') dbMap.size = idx;
-                                      if (colName === 'BRAND_CODE') dbMap.sku = idx;
+                                      var cLower = colName.toLowerCase().replace(/\\s+/g, '');
+                                      if (colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') dbMap.date = idx;
+                                      if (colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') dbMap.amount = idx;
+                                      if (colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') dbMap.qty = idx;
+                                      if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) dbMap.ton = idx;
+                                      if (colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') dbMap.region = idx;
+                                      if (colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') dbMap.province = idx; // keeping the original logic of mapping section to province
+                                      if (colName === 'PROVINCE' || cLower === 'จังหวัด') dbMap.district = idx; // keeping original logic of mapping province to district
+                                      if (colName === 'CV_NAME' || cLower.includes('cv') || cLower === 'ลูกค้า') dbMap.cv = idx;
+                                      if (colName === 'CATEGORY' || cLower.includes('กลุ่ม') || cLower === 'group' || cLower === 'cat') dbMap.group = idx;
+                                      if (colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ') dbMap.brand = idx;
+                                      if (colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model') dbMap.model = idx;
+                                      if (colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก') dbMap.size = idx;
+                                      if (colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า') || cLower.includes('code')) dbMap.sku = idx;
                                       if (colName === 'REBATE' || colName === 'ประเภท REBATE') dbMap.rebate = idx;
                                       if (colName === 'SET' || colName === 'ประเภท SET') dbMap.set = idx;
                                   });
@@ -12964,7 +12965,7 @@ return _context20.a(2, false);
         if (lastSync === today) return;
     }
     if (window.downloadSalesFromSupabase) {
-        if (!isAutoSync) {
+        if (isAutoSync !== true) {
             updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
         }
         window.downloadSalesFromSupabase().then(function(finalData) {
@@ -12981,19 +12982,19 @@ return _context20.a(2, false);
             var timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
-            if (!isAutoSync) {
+            if (isAutoSync !== true) {
                 finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
                 setTimeout(() => alert('ดึงข้อมูลจากคลาวด์ล่าสุดเรียบร้อยแล้ว!'), 100);
             }
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
-            if (!isAutoSync) {
+            if (isAutoSync !== true) {
                 finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
                 setTimeout(() => alert('เกิดข้อผิดพลาดในการซิงค์: ' + err.message), 100);
             }
         });
     } else {
-        if (!isAutoSync) alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
+        if (isAutoSync !== true) alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
     }
   };
   var applyAIAction = function applyAIAction(actionPayload) {
@@ -13768,10 +13769,10 @@ return _context20.a(2, false);
     className: "absolute right-0 mt-2 w-56 bg-white dark:bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
   },
     /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wide border-b border-outline-variant/30 mb-1" }, "เลือกเทมเปลต"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, " 1. ผู้บริหาร"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. พนักงานขาย"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 3. สินค้า (Product Focus)"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 1. ภาพรวม"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, /*#__PURE__*/React.createElement(Icon, { name: "Leaderboard", size: 14 }), " 2. ผู้บริหาร"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 3. พนักงานขาย"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 4. สินค้า (Product Focus)"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table")
   )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
