@@ -1981,23 +1981,103 @@ function saveSettings(newSettings) {
 
 window.openColumnSettingsModal = function() {
     let m = document.getElementById('my-col-modal');
-    if(!m) {
-        m = document.createElement('div');
-        m.id = 'my-col-modal';
-        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-        const inner = document.createElement('div');
-        inner.className = 'p-4';
-        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = 'X ปิด';
-        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
-        closeBtn.onclick = () => m.style.display = 'none';
-        inner.appendChild(closeBtn);
-        
-        m.appendChild(inner);
-        document.body.appendChild(m);
+    if(m) {
+        m.remove();
     }
+    m = document.createElement('div');
+    m.id = 'my-col-modal';
+    m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    
+    const inner = document.createElement('div');
+    inner.className = 'p-6';
+    inner.style.cssText = 'background:white;border-radius:12px;width:700px;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 10px 25px rgba(0,0,0,0.2);display:flex;flex-direction:column;gap:16px;';
+    
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;padding-bottom:12px;position:sticky;top:0;background:white;z-index:10;';
+    header.innerHTML = '<h2 style="margin:0;font-size:18px;font-weight:bold;color:#1f2937;">ตั้งค่าชื่อและซ่อนคอลัมน์</h2>';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;padding:4px;';
+    closeBtn.onclick = () => m.style.display = 'none';
+    header.appendChild(closeBtn);
+    inner.appendChild(header);
+
+    const listContainer = document.createElement('div');
+    listContainer.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding-bottom:20px;';
+    
+    // Copy current settings
+    let localSettings = JSON.parse(JSON.stringify(currentSettings));
+    
+    localSettings.forEach((col, idx) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;';
+        
+        const checkWrap = document.createElement('div');
+        checkWrap.style.cssText = 'display:flex;align-items:center;gap:6px;width:120px;';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = col.visible;
+        checkbox.style.cssText = 'width:16px;height:16px;cursor:pointer;';
+        checkbox.onchange = (e) => { localSettings[idx].visible = e.target.checked; };
+        
+        const label = document.createElement('label');
+        label.innerText = 'แสดงคอลัมน์';
+        label.style.cssText = 'font-size:13px;color:#4b5563;cursor:pointer;';
+        label.onclick = () => checkbox.click();
+        
+        checkWrap.appendChild(checkbox);
+        checkWrap.appendChild(label);
+        
+        const origName = document.createElement('div');
+        origName.innerText = col.originalName;
+        origName.style.cssText = 'width:200px;font-size:13px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;';
+        origName.title = col.originalName;
+        
+        const aliasInput = document.createElement('input');
+        aliasInput.type = 'text';
+        aliasInput.value = col.alias;
+        aliasInput.placeholder = 'ชื่อที่ต้องการแสดง';
+        aliasInput.style.cssText = 'flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;outline:none;';
+        aliasInput.oninput = (e) => { localSettings[idx].alias = e.target.value; };
+        
+        row.appendChild(checkWrap);
+        row.appendChild(origName);
+        row.appendChild(aliasInput);
+        listContainer.appendChild(row);
+    });
+    
+    inner.appendChild(listContainer);
+    
+    const footer = document.createElement('div');
+    footer.style.cssText = 'display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e5e7eb;padding-top:16px;position:sticky;bottom:0;background:white;z-index:10;';
+    
+    const resetBtn = document.createElement('button');
+    resetBtn.innerText = 'คืนค่าเริ่มต้น';
+    resetBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-weight:500;cursor:pointer;font-size:14px;';
+    resetBtn.onclick = () => {
+        if(confirm('ต้องการคืนค่าการตั้งค่าคอลัมน์ทั้งหมดเป็นค่าเริ่มต้นใช่หรือไม่?')) {
+            saveSettings(defaultColumns);
+            window.location.reload();
+        }
+    };
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.innerText = 'บันทึกการตั้งค่า';
+    saveBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:none;background:#3b82f6;color:white;font-weight:500;cursor:pointer;font-size:14px;';
+    saveBtn.onclick = () => {
+        saveSettings(localSettings);
+        m.style.display = 'none';
+        alert('บันทึกการตั้งค่าคอลัมน์เรียบร้อยแล้ว ระบบจะทำการรีเฟรชหน้าจอใหม่');
+        window.location.reload();
+    };
+    
+    footer.appendChild(resetBtn);
+    footer.appendChild(saveBtn);
+    inner.appendChild(footer);
+    
+    m.appendChild(inner);
+    document.body.appendChild(m);
     m.style.display = 'flex';
 }
 window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
@@ -2031,6 +2111,10 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
+                    group: row.group || '',
+                    model: row.model || '',
+                    rebate: row.rebate || '',
+                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
                     cv: row.cv || '',
@@ -2048,6 +2132,10 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
+                    group: row.group || '',
+                    model: row.model || '',
+                    rebate: row.rebate || '',
+                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
                     target_value: Number(row.targetValue || 0),
@@ -2189,6 +2277,10 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
+                group: r.group || '',
+                model: r.model || '',
+                rebate: r.rebate || '',
+                set: r.set || '',
                 size: r.size,
                 sku: r.sku,
                 cv: r.cv || '',
