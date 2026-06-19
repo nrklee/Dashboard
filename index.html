@@ -7931,7 +7931,7 @@ var App = function App() {
                             var granularKeys = ['sku', 'size', 'model', 'brand', 'group'];
                             var mostGranularKey = null;
                             for (var j = 0; j < granularKeys.length; j++) {
-                              if (map[granularKeys[j]] !== undefined) {
+                              if (map[granularKeys[j]] !== undefined && map[granularKeys[j]] !== -1) {
                                 mostGranularKey = granularKeys[j];
                                 break;
                               }
@@ -8323,8 +8323,12 @@ var App = function App() {
                                     _context12.n = 9;
                                     break;
                                   }
+                                  if (shouldSkipRow(row, dbMap)) {
+                                    _context12.n = 9;
+                                    break;
+                                  }
                                   dateStr = String(row[dbMap.date] || '').trim();
-                                  if (!dateStr) {
+                                  if (!dateStr || dateStr === '-') {
                                     _context12.n = 9;
                                     break;
                                   }
