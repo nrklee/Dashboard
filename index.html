@@ -7091,7 +7091,7 @@ var App = function App() {
               if (data) {
                 setAllData(normalizeAllDataShape(data));
                 setIsUsingSavedData(true);
-                showStatus('โหลดข้อมูลล่าสุดจากเครื่องแล้ว', 'success');
+                // removed annoying popup
                 setIsLoading(false);
               } else {
                 setAllData(normalizeAllDataShape());
