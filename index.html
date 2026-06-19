@@ -7911,15 +7911,22 @@ var App = function App() {
                           });
                           return result;
                         };
-                        shouldSkipRow = function shouldSkipRow(row) {
+                        shouldSkipRow = function shouldSkipRow(row, map) {
                           if (!row || row.length === 0) return true;
+                          
+                          if (map) {
+                            var d = extractDimensions(row, map);
+                            var noProduct = d.group === '-' && d.brand === '-' && d.model === '-' && d.size === '-' && d.sku === '-';
+                            if (noProduct) return true;
+                          }
+
                           var firstMeaningful = row.find(function (cell) {
                             return String(cell !== null && cell !== void 0 ? cell : '').trim() !== '';
                           });
                           if (firstMeaningful === undefined) return true;
                           var lower = String(firstMeaningful).trim().toLowerCase();
                           if (!lower) return true;
-                          if (lower.includes('total') || lower === 'รวม' || lower.includes('row labels')) return true;
+                          if (lower.includes('total') || lower === 'รวม' || lower.includes('ยอดรวม') || lower.includes('ผลรวม') || lower.includes('รวมทั้งสิ้น') || lower.includes('สรุป') || lower.includes('grand total') || lower.includes('row labels')) return true;
                           if (lower.startsWith('sum of') || lower.includes('(all)')) return true;
                           return false;
                         };
@@ -7989,7 +7996,7 @@ var App = function App() {
                                   return maybeYield(i - headerIdx);
                                 case 4:
                                   row = rows[i] || [];
-                                  if (!shouldSkipRow(row)) {
+                                  if (!shouldSkipRow(row, map)) {
                                     _context10.n = 5;
                                     break;
                                   }
@@ -8141,7 +8148,7 @@ var App = function App() {
                                   return maybeYield(i - headerIdx);
                                 case 2:
                                   row = rows[i] || [];
-                                  if (!shouldSkipRow(row)) {
+                                  if (!shouldSkipRow(row, map)) {
                                     _context11.n = 3;
                                     break;
                                   }
