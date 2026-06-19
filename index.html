@@ -9397,7 +9397,7 @@ var App = function App() {
               _context20.n = 16;
               break;
             }
-            return _context20.a(2, false);
+return _context20.a(2, false);
           case 16:
             setAllData(nextData);
             setFilters(buildLockedFiltersState(lockedFilters));
@@ -10724,7 +10724,9 @@ var App = function App() {
     var monthsSet = new Set();
     filteredData.forEach(function (item) {
       if (item.date) {
-        monthsSet.add(getMonthYearLabelFromItem(item));
+        if (activeTrendYears.includes(getYearLabelFromItem(item))) {
+          monthsSet.add(getMonthYearLabelFromItem(item));
+        }
       }
     });
     return Array.from(monthsSet).sort(function(a,b){
@@ -10737,7 +10739,7 @@ var App = function App() {
       };
       return getDateForSort(a) - getDateForSort(b);
     });
-  }, [viewMode, filteredData]);
+  }, [viewMode, filteredData, activeTrendYears]);
 
   var activeChartSeries = useMemo(function () {
     return viewMode === 'daily' ? activeDailyMonths : activeTrendYears;
@@ -14180,15 +14182,15 @@ var App = function App() {
     size: 14
   }))), sectionExpanded.trend && /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
-  }, viewMode !== 'daily' && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mb-2"
-  }, viewMode === 'monthly' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
+  }, viewMode === 'monthly' || viewMode === 'daily' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, trendYearsDisplay.length === 0 ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
-  }, viewMode === 'monthly' ? 'ยังไม่มีข้อมูลรายเดือน' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
+  }, viewMode === 'monthly' || viewMode === 'daily' ? 'ยังไม่มีข้อมูล' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
     var checked = activeTrendYears.includes(yearLabel);
     return /*#__PURE__*/React.createElement("button", {
       key: yearLabel,
