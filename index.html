@@ -2206,55 +2206,31 @@ window.downloadSalesFromSupabase = async function() {
         // Fetch all rows from the aggregated views
         // Note: Supabase free tier has a default 1000 row limit on select. We must handle pagination if needed.
         // Wait, the javascript SDK's default limit is 1000, we should override it or paginate.
-        let allMonthly = [];
-        let allYearly = [];
-        let allDaily = [];
-        
-        // Fetch Monthly
-        let hasMore = true;
-        let start = 0;
-        let limit = 1000;
-        while(hasMore) {
-            const { data, error } = await window.supabase.from('dashboard_monthly_view').select('*').range(start, start + limit - 1);
-            if (error) throw error;
-            if (data && data.length > 0) {
-                allMonthly = allMonthly.concat(data);
-                start += limit;
-                if (data.length < limit) hasMore = false;
-            } else {
-                hasMore = false;
+        // Refactored to fetch concurrently for better performance
+        const fetchTable = async (tableName) => {
+            let result = [];
+            let hasMore = true;
+            let start = 0;
+            let limit = 1000;
+            while(hasMore) {
+                const { data, error } = await window.supabase.from(tableName).select('*').range(start, start + limit - 1);
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    result = result.concat(data);
+                    start += limit;
+                    if (data.length < limit) hasMore = false;
+                } else {
+                    hasMore = false;
+                }
             }
-        }
-        
-        // Fetch Yearly
-        hasMore = true;
-        start = 0;
-        while(hasMore) {
-            const { data, error } = await window.supabase.from('dashboard_yearly_view').select('*').range(start, start + limit - 1);
-            if (error) throw error;
-            if (data && data.length > 0) {
-                allYearly = allYearly.concat(data);
-                start += limit;
-                if (data.length < limit) hasMore = false;
-            } else {
-                hasMore = false;
-            }
-        }
-        
-        // Fetch Daily
-        hasMore = true;
-        start = 0;
-        while(hasMore) {
-            const { data, error } = await window.supabase.from('dashboard_daily_view').select('*').range(start, start + limit - 1);
-            if (error) throw error;
-            if (data && data.length > 0) {
-                allDaily = allDaily.concat(data);
-                start += limit;
-                if (data.length < limit) hasMore = false;
-            } else {
-                hasMore = false;
-            }
-        }
+            return result;
+        };
+
+        const [allMonthly, allYearly, allDaily] = await Promise.all([
+            fetchTable('dashboard_monthly_view'),
+            fetchTable('dashboard_yearly_view'),
+            fetchTable('dashboard_daily_view')
+        ]);
         
         // Map DB columns back to frontend expected object format
         const mapRow = (r, isYearly, isDaily) => {
