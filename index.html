@@ -13041,7 +13041,19 @@ return _context20.a(2, false);
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
             if (isAutoSync !== true) {
                 finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
-                setTimeout(() => alert('ดึงข้อมูลจากคลาวด์ล่าสุดเรียบร้อยแล้ว!'), 100);
+                setTimeout(() => {
+                    alert('ดึงข้อมูลจากคลาวด์ล่าสุดเรียบร้อยแล้ว!');
+                    // Force a complete page reload to ensure GridStack initializes perfectly with the new data
+                    window.location.reload();
+                }, 100);
+            } else {
+                // For auto-sync, just try to re-layout gridstack
+                setTimeout(() => {
+                    var gridEl = document.querySelector('.grid-stack');
+                    if (gridEl && gridEl.gridstack) {
+                        try { gridEl.gridstack.compact(); } catch(e){}
+                    }
+                }, 500);
             }
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
