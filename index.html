@@ -7914,20 +7914,34 @@ var App = function App() {
                         shouldSkipRow = function shouldSkipRow(row, map) {
                           if (!row || row.length === 0) return true;
                           
+                          // 1. Keyword check across ALL cells (catches Pivot Table subtotals like "Toyota Total")
+                          var hasTotalKeyword = false;
+                          for (var i = 0; i < row.length; i++) {
+                            var cellText = String(row[i] !== null && row[i] !== void 0 ? row[i] : '').trim().toLowerCase();
+                            if (!cellText || cellText === '-') continue;
+                            if (cellText === 'total' || cellText === 'รวม' || cellText.includes('ยอดรวม') || cellText.includes('ผลรวม') || cellText.includes('รวมทั้งสิ้น') || cellText.includes('สรุป') || cellText === 'grand total' || cellText.includes('row labels') || cellText.startsWith('sum of') || cellText.includes('(all)') || cellText.endsWith(' total') || cellText.endsWith(' รวม')) {
+                              hasTotalKeyword = true;
+                              break;
+                            }
+                          }
+                          if (hasTotalKeyword) return true;
+                          
+                          // 2. Granularity check: Pivot subtotals leave granular columns empty
                           if (map) {
-                            var d = extractDimensions(row, map);
-                            var noProduct = d.group === '-' && d.brand === '-' && d.model === '-' && d.size === '-' && d.sku === '-';
-                            if (noProduct) return true;
+                            var granularKeys = ['sku', 'size', 'model', 'brand', 'group'];
+                            var mostGranularKey = null;
+                            for (var j = 0; j < granularKeys.length; j++) {
+                              if (map[granularKeys[j]] !== undefined) {
+                                mostGranularKey = granularKeys[j];
+                                break;
+                              }
+                            }
+                            if (mostGranularKey) {
+                               var val = String(row[map[mostGranularKey]] || '').trim();
+                               if (val === '' || val === '-') return true; // Most granular product info missing = subtotal row
+                            }
                           }
 
-                          var firstMeaningful = row.find(function (cell) {
-                            return String(cell !== null && cell !== void 0 ? cell : '').trim() !== '';
-                          });
-                          if (firstMeaningful === undefined) return true;
-                          var lower = String(firstMeaningful).trim().toLowerCase();
-                          if (!lower) return true;
-                          if (lower.includes('total') || lower === 'รวม' || lower.includes('ยอดรวม') || lower.includes('ผลรวม') || lower.includes('รวมทั้งสิ้น') || lower.includes('สรุป') || lower.includes('grand total') || lower.includes('row labels')) return true;
-                          if (lower.startsWith('sum of') || lower.includes('(all)')) return true;
                           return false;
                         };
                         extractDimensions = function extractDimensions(row, map) {
