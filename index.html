@@ -7200,6 +7200,9 @@ var App = function App() {
   }, [authUser && authUser.username, JSON.stringify(lockedFilters)]);
   useEffect(function () {
     if (authUser && window.downloadSalesFromSupabase) {
+      if (window.TargetMatch && window.TargetMatch.loadConfigFromSupabase) {
+        window.TargetMatch.loadConfigFromSupabase();
+      }
       var today = new Date().toISOString().split('T')[0];
       var lastSync = localStorage.getItem('salytix_last_sync_date');
       if (lastSync !== today) {
@@ -13685,7 +13688,7 @@ return _context20.a(2, false);
     }, 
       /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-3" },
         /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "center_focus_strong"),
-        "Target Match"
+        "Campaign"
       ),
       /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: activeTab === 'target_match' ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
     ),
@@ -13693,11 +13696,11 @@ return _context20.a(2, false);
       /*#__PURE__*/React.createElement("button", {
         onClick: function() { setIsTargetMappingModalOpen(true); },
         className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2"
-      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " จับคู่ข้อมูลดิบ (Data Mapping)"),
+      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " Target Match"),
       /*#__PURE__*/React.createElement("button", {
         onClick: function() { if(window.TargetMatch) window.TargetMatch.openModal(); },
         className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2 mt-1"
-      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "16px" } }, "stars"), " ตั้งค่ากฎโบนัส (Bonus Rules)")
+      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "16px" } }, "stars"), " Setting Rebate & Point Program")
     )
   ), 
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
@@ -15285,6 +15288,37 @@ window.TargetMatch = (function() {
 
     window.__TargetMatchConfig = targetConfig;
 
+    async function loadConfigFromSupabase() {
+        if (!window.supabase) return;
+        try {
+            const { data, error } = await window.supabase.from('app_data').select('*').eq('id', 'target_match_config').maybeSingle();
+            if (error) throw error;
+            if (data && data.data) {
+                const dbConfig = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+                targetConfig = Object.assign(targetConfig, dbConfig);
+                window.__TargetMatchConfig = targetConfig;
+                window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
+                renderUI();
+            }
+        } catch (err) {
+            console.error("Error loading Campaign config from Supabase:", err);
+        }
+    }
+
+    async function saveConfigToSupabase() {
+        if (!window.supabase) return;
+        try {
+            const { error } = await window.supabase.from('app_data').upsert({ 
+                id: 'target_match_config', 
+                data: JSON.stringify(targetConfig) 
+            });
+            if (error) throw error;
+        } catch (err) {
+            console.error("Error saving Campaign config to Supabase:", err);
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลไปยังฐานข้อมูล (Supabase)');
+        }
+    }
+
     let activeTab = 'rebate'; // 'rebate', 'point', 'settings'
     let activeProgramId = null;
     let activeProgramType = null;
@@ -15357,6 +15391,11 @@ window.TargetMatch = (function() {
                 delete editingProgram.mappings[key];
             }
         });
+        
+        let allowOverlapEl = document.getElementById('tm-allow-overlap');
+        if (allowOverlapEl) {
+            editingProgram.allowOverlap = allowOverlapEl.checked;
+        }
 
         if (activeProgramType === 'rebate') {
             const pct = document.getElementById('tm-rebate-percent');
@@ -15371,7 +15410,7 @@ window.TargetMatch = (function() {
             if (idx > -1) targetConfig.pointPrograms[idx] = editingProgram;
         }
 
-        localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
+        saveConfigToSupabase();
         window.__TargetMatchConfig = targetConfig;
         window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
         
@@ -15388,7 +15427,7 @@ window.TargetMatch = (function() {
         } else {
             targetConfig.pointPrograms = targetConfig.pointPrograms.filter(p => p.id !== id);
         }
-        localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
+        saveConfigToSupabase();
         window.__TargetMatchConfig = targetConfig;
         renderUI();
     }
@@ -15398,7 +15437,8 @@ window.TargetMatch = (function() {
         let prog = {
             id: id,
             name: 'New ' + (type==='rebate'?'Rebate':'Point') + ' Program',
-            mappings: {}
+            mappings: {},
+            allowOverlap: true
         };
         if (type === 'rebate') {
             prog.percent = 0;
@@ -15456,10 +15496,6 @@ window.TargetMatch = (function() {
                         <span class="material-symbols-outlined ${activeTab==='point'?'text-amber-600':'text-gray-400'}">stars</span>
                         <span class="font-semibold text-sm">Point Programs</span>
                     </button>
-                    <button onclick="TargetMatch.switchTab('settings')" class="w-full text-left px-5 py-4 border-b border-gray-100 flex items-center gap-3 transition-colors ${activeTab==='settings'?'bg-slate-200 border-l-4 border-l-slate-700 text-slate-800':'hover:bg-gray-100 text-gray-600'}">
-                        <span class="material-symbols-outlined ${activeTab==='settings'?'text-slate-700':'text-gray-400'}">settings</span>
-                        <span class="font-semibold text-sm">Global Settings</span>
-                    </button>
                 </div>
 
                 <!-- Main Content Area -->
@@ -15473,28 +15509,6 @@ window.TargetMatch = (function() {
     }
 
     function renderMainContent() {
-        if (activeTab === 'settings') {
-            return `
-                <div class="max-w-2xl">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Global Settings (ตั้งค่าทั่วไป)</h3>
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6">
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <div class="mt-1">
-                                <input type="checkbox" id="tm-allow-overlap" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${targetConfig.globalSettings.allowOverlap ? 'checked' : ''}>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-gray-800">อนุญาตให้คิดโบนัส/แคมเปญทับซ้อนกันได้</div>
-                                <div class="text-sm text-gray-500 mt-1">หากเปิดใช้งาน และมีแบรนด์เดียวกันอยู่ในหลายแคมเปญ ระบบจะนำยอดขายไปคิดโบนัสให้ทุกแคมเปญรวมกัน (แยกตามเงื่อนไขของแต่ละแคมเปญ)</div>
-                            </div>
-                        </label>
-                    </div>
-                    <button onclick="TargetMatch.saveGlobalConfig()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium shadow-sm transition-colors flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">save</span> บันทึกการตั้งค่า
-                    </button>
-                </div>
-            `;
-        }
-
         if (activeProgramId) {
             // Edit Mode
             return `
@@ -15508,9 +15522,22 @@ window.TargetMatch = (function() {
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อแคมเปญ (Campaign Name)</label>
-                        <input type="text" id="tm-program-name" value="${editingProgram.name}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-4 border bg-gray-50">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อแคมเปญ (Campaign Name)</label>
+                            <input type="text" id="tm-program-name" value="${editingProgram.name}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-4 border bg-gray-50">
+                        </div>
+                        <div class="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <div class="mt-1">
+                                    <input type="checkbox" id="tm-allow-overlap" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${editingProgram.allowOverlap !== false ? 'checked' : ''}>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-800 text-sm">อนุญาตให้คิดโบนัสทับซ้อนได้</div>
+                                    <div class="text-xs text-gray-500 mt-1">หากแบรนด์นี้ไปอยู่ในแคมเปญอื่นด้วย ยอดขายจะนำไปคิดให้ทั้ง 2 แคมเปญ</div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -15735,7 +15762,8 @@ window.TargetMatch = (function() {
         saveEditingProgram,
         addEditingTier,
         removeEditingTier,
-        updateEditingTier
+        updateEditingTier,
+        loadConfigFromSupabase
     };
 })();
 
