@@ -2033,6 +2033,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     brand: row.brand || '',
                     size: row.size || '',
                     sku: row.sku || '',
+                    cv: row.cv || '',
                     sales: Number(row.sales || 0),
                     qty: Number(row.qty || 0),
                     ton: Number(row.ton || 0),
@@ -2061,13 +2062,18 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
         const progressEl = document.getElementById('upload-progress-text');
         if (!isAppend) {
             if (progressEl) progressEl.innerText = `กำลังลบข้อมูลเก่าในตาราง ${tableName}...`;
-            // Delete all records safely
-            const { error: deleteError } = await window.supabase
-                .from(tableName)
-                .delete()
-                .neq('year_label', 'impossible_value_to_force_delete_all');
+            // Use RPC to truncate table safely and avoid 1000-row delete limit
+            const rpcName = type === 'sales' ? 'truncate_sales_raw' : 'truncate_targets_raw';
+            const { error: deleteError } = await window.supabase.rpc(rpcName);
             
-            if (deleteError) throw deleteError;
+            if (deleteError) {
+                console.error("RPC truncate failed, falling back to delete...", deleteError);
+                const { error: fallbackError } = await window.supabase
+                    .from(tableName)
+                    .delete()
+                    .neq('year_label', 'impossible_value_to_force_delete_all');
+                if (fallbackError) throw fallbackError;
+            }
         }
         
         // 2. Insert new data in batches of 1000
@@ -2185,6 +2191,7 @@ window.downloadSalesFromSupabase = async function() {
                 brand: r.brand,
                 size: r.size,
                 sku: r.sku,
+                cv: r.cv || '',
                 sales: Number(r.sales || 0),
                 qty: Number(r.qty || 0),
                 ton: Number(r.ton || 0),
@@ -12949,11 +12956,13 @@ var App = function App() {
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
             if (!isAutoSync) {
                 finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
+                setTimeout(() => alert('ดึงข้อมูลจากคลาวด์ล่าสุดเรียบร้อยแล้ว!'), 100);
             }
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
             if (!isAutoSync) {
                 finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
+                setTimeout(() => alert('เกิดข้อผิดพลาดในการซิงค์: ' + err.message), 100);
             }
         });
     } else {
