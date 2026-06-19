@@ -15502,7 +15502,7 @@ window.TargetMatch = (function() {
     function closeModal() {
         let modal = document.getElementById('target-match-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.remove();
         }
     }
 
