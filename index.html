@@ -6514,8 +6514,10 @@ var App = function App() {
   }, [allData]);
   
   React.useEffect(function() {
-    var timer;
+    // Only proceed if we are on the dashboard and NOT loading data
+    if (isLoading || (activeTab !== 'dashboard' && !activeTab.startsWith('custom_dashboard_'))) return;
     
+    var timer;
     var initGrid = function() {
         if (timer) clearTimeout(timer);
         timer = setTimeout(function() {
@@ -6530,60 +6532,63 @@ var App = function App() {
                 return;
             }
             
-            // Destroy existing instance to prevent stale references when React re-renders
-            if (gridEl.gridstack) {
-                try { gridEl.gridstack.destroy(false); } catch(e) {}
-            }
-            
-            // Initialize fresh GridStack
-            try {
-                var grid = window.GridStack.init({
-                    cellHeight: 80,
-                    column: 12,
-                    margin: 10,
-                    handle: '.major-section-head',
-                    float: false,
-                    animate: true,
-                    disableOneColumnMode: true,
-                    resizable: {
-                        handles: 'se'
-                    }
-                }, gridEl);
-                
-                // Add a class so fallback CSS can be disabled
-                gridEl.classList.add('grid-stack-instance');
-                
-                // Force save initial layout so React's next render gets the auto-placed coordinates
-                var engineNodes = grid.engine.nodes;
-                if (engineNodes && engineNodes.length > 0) {
-                    var initialLayouts = {};
-                    try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-                    engineNodes.forEach(function(node) {
-                        var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
-                        if (id) {
-                            initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
-                        }
-                    });
-                    localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
+            // Use requestAnimationFrame to ensure the browser has fully painted the DOM
+            requestAnimationFrame(function() {
+                // Destroy existing instance to prevent stale references when React re-renders
+                if (gridEl.gridstack) {
+                    try { gridEl.gridstack.destroy(false); } catch(e) {}
                 }
                 
-                // Save layout on change
-                grid.on('change', function(event, items) {
-                    if (!items) return;
-                    var layouts = {};
-                    try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-                    items.forEach(function(item) {
-                        var id = item.el ? item.el.getAttribute('gs-id') : null;
-                        if (id) {
-                            layouts[id] = { x: item.x, y: item.y, w: item.w, h: item.h };
+                // Initialize fresh GridStack
+                try {
+                    var grid = window.GridStack.init({
+                        cellHeight: 80,
+                        column: 12,
+                        margin: 10,
+                        handle: '.major-section-head',
+                        float: false,
+                        animate: true,
+                        disableOneColumnMode: true,
+                        resizable: {
+                            handles: 'se'
                         }
+                    }, gridEl);
+                    
+                    // Add a class so fallback CSS can be disabled
+                    gridEl.classList.add('grid-stack-instance');
+                    
+                    // Force save initial layout so React's next render gets the auto-placed coordinates
+                    var engineNodes = grid.engine.nodes;
+                    if (engineNodes && engineNodes.length > 0) {
+                        var initialLayouts = {};
+                        try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+                        engineNodes.forEach(function(node) {
+                            var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
+                            if (id) {
+                                initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
+                            }
+                        });
+                        localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
+                    }
+                    
+                    // Save layout on change
+                    grid.on('change', function(event, items) {
+                        if (!items) return;
+                        var layouts = {};
+                        try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+                        items.forEach(function(item) {
+                            var id = item.el ? item.el.getAttribute('gs-id') : null;
+                            if (id) {
+                                layouts[id] = { x: item.x, y: item.y, w: item.w, h: item.h };
+                            }
+                        });
+                        localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
                     });
-                    localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
-                });
-            } catch (err) {
-                console.error("GridStack init error:", err);
-            }
-        }, 100);
+                } catch (err) {
+                    console.error("GridStack init error:", err);
+                }
+            });
+        }, 50); // Minimum delay just to decouple execution
     };
     
     initGrid();
@@ -6595,7 +6600,7 @@ var App = function App() {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }, [activeTab]); // Only re-init when tab changes
+  }, [activeTab, isLoading]); // Re-init when tab changes or when loading finishes
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
