@@ -6655,7 +6655,7 @@ var App = function App() {
     setAllData = _useState10[1];
 
   var dbDistrictsForUpload = React.useMemo(function() {
-      return Array.from(new Set((allData.monthly||[]).map(function(r) { return r.district || r.region; }).filter(Boolean))).sort();
+      return Array.from(new Set((allData.monthly||[]).map(function(r) { return r.region || r.district; }).filter(Boolean))).sort();
   }, [allData.monthly]);
 
   var _useState11 = useState('monthly'),
