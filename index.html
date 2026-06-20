@@ -6466,6 +6466,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   );
 };
 var App = function App() {
+  var _useStateNotifs = React.useState([]), systemNotifications = _useStateNotifs[0], setSystemNotifications = _useStateNotifs[1];
+  var _useStateNotifOpen = React.useState(false), isSystemNotificationsOpen = _useStateNotifOpen[0], setIsSystemNotificationsOpen = _useStateNotifOpen[1];
+  var addNotification = function(msg, type) {
+    var notif = { id: Date.now() + Math.random(), message: msg, type: type || "info", time: new Date() };
+    setSystemNotifications(function(prev) { return [notif].concat(prev).slice(0, 50); });
+  };
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
@@ -6911,6 +6917,7 @@ var App = function App() {
   var showStatus = function showStatus(message) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'info';
     if (!message) return;
+    if (type === "success" || type === "error") addNotification(message, type);
     setStatusInfo({
       type: type,
       message: message,
@@ -8438,7 +8445,9 @@ var App = function App() {
                                       brand: normalizeDimensionValue(row[dbMap.brand]),
                                       model: normalizeDimensionValue(row[dbMap.model]),
                                       size: normalizeDimensionValue(row[dbMap.size]),
-                                      sku: normalizeDimensionValue(row[dbMap.sku])
+                                      sku: normalizeDimensionValue(row[dbMap.sku]),
+                                      rebate: normalizeDimensionValue(row[dbMap.rebate]),
+                                      set: normalizeDimensionValue(row[dbMap.set])
                                   };
                                   dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
                                   id = "m-" + Math.random();
@@ -9280,6 +9289,7 @@ var App = function App() {
         while (1) switch (_context19.p = _context19.n) {
           case 0:
             options = _args19.length > 2 && _args19[2] !== undefined ? _args19[2] : {};
+            var _startTime = performance.now();
             _options$fileHandle = options.fileHandle, fileHandle = _options$fileHandle === void 0 ? null : _options$fileHandle, _options$bindHandle = options.bindHandle, bindHandle = _options$bindHandle === void 0 ? false : _options$bindHandle, _options$silentStatus = options.silentStatus, silentStatus = _options$silentStatus === void 0 ? false : _options$silentStatus, _options$isAppend = options.isAppend, isAppend = _options$isAppend === void 0 ? false : _options$isAppend;
             if (file) {
               _context19.n = 1;
@@ -9374,8 +9384,14 @@ var App = function App() {
             return _context19.a(2, true);
           case 14:
             if (!silentStatus) {
-              if (bindHandle && fileHandle) finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E41\u0E25\u0E30\u0E1C\u0E39\u0E01\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34\u0E41\u0E25\u0E49\u0E27"), 'success');else finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08"), 'success');
-            } else finishLoadingStatus(type === 'sales' ? 'โหลดข้อมูลยอดขายสำเร็จ' : 'โหลดข้อมูลเป้าหมายสำเร็จ', 'success');
+              var _timeTaken = ((performance.now() - _startTime) / 1000).toFixed(1);
+              var _timeMsg = " (ใช้เวลา " + _timeTaken + " วินาที)";
+              if (bindHandle && fileHandle) finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E41\u0E25\u0E30\u0E1C\u0E39\u0E01\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34\u0E41\u0E25\u0E49\u0E27") + _timeMsg, 'success');else finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08") + _timeMsg, 'success');
+            } else {
+              var _timeTaken2 = ((performance.now() - _startTime) / 1000).toFixed(1);
+              var _timeMsg2 = " (ใช้เวลา " + _timeTaken2 + " วินาที)";
+              finishLoadingStatus((type === 'sales' ? 'โหลดข้อมูลยอดขายสำเร็จ' : 'โหลดข้อมูลเป้าหมายสำเร็จ') + _timeMsg2, 'success');
+            }
             setIsLoading(false);
             return _context19.a(2, true);
         }
@@ -13865,10 +13881,26 @@ return _context20.a(2, false);
   }, "AI")) : null), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-1 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
+    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors " + (systemNotifications.length > 0 ? "relative" : ""),
+    onClick: function() { setIsSystemNotificationsOpen(!isSystemNotificationsOpen); }
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[20px]"
-  }, "notifications")), /*#__PURE__*/React.createElement("button", {
+  }, "notifications"), systemNotifications.length > 0 && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
+  isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-12 right-12 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 flex flex-col max-h-96"
+  }, /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 font-bold border-b border-outline-variant/30 text-sm" }, "การแจ้งเตือน"),
+  /*#__PURE__*/React.createElement("div", { className: "overflow-y-auto flex-1 custom-scrollbar" },
+    systemNotifications.length === 0 ? /*#__PURE__*/React.createElement("div", { className: "p-4 text-center text-sm text-slate-500" }, "ไม่มีการแจ้งเตือนใหม่") :
+    systemNotifications.map(function(n) {
+      return /*#__PURE__*/React.createElement("div", { key: n.id, className: "px-4 py-3 border-b border-outline-variant/10 hover:bg-surface-container-low text-sm flex gap-3" },
+        /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined " + (n.type === 'success' ? "text-green-600" : "text-red-600") }, n.type === 'success' ? "check_circle" : "error"),
+        /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
+          /*#__PURE__*/React.createElement("span", { className: "text-slate-800" }, n.message),
+          /*#__PURE__*/React.createElement("span", { className: "text-xs text-slate-400 mt-1" }, n.time.toLocaleTimeString("th-TH"))
+        )
+      );
+    })
+  )), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() { if (typeof setIsDarkMode !== 'undefined') setIsDarkMode(!isDarkMode); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
