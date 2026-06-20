@@ -2253,10 +2253,10 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.group || '',
-                model: r.model || '',
-                rebate: r.rebate || '',
-                set: r.set || '',
+                group: r.group || (r.raw_json && r.raw_json.group) || '',
+                model: r.model || (r.raw_json && r.raw_json.model) || '',
+                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
+                set: r.set || (r.raw_json && r.raw_json.set) || '',
                 size: r.size,
                 sku: r.sku,
                 cv: r.cv || '',
@@ -7929,11 +7929,29 @@ var App = function App() {
                           var timeCols = [];
                           headerRow.forEach(function (h, idx) {
                             var str = String(h !== null && h !== void 0 ? h : '').toLowerCase().trim();
-                            for (var key in COLUMN_KEYWORDS) {
-                              if (COLUMN_KEYWORDS[key].some(function (k) {
-                                return str.includes(k);
-                              })) {
-                                if (map[key] === undefined) map[key] = idx;
+                            var sanitizedRaw = String(h || '').toUpperCase().replace(/[\u200B-\u200D\uFEFF\xA0\s]/g, '');
+                            if (sanitizedRaw.includes('SALES_DATE') || sanitizedRaw.includes('SALESDATE')) { map['date'] = idx; }
+                            else if (sanitizedRaw.includes('SALES_AMOUNT') || sanitizedRaw.includes('SALESAMOUNT')) { map['amount'] = idx; }
+                            else if (sanitizedRaw.includes('SALES_QTY') || sanitizedRaw.includes('SALESQTY')) { map['qty'] = idx; }
+                            else if (sanitizedRaw.includes('WGHTONS') || sanitizedRaw.includes('WGH(TONS)')) { map['ton'] = idx; }
+                            else if (sanitizedRaw.includes('REGION') && sanitizedRaw.length < 10) { map['region'] = idx; }
+                            else if (sanitizedRaw.includes('PROVINCE') && sanitizedRaw.length < 15) { map['province'] = idx; }
+                            else if (sanitizedRaw.includes('SECTION') && sanitizedRaw.length < 15) { map['district'] = idx; }
+                            else if ((sanitizedRaw.includes('CV_NAME') || sanitizedRaw.includes('CVNAME')) && !sanitizedRaw.includes('SUB')) { map['cv'] = idx; }
+                            else if (sanitizedRaw.includes('CATEGORY') && !sanitizedRaw.includes('SUB')) { map['group'] = idx; }
+                            else if (sanitizedRaw.includes('BRAND') && !sanitizedRaw.includes('CODE')) { map['brand'] = idx; }
+                            else if (sanitizedRaw.includes('SUB_CATEGORY') || sanitizedRaw.includes('SUBCATEGORY')) { map['model'] = idx; }
+                            else if (sanitizedRaw.includes('SIZE') && sanitizedRaw.length < 10) { map['size'] = idx; }
+                            else if (sanitizedRaw.includes('BRAND_CODE') || sanitizedRaw.includes('BRANDCODE')) { map['sku'] = idx; }
+                            else if (sanitizedRaw.includes('REBATE')) { map['rebate'] = idx; }
+                            else if (sanitizedRaw.includes('SET')) { map['set'] = idx; }
+                            else {
+                              for (var key in COLUMN_KEYWORDS) {
+                                if (COLUMN_KEYWORDS[key].some(function (k) {
+                                  return str.includes(k);
+                                })) {
+                                  if (map[key] === undefined) map[key] = idx;
+                                }
                               }
                             }
 	                            var parsedType = parseHeaderToType(h);
