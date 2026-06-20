@@ -6232,45 +6232,14 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "เลือกเขตและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น")
-            )
-        ),
-        
-        React.createElement("div", { className: "mb-6" },
-            React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
-                React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "map"),
-                "1. จับคู่เขตการขาย"
-            ),
-            React.createElement("div", { className: "grid grid-cols-2 gap-3" },
-                districtList.map(function(dist, idx) {
-                    var key = 'dist||' + dist;
-                    var val = localMap[key] || '';
-                    return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center gap-3" },
-                        React.createElement("div", { className: "w-1/3 text-sm font-bold text-slate-700" }, dist),
-                        React.createElement("span", { className: "material-symbols-outlined text-slate-300" }, "arrow_forward"),
-                        React.createElement("select", {
-                            className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white",
-                            value: val,
-                            onChange: function(e) {
-                                var newMap = Object.assign({}, localMap);
-                                newMap[key] = e.target.value;
-                                setLocalMap(newMap);
-                            }
-                        }, 
-                            React.createElement("option", { value: "" }, "เลือกเขต..."),
-                            Array.from(dbDistricts).sort().map(function(d) {
-                                return React.createElement("option", { key: d, value: d }, d);
-                            })
-                        )
-                    );
-                })
+                React.createElement("p", null, "เลือกกลุ่มสินค้าและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น (ระบบจะผูกเขตการขายให้โดยอัตโนมัติ)")
             )
         ),
 
         React.createElement("div", null,
             React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
                 React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "category"),
-                "2. จับคู่กลุ่มสินค้า, แบรนด์, รุ่น, SKU"
+                "1. จับคู่กลุ่มสินค้า, แบรนด์, รุ่น, SKU"
             ),
             React.createElement("div", { className: "space-y-3" },
                 targetList.map(function(t, idx) {
@@ -6505,7 +6474,18 @@ var App = function App() {
   var _useStateSettingMenu = React.useState(false), isSettingMenuOpen = _useStateSettingMenu[0], setIsSettingMenuOpen = _useStateSettingMenu[1];
   var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
   var _useStateTargetUploadConfirm = React.useState(null), targetUploadConfirm = _useStateTargetUploadConfirm[0], setTargetUploadConfirm = _useStateTargetUploadConfirm[1];
-
+  var _useStateUploadTargetRegion = React.useState(''), uploadTargetRegion = _useStateUploadTargetRegion[0], setUploadTargetRegion = _useStateUploadTargetRegion[1];
+  var dbDistrictsForUpload = React.useMemo(function() {
+      var regions = new Set();
+      if (allData && allData.monthly) {
+          allData.monthly.forEach(function(row) {
+              if (row.region && row.region !== '-') {
+                  regions.add(row.region);
+              }
+          });
+      }
+      return Array.from(regions).sort();
+  }, [allData]);
   
   React.useEffect(function() {
     var timer;
@@ -6662,6 +6642,11 @@ var App = function App() {
     _useState10 = _slicedToArray(_useState1, 2),
     allData = _useState10[0],
     setAllData = _useState10[1];
+
+  var dbDistrictsForUpload = React.useMemo(function() {
+      return Array.from(new Set((allData.monthly||[]).map(function(r) { return r.district || r.region; }).filter(Boolean))).sort();
+  }, [allData.monthly]);
+
   var _useState11 = useState('monthly'),
     _useState12 = _slicedToArray(_useState11, 2),
     viewMode = _useState12[0],
@@ -8197,21 +8182,22 @@ var App = function App() {
                                   if (isTransactional) {
                                       headerRow.forEach(function(c, idx) {
                                           var colName = String(c || '').toUpperCase().trim();
-                                          if (colName === 'SALES_DATE') dbMap.date = idx;
-                                          if (colName === 'SALES_AMOUNT') dbMap.amount = idx;
-                                          if (colName === 'SALES_QTY') dbMap.qty = idx;
-                                          if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)') dbMap.ton = idx;
-                                          if (colName === 'REGION') dbMap.region = idx;
-                                          if (colName === 'PROVINCE') dbMap.province = idx; // mapped to province
-                                          if (colName === 'SECTION') dbMap.district = idx; // mapped to district
-                                          if (colName === 'CV_NAME') dbMap.cv = idx;
-                                          if (colName === 'CATEGORY') dbMap.group = idx;
-                                          if (colName === 'BRAND') dbMap.brand = idx;
-                                          if (colName === 'SUB_CATEGORY') dbMap.model = idx;
-                                          if (colName === 'SIZE') dbMap.size = idx;
-                                          if (colName === 'BRAND_CODE') dbMap.sku = idx;
-                                          if (colName === 'REBATE' || colName === 'ประเภท REBATE') dbMap.rebate = idx;
-                                          if (colName === 'SET' || colName === 'ประเภท SET') dbMap.set = idx;
+                                          var cLower = String(c || '').toLowerCase().replace(/\s+/g, '');
+                                          if (colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') dbMap.date = idx;
+                                          if (colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') dbMap.amount = idx;
+                                          if (colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') dbMap.qty = idx;
+                                          if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) dbMap.ton = idx;
+                                          if (colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') dbMap.region = idx;
+                                          if (colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') dbMap.district = idx; // mapped to district
+                                          if (colName === 'PROVINCE' || cLower === 'จังหวัด') dbMap.province = idx; // mapped to province
+                                          if (colName === 'CV_NAME' || cLower.includes('cv') || cLower === 'ลูกค้า') dbMap.cv = idx;
+                                          if (colName === 'CATEGORY' || cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')) dbMap.group = idx;
+                                          if (colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || cLower.includes('brand')) dbMap.brand = idx;
+                                          if (colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) dbMap.model = idx;
+                                          if (colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) dbMap.size = idx;
+                                          if (colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า') || cLower.includes('code') || cLower.includes('item')) dbMap.sku = idx;
+                                          if (colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) dbMap.rebate = idx;
+                                          if (colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) dbMap.set = idx;
                                       });
                                   }
                                   targetSheetMetric = type === 'target' ? detectTargetMetricContext(options.sheetName) : 'value';
@@ -8375,14 +8361,14 @@ var App = function App() {
                                       if (colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') dbMap.region = idx;
                                       if (colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') dbMap.province = idx; // keeping the original logic of mapping section to province
                                       if (colName === 'PROVINCE' || cLower === 'จังหวัด') dbMap.district = idx; // keeping original logic of mapping province to district
-                                      if (colName === 'CV_NAME' || cLower.includes('cv') || cLower === 'ลูกค้า') dbMap.cv = idx;
-                                      if (colName === 'CATEGORY' || cLower.includes('กลุ่ม') || cLower === 'group' || cLower === 'cat') dbMap.group = idx;
-                                      if (colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ') dbMap.brand = idx;
-                                      if (colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model') dbMap.model = idx;
-                                      if (colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก') dbMap.size = idx;
-                                      if (colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า') || cLower.includes('code')) dbMap.sku = idx;
-                                      if (colName === 'REBATE' || colName === 'ประเภท REBATE') dbMap.rebate = idx;
-                                      if (colName === 'SET' || colName === 'ประเภท SET') dbMap.set = idx;
+                                       if (colName === 'CV_NAME' || cLower.includes('cv') || cLower === 'ลูกค้า') dbMap.cv = idx;
+                                       if (colName === 'CATEGORY' || cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')) dbMap.group = idx;
+                                       if (colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || cLower.includes('brand')) dbMap.brand = idx;
+                                       if (colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) dbMap.model = idx;
+                                       if (colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) dbMap.size = idx;
+                                       if (colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า') || cLower.includes('code') || cLower.includes('item')) dbMap.sku = idx;
+                                       if (colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) dbMap.rebate = idx;
+                                       if (colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) dbMap.set = idx;
                                   });
                                   _i = headerRowIdx + 1;
                                 case 7:
@@ -8948,7 +8934,7 @@ var App = function App() {
                             return rawTargets;
                         };
                         parseTargetWorkbook = function (originalParseTargetWorkbook) {
-                          return function wrappedParseTargetWorkbook(workbook) {
+                          return function wrappedParseTargetWorkbook(workbook, parseOptions) {
                             var firstSheetName = workbook.SheetNames[0];
                             var rawTargets = window.XLSX ? window.XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {defval: ''}) : [];
                             var hasNnsSheet = (workbook.SheetNames || []).some(function (name) {
@@ -8958,17 +8944,30 @@ var App = function App() {
                               return String(name || '').startsWith('เขต');
                             });
                             
-                            var resultPromise = Promise.resolve({ monthly: [], yearly: [] });
+                            var resultPromise;
                             if (hasTG26) {
                                 resultPromise = parseTG26Workbook(workbook).then(function(tgRaw) {
                                     return { monthly: [], yearly: [], tg26RawTargets: tgRaw };
                                 });
                             } else if (hasNnsSheet) {
                                 resultPromise = parseDistrictTargetWorkbook(workbook);
+                            } else {
+                                resultPromise = originalParseTargetWorkbook(workbook);
                             }
                             
                             return resultPromise.then(function(res) {
                                 res.rawTargets = rawTargets;
+                                if (parseOptions && parseOptions.targetRegion) {
+                                    if (res.monthly) {
+                                        res.monthly.forEach(function(r) { r.region = parseOptions.targetRegion; });
+                                    }
+                                    if (res.yearly) {
+                                        res.yearly.forEach(function(r) { r.region = parseOptions.targetRegion; });
+                                    }
+                                    if (res.tg26RawTargets) {
+                                        res.tg26RawTargets.forEach(function(r) { r.region = parseOptions.targetRegion; });
+                                    }
+                                }
                                 return res;
                             });
                           };
@@ -9154,7 +9153,7 @@ var App = function App() {
                         }
                         _context16.p = 19;
                         _context16.n = 20;
-                        return parseTargetWorkbook(workbook);
+                        return parseTargetWorkbook(workbook, parseOptions);
                       case 20:
                         parsed = _context16.v;
                         _context16.n = 23;
@@ -9291,7 +9290,7 @@ var App = function App() {
             setIsLoading(true);
             if (statusInfo.loading) updateLoadingStatus(type === 'sales' ? 'กำลังอ่านไฟล์ยอดขาย...' : 'กำลังอ่านไฟล์เป้าหมาย...', Math.max(Number(statusInfo.progress || 0), 62), true);else startLoadingStatus(type === 'sales' ? 'กำลังเตรียมอ่านไฟล์ยอดขาย...' : 'กำลังเตรียมอ่านไฟล์เป้าหมาย...', 12, true);
             _context19.n = 2;
-            return processFile(file, type);
+            return processFile(file, type, options);
           case 2:
             parsedData = _context19.v;
             if (parsedData) {
@@ -9610,8 +9609,8 @@ return _context20.a(2, false);
             }
             return _context22.a(2);
           case 1:
-            if (type === 'target' && (allData.targets || []).length > 0) {
-              setTargetUploadConfirm({ file: file, type: type, inputElement: event.target });
+            if (type === 'target') {
+              setTargetUploadConfirm({ file: file, type: type, inputElement: event.target, hasExisting: (allData.targets || []).length > 0 });
               return _context22.a(2);
             }
             _context22.n = 2;
@@ -10355,6 +10354,17 @@ return _context20.a(2, false);
               });
               return _context25.a(2);
             case 3:
+              if (importType === 'target') {
+                setTargetUploadConfirm({
+                  file: file,
+                  type: importType,
+                  inputElement: null,
+                  hasExisting: (allData.targets || []).length > 0,
+                  isBridge: true,
+                  bridgeEvent: event
+                });
+                return _context25.a(2);
+              }
               _context25.n = 4;
               return processAndStoreFile(file, importType, {
                 bindHandle: false,
@@ -10363,7 +10373,7 @@ return _context20.a(2, false);
             case 4:
               ok = _context25.v;
               msgText = ok ? "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 ".concat(importType === 'sales' ? 'Sales' : 'Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (").concat(file.name, ")") : "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 ".concat(importType === 'sales' ? 'Sales' : 'Target', " \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08");
-              showStatus(msgText, ok ? 'success' : 'error');
+              if (typeof showStatus === 'function') showStatus(msgText, ok ? 'success' : 'error');
               replyBridgeMessage(event, {
                 type: 'pcg-import-result',
                 dataset: importType,
@@ -13917,26 +13927,96 @@ return _context20.a(2, false);
         React.createElement("div", { className: "w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4" },
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 text-2xl" }, "cloud_upload")
         ),
-        React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-2" }, "พบข้อมูลเป้าหมายเดิม"),
-        React.createElement("p", { className: "text-sm text-slate-600 mb-6" }, "มีข้อมูลเป้าหมายเดิมอยู่ในระบบแล้ว คุณต้องการอัปโหลดข้อมูลใหม่นี้อย่างไร?"),
+        React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-2" }, "อัปโหลดข้อมูลเป้าหมาย"),
+        React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "กรุณาเลือกภาค/เขตการขายสำหรับข้อมูลเป้าหมายชุดนี้"),
+        
+        React.createElement("div", { className: "mb-6 text-left" },
+            React.createElement("label", { className: "block text-sm font-medium text-slate-700 mb-2" }, "เลือกภาค/เขตการขาย (อ้างอิงจากข้อมูลยอดขาย)"),
+            React.createElement("select", {
+                className: "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+                value: uploadTargetRegion,
+                onChange: function(e) { setUploadTargetRegion(e.target.value); }
+            },
+                React.createElement("option", { value: "" }, "-- เลือกภาค/เขตการขาย --"),
+                dbDistrictsForUpload.map(function(dist) {
+                    return React.createElement("option", { key: dist, value: dist }, dist);
+                })
+            )
+        ),
+        
+        targetUploadConfirm.hasExisting && React.createElement("p", { className: "text-sm text-amber-600 mb-4 bg-amber-50 p-2 rounded border border-amber-200" }, "มีข้อมูลเป้าหมายเดิมอยู่ในระบบแล้ว คุณต้องการอัปโหลดข้อมูลใหม่นี้อย่างไร?"),
+
         React.createElement("div", { className: "flex flex-col gap-2" },
-            React.createElement("button", { className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2", onClick: function() { 
-                var file = targetUploadConfirm.file;
-                var inputEl = targetUploadConfirm.inputElement;
-                if (inputEl) inputEl.value = '';
-                setTargetUploadConfirm(null);
-                processAndStoreFile(file, 'target', { silentStatus: false, isAppend: true });
-            } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)"),
-            React.createElement("button", { className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1", onClick: function() { 
-                var file = targetUploadConfirm.file;
-                var inputEl = targetUploadConfirm.inputElement;
-                if (inputEl) inputEl.value = '';
-                setTargetUploadConfirm(null);
-                processAndStoreFile(file, 'target', { silentStatus: false, isAppend: false });
-            } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
+            React.createElement("button", { 
+                className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2 " + (!uploadTargetRegion ? "opacity-50 cursor-not-allowed" : ""),
+                disabled: !uploadTargetRegion,
+                onClick: function() { 
+                    var file = targetUploadConfirm.file;
+                    var inputEl = targetUploadConfirm.inputElement;
+                    var isBridge = targetUploadConfirm.isBridge;
+                    var bridgeEvent = targetUploadConfirm.bridgeEvent;
+                    if (inputEl) inputEl.value = '';
+                    setTargetUploadConfirm(null);
+                    var startTime = performance.now();
+                    processAndStoreFile(file, 'target', { silentStatus: isBridge, isAppend: true, targetRegion: uploadTargetRegion }).then(function(ok) {
+                        var endTime = performance.now();
+                        var timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+                        if (isBridge && bridgeEvent) {
+                            var msgText = ok ? "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (\u0E43\u0E0A\u0E49\u0E40\u0E27\u0E25\u0E32 " + timeTaken + " \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35)" : "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08";
+                            if (typeof showStatus === 'function') showStatus(msgText, ok ? 'success' : 'error');
+                            if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
+                                type: 'pcg-import-result',
+                                dataset: 'target',
+                                ok: ok,
+                                message: msgText
+                            });
+                        }
+                    });
+                }
+            }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), targetUploadConfirm.hasExisting ? "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)" : "ยืนยันอัปโหลด"),
+            
+            targetUploadConfirm.hasExisting && React.createElement("button", { 
+                className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1 " + (!uploadTargetRegion ? "opacity-50 cursor-not-allowed" : ""),
+                disabled: !uploadTargetRegion,
+                onClick: function() { 
+                    var file = targetUploadConfirm.file;
+                    var inputEl = targetUploadConfirm.inputElement;
+                    var isBridge = targetUploadConfirm.isBridge;
+                    var bridgeEvent = targetUploadConfirm.bridgeEvent;
+                    if (inputEl) inputEl.value = '';
+                    setTargetUploadConfirm(null);
+                    var startTime = performance.now();
+                    processAndStoreFile(file, 'target', { silentStatus: isBridge, isAppend: false, targetRegion: uploadTargetRegion }).then(function(ok) {
+                        var endTime = performance.now();
+                        var timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+                        if (isBridge && bridgeEvent) {
+                            var msgText = ok ? "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (\u0E43\u0E0A\u0E49\u0E40\u0E27\u0E25\u0E32 " + timeTaken + " \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35)" : "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08";
+                            if (typeof showStatus === 'function') showStatus(msgText, ok ? 'success' : 'error');
+                            if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
+                                type: 'pcg-import-result',
+                                dataset: 'target',
+                                ok: ok,
+                                message: msgText
+                            });
+                        }
+                    });
+                }
+            }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
+            
             React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() { 
                 if (targetUploadConfirm && targetUploadConfirm.inputElement) targetUploadConfirm.inputElement.value = '';
+                var isBridge = targetUploadConfirm && targetUploadConfirm.isBridge;
+                var bridgeEvent = targetUploadConfirm && targetUploadConfirm.bridgeEvent;
                 setTargetUploadConfirm(null); 
+                if (isBridge && bridgeEvent) {
+                    if (typeof showStatus === 'function') showStatus("\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target", 'error');
+                    if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
+                        type: 'pcg-import-result',
+                        dataset: 'target',
+                        ok: false,
+                        message: "\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target"
+                    });
+                }
             } }, "ยกเลิก")
         )
     )
