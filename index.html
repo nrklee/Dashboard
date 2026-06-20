@@ -491,22 +491,7 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
 
 /* ── GridStack ────────────────────────────────────────────── */
 .grid-stack { background: transparent; min-height: 200px; position: relative; }
-.grid-stack:not(.grid-stack-instance) {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.grid-stack:not(.grid-stack-instance) > .grid-stack-item {
-  position: relative !important;
-  display: block !important;
-  height: auto !important;
-  width: 100% !important;
-}
-.grid-stack:not(.grid-stack-instance) > .grid-stack-item > .grid-stack-item-content {
-  position: relative !important;
-  display: block !important;
-  inset: auto !important;
-}
+
 
 .grid-stack-item > .grid-stack-item-content {
   inset: 6px;
@@ -14419,7 +14404,7 @@ return _context20.a(2, false);
   })) : /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-bold whitespace-nowrap"
   }, totalCVCount.toLocaleString(), " CV")))) : null), /*#__PURE__*/React.createElement("div", {
-    className: "grid-stack"
+    className: "grid-stack grid-stack-12 grid-stack-instance"
   }, (sectionOpen.trend ? /*#__PURE__*/React.createElement("div", getGridProps("card-1", 12, 7), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
   }, /*#__PURE__*/React.createElement("div", {
