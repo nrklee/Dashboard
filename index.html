@@ -490,23 +490,7 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
 .ai-launch-btn { display: none !important; }
 
 /* ── GridStack ────────────────────────────────────────────── */
-.grid-stack { background: transparent; min-height: 200px; position: relative; }
-.grid-stack:not(.grid-stack-instance) {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.grid-stack:not(.grid-stack-instance) > .grid-stack-item {
-  position: relative !important;
-  display: block !important;
-  height: auto !important;
-  width: 100% !important;
-}
-.grid-stack:not(.grid-stack-instance) > .grid-stack-item > .grid-stack-item-content {
-  position: relative !important;
-  inset: auto !important;
-  height: auto !important;
-}
+.grid-stack { background: transparent; min-height: 200px; }
 
 .grid-stack-item > .grid-stack-item-content {
   inset: 6px;
@@ -2269,7 +2253,7 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.category || r.group || '',
+                group: r.group || '',
                 model: r.model || '',
                 rebate: r.rebate || '',
                 set: r.set || '',
@@ -2444,13 +2428,6 @@ var DEFAULT_SECTION_STATE = {
   brands: true,
   shops: true,
   district: true
-};
-
-window.resetDefaultLayout = function() {
-    localStorage.removeItem('dashboard_layouts');
-    localStorage.removeItem('dashboard_section_open');
-    localStorage.removeItem('dashboard_custom_widgets');
-    window.location.reload();
 };
 
 window.applyDefaultLayout = function(type) {
@@ -3855,6 +3832,7 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
     value: startDate || '',
     onChange: function(e) { 
       onChange(e.target.value, endDate); 
+      if (e.target && e.target.blur) e.target.blur();
     },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
   }), /*#__PURE__*/React.createElement("span", {
@@ -3864,6 +3842,7 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
     value: endDate || '',
     onChange: function(e) { 
       onChange(startDate, e.target.value); 
+      if (e.target && e.target.blur) e.target.blur();
     },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
   }), (startDate || endDate) && /*#__PURE__*/React.createElement("button", {
@@ -6488,12 +6467,10 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
 };
 var App = function App() {
   var _useStateNotifs = React.useState([]), systemNotifications = _useStateNotifs[0], setSystemNotifications = _useStateNotifs[1];
-  var _useStateUnreadNotifs = React.useState(false), hasUnreadNotifications = _useStateUnreadNotifs[0], setHasUnreadNotifications = _useStateUnreadNotifs[1];
   var _useStateNotifOpen = React.useState(false), isSystemNotificationsOpen = _useStateNotifOpen[0], setIsSystemNotificationsOpen = _useStateNotifOpen[1];
   var addNotification = function(msg, type) {
     var notif = { id: Date.now() + Math.random(), message: msg, type: type || "info", time: new Date() };
     setSystemNotifications(function(prev) { return [notif].concat(prev).slice(0, 50); });
-    setHasUnreadNotifications(true);
   };
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
@@ -6517,10 +6494,8 @@ var App = function App() {
   }, [allData]);
   
   React.useEffect(function() {
-    // Only proceed if we are on the dashboard and NOT loading data
-    if (isLoading || (activeTab !== 'dashboard' && !activeTab.startsWith('custom_dashboard_'))) return;
-    
     var timer;
+    
     var initGrid = function() {
         if (timer) clearTimeout(timer);
         timer = setTimeout(function() {
@@ -6535,63 +6510,60 @@ var App = function App() {
                 return;
             }
             
-            // Use requestAnimationFrame to ensure the browser has fully painted the DOM
-            requestAnimationFrame(function() {
-                // Destroy existing instance to prevent stale references when React re-renders
-                if (gridEl.gridstack) {
-                    try { gridEl.gridstack.destroy(false); } catch(e) {}
+            // Destroy existing instance to prevent stale references when React re-renders
+            if (gridEl.gridstack) {
+                try { gridEl.gridstack.destroy(false); } catch(e) {}
+            }
+            
+            // Initialize fresh GridStack
+            try {
+                var grid = window.GridStack.init({
+                    cellHeight: 80,
+                    column: 12,
+                    margin: 10,
+                    handle: '.major-section-head',
+                    float: false,
+                    animate: true,
+                    disableOneColumnMode: true,
+                    resizable: {
+                        handles: 'se'
+                    }
+                }, gridEl);
+                
+                // Add a class so fallback CSS can be disabled
+                gridEl.classList.add('grid-stack-instance');
+                
+                // Force save initial layout so React's next render gets the auto-placed coordinates
+                var engineNodes = grid.engine.nodes;
+                if (engineNodes && engineNodes.length > 0) {
+                    var initialLayouts = {};
+                    try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+                    engineNodes.forEach(function(node) {
+                        var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
+                        if (id) {
+                            initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
+                        }
+                    });
+                    localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
                 }
                 
-                // Initialize fresh GridStack
-                try {
-                    var grid = window.GridStack.init({
-                        cellHeight: 80,
-                        column: 12,
-                        margin: 10,
-                        handle: '.major-section-head',
-                        float: false,
-                        animate: true,
-                        disableOneColumnMode: true,
-                        resizable: {
-                            handles: 'se'
+                // Save layout on change
+                grid.on('change', function(event, items) {
+                    if (!items) return;
+                    var layouts = {};
+                    try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
+                    items.forEach(function(item) {
+                        var id = item.el ? item.el.getAttribute('gs-id') : null;
+                        if (id) {
+                            layouts[id] = { x: item.x, y: item.y, w: item.w, h: item.h };
                         }
-                    }, gridEl);
-                    
-                    // Add a class so fallback CSS can be disabled
-                    gridEl.classList.add('grid-stack-instance');
-                    
-                    // Force save initial layout so React's next render gets the auto-placed coordinates
-                    var engineNodes = grid.engine.nodes;
-                    if (engineNodes && engineNodes.length > 0) {
-                        var initialLayouts = {};
-                        try { initialLayouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-                        engineNodes.forEach(function(node) {
-                            var id = node.id || (node.el ? node.el.getAttribute('gs-id') : null);
-                            if (id) {
-                                initialLayouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
-                            }
-                        });
-                        localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
-                    }
-                    
-                    // Save layout on change
-                    grid.on('change', function(event, items) {
-                        if (!items) return;
-                        var layouts = {};
-                        try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-                        items.forEach(function(item) {
-                            var id = item.el ? item.el.getAttribute('gs-id') : null;
-                            if (id) {
-                                layouts[id] = { x: item.x, y: item.y, w: item.w, h: item.h };
-                            }
-                        });
-                        localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
                     });
-                } catch (err) {
-                    console.error("GridStack init error:", err);
-                }
-            });
-        }, 50); // Minimum delay just to decouple execution
+                    localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
+                });
+            } catch (err) {
+                console.error("GridStack init error:", err);
+            }
+        }, 100);
     };
     
     initGrid();
@@ -6603,32 +6575,17 @@ var App = function App() {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }, [activeTab, isLoading]); // Re-init when tab changes or when loading finishes
-  
-  // React overwrites className on re-render, stripping GridStack classes.
-  // We restore them synchronously before paint so they never appear missing.
-  React.useLayoutEffect(function() {
-      var gridEl = document.querySelector('.grid-stack');
-      if (gridEl && gridEl.gridstack) {
-          if (!gridEl.classList.contains('grid-stack-instance')) {
-              gridEl.classList.add('grid-stack-instance');
-          }
-          if (!gridEl.classList.contains('grid-stack-12')) {
-              gridEl.classList.add('grid-stack-12');
-          }
-      }
-  });
+  }, [activeTab]); // Only re-init when tab changes
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
       try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
       var saved = layouts[id];
-      var w = (saved && saved.w) ? saved.w : (defW || 12);
-      var h = (saved && saved.h) ? saved.h : (defH || 4);
-      var props = { key: id, className: "grid-stack-item", "gs-id": id, "gs-w": Math.max(1, w), "gs-h": Math.max(1, h) };
-      if (saved && saved.x != null) props["gs-x"] = saved.x;
-      if (saved && saved.y != null) props["gs-y"] = saved.y;
-      return props;
+      var w = saved ? saved.w : (defW || 12);
+      var h = saved ? saved.h : (defH || 4);
+      var x = (saved && saved.x != null) ? saved.x : 0;
+      var y = (saved && saved.y != null) ? saved.y : undefined;
+      return { key: id, className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": w, "gs-h": h };
   };
 
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:init';
@@ -7011,16 +6968,6 @@ var App = function App() {
         startedAt: prev.startedAt || 0
       };
     });
-    if (type === 'success') {
-      setTimeout(function() {
-        setStatusInfo(function(prev) {
-          if (!prev.loading && prev.type === 'success') {
-            return { type: '', message: '', loading: false, progress: 0, indeterminate: false, startedAt: 0 };
-          }
-          return prev;
-        });
-      }, 2500);
-    }
   };
   var closeStatusPopup = function closeStatusPopup() {
     setStatusInfo({
@@ -10532,33 +10479,15 @@ return _context20.a(2, false);
     setRepeatGapFilters(createEmptyRepeatGapFilters());
   };
   useEffect(function () {
+    if (viewMode === 'monthly') return;
     setFilters(function (prev) {
+      if (!prev.month || prev.month.length === 0) return prev;
       var next = _objectSpread({}, prev);
-      var changed = false;
-      if (viewMode !== 'monthly' && next.month && next.month.length > 0) {
-        delete next.month;
-        changed = true;
-      }
-      if (viewMode !== 'yearly' && next.year && next.year.length > 0) {
-        delete next.year;
-        changed = true;
-      }
-      if (viewMode !== 'monthly' && viewMode !== 'daily' && next.dateRange) {
-        delete next.dateRange;
-        changed = true;
-      }
-      if (viewMode !== 'monthly' && viewMode !== 'daily' && next.monthRange) {
-        delete next.monthRange;
-        changed = true;
-      }
-      return changed ? next : prev;
+      delete next.month;
+      return next;
     });
   }, [viewMode]);
   var getFilterItemValue = function getFilterItemValue(item, key) {
-    if (key === 'year') {
-      var yearLabel = getYearLabelFromItem(item, false);
-      return yearLabel || null;
-    }
     if (key === 'month') {
       var monthIndex = getMonthIndexFromItem(item);
       if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return null;
@@ -13943,9 +13872,7 @@ return _context20.a(2, false);
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, /*#__PURE__*/React.createElement(Icon, { name: "Leaderboard", size: 14 }), " 2. ผู้บริหาร"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 3. พนักงานขาย"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 4. สินค้า (Product Focus)"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table"),
-    /*#__PURE__*/React.createElement("div", { className: "border-t border-outline-variant/30 my-1" }),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs text-red-600 dark:text-red-400 flex items-center gap-2 font-bold", onClick: function(){ window.resetDefaultLayout(); } }, /*#__PURE__*/React.createElement(Icon, { name: "Refresh", size: 14 }), " 6. รีเฟรช / คืนค่าเริ่มต้น")
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table")
   )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
@@ -13955,11 +13882,11 @@ return _context20.a(2, false);
   }, "AI")) : null), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-1 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors " + (hasUnreadNotifications ? "relative" : ""),
-    onClick: function() { setIsSystemNotificationsOpen(!isSystemNotificationsOpen); setHasUnreadNotifications(false); }
+    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors " + (systemNotifications.length > 0 ? "relative" : ""),
+    onClick: function() { setIsSystemNotificationsOpen(!isSystemNotificationsOpen); }
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[20px]"
-  }, "notifications"), hasUnreadNotifications && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
+  }, "notifications"), systemNotifications.length > 0 && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
   isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", { className: "fixed inset-0 z-40", onClick: function() { setIsSystemNotificationsOpen(false); } }),
   isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-12 right-12 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 flex flex-col max-h-96"
@@ -14402,7 +14329,7 @@ return _context20.a(2, false);
     className: "grid grid-cols-1 md:grid-cols-3 gap-4 fade-in"
   }, /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
-  }, /*#__PURE__*/React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "ยอดขายรวม"), kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5"
   }, kpiYearRows.map(function (row) {
     return /*#__PURE__*/React.createElement("div", {
@@ -14421,7 +14348,7 @@ return _context20.a(2, false);
     className: "text-sm font-normal text-slate-500"
   }, getUnitLabel(metricMode, unitMode)))), /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
-  }, /*#__PURE__*/React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "จำนวน SKU"), kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5"
   }, kpiYearRows.map(function (row) {
     return /*#__PURE__*/React.createElement("div", {
@@ -14436,7 +14363,7 @@ return _context20.a(2, false);
     className: "text-xl font-bold"
   }, totalSKUs.toLocaleString())), /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
-  }, /*#__PURE__*/React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "จำนวน CV"), kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5"
   }, kpiYearRows.map(function (row) {
     return /*#__PURE__*/React.createElement("div", {
