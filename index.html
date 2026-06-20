@@ -10,12 +10,11 @@
             metaViewport.name = 'viewport';
             document.head.appendChild(metaViewport);
         }
-        metaViewport.content = 'width=1440';
+        metaViewport.content = 'width=1280';
     })();
     </script>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salytix V2.1 - Data Management</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500&family=Kanit:wght@600;700&display=swap" rel="stylesheet">
@@ -6189,6 +6188,9 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   var dbModels = new Set();
   var dbSkus = new Set();
   var dbDistricts = new Set();
+  var dbSubCategories = new Set();
+  var dbDescLocs = new Set();
+
   var groupBrandsMap = {};
   var brandGroupsMap = {};
   if (allData && allData.monthly) {
@@ -6198,6 +6200,9 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
           if (row.model) dbModels.add(row.model);
           if (row.sku) dbSkus.add(row.sku);
           if (row.district) dbDistricts.add(row.district);
+          if (row.subCategory) dbSubCategories.add(row.subCategory);
+          if (row.descLoc) dbDescLocs.add(row.descLoc);
+
           if (row.group && row.brand) {
               if (!groupBrandsMap[row.group]) groupBrandsMap[row.group] = new Set();
               groupBrandsMap[row.group].add(row.brand);
@@ -6248,6 +6253,10 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var keyGrp = 'group||' + t.group + '||' + t.brand;
                     var keyModel = 'model||' + t.group + '||' + t.brand;
                     var keySku = 'sku||' + t.group + '||' + t.brand;
+                    var keySubCat = 'subCat||' + t.group + '||' + t.brand;
+                    var keyDescLoc = 'descLoc||' + t.group + '||' + t.brand;
+                    var keyEnableSubCat = 'enableSubCat||' + t.group + '||' + t.brand;
+
                     
                     var legacyKeyGrp = 'group||' + t.group;
                     
@@ -6255,10 +6264,16 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var valGrp = localMap[keyGrp] !== undefined ? localMap[keyGrp] : (localMap[legacyKeyGrp] || '');
                     var valModel = localMap[keyModel] || '';
                     var valSku = localMap[keySku] || '';
+                    var valSubCat = localMap[keySubCat] || '';
+                    var valDescLoc = localMap[keyDescLoc] || '';
+                    var isSubCatEnabled = localMap[keyEnableSubCat] === 'true';
+
                     
                     var brandArray = valBrand ? valBrand.split(',') : [''];
                     var modelArray = valModel ? valModel.split(',') : [''];
                     var skuArray = valSku ? valSku.split(',') : [''];
+                    var subCatArray = valSubCat ? valSubCat.split(',') : [''];
+                    var descLocArray = valDescLoc ? valDescLoc.split(',') : [''];
                     
                     var availableBrands = valGrp && groupBrandsMap[valGrp] ? Array.from(groupBrandsMap[valGrp]) : Array.from(dbBrands);
                     
@@ -6271,7 +6286,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                             brandGroupsMap[bStr].forEach(function(g) { availableGroups.add(g); });
                         }
                     });
-                    if (!hasBrandFilter) {
+                    if (!hasBrandFilter || availableGroups.size === 0) {
                         availableGroups = dbGroups;
                     }
                     
@@ -6283,6 +6298,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                         React.createElement("datalist", { id: "db-groups-list-" + idx }, Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-models-list-" + idx }, Array.from(dbModels).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-skus-list-" + idx }, Array.from(dbSkus).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-subcats-list-" + idx }, Array.from(dbSubCategories).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-desclocs-list-" + idx }, Array.from(dbDescLocs).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("div", { className: "flex items-start gap-3" },
                             React.createElement("div", { className: "w-1/4 mt-1" },
                                 React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
@@ -6445,6 +6462,111 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             }
                                         }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม SKU")
                                     )
+                                ) : null,
+                                (valGrp === 'ปลา' || valGrp === 'นก' || t.group === 'ปลา' || t.group === 'นก') ? React.createElement("div", { className: "flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100" },
+                                    React.createElement("label", { className: "flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer" },
+                                        React.createElement("input", {
+                                            type: "checkbox",
+                                            checked: isSubCatEnabled,
+                                            onChange: function(e) {
+                                                var newMap = Object.assign({}, localMap);
+                                                newMap[keyEnableSubCat] = e.target.checked ? 'true' : 'false';
+                                                if (!e.target.checked) {
+                                                    newMap[keySubCat] = '';
+                                                    newMap[keyDescLoc] = '';
+                                                }
+                                                setLocalMap(newMap);
+                                            },
+                                            className: "w-4 h-4 text-blue-600 rounded cursor-pointer"
+                                        }),
+                                        "ระบุ SUB_CATEGORY / DESC_LOC"
+                                    ),
+                                    isSubCatEnabled ? React.createElement("div", { className: "flex gap-2 items-start pl-6" },
+                                        React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                            React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "SUB_CATEGORY"),
+                                            subCatArray.map(function(scItem, scIdx) {
+                                                return React.createElement("div", { key: scIdx, className: "flex items-center gap-1" },
+                                                    React.createElement("input", {
+                                                        type: "text",
+                                                        list: "db-subcats-list-" + idx,
+                                                        className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-purple-500 bg-purple-50 outline-none",
+                                                        placeholder: "ระบุ SUB_CATEGORY",
+                                                        value: scItem.trim(),
+                                                        onChange: function(e) {
+                                                            var newMap = Object.assign({}, localMap);
+                                                            var newArr = subCatArray.slice();
+                                                            newArr[scIdx] = e.target.value;
+                                                            newMap[keySubCat] = newArr.join(',');
+                                                            setLocalMap(newMap);
+                                                        }
+                                                    }),
+                                                    subCatArray.length > 1 ? React.createElement("button", {
+                                                        type: "button",
+                                                        className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                        onClick: function() {
+                                                            var newMap = Object.assign({}, localMap);
+                                                            var newArr = subCatArray.slice();
+                                                            newArr.splice(scIdx, 1);
+                                                            newMap[keySubCat] = newArr.join(',');
+                                                            setLocalMap(newMap);
+                                                        }
+                                                    }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                                );
+                                            }),
+                                            React.createElement("button", {
+                                                type: "button",
+                                                className: "self-start text-xs text-purple-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                                onClick: function() {
+                                                    var newMap = Object.assign({}, localMap);
+                                                    var currStr = newMap[keySubCat] || '';
+                                                    newMap[keySubCat] = currStr ? currStr + ',' : ',';
+                                                    setLocalMap(newMap);
+                                                }
+                                            }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม")
+                                        ),
+                                        React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                            React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "DESC_LOC"),
+                                            descLocArray.map(function(dlItem, dlIdx) {
+                                                return React.createElement("div", { key: dlIdx, className: "flex items-center gap-1" },
+                                                    React.createElement("input", {
+                                                        type: "text",
+                                                        list: "db-desclocs-list-" + idx,
+                                                        className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-teal-500 bg-teal-50 outline-none",
+                                                        placeholder: "ระบุ DESC_LOC",
+                                                        value: dlItem.trim(),
+                                                        onChange: function(e) {
+                                                            var newMap = Object.assign({}, localMap);
+                                                            var newArr = descLocArray.slice();
+                                                            newArr[dlIdx] = e.target.value;
+                                                            newMap[keyDescLoc] = newArr.join(',');
+                                                            setLocalMap(newMap);
+                                                        }
+                                                    }),
+                                                    descLocArray.length > 1 ? React.createElement("button", {
+                                                        type: "button",
+                                                        className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                        onClick: function() {
+                                                            var newMap = Object.assign({}, localMap);
+                                                            var newArr = descLocArray.slice();
+                                                            newArr.splice(dlIdx, 1);
+                                                            newMap[keyDescLoc] = newArr.join(',');
+                                                            setLocalMap(newMap);
+                                                        }
+                                                    }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                                );
+                                            }),
+                                            React.createElement("button", {
+                                                type: "button",
+                                                className: "self-start text-xs text-teal-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                                onClick: function() {
+                                                    var newMap = Object.assign({}, localMap);
+                                                    var currStr = newMap[keyDescLoc] || '';
+                                                    newMap[keyDescLoc] = currStr ? currStr + ',' : ',';
+                                                    setLocalMap(newMap);
+                                                }
+                                            }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม")
+                                        )
+                                    ) : null
                                 ) : null
                             )
                         )
@@ -8221,7 +8343,7 @@ var App = function App() {
                                   _mapColumns2 = mapColumns(headerRow), map = _mapColumns2.map, timeCols = _mapColumns2.timeCols;
                                   usableTimeCols = dedupeTimeCols(timeCols);
                                   var isTransactional = headerRow.some(function(c) { return String(c || '').toLowerCase().trim() === 'sales_date'; });
-                                  var dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                  var dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
                                   if (isTransactional) {
                                       headerRow.forEach(function(c, idx) {
                                           var colName = String(c || '').toUpperCase().trim();
@@ -8394,10 +8516,11 @@ var App = function App() {
                                   return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 6:
                                   headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
-                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
                                   headerRow.forEach(function(colName, idx) {
                                       var cLower = colName.toLowerCase().replace(/\\s+/g, '');
                                       if ((colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') && dbMap.date === -1) dbMap.date = idx;
+
                                       if ((colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') && dbMap.amount === -1) dbMap.amount = idx;
                                       if ((colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') && dbMap.qty === -1) dbMap.qty = idx;
                                       if ((colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) && dbMap.ton === -1) dbMap.ton = idx;
@@ -8412,6 +8535,9 @@ var App = function App() {
                                        if ((colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า' ) || cLower.includes('code') || cLower.includes('item')) && dbMap.sku === -1) dbMap.sku = idx;
                                        if ((colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) && dbMap.rebate === -1) dbMap.rebate = idx;
                                        if ((colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) && dbMap.set === -1) dbMap.set = idx;
+                                       if ((colName === 'SUB_CATEGORY' || cLower === 'subcategory') && dbMap.subCategory === -1) dbMap.subCategory = idx;
+                                       if ((colName === 'DESC_LOC' || cLower === 'descloc') && dbMap.descLoc === -1) dbMap.descLoc = idx;
+
 
                                   });
                                   _i = headerRowIdx + 1;
@@ -8484,7 +8610,7 @@ var App = function App() {
                                       size: normalizeDimensionValue(row[dbMap.size]),
                                       sku: normalizeDimensionValue(row[dbMap.sku]),
                                       rebate: normalizeDimensionValue(row[dbMap.rebate]),
-                                      set: normalizeDimensionValue(row[dbMap.set])
+                                      set: normalizeDimensionValue(row[dbMap.set]), subCategory: normalizeDimensionValue(row[dbMap.subCategory]), descLoc: normalizeDimensionValue(row[dbMap.descLoc])
                                   };
                                   dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
                                   id = "m-" + Math.random();
@@ -13622,7 +13748,7 @@ return _context20.a(2, false);
     }
   }, "\u0E2B\u0E32\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E14\u0E39\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 \u0E43\u0E2B\u0E49\u0E40\u0E02\u0E49\u0E32\u0E14\u0E49\u0E27\u0E22\u0E1A\u0E31\u0E0D\u0E0A\u0E35 area_admin \u0E2B\u0E23\u0E37\u0E2D user \u0E02\u0E2D\u0E07\u0E20\u0E32\u0E04/\u0E40\u0E02\u0E15\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E44\u0E27\u0E49\u0E43\u0E19\u0E0A\u0E35\u0E15 USERS"))))))));
   return /*#__PURE__*/React.createElement("div", {
-    cclassName: `dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
+    className: `dashboard-shell flex h-screen w-full text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
     style: {
       background: 'var(--bg)'
     }
@@ -14122,17 +14248,23 @@ return _context20.a(2, false);
                     var modelKey = 'model||' + row.group + '||' + row.brand;
                     var skuKey = 'sku||' + row.group + '||' + row.brand;
                     var distKey = 'dist||' + row.district;
+                    var subCatKey = 'subCat||' + row.group + '||' + row.brand;
+                    var descLocKey = 'descLoc||' + row.group + '||' + row.brand;
                     
                     var mapBrandVal = newMap[brandKey] || '';
                     var mapGroupVal = newMap[groupKey] !== undefined ? newMap[groupKey] : (newMap[legacyGroupKey] || '');
                     var mapModelVal = newMap[modelKey] || '';
                     var mapSkuVal = newMap[skuKey] || '';
+                    var mapSubCatVal = newMap[subCatKey] || '';
+                    var mapDescLocVal = newMap[descLocKey] || '';
                     var mapDistVal = newMap[distKey] || row.district;
                     
                     if (mapBrandVal.trim() !== '') {
                         var mappedBrands = mapBrandVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
                         var mappedModelsStr = mapModelVal.trim() !== '' ? mapModelVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
                         var mappedSkusStr = mapSkuVal.trim() !== '' ? mapSkuVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedSubCatStr = mapSubCatVal.trim() !== '' ? mapSubCatVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedDescLocStr = mapDescLocVal.trim() !== '' ? mapDescLocVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
                         
                         if (mappedBrands.length > 0) {
                             var mappedBrandStr = mappedBrands.join('||');
@@ -14142,6 +14274,8 @@ return _context20.a(2, false);
                                 brand: mappedBrandStr,
                                 model: mappedModelsStr,
                                 sku: mappedSkusStr,
+                                subCategory: mappedSubCatStr,
+                                descLoc: mappedDescLocStr,
                                 targetLevel: 'brand',
                                 targetValue: row.value,
                                 targetTon: 0,
@@ -14162,6 +14296,8 @@ return _context20.a(2, false);
                                 brand: 'Total Target',
                                 model: '-',
                                 sku: '-',
+                                subCategory: '-',
+                                descLoc: '-',
                                 targetLevel: 'district',
                                 targetValue: row.value,
                                 targetTon: 0,
@@ -14201,7 +14337,7 @@ return _context20.a(2, false);
                 if (!newAllData.monthly) newAllData.monthly = [];
                 mappedTargets.forEach(function(t) {
                     var existing = newAllData.monthly.find(function(m) {
-                        return m.district === t.district && m.brand === t.brand && m.model === t.model && m.sku === t.sku && m.monthIndex === t.monthIndex && m.year === t.year;
+                        return m.district === t.district && m.brand === t.brand && m.model === t.model && m.sku === t.sku && (m.subCategory || '-') === t.subCategory && (m.descLoc || '-') === t.descLoc && m.monthIndex === t.monthIndex && m.year === t.year;
                     });
                     if (existing) {
                         existing.targetValue = (existing.targetValue || 0) + t.targetValue;
