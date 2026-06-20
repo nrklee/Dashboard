@@ -2253,7 +2253,7 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.group || '',
+                group: r.category || r.group || '',
                 model: r.model || '',
                 rebate: r.rebate || '',
                 set: r.set || '',
@@ -2428,6 +2428,13 @@ var DEFAULT_SECTION_STATE = {
   brands: true,
   shops: true,
   district: true
+};
+
+window.resetDefaultLayout = function() {
+    localStorage.removeItem('dashboard_layouts');
+    localStorage.removeItem('dashboard_section_open');
+    localStorage.removeItem('dashboard_custom_widgets');
+    window.location.reload();
 };
 
 window.applyDefaultLayout = function(type) {
@@ -13872,7 +13879,9 @@ return _context20.a(2, false);
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, /*#__PURE__*/React.createElement(Icon, { name: "Leaderboard", size: 14 }), " 2. ผู้บริหาร"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 3. พนักงานขาย"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 4. สินค้า (Product Focus)"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table")
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table"),
+    /*#__PURE__*/React.createElement("div", { className: "border-t border-outline-variant/30 my-1" }),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs text-red-600 dark:text-red-400 flex items-center gap-2 font-bold", onClick: function(){ window.resetDefaultLayout(); } }, /*#__PURE__*/React.createElement(Icon, { name: "Refresh", size: 14 }), " 6. รีเฟรช / คืนค่าเริ่มต้น")
   )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
     onClick: function onClick() {
