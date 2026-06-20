@@ -490,7 +490,18 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
 .ai-launch-btn { display: none !important; }
 
 /* ── GridStack ────────────────────────────────────────────── */
-.grid-stack { background: transparent; min-height: 200px; }
+.grid-stack { background: transparent; min-height: 200px; position: relative; }
+.grid-stack:not(.grid-stack-instance) {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.grid-stack:not(.grid-stack-instance) > .grid-stack-item {
+  position: relative !important;
+  display: block !important;
+  height: auto !important;
+  width: 100% !important;
+}
 
 .grid-stack-item > .grid-stack-item-content {
   inset: 6px;
