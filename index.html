@@ -6474,10 +6474,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
 };
 var App = function App() {
   var _useStateNotifs = React.useState([]), systemNotifications = _useStateNotifs[0], setSystemNotifications = _useStateNotifs[1];
+  var _useStateUnreadNotifs = React.useState(false), hasUnreadNotifications = _useStateUnreadNotifs[0], setHasUnreadNotifications = _useStateUnreadNotifs[1];
   var _useStateNotifOpen = React.useState(false), isSystemNotificationsOpen = _useStateNotifOpen[0], setIsSystemNotificationsOpen = _useStateNotifOpen[1];
   var addNotification = function(msg, type) {
     var notif = { id: Date.now() + Math.random(), message: msg, type: type || "info", time: new Date() };
     setSystemNotifications(function(prev) { return [notif].concat(prev).slice(0, 50); });
+    setHasUnreadNotifications(true);
   };
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
@@ -6975,6 +6977,16 @@ var App = function App() {
         startedAt: prev.startedAt || 0
       };
     });
+    if (type === 'success') {
+      setTimeout(function() {
+        setStatusInfo(function(prev) {
+          if (!prev.loading && prev.type === 'success') {
+            return { type: '', message: '', loading: false, progress: 0, indeterminate: false, startedAt: 0 };
+          }
+          return prev;
+        });
+      }, 2500);
+    }
   };
   var closeStatusPopup = function closeStatusPopup() {
     setStatusInfo({
@@ -13891,11 +13903,11 @@ return _context20.a(2, false);
   }, "AI")) : null), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-1 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors " + (systemNotifications.length > 0 ? "relative" : ""),
-    onClick: function() { setIsSystemNotificationsOpen(!isSystemNotificationsOpen); }
+    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors " + (hasUnreadNotifications ? "relative" : ""),
+    onClick: function() { setIsSystemNotificationsOpen(!isSystemNotificationsOpen); setHasUnreadNotifications(false); }
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[20px]"
-  }, "notifications"), systemNotifications.length > 0 && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
+  }, "notifications"), hasUnreadNotifications && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
   isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", { className: "fixed inset-0 z-40", onClick: function() { setIsSystemNotificationsOpen(false); } }),
   isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-12 right-12 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 flex flex-col max-h-96"
