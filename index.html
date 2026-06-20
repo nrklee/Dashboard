@@ -3970,6 +3970,7 @@ var MultiSelect = function MultiSelect(_ref2) {
       var uniqueNewSelected = Array.from(new Set([].concat(_toConsumableArray(selected), _toConsumableArray(filteredOptions))));
       onChange(uniqueNewSelected);
     }
+
   };
   var summaryText = customSummaryText || (selected.length === 0 ? emptyText : "".concat(selected.length, " รายการ"));
   return /*#__PURE__*/React.createElement("div", {
@@ -4015,6 +4016,8 @@ var MultiSelect = function MultiSelect(_ref2) {
     type: "text",
     placeholder: "ค้นหา...",
     className: "w-full pl-8 pr-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:border-blue-500",
+
+                                  });der border-slate-300 rounded focus:outline-none focus:border-blue-500",
     value: searchTerm,
     onChange: function onChange(e) {
       return setSearchTerm(e.target.value);
@@ -8380,21 +8383,22 @@ var App = function App() {
                                   dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
                                   headerRow.forEach(function(colName, idx) {
                                       var cLower = colName.toLowerCase().replace(/\\s+/g, '');
-                                      if (colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') dbMap.date = idx;
-                                      if (colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') dbMap.amount = idx;
-                                      if (colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') dbMap.qty = idx;
-                                      if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) dbMap.ton = idx;
-                                      if (colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') dbMap.region = idx;
-                                      if (colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') dbMap.province = idx; // keeping the original logic of mapping section to province
-                                      if (colName === 'PROVINCE' || cLower === 'จังหวัด') dbMap.district = idx; // keeping original logic of mapping province to district
-                                       if (colName === 'CV_NAME' || cLower.includes('cv') || cLower === 'ลูกค้า') dbMap.cv = idx;
-                                       if (colName === 'CATEGORY' || cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')) dbMap.group = idx;
-                                       if (colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || cLower.includes('brand')) dbMap.brand = idx;
-                                       if (colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) dbMap.model = idx;
-                                       if (colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) dbMap.size = idx;
-                                       if (colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า') || cLower.includes('code') || cLower.includes('item')) dbMap.sku = idx;
-                                       if (colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) dbMap.rebate = idx;
-                                       if (colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) dbMap.set = idx;
+                                      if ((colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') && dbMap.date === -1) dbMap.date = idx;
+                                      if ((colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') && dbMap.amount === -1) dbMap.amount = idx;
+                                      if ((colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') && dbMap.qty === -1) dbMap.qty = idx;
+                                      if ((colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) && dbMap.ton === -1) dbMap.ton = idx;
+                                      if ((colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') && dbMap.region === -1) dbMap.region = idx;
+                                      if ((colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') && dbMap.province === -1) dbMap.province = idx;
+                                      if ((colName === 'PROVINCE' || cLower === 'จังหวัด') && dbMap.district === -1) dbMap.district = idx;
+                                       if ((colName === 'CV_NAME' || cLower === 'cvname' || (!cLower.includes('sub') && cLower.includes('cv')) || cLower === 'ลูกค้า') && dbMap.cv === -1) dbMap.cv = idx;
+                                       if ((colName === 'CATEGORY' || (!cLower.includes('sub') && (cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')))) && dbMap.group === -1) dbMap.group = idx;
+                                       if ((colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || (!cLower.includes('code') && cLower.includes('brand'))) && dbMap.brand === -1) dbMap.brand = idx;
+                                       if ((colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) && dbMap.model === -1) dbMap.model = idx;
+                                       if ((colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) && dbMap.size === -1) dbMap.size = idx;
+                                       if ((colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า' ) || cLower.includes('code') || cLower.includes('item')) && dbMap.sku === -1) dbMap.sku = idx;
+                                       if ((colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) && dbMap.rebate === -1) dbMap.rebate = idx;
+                                       if ((colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) && dbMap.set === -1) dbMap.set = idx;
+
                                   });
                                   _i = headerRowIdx + 1;
                                 case 7:
