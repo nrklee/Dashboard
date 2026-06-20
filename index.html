@@ -2111,7 +2111,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
-                    group: row.group || '',
+                    category: row.group || '',
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
@@ -2132,7 +2132,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
-                    group: row.group || '',
+                    category: row.group || '',
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
@@ -9285,11 +9285,11 @@ var App = function App() {
         _t16,
         _t17,
         _t18;
+      var _startTime = performance.now();
       return _regenerator().w(function (_context19) {
         while (1) switch (_context19.p = _context19.n) {
           case 0:
             options = _args19.length > 2 && _args19[2] !== undefined ? _args19[2] : {};
-            var _startTime = performance.now();
             _options$fileHandle = options.fileHandle, fileHandle = _options$fileHandle === void 0 ? null : _options$fileHandle, _options$bindHandle = options.bindHandle, bindHandle = _options$bindHandle === void 0 ? false : _options$bindHandle, _options$silentStatus = options.silentStatus, silentStatus = _options$silentStatus === void 0 ? false : _options$silentStatus, _options$isAppend = options.isAppend, isAppend = _options$isAppend === void 0 ? false : _options$isAppend;
             if (file) {
               _context19.n = 1;
