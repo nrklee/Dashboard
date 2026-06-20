@@ -2111,6 +2111,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
+                    category: row.group || '',
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
@@ -2131,6 +2132,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
+                    category: row.group || '',
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
@@ -6955,6 +6957,7 @@ var App = function App() {
   };
   var finishLoadingStatus = function finishLoadingStatus(message) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'success';
+    if (typeof addNotification === 'function') addNotification(message, type);
     setStatusInfo(function (prev) {
       return {
         type: type,
@@ -13884,6 +13887,7 @@ return _context20.a(2, false);
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[20px]"
   }, "notifications"), systemNotifications.length > 0 && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
+  isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", { className: "fixed inset-0 z-40", onClick: function() { setIsSystemNotificationsOpen(false); } }),
   isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-12 right-12 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 flex flex-col max-h-96"
   }, /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 font-bold border-b border-outline-variant/30 text-sm" }, "การแจ้งเตือน"),
