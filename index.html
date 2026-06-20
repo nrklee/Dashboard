@@ -502,6 +502,11 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
   height: auto !important;
   width: 100% !important;
 }
+.grid-stack:not(.grid-stack-instance) > .grid-stack-item > .grid-stack-item-content {
+  position: relative !important;
+  display: block !important;
+  inset: auto !important;
+}
 
 .grid-stack-item > .grid-stack-item-content {
   inset: 6px;
@@ -6606,11 +6611,11 @@ var App = function App() {
       var layouts = {};
       try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
       var saved = layouts[id];
-      var w = saved ? saved.w : (defW || 12);
-      var h = saved ? saved.h : (defH || 4);
+      var w = (saved && saved.w) ? saved.w : (defW || 12);
+      var h = (saved && saved.h) ? saved.h : (defH || 4);
       var x = (saved && saved.x != null) ? saved.x : 0;
       var y = (saved && saved.y != null) ? saved.y : undefined;
-      return { key: id, className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": w, "gs-h": h };
+      return { key: id, className: "grid-stack-item", "gs-id": id, "gs-x": x, "gs-y": y, "gs-w": Math.max(1, w), "gs-h": Math.max(1, h) };
   };
 
   if (window.__dashboardBoot) window.__dashboardBoot.phase = 'app:init';
