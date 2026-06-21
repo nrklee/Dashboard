@@ -6259,7 +6259,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
-            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.2]"
+            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.3]"
         ),
         React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "X")
       ),
@@ -6488,11 +6488,14 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             for (var i=0; i<modelArray.length; i++) {
                                                 if (String(modelArray[i]) === strM) { isChecked = true; break; }
                                             }
-                                            return React.createElement("label", { 
+                                            var CheckboxIcon = isChecked 
+                                                ? React.createElement("span", { className: "material-symbols-outlined text-green-600 text-[18px]" }, "check_box")
+                                                : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
+
+                                            return React.createElement("div", { 
                                                 key: m, 
-                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1",
+                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1 select-none",
                                                 onClick: function(e) {
-                                                    e.preventDefault();
                                                     var isCheckedNow = !isChecked;
                                                     setLocalMap(function(prev) {
                                                         var newMap = Object.assign({}, prev);
@@ -6512,12 +6515,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     });
                                                 }
                                             },
-                                                React.createElement("input", {
-                                                    type: "checkbox",
-                                                    checked: isChecked,
-                                                    readOnly: true,
-                                                    className: "cursor-pointer rounded text-green-600 focus:ring-green-500"
-                                                }),
+                                                CheckboxIcon,
                                                 React.createElement("span", { className: "truncate" }, strM)
                                             );
                                         }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูลรุ่นสำหรับแบรนด์ที่เลือก")
@@ -6532,11 +6530,14 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             for (var i=0; i<skuArray.length; i++) {
                                                 if (String(skuArray[i]) === strS) { isChecked = true; break; }
                                             }
-                                            return React.createElement("label", { 
+                                            var CheckboxIcon = isChecked 
+                                                ? React.createElement("span", { className: "material-symbols-outlined text-orange-600 text-[18px]" }, "check_box")
+                                                : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
+
+                                            return React.createElement("div", { 
                                                 key: s, 
-                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1",
+                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1 select-none",
                                                 onClick: function(e) {
-                                                    e.preventDefault();
                                                     var isCheckedNow = !isChecked;
                                                     setLocalMap(function(prev) {
                                                         var newMap = Object.assign({}, prev);
@@ -6556,12 +6557,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     });
                                                 }
                                             },
-                                                React.createElement("input", {
-                                                    type: "checkbox",
-                                                    checked: isChecked,
-                                                    readOnly: true,
-                                                    className: "cursor-pointer rounded text-orange-600 focus:ring-orange-500"
-                                                }),
+                                                CheckboxIcon,
                                                 React.createElement("span", { className: "truncate" }, strS)
                                             );
                                         }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SKU สำหรับรุ่นที่เลือก")
@@ -6595,11 +6591,14 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     for (var i=0; i<subCatArray.length; i++) {
                                                         if (String(subCatArray[i]) === strS) { isChecked = true; break; }
                                                     }
-                                                    return React.createElement("label", { 
+                                                    var CheckboxIcon = isChecked 
+                                                        ? React.createElement("span", { className: "material-symbols-outlined text-purple-600 text-[18px]" }, "check_box")
+                                                        : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
+
+                                                    return React.createElement("div", { 
                                                         key: s, 
-                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1",
+                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1 select-none",
                                                         onClick: function(e) {
-                                                            e.preventDefault();
                                                             var isCheckedNow = !isChecked;
                                                             setLocalMap(function(prev) {
                                                                 var newMap = Object.assign({}, prev);
@@ -6619,12 +6618,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                             });
                                                         }
                                                     },
-                                                        React.createElement("input", {
-                                                            type: "checkbox",
-                                                            checked: isChecked,
-                                                            readOnly: true,
-                                                            className: "cursor-pointer rounded text-purple-600 focus:ring-purple-500"
-                                                        }),
+                                                        CheckboxIcon,
                                                         React.createElement("span", { className: "truncate" }, strS)
                                                     );
                                                 }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SUB_CATEGORY")
@@ -6639,11 +6633,14 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     for (var i=0; i<descLocArray.length; i++) {
                                                         if (String(descLocArray[i]) === strS) { isChecked = true; break; }
                                                     }
-                                                    return React.createElement("label", { 
+                                                    var CheckboxIcon = isChecked 
+                                                        ? React.createElement("span", { className: "material-symbols-outlined text-teal-600 text-[18px]" }, "check_box")
+                                                        : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
+
+                                                    return React.createElement("div", { 
                                                         key: s, 
-                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1",
+                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1 select-none",
                                                         onClick: function(e) {
-                                                            e.preventDefault();
                                                             var isCheckedNow = !isChecked;
                                                             setLocalMap(function(prev) {
                                                                 var newMap = Object.assign({}, prev);
@@ -6663,12 +6660,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                             });
                                                         }
                                                     },
-                                                        React.createElement("input", {
-                                                            type: "checkbox",
-                                                            checked: isChecked,
-                                                            readOnly: true,
-                                                            className: "cursor-pointer rounded text-teal-600 focus:ring-teal-500"
-                                                        }),
+                                                        CheckboxIcon,
                                                         React.createElement("span", { className: "truncate" }, strS)
                                                     );
                                                 }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล DESC_LOC")
