@@ -6345,7 +6345,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var req = checkRequiresAdvancedFields(valGrp || t.group);
                     
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
-                        React.createElement("datalist", { id: "db-brands-list-" + idx }, availableBrands.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-brands-list-" + idx }, Array.from(availableBrands).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-groups-list-" + idx }, Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-models-list-" + idx }, Array.from(dbModels).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-skus-list-" + idx }, Array.from(dbSkus).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
