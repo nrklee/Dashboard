@@ -6196,18 +6196,18 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   if (allData && allData.monthly) {
       allData.monthly.forEach(function(row) {
           if (row.brand) dbBrands.add(row.brand);
-          if (row.group) dbGroups.add(row.group);
+          if (row.category) dbGroups.add(row.category);
           if (row.model) dbModels.add(row.model);
           if (row.sku) dbSkus.add(row.sku);
           if (row.district) dbDistricts.add(row.district);
           if (row.subCategory) dbSubCategories.add(row.subCategory);
           if (row.descLoc) dbDescLocs.add(row.descLoc);
 
-          if (row.group && row.brand) {
-              if (!groupBrandsMap[row.group]) groupBrandsMap[row.group] = new Set();
-              groupBrandsMap[row.group].add(row.brand);
+          if (row.category && row.brand) {
+              if (!groupBrandsMap[row.category]) groupBrandsMap[row.category] = new Set();
+              groupBrandsMap[row.category].add(row.brand);
               if (!brandGroupsMap[row.brand]) brandGroupsMap[row.brand] = new Set();
-              brandGroupsMap[row.brand].add(row.group);
+              brandGroupsMap[row.brand].add(row.category);
           }
       });
   }
@@ -6312,18 +6312,18 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                             React.createElement("div", { className: "flex-1 flex flex-col gap-2" },
                                 React.createElement("div", { className: "flex gap-2 items-center" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "กลุ่มสินค้า"),
-                                    React.createElement("select", {
+                                    React.createElement("input", {
+                                        type: "text",
+                                        list: "db-groups-list-" + idx,
                                         className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
-                                        value: valGrp || "",
+                                        placeholder: "จับคู่กลุ่ม",
+                                        value: valGrp,
                                         onChange: function(e) {
                                             var newMap = Object.assign({}, localMap);
                                             newMap[keyGrp] = e.target.value;
                                             setLocalMap(newMap);
                                         }
-                                    },
-                                        React.createElement("option", { value: "" }, "-- จับคู่กลุ่ม --"),
-                                        Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }, v); })
-                                    )
+                                    })
                                 ),
                                 React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ผูกแบรนด์"),
