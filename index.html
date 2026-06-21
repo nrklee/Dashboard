@@ -15628,6 +15628,8 @@ window.TargetMatch = (function() {
     
     // Working copy for the currently edited program
     let editingProgram = null; 
+    let dbGroupsList = [];
+    let dbBrandsList = [];
 
     function onTargetDataLoaded(data) {
         mergedData = data;
@@ -15641,16 +15643,29 @@ window.TargetMatch = (function() {
     }
 
     function extractGroupsAndBrands() {
-        if (!mergedData || !mergedData.rawTargets) return;
-        const targetRows = mergedData.rawTargets;
-        let map = new Map();
-        targetRows.forEach(row => {
-            let group = row['กลุ่มสินค้า'] || row['Group'] || 'Uncategorized';
-            let brand = row['แบรนด์'] || row['Brand'] || 'Unknown Brand';
-            let key = group + '|' + brand;
-            if(!map.has(key)) map.set(key, { group, brand });
-        });
-        extractedGroups = Array.from(map.values());
+        if (!mergedData) return;
+        if (mergedData.rawTargets) {
+            const targetRows = mergedData.rawTargets;
+            let map = new Map();
+            targetRows.forEach(row => {
+                let group = row['กลุ่มสินค้า'] || row['กลุ่ม'] || row['Group'] || 'Uncategorized';
+                let brand = row['แบรนด์'] || row['Brand'] || 'Unknown Brand';
+                let key = group + '|' + brand;
+                if(!map.has(key)) map.set(key, { group, brand });
+            });
+            extractedGroups = Array.from(map.values());
+        }
+        
+        let groupsSet = new Set();
+        let brandsSet = new Set();
+        if (mergedData.monthly) {
+            mergedData.monthly.forEach(row => {
+                if (row.group) groupsSet.add(row.group);
+                if (row.brand) brandsSet.add(row.brand);
+            });
+        }
+        dbGroupsList = Array.from(groupsSet);
+        dbBrandsList = Array.from(brandsSet);
     }
 
     function openModal() {
@@ -15936,12 +15951,29 @@ window.TargetMatch = (function() {
             return `<div class="text-gray-500 text-sm text-center py-6">ไม่พบข้อมูล กลุ่ม/แบรนด์ ในไฟล์ Target</div>`;
         }
 
-        let html = '';
+        let html = `
+            <datalist id="tm-db-groups-list">
+                ${dbGroupsList.map(g => `<option value="${g}"></option>`).join('')}
+            </datalist>
+            <datalist id="tm-db-brands-list">
+                ${dbBrandsList.map(b => `<option value="${b}"></option>`).join('')}
+            </datalist>
+        `;
         for (const [group, brands] of Object.entries(grouped)) {
+            let groupKey = 'group||' + group;
+            let groupVal = editingProgram.mappings[groupKey] || '';
             html += `
                 <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm mb-3">
-                    <div class="font-bold text-slate-800 border-b border-gray-100 pb-2 mb-2 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-gray-400">folder</span> ${group}
+                    <div class="font-bold text-slate-800 border-b border-gray-100 pb-2 mb-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-gray-400">folder</span> ${group}
+                        </div>
+                        <div class="flex items-center gap-2 font-normal w-1/2 justify-end">
+                            <span class="text-xs text-gray-500 whitespace-nowrap">ผูกกลุ่มกับ:</span>
+                            <input type="text" placeholder="พิมพ์ชื่อกลุ่ม" list="tm-db-groups-list"
+                                class="tm-mapping-input w-2/3 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50" 
+                                data-key="${groupKey}" value="${groupVal}">
+                        </div>
                     </div>
                     <div class="flex flex-col gap-2 pl-6 border-l-2 border-gray-100 ml-3 py-1">
                         ${brands.map(brand => {
@@ -15953,8 +15985,8 @@ window.TargetMatch = (function() {
                                     <div class="w-1/3 text-sm text-gray-700 font-medium truncate" title="${brand}">${brand}</div>
                                     <div class="flex-1 flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-gray-100">
                                         <span class="text-xs text-gray-500 whitespace-nowrap pl-1">ผูกกับ:</span>
-                                        <input type="text" placeholder="พิมพ์ชื่อแบรนด์" 
-                                            class="tm-mapping-input flex-1 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-white" 
+                                        <input type="text" placeholder="พิมพ์ชื่อแบรนด์" list="tm-db-brands-list"
+                                            class="tm-mapping-input flex-1 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50" 
                                             data-key="${key}" value="${val}">
                                     </div>
                                 </div>
