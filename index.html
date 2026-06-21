@@ -6312,18 +6312,18 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                             React.createElement("div", { className: "flex-1 flex flex-col gap-2" },
                                 React.createElement("div", { className: "flex gap-2 items-center" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "กลุ่มสินค้า"),
-                                    React.createElement("input", {
-                                        type: "text",
-                                        list: "db-groups-list-" + idx,
+                                    React.createElement("select", {
                                         className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
-                                        placeholder: "จับคู่กลุ่ม",
-                                        value: valGrp,
+                                        value: valGrp || "",
                                         onChange: function(e) {
                                             var newMap = Object.assign({}, localMap);
                                             newMap[keyGrp] = e.target.value;
                                             setLocalMap(newMap);
                                         }
-                                    })
+                                    },
+                                        React.createElement("option", { value: "" }, "-- จับคู่กลุ่ม --"),
+                                        Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }, v); })
+                                    )
                                 ),
                                 React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ผูกแบรนด์"),
