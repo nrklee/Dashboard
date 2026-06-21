@@ -14448,15 +14448,7 @@ return _context20.a(2, false);
                 
                 if (!newAllData.monthly) newAllData.monthly = [];
                 mappedTargets.forEach(function(t) {
-                    var existing = newAllData.monthly.find(function(m) {
-                        return m.district === t.district && m.brand === t.brand && m.model === t.model && m.sku === t.sku && (m.subCategory || '-') === t.subCategory && (m.descLoc || '-') === t.descLoc && m.monthIndex === t.monthIndex && m.year === t.year;
-                    });
-                    if (existing) {
-                        existing.targetValue = (existing.targetValue || 0) + t.targetValue;
-                        existing.target = existing.targetValue;
-                    } else {
-                        newAllData.monthly.push(t);
-                    }
+                    newAllData.monthly.push(t);
                 });
                 
                 setAllData(newAllData);
