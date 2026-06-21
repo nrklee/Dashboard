@@ -6203,11 +6203,11 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
           if (row.subCategory) dbSubCategories.add(row.subCategory);
           if (row.descLoc) dbDescLocs.add(row.descLoc);
 
-          if (row.category && row.brand) {
-              if (!groupBrandsMap[row.category]) groupBrandsMap[row.category] = new Set();
-              groupBrandsMap[row.category].add(row.brand);
+          if (row.group && row.brand) {
+              if (!groupBrandsMap[row.group]) groupBrandsMap[row.group] = new Set();
+              groupBrandsMap[row.group].add(row.brand);
               if (!brandGroupsMap[row.brand]) brandGroupsMap[row.brand] = new Set();
-              brandGroupsMap[row.brand].add(row.category);
+              brandGroupsMap[row.brand].add(row.group);
           }
       });
   }
@@ -15600,7 +15600,7 @@ window.TargetMatch = (function() {
             if (error) throw error;
         } catch (err) {
             console.error("Error saving Campaign config to Supabase:", err);
-            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลไปยังฐานข้อมูล (Supabase)');
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลไปยังฐานข้อมูล (Supabase): ' + (err.message || JSON.stringify(err)));
         }
     }
 
