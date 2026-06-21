@@ -6193,6 +6193,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
 
   var groupBrandsMap = {};
   var brandGroupsMap = {};
+  var brandModelsMap = {};
+  var modelSkusMap = {};
   if (allData && allData.monthly) {
       allData.monthly.forEach(function(row) {
           if (row.brand) dbBrands.add(row.brand);
@@ -6208,6 +6210,14 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
               groupBrandsMap[row.group].add(row.brand);
               if (!brandGroupsMap[row.brand]) brandGroupsMap[row.brand] = new Set();
               brandGroupsMap[row.brand].add(row.group);
+          }
+          if (row.brand && row.model) {
+              if (!brandModelsMap[row.brand]) brandModelsMap[row.brand] = new Set();
+              brandModelsMap[row.brand].add(row.model);
+          }
+          if (row.model && row.sku) {
+              if (!modelSkusMap[row.model]) modelSkusMap[row.model] = new Set();
+              modelSkusMap[row.model].add(row.sku);
           }
       });
   }
@@ -6270,12 +6280,25 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
 
                     
                     var brandArray = valBrand ? valBrand.split(',') : [''];
+                    var groupArray = valGrp ? valGrp.split(',') : [''];
                     var modelArray = valModel ? valModel.split(',') : [''];
                     var skuArray = valSku ? valSku.split(',') : [''];
                     var subCatArray = valSubCat ? valSubCat.split(',') : [''];
                     var descLocArray = valDescLoc ? valDescLoc.split(',') : [''];
                     
-                    var availableBrands = valGrp && groupBrandsMap[valGrp] ? Array.from(groupBrandsMap[valGrp]) : Array.from(dbBrands);
+                    var availableBrands = new Set();
+                    var hasGrpForBrand = false;
+                    groupArray.forEach(function(g) {
+                        var gStr = g.trim();
+                        if (gStr && groupBrandsMap[gStr]) {
+                            hasGrpForBrand = true;
+                            groupBrandsMap[gStr].forEach(function(b) { availableBrands.add(b); });
+                        }
+                    });
+                    if (!hasGrpForBrand || availableBrands.size === 0) {
+                        availableBrands = dbBrands;
+                    }
+                    var availableBrandsArr = Array.from(availableBrands);
                     
                     var availableGroups = new Set();
                     var hasBrandFilter = false;
@@ -6289,6 +6312,34 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     if (!hasBrandFilter || availableGroups.size === 0) {
                         availableGroups = dbGroups;
                     }
+
+                    var availableModels = new Set();
+                    var hasBrandForModel = false;
+                    brandArray.forEach(function(b) {
+                        var bStr = b.trim();
+                        if (bStr && brandModelsMap[bStr]) {
+                            hasBrandForModel = true;
+                            brandModelsMap[bStr].forEach(function(m) { availableModels.add(m); });
+                        }
+                    });
+                    if (!hasBrandForModel || availableModels.size === 0) {
+                        availableModels = dbModels;
+                    }
+                    var availableModelsArr = Array.from(availableModels);
+
+                    var availableSkus = new Set();
+                    var hasModelForSku = false;
+                    modelArray.forEach(function(m) {
+                        var mStr = m.trim();
+                        if (mStr && modelSkusMap[mStr]) {
+                            hasModelForSku = true;
+                            modelSkusMap[mStr].forEach(function(s) { availableSkus.add(s); });
+                        }
+                    });
+                    if (!hasModelForSku || availableSkus.size === 0) {
+                        availableSkus = dbSkus;
+                    }
+                    var availableSkusArr = Array.from(availableSkus);
                     
                     // Determine if advanced fields are needed
                     var req = checkRequiresAdvancedFields(valGrp || t.group);
@@ -6310,20 +6361,50 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 React.createElement("span", { className: "material-symbols-outlined" }, "arrow_forward")
                             ),
                             React.createElement("div", { className: "flex-1 flex flex-col gap-2" },
-                                React.createElement("div", { className: "flex gap-2 items-center" },
-                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "กลุ่มสินค้า"),
-                                    React.createElement("input", {
-                                        type: "text",
-                                        list: "db-groups-list-" + idx,
-                                        className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
-                                        placeholder: "จับคู่กลุ่ม",
-                                        value: valGrp,
-                                        onChange: function(e) {
-                                            var newMap = Object.assign({}, localMap);
-                                            newMap[keyGrp] = e.target.value;
-                                            setLocalMap(newMap);
-                                        }
-                                    })
+                                React.createElement("div", { className: "flex gap-2 items-start" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "กลุ่มสินค้า"),
+                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                        groupArray.map(function(grpItem, gIdx) {
+                                            return React.createElement("div", { key: gIdx, className: "flex items-center gap-1" },
+                                                React.createElement("input", {
+                                                    type: "text",
+                                                    list: "db-groups-list-" + idx,
+                                                    className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
+                                                    placeholder: "จับคู่กลุ่ม",
+                                                    value: grpItem.trim(),
+                                                    onChange: function(e) {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = groupArray.slice();
+                                                        newArr[gIdx] = e.target.value;
+                                                        newMap[keyGrp] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }),
+                                                groupArray.length > 1 ? React.createElement("button", {
+                                                    type: "button",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                    onClick: function() {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = groupArray.slice();
+                                                        newArr.splice(gIdx, 1);
+                                                        newMap[keyGrp] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }, React.createElement("span", { className: "material-symbols-outlined" }, "remove")) : null
+                                            );
+                                        }),
+                                        React.createElement("button", {
+                                            type: "button",
+                                            className: "text-xs text-blue-500 font-bold self-start mt-1 hover:underline flex items-center gap-1",
+                                            onClick: function() {
+                                                var newMap = Object.assign({}, localMap);
+                                                var newArr = groupArray.slice();
+                                                newArr.push('');
+                                                newMap[keyGrp] = newArr.join(',');
+                                                setLocalMap(newMap);
+                                            }
+                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), " เพิ่มกลุ่มสินค้า")
+                                    )
                                 ),
                                 React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ผูกแบรนด์"),
@@ -6377,90 +6458,56 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 ),
                                 req.needsModel ? React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุรุ่น"),
-                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
-                                        modelArray.map(function(modelItem, mIdx) {
-                                            return React.createElement("div", { key: mIdx, className: "flex items-center gap-1" },
+                                    React.createElement("div", { className: "flex-1 border border-slate-300 rounded bg-green-50 max-h-32 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
+                                        availableModelsArr.length > 0 ? availableModelsArr.map(function(m) {
+                                            var isChecked = modelArray.includes(m);
+                                            return React.createElement("label", { key: m, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1" },
                                                 React.createElement("input", {
-                                                    type: "text",
-                                                    list: "db-models-list-" + idx,
-                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-green-500 bg-green-50 outline-none",
-                                                    placeholder: "ระบุรุ่น (Model)",
-                                                    value: modelItem.trim(),
+                                                    type: "checkbox",
+                                                    checked: isChecked,
+                                                    className: "cursor-pointer rounded text-green-600 focus:ring-green-500",
                                                     onChange: function(e) {
                                                         var newMap = Object.assign({}, localMap);
-                                                        var newArr = modelArray.slice();
-                                                        newArr[mIdx] = e.target.value;
+                                                        var newArr = modelArray.filter(function(x) { return x.trim() !== ''; });
+                                                        if (e.target.checked) {
+                                                            if (!newArr.includes(m)) newArr.push(m);
+                                                        } else {
+                                                            newArr = newArr.filter(function(x) { return x !== m; });
+                                                        }
                                                         newMap[keyModel] = newArr.join(',');
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
-                                                modelArray.length > 1 ? React.createElement("button", {
-                                                    type: "button",
-                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
-                                                    onClick: function() {
-                                                        var newMap = Object.assign({}, localMap);
-                                                        var newArr = modelArray.slice();
-                                                        newArr.splice(mIdx, 1);
-                                                        newMap[keyModel] = newArr.join(',');
-                                                        setLocalMap(newMap);
-                                                    }
-                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                                React.createElement("span", { className: "truncate" }, m)
                                             );
-                                        }),
-                                        React.createElement("button", {
-                                            type: "button",
-                                            className: "self-start text-xs text-green-600 flex items-center gap-1 mt-1 hover:underline font-bold",
-                                            onClick: function() {
-                                                var newMap = Object.assign({}, localMap);
-                                                var currStr = newMap[keyModel] || '';
-                                                newMap[keyModel] = currStr ? currStr + ',' : ',';
-                                                setLocalMap(newMap);
-                                            }
-                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่มรุ่น")
+                                        }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูลรุ่นสำหรับแบรนด์ที่เลือก")
                                     )
                                 ) : null,
                                 req.needsSku ? React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุ SKU"),
-                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
-                                        skuArray.map(function(skuItem, sIdx) {
-                                            return React.createElement("div", { key: sIdx, className: "flex items-center gap-1" },
+                                    React.createElement("div", { className: "flex-1 border border-slate-300 rounded bg-orange-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
+                                        availableSkusArr.length > 0 ? availableSkusArr.map(function(s) {
+                                            var isChecked = skuArray.includes(s);
+                                            return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1" },
                                                 React.createElement("input", {
-                                                    type: "text",
-                                                    list: "db-skus-list-" + idx,
-                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-orange-500 bg-orange-50 outline-none",
-                                                    placeholder: "ระบุ SKU",
-                                                    value: skuItem.trim(),
+                                                    type: "checkbox",
+                                                    checked: isChecked,
+                                                    className: "cursor-pointer rounded text-orange-600 focus:ring-orange-500",
                                                     onChange: function(e) {
                                                         var newMap = Object.assign({}, localMap);
-                                                        var newArr = skuArray.slice();
-                                                        newArr[sIdx] = e.target.value;
+                                                        var newArr = skuArray.filter(function(x) { return x.trim() !== ''; });
+                                                        if (e.target.checked) {
+                                                            if (!newArr.includes(s)) newArr.push(s);
+                                                        } else {
+                                                            newArr = newArr.filter(function(x) { return x !== s; });
+                                                        }
                                                         newMap[keySku] = newArr.join(',');
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
-                                                skuArray.length > 1 ? React.createElement("button", {
-                                                    type: "button",
-                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
-                                                    onClick: function() {
-                                                        var newMap = Object.assign({}, localMap);
-                                                        var newArr = skuArray.slice();
-                                                        newArr.splice(sIdx, 1);
-                                                        newMap[keySku] = newArr.join(',');
-                                                        setLocalMap(newMap);
-                                                    }
-                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
+                                                React.createElement("span", { className: "truncate" }, s)
                                             );
-                                        }),
-                                        React.createElement("button", {
-                                            type: "button",
-                                            className: "self-start text-xs text-orange-600 flex items-center gap-1 mt-1 hover:underline font-bold",
-                                            onClick: function() {
-                                                var newMap = Object.assign({}, localMap);
-                                                var currStr = newMap[keySku] || '';
-                                                newMap[keySku] = currStr ? currStr + ',' : ',';
-                                                setLocalMap(newMap);
-                                            }
-                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม SKU")
+                                        }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SKU สำหรับรุ่นที่เลือก")
                                     )
                                 ) : null,
                                 (valGrp === 'ปลา' || valGrp === 'นก' || t.group === 'ปลา' || t.group === 'นก') ? React.createElement("div", { className: "flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100" },
@@ -6484,87 +6531,57 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                     isSubCatEnabled ? React.createElement("div", { className: "flex gap-2 items-start pl-6" },
                                         React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
                                             React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "SUB_CATEGORY"),
-                                            subCatArray.map(function(scItem, scIdx) {
-                                                return React.createElement("div", { key: scIdx, className: "flex items-center gap-1" },
-                                                    React.createElement("input", {
-                                                        type: "text",
-                                                        list: "db-subcats-list-" + idx,
-                                                        className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-purple-500 bg-purple-50 outline-none",
-                                                        placeholder: "ระบุ SUB_CATEGORY",
-                                                        value: scItem.trim(),
-                                                        onChange: function(e) {
-                                                            var newMap = Object.assign({}, localMap);
-                                                            var newArr = subCatArray.slice();
-                                                            newArr[scIdx] = e.target.value;
-                                                            newMap[keySubCat] = newArr.join(',');
-                                                            setLocalMap(newMap);
-                                                        }
-                                                    }),
-                                                    subCatArray.length > 1 ? React.createElement("button", {
-                                                        type: "button",
-                                                        className: "text-red-500 hover:bg-red-50 p-1 rounded",
-                                                        onClick: function() {
-                                                            var newMap = Object.assign({}, localMap);
-                                                            var newArr = subCatArray.slice();
-                                                            newArr.splice(scIdx, 1);
-                                                            newMap[keySubCat] = newArr.join(',');
-                                                            setLocalMap(newMap);
-                                                        }
-                                                    }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
-                                                );
-                                            }),
-                                            React.createElement("button", {
-                                                type: "button",
-                                                className: "self-start text-xs text-purple-600 flex items-center gap-1 mt-1 hover:underline font-bold",
-                                                onClick: function() {
-                                                    var newMap = Object.assign({}, localMap);
-                                                    var currStr = newMap[keySubCat] || '';
-                                                    newMap[keySubCat] = currStr ? currStr + ',' : ',';
-                                                    setLocalMap(newMap);
-                                                }
-                                            }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม")
+                                            React.createElement("div", { className: "border border-slate-300 rounded bg-purple-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
+                                                Array.from(dbSubCategories).length > 0 ? Array.from(dbSubCategories).map(function(s) {
+                                                    var isChecked = subCatArray.includes(s);
+                                                    return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1" },
+                                                        React.createElement("input", {
+                                                            type: "checkbox",
+                                                            checked: isChecked,
+                                                            className: "cursor-pointer rounded text-purple-600 focus:ring-purple-500",
+                                                            onChange: function(e) {
+                                                                var newMap = Object.assign({}, localMap);
+                                                                var newArr = subCatArray.filter(function(x) { return x.trim() !== ''; });
+                                                                if (e.target.checked) {
+                                                                    if (!newArr.includes(s)) newArr.push(s);
+                                                                } else {
+                                                                    newArr = newArr.filter(function(x) { return x !== s; });
+                                                                }
+                                                                newMap[keySubCat] = newArr.join(',');
+                                                                setLocalMap(newMap);
+                                                            }
+                                                        }),
+                                                        React.createElement("span", { className: "truncate" }, s)
+                                                    );
+                                                }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SUB_CATEGORY")
+                                            )
                                         ),
                                         React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
                                             React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "DESC_LOC"),
-                                            descLocArray.map(function(dlItem, dlIdx) {
-                                                return React.createElement("div", { key: dlIdx, className: "flex items-center gap-1" },
-                                                    React.createElement("input", {
-                                                        type: "text",
-                                                        list: "db-desclocs-list-" + idx,
-                                                        className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-teal-500 bg-teal-50 outline-none",
-                                                        placeholder: "ระบุ DESC_LOC",
-                                                        value: dlItem.trim(),
-                                                        onChange: function(e) {
-                                                            var newMap = Object.assign({}, localMap);
-                                                            var newArr = descLocArray.slice();
-                                                            newArr[dlIdx] = e.target.value;
-                                                            newMap[keyDescLoc] = newArr.join(',');
-                                                            setLocalMap(newMap);
-                                                        }
-                                                    }),
-                                                    descLocArray.length > 1 ? React.createElement("button", {
-                                                        type: "button",
-                                                        className: "text-red-500 hover:bg-red-50 p-1 rounded",
-                                                        onClick: function() {
-                                                            var newMap = Object.assign({}, localMap);
-                                                            var newArr = descLocArray.slice();
-                                                            newArr.splice(dlIdx, 1);
-                                                            newMap[keyDescLoc] = newArr.join(',');
-                                                            setLocalMap(newMap);
-                                                        }
-                                                    }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
-                                                );
-                                            }),
-                                            React.createElement("button", {
-                                                type: "button",
-                                                className: "self-start text-xs text-teal-600 flex items-center gap-1 mt-1 hover:underline font-bold",
-                                                onClick: function() {
-                                                    var newMap = Object.assign({}, localMap);
-                                                    var currStr = newMap[keyDescLoc] || '';
-                                                    newMap[keyDescLoc] = currStr ? currStr + ',' : ',';
-                                                    setLocalMap(newMap);
-                                                }
-                                            }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม")
+                                            React.createElement("div", { className: "border border-slate-300 rounded bg-teal-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
+                                                Array.from(dbDescLocs).length > 0 ? Array.from(dbDescLocs).map(function(s) {
+                                                    var isChecked = descLocArray.includes(s);
+                                                    return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1" },
+                                                        React.createElement("input", {
+                                                            type: "checkbox",
+                                                            checked: isChecked,
+                                                            className: "cursor-pointer rounded text-teal-600 focus:ring-teal-500",
+                                                            onChange: function(e) {
+                                                                var newMap = Object.assign({}, localMap);
+                                                                var newArr = descLocArray.filter(function(x) { return x.trim() !== ''; });
+                                                                if (e.target.checked) {
+                                                                    if (!newArr.includes(s)) newArr.push(s);
+                                                                } else {
+                                                                    newArr = newArr.filter(function(x) { return x !== s; });
+                                                                }
+                                                                newMap[keyDescLoc] = newArr.join(',');
+                                                                setLocalMap(newMap);
+                                                            }
+                                                        }),
+                                                        React.createElement("span", { className: "truncate" }, s)
+                                                    );
+                                                }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล DESC_LOC")
+                                            )
                                         )
                                     ) : null
                                 ) : null
@@ -6633,7 +6650,7 @@ var App = function App() {
             }
             if (typeof window.GridStack === 'undefined') {
                 console.warn("GridStack is not loaded yet. Retrying in 500ms.");
-                timer = setTimeout(initGrid, 500);
+                timer = setTimeout(initGrid, 250);
                 return;
             }
             
@@ -6690,7 +6707,7 @@ var App = function App() {
             } catch (err) {
                 console.error("GridStack init error:", err);
             }
-        }, 1000);
+        }, 250);
     };
     
     initGrid();
@@ -13244,7 +13261,7 @@ return _context20.a(2, false);
                     if (gridEl && gridEl.gridstack) {
                         try { gridEl.gridstack.compact(); } catch(e){}
                     }
-                }, 500);
+                }, 250);
             }
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
@@ -14264,12 +14281,13 @@ return _context20.a(2, false);
                         var mappedSkusStr = mapSkuVal.trim() !== '' ? mapSkuVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
                         var mappedSubCatStr = mapSubCatVal.trim() !== '' ? mapSubCatVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
                         var mappedDescLocStr = mapDescLocVal.trim() !== '' ? mapDescLocVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedGroupStr = mapGroupVal.trim() !== '' ? mapGroupVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : 'Total Target';
                         
                         if (mappedBrands.length > 0) {
                             var mappedBrandStr = mappedBrands.join('||');
                             mappedTargets.push(Object.assign({}, row, {
                                 district: mapDistVal,
-                                group: mapGroupVal || 'Total Target',
+                                group: mappedGroupStr,
                                 brand: mappedBrandStr,
                                 model: mappedModelsStr,
                                 sku: mappedSkusStr,
@@ -14351,7 +14369,7 @@ return _context20.a(2, false);
                 setPendingTG26Data(null);
                 finishLoadingStatus('ประมวลผลเป้าหมายสำเร็จ', 'success');
                 setIsLoading(false);
-            }, 500);
+            }, 250);
         }
       }), /*#__PURE__*/React.createElement(SalesGuideWeightModal, {
         isOpen: isSalesGuideWeightModalOpen,
