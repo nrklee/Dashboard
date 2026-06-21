@@ -6299,111 +6299,62 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var isSubCatEnabled = localMap[keyEnableSubCat] === 'true';
 
                     
-                    var brandArray = valBrand ? valBrand.split(',') : [''];
-                    var groupArray = valGrp ? valGrp.split(',') : [''];
-                    var modelArray = valModel ? valModel.split(',') : [''];
-                    var skuArray = valSku ? valSku.split(',') : [''];
-                    var subCatArray = valSubCat ? valSubCat.split(',') : [''];
-                    var descLocArray = valDescLoc ? valDescLoc.split(',') : [''];
-                    
-                    var availableBrands = new Set();
-                    var hasGrpForBrand = false;
-                    groupArray.forEach(function(g) {
-                        var gStr = g.trim();
-                        if (gStr && groupBrandsMap[gStr]) {
-                            hasGrpForBrand = true;
-                            groupBrandsMap[gStr].forEach(function(b) { availableBrands.add(b); });
-                        }
-                    });
-                    if (!hasGrpForBrand || availableBrands.size === 0) {
-                        availableBrands = dbBrands;
-                    }
-                    var availableBrandsArr = Array.from(availableBrands);
-                    
-                    var availableGroups = new Set();
-                    var hasBrandFilter = false;
-                    brandArray.forEach(function(b) {
-                        var bStr = b.trim();
-                        if (bStr && brandGroupsMap[bStr]) {
-                            hasBrandFilter = true;
-                            brandGroupsMap[bStr].forEach(function(g) { availableGroups.add(g); });
-                        }
-                    });
-                    if (!hasBrandFilter || availableGroups.size === 0) {
-                        availableGroups = dbGroups;
-                    }
+                    var parseArray = function(val) {
+                        if (!val) return [''];
+                        try { if (val.startsWith('[')) return JSON.parse(val); } catch(e) {}
+                        return val.split(',');
+                    };
 
-                    var availableModels = new Set();
-                    var hasModelFilter = false;
-                    var activeBrands = brandArray.filter(function(b) { return b.trim() !== ''; });
+                    var brandArray = parseArray(valBrand);
+                    var groupArray = parseArray(valGrp);
+                    var modelArray = parseArray(valModel);
+                    var skuArray = parseArray(valSku);
+                    var subCatArray = parseArray(valSubCat);
+                    var descLocArray = parseArray(valDescLoc);
+                    
                     var activeGroups = groupArray.filter(function(g) { return g.trim() !== ''; });
-
-                    if (activeBrands.length > 0) {
-                        activeBrands.forEach(function(bStr) {
-                            if (brandModelsMap[bStr]) {
-                                hasModelFilter = true;
-                                brandModelsMap[bStr].forEach(function(m) { availableModels.add(m); });
-                            }
-                        });
-                    } else if (activeGroups.length > 0) {
-                        activeGroups.forEach(function(gStr) {
-                            if (groupModelsMap[gStr]) {
-                                hasModelFilter = true;
-                                groupModelsMap[gStr].forEach(function(m) { availableModels.add(m); });
-                            }
-                        });
-                    }
-
-                    if (!hasModelFilter || availableModels.size === 0) {
-                        availableModels = dbModels;
-                    }
-                    var availableModelsArr = Array.from(availableModels);
-
-                    var availableSkus = new Set();
-                    var hasSkuFilter = false;
+                    var activeBrands = brandArray.filter(function(b) { return b.trim() !== ''; });
                     var activeModels = modelArray.filter(function(m) { return m.trim() !== ''; });
 
-                    if (activeModels.length > 0) {
-                        activeModels.forEach(function(mStr) {
-                            if (modelSkusMap[mStr]) {
-                                hasSkuFilter = true;
-                                modelSkusMap[mStr].forEach(function(s) { availableSkus.add(s); });
-                            }
-                        });
-                    } else if (activeGroups.length > 0) {
-                        activeGroups.forEach(function(gStr) {
-                            if (groupSkusMap[gStr]) {
-                                hasSkuFilter = true;
-                                groupSkusMap[gStr].forEach(function(s) { availableSkus.add(s); });
-                            }
-                        });
-                    }
-
-                    if (!hasSkuFilter || availableSkus.size === 0) {
-                        availableSkus = dbSkus;
-                    }
-                    var availableSkusArr = Array.from(availableSkus);
-
+                    var availableBrands = new Set();
+                    var availableGroups = new Set();
+                    var availableModels = new Set();
+                    var availableSkus = new Set();
                     var availableSubCats = new Set();
                     var availableDescLocs = new Set();
-                    var hasSubCatFilter = false;
-                    var hasDescLocFilter = false;
 
-                    if (activeGroups.length > 0) {
-                        activeGroups.forEach(function(gStr) {
-                            if (groupSubCatsMap[gStr]) {
-                                hasSubCatFilter = true;
-                                groupSubCatsMap[gStr].forEach(function(s) { availableSubCats.add(s); });
-                            }
-                            if (groupDescLocsMap[gStr]) {
-                                hasDescLocFilter = true;
-                                groupDescLocsMap[gStr].forEach(function(s) { availableDescLocs.add(s); });
+                    if (allData && allData.monthly) {
+                        allData.monthly.forEach(function(row) {
+                            var matchGroup = activeGroups.length === 0 || activeGroups.includes(row.group);
+                            var matchBrand = activeBrands.length === 0 || activeBrands.includes(row.brand);
+                            
+                            if (matchBrand && row.group) availableGroups.add(row.group);
+                            if (matchGroup && row.brand) availableBrands.add(row.brand);
+                            
+                            if (matchGroup && matchBrand) {
+                                if (row.model) availableModels.add(row.model);
+                                
+                                var matchModel = activeModels.length === 0 || activeModels.includes(row.model);
+                                if (matchModel) {
+                                    if (row.sku) availableSkus.add(row.sku);
+                                }
+                                
+                                if (row.subCategory) availableSubCats.add(row.subCategory);
+                                if (row.descLoc) availableDescLocs.add(row.descLoc);
                             }
                         });
                     }
 
-                    if (!hasSubCatFilter || availableSubCats.size === 0) { availableSubCats = dbSubCategories; }
-                    if (!hasDescLocFilter || availableDescLocs.size === 0) { availableDescLocs = dbDescLocs; }
+                    if (activeBrands.length > 0 && availableGroups.size === 0) availableGroups = dbGroups;
+                    if (activeGroups.length > 0 && availableBrands.size === 0) availableBrands = dbBrands;
+                    if (activeGroups.length === 0 && activeBrands.length === 0) {
+                        availableGroups = dbGroups;
+                        availableBrands = dbBrands;
+                    }
+
+                    var availableBrandsArr = Array.from(availableBrands);
+                    var availableModelsArr = Array.from(availableModels);
+                    var availableSkusArr = Array.from(availableSkus);
                     var availableSubCatsArr = Array.from(availableSubCats);
                     var availableDescLocsArr = Array.from(availableDescLocs);
                     
@@ -6540,7 +6491,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                         } else {
                                                             newArr = newArr.filter(function(x) { return x !== m; });
                                                         }
-                                                        newMap[keyModel] = newArr.join(',');
+                                                        newMap[keyModel] = JSON.stringify(newArr);
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
@@ -6567,7 +6518,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                         } else {
                                                             newArr = newArr.filter(function(x) { return x !== s; });
                                                         }
-                                                        newMap[keySku] = newArr.join(',');
+                                                        newMap[keySku] = JSON.stringify(newArr);
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
@@ -6613,7 +6564,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                                 } else {
                                                                     newArr = newArr.filter(function(x) { return x !== s; });
                                                                 }
-                                                                newMap[keySubCat] = newArr.join(',');
+                                                                newMap[keySubCat] = JSON.stringify(newArr);
                                                                 setLocalMap(newMap);
                                                             }
                                                         }),
@@ -6640,7 +6591,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                                 } else {
                                                                     newArr = newArr.filter(function(x) { return x !== s; });
                                                                 }
-                                                                newMap[keyDescLoc] = newArr.join(',');
+                                                                newMap[keyDescLoc] = JSON.stringify(newArr);
                                                                 setLocalMap(newMap);
                                                             }
                                                         }),
