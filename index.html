@@ -6166,11 +6166,11 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     allData = _ref.allData,
     onSaveAndProcess = _ref.onSaveAndProcess;
   
-  if (!isOpen) return null;
-
   var _useState = React.useState(mappings || {}),
     localMap = _useState[0],
     setLocalMap = _useState[1];
+
+  if (!isOpen) return null;
 
   var uniqueTargets = {};
   var uniqueDistricts = {};
@@ -6301,8 +6301,11 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     
                     var parseArray = function(val) {
                         if (!val) return [''];
-                        try { if (val.startsWith('[')) return JSON.parse(val); } catch(e) {}
-                        return val.split(',');
+                        if (Array.isArray(val)) return val.length > 0 ? val : [''];
+                        var strVal = String(val);
+                        try { if (strVal.startsWith('[')) return JSON.parse(strVal); } catch(e) {}
+                        var arr = strVal.split(',');
+                        return arr.length > 0 ? arr : [''];
                     };
 
                     var brandArray = parseArray(valBrand);
@@ -6312,9 +6315,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var subCatArray = parseArray(valSubCat);
                     var descLocArray = parseArray(valDescLoc);
                     
-                    var activeGroups = groupArray.filter(function(g) { return g.trim() !== ''; });
-                    var activeBrands = brandArray.filter(function(b) { return b.trim() !== ''; });
-                    var activeModels = modelArray.filter(function(m) { return m.trim() !== ''; });
+                    var activeGroups = groupArray.filter(function(g) { return g && String(g).trim() !== ''; });
+                    var activeBrands = brandArray.filter(function(b) { return b && String(b).trim() !== ''; });
+                    var activeModels = modelArray.filter(function(m) { return m && String(m).trim() !== ''; });
+
+                    var filterGroups = activeGroups.length > 0 ? activeGroups : (t.group ? [t.group.trim()] : []);
+                    var filterBrands = activeBrands.length > 0 ? activeBrands : (t.brand ? [t.brand.trim()] : []);
 
                     var availableBrands = new Set();
                     var availableGroups = new Set();
@@ -6325,8 +6331,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
 
                     if (allData && allData.monthly) {
                         allData.monthly.forEach(function(row) {
-                            var matchGroup = activeGroups.length === 0 || activeGroups.includes(row.group);
-                            var matchBrand = activeBrands.length === 0 || activeBrands.includes(row.brand);
+                            var matchGroup = filterGroups.length === 0 || filterGroups.includes(row.group);
+                            var matchBrand = filterBrands.length === 0 || filterBrands.includes(row.brand);
                             
                             if (matchBrand && row.group) availableGroups.add(row.group);
                             if (matchGroup && row.brand) availableBrands.add(row.brand);
@@ -6476,26 +6482,36 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 req.needsModel ? React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุรุ่น"),
                                     React.createElement("div", { className: "flex-1 border border-slate-300 rounded bg-green-50 max-h-32 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                        availableModelsArr.length > 0 ? availableModelsArr.map(function(m) {
-                                            var isChecked = modelArray.includes(m);
-                                            return React.createElement("label", { key: m, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1" },
+                                        availableModelsArr.length > 0 ? availableModelsArr.map(function(m, mIdx) {
+                                            var isChecked = false;
+                                            var strM = String(m);
+                                            for (var i=0; i<modelArray.length; i++) {
+                                                if (String(modelArray[i]) === strM) { isChecked = true; break; }
+                                            }
+                                            var inputId = "model-chk-" + idx + "-" + mIdx;
+                                            return React.createElement("label", { key: m, htmlFor: inputId, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1" },
                                                 React.createElement("input", {
+                                                    id: inputId,
                                                     type: "checkbox",
                                                     checked: isChecked,
                                                     className: "cursor-pointer rounded text-green-600 focus:ring-green-500",
                                                     onChange: function(e) {
                                                         var newMap = Object.assign({}, localMap);
-                                                        var newArr = modelArray.filter(function(x) { return x.trim() !== ''; });
-                                                        if (e.target.checked) {
-                                                            if (!newArr.includes(m)) newArr.push(m);
-                                                        } else {
-                                                            newArr = newArr.filter(function(x) { return x !== m; });
+                                                        var newArr = modelArray.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                        var mIndex = -1;
+                                                        for (var j=0; j<newArr.length; j++) {
+                                                            if (String(newArr[j]) === strM) { mIndex = j; break; }
+                                                        }
+                                                        if (e.target.checked && mIndex === -1) {
+                                                            newArr.push(strM);
+                                                        } else if (!e.target.checked && mIndex > -1) {
+                                                            newArr.splice(mIndex, 1);
                                                         }
                                                         newMap[keyModel] = JSON.stringify(newArr);
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
-                                                React.createElement("span", { className: "truncate" }, m)
+                                                React.createElement("span", { className: "truncate" }, strM)
                                             );
                                         }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูลรุ่นสำหรับแบรนด์ที่เลือก")
                                     )
@@ -6503,26 +6519,36 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 req.needsSku ? React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุ SKU"),
                                     React.createElement("div", { className: "flex-1 border border-slate-300 rounded bg-orange-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                        availableSkusArr.length > 0 ? availableSkusArr.map(function(s) {
-                                            var isChecked = skuArray.includes(s);
-                                            return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1" },
+                                        availableSkusArr.length > 0 ? availableSkusArr.map(function(s, sIdx) {
+                                            var isChecked = false;
+                                            var strS = String(s);
+                                            for (var i=0; i<skuArray.length; i++) {
+                                                if (String(skuArray[i]) === strS) { isChecked = true; break; }
+                                            }
+                                            var inputId = "sku-chk-" + idx + "-" + sIdx;
+                                            return React.createElement("label", { key: s, htmlFor: inputId, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1" },
                                                 React.createElement("input", {
+                                                    id: inputId,
                                                     type: "checkbox",
                                                     checked: isChecked,
                                                     className: "cursor-pointer rounded text-orange-600 focus:ring-orange-500",
                                                     onChange: function(e) {
                                                         var newMap = Object.assign({}, localMap);
-                                                        var newArr = skuArray.filter(function(x) { return x.trim() !== ''; });
-                                                        if (e.target.checked) {
-                                                            if (!newArr.includes(s)) newArr.push(s);
-                                                        } else {
-                                                            newArr = newArr.filter(function(x) { return x !== s; });
+                                                        var newArr = skuArray.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                        var sIndex = -1;
+                                                        for (var j=0; j<newArr.length; j++) {
+                                                            if (String(newArr[j]) === strS) { sIndex = j; break; }
+                                                        }
+                                                        if (e.target.checked && sIndex === -1) {
+                                                            newArr.push(strS);
+                                                        } else if (!e.target.checked && sIndex > -1) {
+                                                            newArr.splice(sIndex, 1);
                                                         }
                                                         newMap[keySku] = JSON.stringify(newArr);
                                                         setLocalMap(newMap);
                                                     }
                                                 }),
-                                                React.createElement("span", { className: "truncate" }, s)
+                                                React.createElement("span", { className: "truncate" }, strS)
                                             );
                                         }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SKU สำหรับรุ่นที่เลือก")
                                     )
@@ -6549,26 +6575,36 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                         React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
                                             React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "SUB_CATEGORY"),
                                             React.createElement("div", { className: "border border-slate-300 rounded bg-purple-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                                availableSubCatsArr.length > 0 ? availableSubCatsArr.map(function(s) {
-                                                    var isChecked = subCatArray.includes(s);
-                                                    return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1" },
+                                                availableSubCatsArr.length > 0 ? availableSubCatsArr.map(function(s, sIdx) {
+                                                    var isChecked = false;
+                                                    var strS = String(s);
+                                                    for (var i=0; i<subCatArray.length; i++) {
+                                                        if (String(subCatArray[i]) === strS) { isChecked = true; break; }
+                                                    }
+                                                    var inputId = "subcat-chk-" + idx + "-" + sIdx;
+                                                    return React.createElement("label", { key: s, htmlFor: inputId, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1" },
                                                         React.createElement("input", {
+                                                            id: inputId,
                                                             type: "checkbox",
                                                             checked: isChecked,
                                                             className: "cursor-pointer rounded text-purple-600 focus:ring-purple-500",
                                                             onChange: function(e) {
                                                                 var newMap = Object.assign({}, localMap);
-                                                                var newArr = subCatArray.filter(function(x) { return x.trim() !== ''; });
-                                                                if (e.target.checked) {
-                                                                    if (!newArr.includes(s)) newArr.push(s);
-                                                                } else {
-                                                                    newArr = newArr.filter(function(x) { return x !== s; });
+                                                                var newArr = subCatArray.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                                var sIndex = -1;
+                                                                for (var j=0; j<newArr.length; j++) {
+                                                                    if (String(newArr[j]) === strS) { sIndex = j; break; }
+                                                                }
+                                                                if (e.target.checked && sIndex === -1) {
+                                                                    newArr.push(strS);
+                                                                } else if (!e.target.checked && sIndex > -1) {
+                                                                    newArr.splice(sIndex, 1);
                                                                 }
                                                                 newMap[keySubCat] = JSON.stringify(newArr);
                                                                 setLocalMap(newMap);
                                                             }
                                                         }),
-                                                        React.createElement("span", { className: "truncate" }, s)
+                                                        React.createElement("span", { className: "truncate" }, strS)
                                                     );
                                                 }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SUB_CATEGORY")
                                             )
@@ -6576,26 +6612,36 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                         React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
                                             React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "DESC_LOC"),
                                             React.createElement("div", { className: "border border-slate-300 rounded bg-teal-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                                availableDescLocsArr.length > 0 ? availableDescLocsArr.map(function(s) {
-                                                    var isChecked = descLocArray.includes(s);
-                                                    return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1" },
+                                                availableDescLocsArr.length > 0 ? availableDescLocsArr.map(function(s, sIdx) {
+                                                    var isChecked = false;
+                                                    var strS = String(s);
+                                                    for (var i=0; i<descLocArray.length; i++) {
+                                                        if (String(descLocArray[i]) === strS) { isChecked = true; break; }
+                                                    }
+                                                    var inputId = "descloc-chk-" + idx + "-" + sIdx;
+                                                    return React.createElement("label", { key: s, htmlFor: inputId, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1" },
                                                         React.createElement("input", {
+                                                            id: inputId,
                                                             type: "checkbox",
                                                             checked: isChecked,
                                                             className: "cursor-pointer rounded text-teal-600 focus:ring-teal-500",
                                                             onChange: function(e) {
                                                                 var newMap = Object.assign({}, localMap);
-                                                                var newArr = descLocArray.filter(function(x) { return x.trim() !== ''; });
-                                                                if (e.target.checked) {
-                                                                    if (!newArr.includes(s)) newArr.push(s);
-                                                                } else {
-                                                                    newArr = newArr.filter(function(x) { return x !== s; });
+                                                                var newArr = descLocArray.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                                var sIndex = -1;
+                                                                for (var j=0; j<newArr.length; j++) {
+                                                                    if (String(newArr[j]) === strS) { sIndex = j; break; }
+                                                                }
+                                                                if (e.target.checked && sIndex === -1) {
+                                                                    newArr.push(strS);
+                                                                } else if (!e.target.checked && sIndex > -1) {
+                                                                    newArr.splice(sIndex, 1);
                                                                 }
                                                                 newMap[keyDescLoc] = JSON.stringify(newArr);
                                                                 setLocalMap(newMap);
                                                             }
                                                         }),
-                                                        React.createElement("span", { className: "truncate" }, s)
+                                                        React.createElement("span", { className: "truncate" }, strS)
                                                     );
                                                 }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล DESC_LOC")
                                             )
@@ -14293,12 +14339,20 @@ return _context20.a(2, false);
                     var mapDistVal = newMap[distKey] || row.district;
                     
                     if (mapBrandVal.trim() !== '') {
-                        var mappedBrands = mapBrandVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-                        var mappedModelsStr = mapModelVal.trim() !== '' ? mapModelVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedSkusStr = mapSkuVal.trim() !== '' ? mapSkuVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedSubCatStr = mapSubCatVal.trim() !== '' ? mapSubCatVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedDescLocStr = mapDescLocVal.trim() !== '' ? mapDescLocVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedGroupStr = mapGroupVal.trim() !== '' ? mapGroupVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : 'Total Target';
+                        var parseMapVal = function(val) {
+                            if (!val) return [];
+                            if (Array.isArray(val)) return val;
+                            var strVal = String(val);
+                            try { if (strVal.startsWith('[')) return JSON.parse(strVal); } catch(e) {}
+                            return strVal.split(',');
+                        };
+                        
+                        var mappedBrands = parseMapVal(mapBrandVal).map(function(s) { return String(s).trim(); }).filter(Boolean);
+                        var mappedModelsStr = mapModelVal.trim() !== '' ? parseMapVal(mapModelVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedSkusStr = mapSkuVal.trim() !== '' ? parseMapVal(mapSkuVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedSubCatStr = mapSubCatVal.trim() !== '' ? parseMapVal(mapSubCatVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedDescLocStr = mapDescLocVal.trim() !== '' ? parseMapVal(mapDescLocVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedGroupStr = mapGroupVal.trim() !== '' ? parseMapVal(mapGroupVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : 'Total Target';
                         
                         if (mappedBrands.length > 0) {
                             var mappedBrandStr = mappedBrands.join('||');
