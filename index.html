@@ -6195,6 +6195,10 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   var brandGroupsMap = {};
   var brandModelsMap = {};
   var modelSkusMap = {};
+  var groupModelsMap = {};
+  var groupSkusMap = {};
+  var groupSubCatsMap = {};
+  var groupDescLocsMap = {};
   if (allData && allData.monthly) {
       allData.monthly.forEach(function(row) {
           if (row.brand) dbBrands.add(row.brand);
@@ -6218,6 +6222,22 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
           if (row.model && row.sku) {
               if (!modelSkusMap[row.model]) modelSkusMap[row.model] = new Set();
               modelSkusMap[row.model].add(row.sku);
+          }
+          if (row.group && row.model) {
+              if (!groupModelsMap[row.group]) groupModelsMap[row.group] = new Set();
+              groupModelsMap[row.group].add(row.model);
+          }
+          if (row.group && row.sku) {
+              if (!groupSkusMap[row.group]) groupSkusMap[row.group] = new Set();
+              groupSkusMap[row.group].add(row.sku);
+          }
+          if (row.group && row.subCategory) {
+              if (!groupSubCatsMap[row.group]) groupSubCatsMap[row.group] = new Set();
+              groupSubCatsMap[row.group].add(row.subCategory);
+          }
+          if (row.group && row.descLoc) {
+              if (!groupDescLocsMap[row.group]) groupDescLocsMap[row.group] = new Set();
+              groupDescLocsMap[row.group].add(row.descLoc);
           }
       });
   }
@@ -6314,32 +6334,78 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     }
 
                     var availableModels = new Set();
-                    var hasBrandForModel = false;
-                    brandArray.forEach(function(b) {
-                        var bStr = b.trim();
-                        if (bStr && brandModelsMap[bStr]) {
-                            hasBrandForModel = true;
-                            brandModelsMap[bStr].forEach(function(m) { availableModels.add(m); });
-                        }
-                    });
-                    if (!hasBrandForModel || availableModels.size === 0) {
+                    var hasModelFilter = false;
+                    var activeBrands = brandArray.filter(function(b) { return b.trim() !== ''; });
+                    var activeGroups = groupArray.filter(function(g) { return g.trim() !== ''; });
+
+                    if (activeBrands.length > 0) {
+                        activeBrands.forEach(function(bStr) {
+                            if (brandModelsMap[bStr]) {
+                                hasModelFilter = true;
+                                brandModelsMap[bStr].forEach(function(m) { availableModels.add(m); });
+                            }
+                        });
+                    } else if (activeGroups.length > 0) {
+                        activeGroups.forEach(function(gStr) {
+                            if (groupModelsMap[gStr]) {
+                                hasModelFilter = true;
+                                groupModelsMap[gStr].forEach(function(m) { availableModels.add(m); });
+                            }
+                        });
+                    }
+
+                    if (!hasModelFilter || availableModels.size === 0) {
                         availableModels = dbModels;
                     }
                     var availableModelsArr = Array.from(availableModels);
 
                     var availableSkus = new Set();
-                    var hasModelForSku = false;
-                    modelArray.forEach(function(m) {
-                        var mStr = m.trim();
-                        if (mStr && modelSkusMap[mStr]) {
-                            hasModelForSku = true;
-                            modelSkusMap[mStr].forEach(function(s) { availableSkus.add(s); });
-                        }
-                    });
-                    if (!hasModelForSku || availableSkus.size === 0) {
+                    var hasSkuFilter = false;
+                    var activeModels = modelArray.filter(function(m) { return m.trim() !== ''; });
+
+                    if (activeModels.length > 0) {
+                        activeModels.forEach(function(mStr) {
+                            if (modelSkusMap[mStr]) {
+                                hasSkuFilter = true;
+                                modelSkusMap[mStr].forEach(function(s) { availableSkus.add(s); });
+                            }
+                        });
+                    } else if (activeGroups.length > 0) {
+                        activeGroups.forEach(function(gStr) {
+                            if (groupSkusMap[gStr]) {
+                                hasSkuFilter = true;
+                                groupSkusMap[gStr].forEach(function(s) { availableSkus.add(s); });
+                            }
+                        });
+                    }
+
+                    if (!hasSkuFilter || availableSkus.size === 0) {
                         availableSkus = dbSkus;
                     }
                     var availableSkusArr = Array.from(availableSkus);
+
+                    var availableSubCats = new Set();
+                    var availableDescLocs = new Set();
+                    var hasSubCatFilter = false;
+                    var hasDescLocFilter = false;
+
+                    if (activeGroups.length > 0) {
+                        activeGroups.forEach(function(gStr) {
+                            if (groupSubCatsMap[gStr]) {
+                                hasSubCatFilter = true;
+                                groupSubCatsMap[gStr].forEach(function(s) { availableSubCats.add(s); });
+                            }
+                            if (groupDescLocsMap[gStr]) {
+                                hasDescLocFilter = true;
+                                groupDescLocsMap[gStr].forEach(function(s) { availableDescLocs.add(s); });
+                            }
+                        });
+                    }
+
+                    if (!hasSubCatFilter || availableSubCats.size === 0) { availableSubCats = dbSubCategories; }
+                    if (!hasDescLocFilter || availableDescLocs.size === 0) { availableDescLocs = dbDescLocs; }
+                    var availableSubCatsArr = Array.from(availableSubCats);
+                    var availableDescLocsArr = Array.from(availableDescLocs);
                     
                     // Determine if advanced fields are needed
                     var req = checkRequiresAdvancedFields(valGrp || t.group);
@@ -6349,8 +6415,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                         React.createElement("datalist", { id: "db-groups-list-" + idx }, Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-models-list-" + idx }, Array.from(dbModels).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-skus-list-" + idx }, Array.from(dbSkus).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
-                        React.createElement("datalist", { id: "db-subcats-list-" + idx }, Array.from(dbSubCategories).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
-                        React.createElement("datalist", { id: "db-desclocs-list-" + idx }, Array.from(dbDescLocs).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-subcats-list-" + idx }, availableSubCatsArr.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-desclocs-list-" + idx }, availableDescLocsArr.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("div", { className: "flex items-start gap-3" },
                             React.createElement("div", { className: "w-1/4 mt-1" },
                                 React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
@@ -6532,7 +6598,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                         React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
                                             React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "SUB_CATEGORY"),
                                             React.createElement("div", { className: "border border-slate-300 rounded bg-purple-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                                Array.from(dbSubCategories).length > 0 ? Array.from(dbSubCategories).map(function(s) {
+                                                availableSubCatsArr.length > 0 ? availableSubCatsArr.map(function(s) {
                                                     var isChecked = subCatArray.includes(s);
                                                     return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1" },
                                                         React.createElement("input", {
@@ -6559,7 +6625,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                         React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
                                             React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "DESC_LOC"),
                                             React.createElement("div", { className: "border border-slate-300 rounded bg-teal-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                                Array.from(dbDescLocs).length > 0 ? Array.from(dbDescLocs).map(function(s) {
+                                                availableDescLocsArr.length > 0 ? availableDescLocsArr.map(function(s) {
                                                     var isChecked = descLocArray.includes(s);
                                                     return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1" },
                                                         React.createElement("input", {
