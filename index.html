@@ -2252,7 +2252,7 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.group || (r.raw_json && r.raw_json.group) || '',
+                group: r.category || r.group || (r.raw_json && r.raw_json.category) || (r.raw_json && r.raw_json.group) || '',
                 model: r.model || (r.raw_json && r.raw_json.model) || '',
                 rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
                 set: r.set || (r.raw_json && r.raw_json.set) || '',
