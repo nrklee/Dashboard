@@ -6249,8 +6249,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   
   var checkRequiresAdvancedFields = function(groupStr) {
       var str = String(groupStr || '').toLowerCase();
-      var needsModel = str.includes('ปลา') || str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า');
-      var needsSku = str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า');
+      var needsModel = str.includes('ปลา') || str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า') || str.includes('สัตว์ฟันแทะ');
+      var needsSku = str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า') || str.includes('สัตว์ฟันแทะ');
       return { needsModel: needsModel, needsSku: needsSku };
   };
 
@@ -6259,7 +6259,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
-            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.3]"
+            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.4]"
         ),
         React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "X")
       ),
@@ -6268,7 +6268,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "เลือกกลุ่มสินค้าและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น (ระบบจะผูกเขตการขายให้โดยอัตโนมัติ)")
+                React.createElement("p", null, "เลือกกลุ่มสินค้าและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า, สัตว์ฟันแทะ) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น (ระบบจะผูกเขตการขายให้โดยอัตโนมัติ)")
             )
         ),
 
@@ -6499,7 +6499,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     var isCheckedNow = !isChecked;
                                                     setLocalMap(function(prev) {
                                                         var newMap = Object.assign({}, prev);
-                                                        var currentArr = parseArray(newMap[keyModel]);
+                                                        var currentVal = prev[keyModel] !== undefined ? prev[keyModel] : (prev[legacyKeyModel] || '');
+                                                        var currentArr = parseArray(currentVal);
                                                         var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                         var mIndex = -1;
                                                         for (var j=0; j<newArr.length; j++) {
@@ -6510,7 +6511,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                         } else if (!isCheckedNow && mIndex > -1) {
                                                             newArr.splice(mIndex, 1);
                                                         }
-                                                        newMap[keyModel] = JSON.stringify(newArr);
+                                                        newMap[keyModel] = newArr.join(',');
                                                         return newMap;
                                                     });
                                                 }
@@ -6541,7 +6542,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     var isCheckedNow = !isChecked;
                                                     setLocalMap(function(prev) {
                                                         var newMap = Object.assign({}, prev);
-                                                        var currentArr = parseArray(newMap[keySku]);
+                                                        var currentVal = prev[keySku] !== undefined ? prev[keySku] : (prev[legacyKeySku] || '');
+                                                        var currentArr = parseArray(currentVal);
                                                         var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                         var sIndex = -1;
                                                         for (var j=0; j<newArr.length; j++) {
@@ -6552,7 +6554,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                         } else if (!isCheckedNow && sIndex > -1) {
                                                             newArr.splice(sIndex, 1);
                                                         }
-                                                        newMap[keySku] = JSON.stringify(newArr);
+                                                        newMap[keySku] = newArr.join(',');
                                                         return newMap;
                                                     });
                                                 }
@@ -6563,7 +6565,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                         }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SKU สำหรับรุ่นที่เลือก")
                                     )
                                 ) : null,
-                                (valGrp === 'ปลา' || valGrp === 'นก' || t.group === 'ปลา' || t.group === 'นก') ? React.createElement("div", { className: "flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100" },
+                                (valGrp === 'ปลา' || valGrp === 'นก' || valGrp === 'สัตว์ฟันแทะ' || t.group === 'ปลา' || t.group === 'นก' || t.group === 'สัตว์ฟันแทะ') ? React.createElement("div", { className: "flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100" },
                                     React.createElement("label", { className: "flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer" },
                                         React.createElement("input", {
                                             type: "checkbox",
@@ -6602,7 +6604,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                             var isCheckedNow = !isChecked;
                                                             setLocalMap(function(prev) {
                                                                 var newMap = Object.assign({}, prev);
-                                                                var currentArr = parseArray(newMap[keySubCat]);
+                                                                var currentVal = prev[keySubCat] !== undefined ? prev[keySubCat] : (prev[legacyKeySubCat] || '');
+                                                                var currentArr = parseArray(currentVal);
                                                                 var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                                 var sIndex = -1;
                                                                 for (var j=0; j<newArr.length; j++) {
@@ -6613,7 +6616,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                                 } else if (!isCheckedNow && sIndex > -1) {
                                                                     newArr.splice(sIndex, 1);
                                                                 }
-                                                                newMap[keySubCat] = JSON.stringify(newArr);
+                                                                newMap[keySubCat] = newArr.join(',');
                                                                 return newMap;
                                                             });
                                                         }
@@ -6644,7 +6647,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                             var isCheckedNow = !isChecked;
                                                             setLocalMap(function(prev) {
                                                                 var newMap = Object.assign({}, prev);
-                                                                var currentArr = parseArray(newMap[keyDescLoc]);
+                                                                var currentVal = prev[keyDescLoc] !== undefined ? prev[keyDescLoc] : (prev[legacyKeyDescLoc] || '');
+                                                                var currentArr = parseArray(currentVal);
                                                                 var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                                 var sIndex = -1;
                                                                 for (var j=0; j<newArr.length; j++) {
@@ -6655,7 +6659,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                                 } else if (!isCheckedNow && sIndex > -1) {
                                                                     newArr.splice(sIndex, 1);
                                                                 }
-                                                                newMap[keyDescLoc] = JSON.stringify(newArr);
+                                                                newMap[keyDescLoc] = newArr.join(',');
                                                                 return newMap;
                                                             });
                                                         }
