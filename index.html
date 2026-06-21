@@ -6259,7 +6259,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
-            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU)"
+            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.2]"
         ),
         React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "X")
       ),
@@ -6488,30 +6488,35 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             for (var i=0; i<modelArray.length; i++) {
                                                 if (String(modelArray[i]) === strM) { isChecked = true; break; }
                                             }
-                                            return React.createElement("label", { key: m, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1" },
+                                            return React.createElement("label", { 
+                                                key: m, 
+                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1",
+                                                onClick: function(e) {
+                                                    e.preventDefault();
+                                                    var isCheckedNow = !isChecked;
+                                                    setLocalMap(function(prev) {
+                                                        var newMap = Object.assign({}, prev);
+                                                        var currentArr = parseArray(newMap[keyModel]);
+                                                        var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                        var mIndex = -1;
+                                                        for (var j=0; j<newArr.length; j++) {
+                                                            if (String(newArr[j]) === strM) { mIndex = j; break; }
+                                                        }
+                                                        if (isCheckedNow && mIndex === -1) {
+                                                            newArr.push(strM);
+                                                        } else if (!isCheckedNow && mIndex > -1) {
+                                                            newArr.splice(mIndex, 1);
+                                                        }
+                                                        newMap[keyModel] = JSON.stringify(newArr);
+                                                        return newMap;
+                                                    });
+                                                }
+                                            },
                                                 React.createElement("input", {
                                                     type: "checkbox",
                                                     checked: isChecked,
-                                                    className: "cursor-pointer rounded text-green-600 focus:ring-green-500",
-                                                    onChange: function(e) {
-                                                        var isCheckedNow = e.target.checked;
-                                                        setLocalMap(function(prev) {
-                                                            var newMap = Object.assign({}, prev);
-                                                            var currentArr = parseArray(newMap[keyModel]);
-                                                            var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                            var mIndex = -1;
-                                                            for (var j=0; j<newArr.length; j++) {
-                                                                if (String(newArr[j]) === strM) { mIndex = j; break; }
-                                                            }
-                                                            if (isCheckedNow && mIndex === -1) {
-                                                                newArr.push(strM);
-                                                            } else if (!isCheckedNow && mIndex > -1) {
-                                                                newArr.splice(mIndex, 1);
-                                                            }
-                                                            newMap[keyModel] = JSON.stringify(newArr);
-                                                            return newMap;
-                                                        });
-                                                    }
+                                                    readOnly: true,
+                                                    className: "cursor-pointer rounded text-green-600 focus:ring-green-500"
                                                 }),
                                                 React.createElement("span", { className: "truncate" }, strM)
                                             );
@@ -6527,30 +6532,35 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             for (var i=0; i<skuArray.length; i++) {
                                                 if (String(skuArray[i]) === strS) { isChecked = true; break; }
                                             }
-                                            return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1" },
+                                            return React.createElement("label", { 
+                                                key: s, 
+                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1",
+                                                onClick: function(e) {
+                                                    e.preventDefault();
+                                                    var isCheckedNow = !isChecked;
+                                                    setLocalMap(function(prev) {
+                                                        var newMap = Object.assign({}, prev);
+                                                        var currentArr = parseArray(newMap[keySku]);
+                                                        var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                        var sIndex = -1;
+                                                        for (var j=0; j<newArr.length; j++) {
+                                                            if (String(newArr[j]) === strS) { sIndex = j; break; }
+                                                        }
+                                                        if (isCheckedNow && sIndex === -1) {
+                                                            newArr.push(strS);
+                                                        } else if (!isCheckedNow && sIndex > -1) {
+                                                            newArr.splice(sIndex, 1);
+                                                        }
+                                                        newMap[keySku] = JSON.stringify(newArr);
+                                                        return newMap;
+                                                    });
+                                                }
+                                            },
                                                 React.createElement("input", {
                                                     type: "checkbox",
                                                     checked: isChecked,
-                                                    className: "cursor-pointer rounded text-orange-600 focus:ring-orange-500",
-                                                    onChange: function(e) {
-                                                        var isCheckedNow = e.target.checked;
-                                                        setLocalMap(function(prev) {
-                                                            var newMap = Object.assign({}, prev);
-                                                            var currentArr = parseArray(newMap[keySku]);
-                                                            var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                            var sIndex = -1;
-                                                            for (var j=0; j<newArr.length; j++) {
-                                                                if (String(newArr[j]) === strS) { sIndex = j; break; }
-                                                            }
-                                                            if (isCheckedNow && sIndex === -1) {
-                                                                newArr.push(strS);
-                                                            } else if (!isCheckedNow && sIndex > -1) {
-                                                                newArr.splice(sIndex, 1);
-                                                            }
-                                                            newMap[keySku] = JSON.stringify(newArr);
-                                                            return newMap;
-                                                        });
-                                                    }
+                                                    readOnly: true,
+                                                    className: "cursor-pointer rounded text-orange-600 focus:ring-orange-500"
                                                 }),
                                                 React.createElement("span", { className: "truncate" }, strS)
                                             );
@@ -6585,30 +6595,35 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     for (var i=0; i<subCatArray.length; i++) {
                                                         if (String(subCatArray[i]) === strS) { isChecked = true; break; }
                                                     }
-                                                    return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1" },
+                                                    return React.createElement("label", { 
+                                                        key: s, 
+                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1",
+                                                        onClick: function(e) {
+                                                            e.preventDefault();
+                                                            var isCheckedNow = !isChecked;
+                                                            setLocalMap(function(prev) {
+                                                                var newMap = Object.assign({}, prev);
+                                                                var currentArr = parseArray(newMap[keySubCat]);
+                                                                var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                                var sIndex = -1;
+                                                                for (var j=0; j<newArr.length; j++) {
+                                                                    if (String(newArr[j]) === strS) { sIndex = j; break; }
+                                                                }
+                                                                if (isCheckedNow && sIndex === -1) {
+                                                                    newArr.push(strS);
+                                                                } else if (!isCheckedNow && sIndex > -1) {
+                                                                    newArr.splice(sIndex, 1);
+                                                                }
+                                                                newMap[keySubCat] = JSON.stringify(newArr);
+                                                                return newMap;
+                                                            });
+                                                        }
+                                                    },
                                                         React.createElement("input", {
                                                             type: "checkbox",
                                                             checked: isChecked,
-                                                            className: "cursor-pointer rounded text-purple-600 focus:ring-purple-500",
-                                                            onChange: function(e) {
-                                                                var isCheckedNow = e.target.checked;
-                                                                setLocalMap(function(prev) {
-                                                                    var newMap = Object.assign({}, prev);
-                                                                    var currentArr = parseArray(newMap[keySubCat]);
-                                                                    var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                                    var sIndex = -1;
-                                                                    for (var j=0; j<newArr.length; j++) {
-                                                                        if (String(newArr[j]) === strS) { sIndex = j; break; }
-                                                                    }
-                                                                    if (isCheckedNow && sIndex === -1) {
-                                                                        newArr.push(strS);
-                                                                    } else if (!isCheckedNow && sIndex > -1) {
-                                                                        newArr.splice(sIndex, 1);
-                                                                    }
-                                                                    newMap[keySubCat] = JSON.stringify(newArr);
-                                                                    return newMap;
-                                                                });
-                                                            }
+                                                            readOnly: true,
+                                                            className: "cursor-pointer rounded text-purple-600 focus:ring-purple-500"
                                                         }),
                                                         React.createElement("span", { className: "truncate" }, strS)
                                                     );
@@ -6624,30 +6639,35 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     for (var i=0; i<descLocArray.length; i++) {
                                                         if (String(descLocArray[i]) === strS) { isChecked = true; break; }
                                                     }
-                                                    return React.createElement("label", { key: s, className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1" },
+                                                    return React.createElement("label", { 
+                                                        key: s, 
+                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1",
+                                                        onClick: function(e) {
+                                                            e.preventDefault();
+                                                            var isCheckedNow = !isChecked;
+                                                            setLocalMap(function(prev) {
+                                                                var newMap = Object.assign({}, prev);
+                                                                var currentArr = parseArray(newMap[keyDescLoc]);
+                                                                var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
+                                                                var sIndex = -1;
+                                                                for (var j=0; j<newArr.length; j++) {
+                                                                    if (String(newArr[j]) === strS) { sIndex = j; break; }
+                                                                }
+                                                                if (isCheckedNow && sIndex === -1) {
+                                                                    newArr.push(strS);
+                                                                } else if (!isCheckedNow && sIndex > -1) {
+                                                                    newArr.splice(sIndex, 1);
+                                                                }
+                                                                newMap[keyDescLoc] = JSON.stringify(newArr);
+                                                                return newMap;
+                                                            });
+                                                        }
+                                                    },
                                                         React.createElement("input", {
                                                             type: "checkbox",
                                                             checked: isChecked,
-                                                            className: "cursor-pointer rounded text-teal-600 focus:ring-teal-500",
-                                                            onChange: function(e) {
-                                                                var isCheckedNow = e.target.checked;
-                                                                setLocalMap(function(prev) {
-                                                                    var newMap = Object.assign({}, prev);
-                                                                    var currentArr = parseArray(newMap[keyDescLoc]);
-                                                                    var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                                    var sIndex = -1;
-                                                                    for (var j=0; j<newArr.length; j++) {
-                                                                        if (String(newArr[j]) === strS) { sIndex = j; break; }
-                                                                    }
-                                                                    if (isCheckedNow && sIndex === -1) {
-                                                                        newArr.push(strS);
-                                                                    } else if (!isCheckedNow && sIndex > -1) {
-                                                                        newArr.splice(sIndex, 1);
-                                                                    }
-                                                                    newMap[keyDescLoc] = JSON.stringify(newArr);
-                                                                    return newMap;
-                                                                });
-                                                            }
+                                                            readOnly: true,
+                                                            className: "cursor-pointer rounded text-teal-600 focus:ring-teal-500"
                                                         }),
                                                         React.createElement("span", { className: "truncate" }, strS)
                                                     );
