@@ -6499,7 +6499,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     var isCheckedNow = !isChecked;
                                                     setLocalMap(function(prev) {
                                                         var newMap = Object.assign({}, prev);
-                                                        var currentVal = prev[keyModel] !== undefined ? prev[keyModel] : (prev[legacyKeyModel] || '');
+                                                        var currentVal = prev[keyModel] || '';
                                                         var currentArr = parseArray(currentVal);
                                                         var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                         var mIndex = -1;
@@ -6542,7 +6542,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     var isCheckedNow = !isChecked;
                                                     setLocalMap(function(prev) {
                                                         var newMap = Object.assign({}, prev);
-                                                        var currentVal = prev[keySku] !== undefined ? prev[keySku] : (prev[legacyKeySku] || '');
+                                                        var currentVal = prev[keySku] || '';
                                                         var currentArr = parseArray(currentVal);
                                                         var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                         var sIndex = -1;
@@ -6604,7 +6604,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                             var isCheckedNow = !isChecked;
                                                             setLocalMap(function(prev) {
                                                                 var newMap = Object.assign({}, prev);
-                                                                var currentVal = prev[keySubCat] !== undefined ? prev[keySubCat] : (prev[legacyKeySubCat] || '');
+                                                                var currentVal = prev[keySubCat] || '';
                                                                 var currentArr = parseArray(currentVal);
                                                                 var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                                 var sIndex = -1;
@@ -6647,7 +6647,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                             var isCheckedNow = !isChecked;
                                                             setLocalMap(function(prev) {
                                                                 var newMap = Object.assign({}, prev);
-                                                                var currentVal = prev[keyDescLoc] !== undefined ? prev[keyDescLoc] : (prev[legacyKeyDescLoc] || '');
+                                                                var currentVal = prev[keyDescLoc] || '';
                                                                 var currentArr = parseArray(currentVal);
                                                                 var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
                                                                 var sIndex = -1;
