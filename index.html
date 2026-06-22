@@ -8448,7 +8448,8 @@ return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: sa
                                   if (monthly.length > 0) {
                                       salesUpdateMeta.monthly.sales[monthly[0].year] = extractSheetUpdateLabel(sheet) || toLocalISOString(new Date()).substring(0, 10);
                                   }
-                                  return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta });
+                                  var dm = 'hdr=' + headerRowIdx + ',zeroSkipped=' + (salesUpdateMeta._debugZeroSkipped||0) + ',daily=' + daily.length + ',monthly=' + monthly.length + ',dbMapDate=' + dbMap.date + ',y=' + dbMap.year_label + ',m=' + dbMap.month_index + ',amt=' + dbMap.amount;
+return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta, debugMsg: dm });
                               }
                             }, _callee12);
                           }));
@@ -9271,13 +9272,15 @@ return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: sa
                       case 15:
                         _context16.p = 15;
                         _t13 = _context16.v;
+                        var _errStr = String((_t13 && _t13.stack) || (_t13 && _t13.message) || _t13).substring(0, 150);
                         console.warn('Raw sales parser failed, fallback to generic parser', _t13);
                         _context16.n = 16;
                         var _prevParsed = parsed;
                         return parseWorkbookGeneric(workbook);
                       case 16:
                         parsed = _context16.v;
-                        if (parsed && _prevParsed && _prevParsed.debugMsg) parsed.debugMsg = _prevParsed.debugMsg + ' -> generic_failed';
+                        if (!parsed) parsed = { daily: [], monthly: [], yearly: [] };
+                        parsed.debugMsg = (_prevParsed && _prevParsed.debugMsg ? _prevParsed.debugMsg : 'EXC:' + _errStr) + ' -> gen_fail';
                       case 17:
                         _context16.n = 26;
                         break;
