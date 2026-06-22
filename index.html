@@ -10,11 +10,12 @@
             metaViewport.name = 'viewport';
             document.head.appendChild(metaViewport);
         }
-        metaViewport.content = 'width=1280';
+        metaViewport.content = 'width=1440';
     })();
     </script>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salytix V2.1 - Data Management</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500&family=Kanit:wght@600;700&display=swap" rel="stylesheet">
@@ -1980,103 +1981,23 @@ function saveSettings(newSettings) {
 
 window.openColumnSettingsModal = function() {
     let m = document.getElementById('my-col-modal');
-    if(m) {
-        m.remove();
+    if(!m) {
+        m = document.createElement('div');
+        m.id = 'my-col-modal';
+        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        const inner = document.createElement('div');
+        inner.className = 'p-4';
+        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = 'X ปิด';
+        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
+        closeBtn.onclick = () => m.style.display = 'none';
+        inner.appendChild(closeBtn);
+        
+        m.appendChild(inner);
+        document.body.appendChild(m);
     }
-    m = document.createElement('div');
-    m.id = 'my-col-modal';
-    m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    
-    const inner = document.createElement('div');
-    inner.className = 'p-6';
-    inner.style.cssText = 'background:white;border-radius:12px;width:700px;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 10px 25px rgba(0,0,0,0.2);display:flex;flex-direction:column;gap:16px;';
-    
-    const header = document.createElement('div');
-    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;padding-bottom:12px;position:sticky;top:0;background:white;z-index:10;';
-    header.innerHTML = '<h2 style="margin:0;font-size:18px;font-weight:bold;color:#1f2937;">ตั้งค่าชื่อและซ่อนคอลัมน์</h2>';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '✕';
-    closeBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;padding:4px;';
-    closeBtn.onclick = () => m.style.display = 'none';
-    header.appendChild(closeBtn);
-    inner.appendChild(header);
-
-    const listContainer = document.createElement('div');
-    listContainer.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding-bottom:20px;';
-    
-    // Copy current settings
-    let localSettings = JSON.parse(JSON.stringify(currentSettings));
-    
-    localSettings.forEach((col, idx) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;';
-        
-        const checkWrap = document.createElement('div');
-        checkWrap.style.cssText = 'display:flex;align-items:center;gap:6px;width:120px;';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = col.visible;
-        checkbox.style.cssText = 'width:16px;height:16px;cursor:pointer;';
-        checkbox.onchange = (e) => { localSettings[idx].visible = e.target.checked; };
-        
-        const label = document.createElement('label');
-        label.innerText = 'แสดงคอลัมน์';
-        label.style.cssText = 'font-size:13px;color:#4b5563;cursor:pointer;';
-        label.onclick = () => checkbox.click();
-        
-        checkWrap.appendChild(checkbox);
-        checkWrap.appendChild(label);
-        
-        const origName = document.createElement('div');
-        origName.innerText = col.originalName;
-        origName.style.cssText = 'width:200px;font-size:13px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;';
-        origName.title = col.originalName;
-        
-        const aliasInput = document.createElement('input');
-        aliasInput.type = 'text';
-        aliasInput.value = col.alias;
-        aliasInput.placeholder = 'ชื่อที่ต้องการแสดง';
-        aliasInput.style.cssText = 'flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;outline:none;';
-        aliasInput.oninput = (e) => { localSettings[idx].alias = e.target.value; };
-        
-        row.appendChild(checkWrap);
-        row.appendChild(origName);
-        row.appendChild(aliasInput);
-        listContainer.appendChild(row);
-    });
-    
-    inner.appendChild(listContainer);
-    
-    const footer = document.createElement('div');
-    footer.style.cssText = 'display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e5e7eb;padding-top:16px;position:sticky;bottom:0;background:white;z-index:10;';
-    
-    const resetBtn = document.createElement('button');
-    resetBtn.innerText = 'คืนค่าเริ่มต้น';
-    resetBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-weight:500;cursor:pointer;font-size:14px;';
-    resetBtn.onclick = () => {
-        if(confirm('ต้องการคืนค่าการตั้งค่าคอลัมน์ทั้งหมดเป็นค่าเริ่มต้นใช่หรือไม่?')) {
-            saveSettings(defaultColumns);
-            window.location.reload();
-        }
-    };
-    
-    const saveBtn = document.createElement('button');
-    saveBtn.innerText = 'บันทึกการตั้งค่า';
-    saveBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:none;background:#3b82f6;color:white;font-weight:500;cursor:pointer;font-size:14px;';
-    saveBtn.onclick = () => {
-        saveSettings(localSettings);
-        m.style.display = 'none';
-        alert('บันทึกการตั้งค่าคอลัมน์เรียบร้อยแล้ว ระบบจะทำการรีเฟรชหน้าจอใหม่');
-        window.location.reload();
-    };
-    
-    footer.appendChild(resetBtn);
-    footer.appendChild(saveBtn);
-    inner.appendChild(footer);
-    
-    m.appendChild(inner);
-    document.body.appendChild(m);
     m.style.display = 'flex';
 }
 window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
@@ -2110,13 +2031,13 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
-                    category: row.group || '',
-                    model: row.model || '',
-                    rebate: row.rebate || '',
-                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
                     cv: row.cv || '',
+                    group: row.group || '',
+                    model: row.model || '',
+                    rebate: row.rebate || '',
+                    set: row.set || '',
                     sales: Number(row.sales || 0),
                     qty: Number(row.qty || 0),
                     ton: Number(row.ton || 0),
@@ -2131,10 +2052,6 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
-                    category: row.group || '',
-                    model: row.model || '',
-                    rebate: row.rebate || '',
-                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
                     target_value: Number(row.targetValue || 0),
@@ -2155,11 +2072,20 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
             
             if (deleteError) {
                 console.error("RPC truncate failed, falling back to delete...", deleteError);
-                const { error: fallbackError } = await window.supabase
-                    .from(tableName)
-                    .delete()
-                    .neq('year_label', 'impossible_value_to_force_delete_all');
-                if (fallbackError) throw fallbackError;
+                let deletedCount = 1000;
+                let loopCount = 0;
+                while (deletedCount > 0 && loopCount < 100) {
+                    loopCount++;
+                    const { data, error: fallbackError } = await window.supabase
+                        .from(tableName)
+                        .delete()
+                        .neq('year_label', 'impossible_value_to_force_delete_all')
+                        .select('id')
+                        .limit(1000);
+                    if (fallbackError) throw fallbackError;
+                    deletedCount = data ? data.length : 0;
+                    if (progressEl && deletedCount > 0) progressEl.innerText = `กำลังลบข้อมูลเก่า (ลบแล้ว ${loopCount * 1000} บรรทัด)...`;
+                }
             }
         }
         
@@ -2205,31 +2131,55 @@ window.downloadSalesFromSupabase = async function() {
         // Fetch all rows from the aggregated views
         // Note: Supabase free tier has a default 1000 row limit on select. We must handle pagination if needed.
         // Wait, the javascript SDK's default limit is 1000, we should override it or paginate.
-        // Refactored to fetch concurrently for better performance
-        const fetchTable = async (tableName) => {
-            let result = [];
-            let hasMore = true;
-            let start = 0;
-            let limit = 1000;
-            while(hasMore) {
-                const { data, error } = await window.supabase.from(tableName).select('*').range(start, start + limit - 1);
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    result = result.concat(data);
-                    start += limit;
-                    if (data.length < limit) hasMore = false;
-                } else {
-                    hasMore = false;
-                }
+        let allMonthly = [];
+        let allYearly = [];
+        let allDaily = [];
+        
+        // Fetch Monthly
+        let hasMore = true;
+        let start = 0;
+        let limit = 1000;
+        while(hasMore) {
+            const { data, error } = await window.supabase.from('dashboard_monthly_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allMonthly = allMonthly.concat(data);
+                start += limit;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
             }
-            return result;
-        };
-
-        const [allMonthly, allYearly, allDaily] = await Promise.all([
-            fetchTable('dashboard_monthly_view'),
-            fetchTable('dashboard_yearly_view'),
-            fetchTable('dashboard_daily_view')
-        ]);
+        }
+        
+        // Fetch Yearly
+        hasMore = true;
+        start = 0;
+        while(hasMore) {
+            const { data, error } = await window.supabase.from('dashboard_yearly_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allYearly = allYearly.concat(data);
+                start += limit;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
+        
+        // Fetch Daily
+        hasMore = true;
+        start = 0;
+        while(hasMore) {
+            const { data, error } = await window.supabase.from('dashboard_daily_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allDaily = allDaily.concat(data);
+                start += limit;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
         
         // Map DB columns back to frontend expected object format
         const mapRow = (r, isYearly, isDaily) => {
@@ -2252,13 +2202,13 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.category || r.group || (r.raw_json && r.raw_json.category) || (r.raw_json && r.raw_json.group) || '',
-                model: r.model || (r.raw_json && r.raw_json.model) || '',
-                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
-                set: r.set || (r.raw_json && r.raw_json.set) || '',
                 size: r.size,
                 sku: r.sku,
                 cv: r.cv || '',
+                group: r.group || (r.raw_json && r.raw_json.group) || '',
+                model: r.model || (r.raw_json && r.raw_json.model) || '',
+                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
+                set: r.set || (r.raw_json && r.raw_json.set) || '',
                 sales: Number(r.sales || 0),
                 qty: Number(r.qty || 0),
                 ton: Number(r.ton || 0),
@@ -2393,6 +2343,62 @@ var COLUMN_KEYWORDS = {
   set: ['set']
 };
 
+var robustMapColumn = function(c, idx, mapObj, isDbMap) {
+    var raw = String(c || '').trim().toUpperCase();
+    var sanitizedRaw = raw.replace(/[\u200B-\u200D\uFEFF\xA0\s]/g, ''); // Strip all spaces and invisible chars for strict matching
+    var str = raw.toLowerCase().replace(/[\(\)\[\]_]/g, ' ');
+    var emptyVal = isDbMap ? -1 : undefined;
+    
+    var forceMap = function(key) {
+        mapObj[key] = idx;
+    };
+
+    var mapIf = function(key, condition) {
+        if (condition && mapObj[key] === emptyVal) {
+            mapObj[key] = idx;
+            return true;
+        }
+        return false;
+    };
+
+    // EXACT MATCHES (Overwrite any previous fuzzy match)
+    if (sanitizedRaw.includes('SALES_DATE') || sanitizedRaw.includes('SALESDATE')) { forceMap('date'); return; }
+    if (sanitizedRaw.includes('SALES_AMOUNT') || sanitizedRaw.includes('SALESAMOUNT')) { forceMap('amount'); return; }
+    if (sanitizedRaw.includes('SALES_QTY') || sanitizedRaw.includes('SALESQTY')) { forceMap('qty'); return; }
+    if (sanitizedRaw.includes('WGHTONS') || sanitizedRaw.includes('WGH(TONS)')) { forceMap('ton'); return; }
+    if (sanitizedRaw.includes('REGION') && sanitizedRaw.length < 10) { forceMap('region'); return; }
+    if (sanitizedRaw.includes('PROVINCE') && sanitizedRaw.length < 15) { forceMap('province'); return; }
+    if (sanitizedRaw.includes('SECTION') && sanitizedRaw.length < 15) { forceMap('district'); return; }
+    if ((sanitizedRaw.includes('CV_NAME') || sanitizedRaw.includes('CVNAME')) && !sanitizedRaw.includes('SUB')) { forceMap('cv'); return; }
+    if (sanitizedRaw.includes('CATEGORY') && !sanitizedRaw.includes('SUB')) { forceMap('group'); return; }
+    if (sanitizedRaw.includes('BRAND') && !sanitizedRaw.includes('CODE')) { forceMap('brand'); return; }
+    if (sanitizedRaw.includes('SUB_CATEGORY') || sanitizedRaw.includes('SUBCATEGORY')) { forceMap('model'); return; }
+    if (sanitizedRaw.includes('SIZE') && sanitizedRaw.length < 10) { forceMap('size'); return; }
+    if (sanitizedRaw.includes('BRAND_CODE') || sanitizedRaw.includes('BRANDCODE')) { forceMap('sku'); return; }
+    if (sanitizedRaw.includes('REBATE')) { forceMap('rebate'); return; }
+    if (sanitizedRaw.includes('SET')) { forceMap('set'); return; }
+
+    // FUZZY MATCHES (Only if no exact match or previous fuzzy match)
+    var hasCustomer = str.includes('cv') || str.includes('customer') || str.includes('shop') || str.includes('dealer') || str.includes('ร้านค้า') || str.includes('ลูกค้า') || str.includes('ตัวแทน');
+    var isCustGroup = hasCustomer && (str.includes('group') || str.includes('type') || str.includes('category') || str.includes('กลุ่ม') || str.includes('ประเภท') || str.includes('channel') || str.includes('ช่องทาง'));
+    var isCode = str.includes('code') || str.includes('sku') || str.includes('รหัส') || str.includes('item');
+
+    if (mapIf('date', str === 'date' || str === 'วันที่')) return;
+    if (mapIf('amount', str === 'amount' || str.includes('ยอดขาย'))) return;
+    if (mapIf('qty', str === 'qty' || str.includes('จำนวน'))) return;
+    if (mapIf('ton', str.includes('น้ำหนัก'))) return;
+    if (mapIf('region', str.includes('zone') || str.includes('ภาค'))) return;
+    if (mapIf('province', str.includes('จังหวัด'))) return;
+    if (mapIf('district', str.includes('district') || str.includes('amphur') || str.includes('เขต'))) return;
+    
+    if (mapIf('cv', hasCustomer && !isCustGroup)) return;
+    if (mapIf('sku', isCode)) return;
+    if (mapIf('brand', str.includes('brand') || str.includes('ยี่ห้อ') || str.includes('แบรนด์'))) return;
+    if (mapIf('model', str.includes('รุ่น') || str.includes('สูตร'))) return;
+    if (mapIf('group', (str.includes('group') || str.includes('category') || str.includes('กลุ่ม') || str.includes('หมวด')) && !hasCustomer)) return;
+    if (mapIf('size', str.includes('size') || str.includes('ขนาด') || str.includes('weight') || str === 'นน' || str === 'นน.')) return;
+};
+
 
 (function(){
     var layouts = localStorage.getItem('dashboard_layouts');
@@ -2429,7 +2435,7 @@ var DEFAULT_SECTION_STATE = {
   district: true
 };
 
-window.applyDefaultLayout = function(type) {
+window.applyDefaultLayout = function(type, preventReload) {
     var layouts = {};
     var sectionOpen = {
         filters: true,
@@ -2513,7 +2519,9 @@ window.applyDefaultLayout = function(type) {
     if (details) details.removeAttribute('open');
     
     // Reload to apply new layout
-    window.location.reload();
+    if (!preventReload) {
+        window.location.reload();
+    }
 };
 
 var createEmptyRepeatGapFilters = function createEmptyRepeatGapFilters() {
@@ -3969,7 +3977,6 @@ var MultiSelect = function MultiSelect(_ref2) {
       var uniqueNewSelected = Array.from(new Set([].concat(_toConsumableArray(selected), _toConsumableArray(filteredOptions))));
       onChange(uniqueNewSelected);
     }
-
   };
   var summaryText = customSummaryText || (selected.length === 0 ? emptyText : "".concat(selected.length, " รายการ"));
   return /*#__PURE__*/React.createElement("div", {
@@ -6166,11 +6173,11 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     allData = _ref.allData,
     onSaveAndProcess = _ref.onSaveAndProcess;
   
+  if (!isOpen) return null;
+
   var _useState = React.useState(mappings || {}),
     localMap = _useState[0],
     setLocalMap = _useState[1];
-
-  if (!isOpen) return null;
 
   var uniqueTargets = {};
   var uniqueDistricts = {};
@@ -6188,17 +6195,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   var dbModels = new Set();
   var dbSkus = new Set();
   var dbDistricts = new Set();
-  var dbSubCategories = new Set();
-  var dbDescLocs = new Set();
-
   var groupBrandsMap = {};
   var brandGroupsMap = {};
-  var brandModelsMap = {};
-  var modelSkusMap = {};
-  var groupModelsMap = {};
-  var groupSkusMap = {};
-  var groupSubCatsMap = {};
-  var groupDescLocsMap = {};
   if (allData && allData.monthly) {
       allData.monthly.forEach(function(row) {
           if (row.brand) dbBrands.add(row.brand);
@@ -6206,38 +6204,11 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
           if (row.model) dbModels.add(row.model);
           if (row.sku) dbSkus.add(row.sku);
           if (row.district) dbDistricts.add(row.district);
-          if (row.subCategory) dbSubCategories.add(row.subCategory);
-          if (row.descLoc) dbDescLocs.add(row.descLoc);
-
           if (row.group && row.brand) {
               if (!groupBrandsMap[row.group]) groupBrandsMap[row.group] = new Set();
               groupBrandsMap[row.group].add(row.brand);
               if (!brandGroupsMap[row.brand]) brandGroupsMap[row.brand] = new Set();
               brandGroupsMap[row.brand].add(row.group);
-          }
-          if (row.brand && row.model) {
-              if (!brandModelsMap[row.brand]) brandModelsMap[row.brand] = new Set();
-              brandModelsMap[row.brand].add(row.model);
-          }
-          if (row.model && row.sku) {
-              if (!modelSkusMap[row.model]) modelSkusMap[row.model] = new Set();
-              modelSkusMap[row.model].add(row.sku);
-          }
-          if (row.group && row.model) {
-              if (!groupModelsMap[row.group]) groupModelsMap[row.group] = new Set();
-              groupModelsMap[row.group].add(row.model);
-          }
-          if (row.group && row.sku) {
-              if (!groupSkusMap[row.group]) groupSkusMap[row.group] = new Set();
-              groupSkusMap[row.group].add(row.sku);
-          }
-          if (row.group && row.subCategory) {
-              if (!groupSubCatsMap[row.group]) groupSubCatsMap[row.group] = new Set();
-              groupSubCatsMap[row.group].add(row.subCategory);
-          }
-          if (row.group && row.descLoc) {
-              if (!groupDescLocsMap[row.group]) groupDescLocsMap[row.group] = new Set();
-              groupDescLocsMap[row.group].add(row.descLoc);
           }
       });
   }
@@ -6249,8 +6220,8 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   
   var checkRequiresAdvancedFields = function(groupStr) {
       var str = String(groupStr || '').toLowerCase();
-      var needsModel = str.includes('ปลา') || str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า') || str.includes('สัตว์ฟันแทะ');
-      var needsSku = str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า') || str.includes('สัตว์ฟันแทะ');
+      var needsModel = str.includes('ปลา') || str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า');
+      var needsSku = str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า');
       return { needsModel: needsModel, needsSku: needsSku };
   };
 
@@ -6259,7 +6230,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
         React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
-            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.4]"
+            "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU)"
         ),
         React.createElement("button", { type: "button", className: "status-modal-close", onClick: onClose }, "X")
       ),
@@ -6268,14 +6239,45 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 mt-0.5" }, "info"),
             React.createElement("div", null,
                 React.createElement("p", { className: "font-bold mb-1" }, "วิธีการจับคู่ข้อมูล"),
-                React.createElement("p", null, "เลือกกลุ่มสินค้าและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า, สัตว์ฟันแทะ) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น (ระบบจะผูกเขตการขายให้โดยอัตโนมัติ)")
+                React.createElement("p", null, "เลือกเขตและผูกแบรนด์ หากคุณเลือกกลุ่มสินค้าที่เป็นกลุ่มสัตว์เฉพาะ (เช่น ปลา, หญ้า, นก, ม้า) ระบบจะเปิดช่องให้ระบุ รุ่น และ SKU เพื่อการกรองเป้าหมายที่ละเอียดขึ้น")
+            )
+        ),
+        
+        React.createElement("div", { className: "mb-6" },
+            React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
+                React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "map"),
+                "1. จับคู่เขตการขาย"
+            ),
+            React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                districtList.map(function(dist, idx) {
+                    var key = 'dist||' + dist;
+                    var val = localMap[key] || '';
+                    return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center gap-3" },
+                        React.createElement("div", { className: "w-1/3 text-sm font-bold text-slate-700" }, dist),
+                        React.createElement("span", { className: "material-symbols-outlined text-slate-300" }, "arrow_forward"),
+                        React.createElement("select", {
+                            className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white",
+                            value: val,
+                            onChange: function(e) {
+                                var newMap = Object.assign({}, localMap);
+                                newMap[key] = e.target.value;
+                                setLocalMap(newMap);
+                            }
+                        }, 
+                            React.createElement("option", { value: "" }, "เลือกเขต..."),
+                            Array.from(dbDistricts).sort().map(function(d) {
+                                return React.createElement("option", { key: d, value: d }, d);
+                            })
+                        )
+                    );
+                })
             )
         ),
 
         React.createElement("div", null,
             React.createElement("h3", { className: "font-bold text-slate-700 mb-3 flex items-center gap-2" },
                 React.createElement("span", { className: "material-symbols-outlined text-slate-400" }, "category"),
-                "1. จับคู่กลุ่มสินค้า, แบรนด์, รุ่น, SKU"
+                "2. จับคู่กลุ่มสินค้า, แบรนด์, รุ่น, SKU"
             ),
             React.createElement("div", { className: "space-y-3" },
                 targetList.map(function(t, idx) {
@@ -6283,10 +6285,6 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var keyGrp = 'group||' + t.group + '||' + t.brand;
                     var keyModel = 'model||' + t.group + '||' + t.brand;
                     var keySku = 'sku||' + t.group + '||' + t.brand;
-                    var keySubCat = 'subCat||' + t.group + '||' + t.brand;
-                    var keyDescLoc = 'descLoc||' + t.group + '||' + t.brand;
-                    var keyEnableSubCat = 'enableSubCat||' + t.group + '||' + t.brand;
-
                     
                     var legacyKeyGrp = 'group||' + t.group;
                     
@@ -6294,86 +6292,34 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var valGrp = localMap[keyGrp] !== undefined ? localMap[keyGrp] : (localMap[legacyKeyGrp] || '');
                     var valModel = localMap[keyModel] || '';
                     var valSku = localMap[keySku] || '';
-                    var valSubCat = localMap[keySubCat] || '';
-                    var valDescLoc = localMap[keyDescLoc] || '';
-                    var isSubCatEnabled = localMap[keyEnableSubCat] === 'true';
-
                     
-                    var parseArray = function(val) {
-                        if (!val) return [''];
-                        if (Array.isArray(val)) return val.length > 0 ? val : [''];
-                        var strVal = String(val);
-                        try { if (strVal.startsWith('[')) return JSON.parse(strVal); } catch(e) {}
-                        var arr = strVal.split(',');
-                        return arr.length > 0 ? arr : [''];
-                    };
-
-                    var brandArray = parseArray(valBrand);
-                    var groupArray = parseArray(valGrp);
-                    var modelArray = parseArray(valModel);
-                    var skuArray = parseArray(valSku);
-                    var subCatArray = parseArray(valSubCat);
-                    var descLocArray = parseArray(valDescLoc);
+                    var brandArray = valBrand ? valBrand.split(',') : [''];
+                    var modelArray = valModel ? valModel.split(',') : [''];
+                    var skuArray = valSku ? valSku.split(',') : [''];
                     
-                    var activeGroups = groupArray.filter(function(g) { return g && String(g).trim() !== ''; });
-                    var activeBrands = brandArray.filter(function(b) { return b && String(b).trim() !== ''; });
-                    var activeModels = modelArray.filter(function(m) { return m && String(m).trim() !== ''; });
-
-                    var filterGroups = activeGroups.length > 0 ? activeGroups : (t.group ? [t.group.trim()] : []);
-                    var filterBrands = activeBrands.length > 0 ? activeBrands : (t.brand ? [t.brand.trim()] : []);
-
-                    var availableBrands = new Set();
+                    var availableBrands = valGrp && groupBrandsMap[valGrp] ? Array.from(groupBrandsMap[valGrp]) : Array.from(dbBrands);
+                    
                     var availableGroups = new Set();
-                    var availableModels = new Set();
-                    var availableSkus = new Set();
-                    var availableSubCats = new Set();
-                    var availableDescLocs = new Set();
-
-                    if (allData && allData.monthly) {
-                        allData.monthly.forEach(function(row) {
-                            var matchGroup = filterGroups.length === 0 || filterGroups.includes(row.group);
-                            var matchBrand = filterBrands.length === 0 || filterBrands.includes(row.brand);
-                            
-                            if (matchBrand && row.group) availableGroups.add(row.group);
-                            if (matchGroup && row.brand) availableBrands.add(row.brand);
-                            
-                            if (matchGroup && matchBrand) {
-                                if (row.model) availableModels.add(row.model);
-                                
-                                var matchModel = activeModels.length === 0 || activeModels.includes(row.model);
-                                if (matchModel) {
-                                    if (row.sku) availableSkus.add(row.sku);
-                                }
-                                
-                                if (row.subCategory) availableSubCats.add(row.subCategory);
-                                if (row.descLoc) availableDescLocs.add(row.descLoc);
-                            }
-                        });
-                    }
-
-                    if (activeBrands.length > 0 && availableGroups.size === 0) availableGroups = dbGroups;
-                    if (activeGroups.length > 0 && availableBrands.size === 0) availableBrands = dbBrands;
-                    if (activeGroups.length === 0 && activeBrands.length === 0) {
+                    var hasBrandFilter = false;
+                    brandArray.forEach(function(b) {
+                        var bStr = b.trim();
+                        if (bStr && brandGroupsMap[bStr]) {
+                            hasBrandFilter = true;
+                            brandGroupsMap[bStr].forEach(function(g) { availableGroups.add(g); });
+                        }
+                    });
+                    if (!hasBrandFilter) {
                         availableGroups = dbGroups;
-                        availableBrands = dbBrands;
                     }
-
-                    var availableBrandsArr = Array.from(availableBrands);
-                    var availableModelsArr = Array.from(availableModels);
-                    var availableSkusArr = Array.from(availableSkus);
-                    var availableSubCatsArr = Array.from(availableSubCats);
-                    var availableDescLocsArr = Array.from(availableDescLocs);
                     
                     // Determine if advanced fields are needed
                     var req = checkRequiresAdvancedFields(valGrp || t.group);
                     
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
-                        React.createElement("datalist", { id: "db-brands-list-" + idx }, Array.from(availableBrands).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
+                        React.createElement("datalist", { id: "db-brands-list-" + idx }, availableBrands.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-groups-list-" + idx }, Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-models-list-" + idx }, Array.from(dbModels).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-skus-list-" + idx }, Array.from(dbSkus).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
-                        React.createElement("datalist", { id: "db-subcats-list-" + idx }, availableSubCatsArr.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
-                        React.createElement("datalist", { id: "db-desclocs-list-" + idx }, availableDescLocsArr.map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("div", { className: "flex items-start gap-3" },
                             React.createElement("div", { className: "w-1/4 mt-1" },
                                 React.createElement("div", { className: "text-xs text-slate-500 font-bold mb-0.5" }, "กลุ่ม: ", t.group),
@@ -6384,50 +6330,20 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 React.createElement("span", { className: "material-symbols-outlined" }, "arrow_forward")
                             ),
                             React.createElement("div", { className: "flex-1 flex flex-col gap-2" },
-                                React.createElement("div", { className: "flex gap-2 items-start" },
-                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "กลุ่มสินค้า"),
-                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
-                                        groupArray.map(function(grpItem, gIdx) {
-                                            return React.createElement("div", { key: gIdx, className: "flex items-center gap-1" },
-                                                React.createElement("input", {
-                                                    type: "text",
-                                                    list: "db-groups-list-" + idx,
-                                                    className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
-                                                    placeholder: "จับคู่กลุ่ม",
-                                                    value: grpItem.trim(),
-                                                    onChange: function(e) {
-                                                        var newMap = Object.assign({}, localMap);
-                                                        var newArr = groupArray.slice();
-                                                        newArr[gIdx] = e.target.value;
-                                                        newMap[keyGrp] = newArr.join(',');
-                                                        setLocalMap(newMap);
-                                                    }
-                                                }),
-                                                groupArray.length > 1 ? React.createElement("button", {
-                                                    type: "button",
-                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
-                                                    onClick: function() {
-                                                        var newMap = Object.assign({}, localMap);
-                                                        var newArr = groupArray.slice();
-                                                        newArr.splice(gIdx, 1);
-                                                        newMap[keyGrp] = newArr.join(',');
-                                                        setLocalMap(newMap);
-                                                    }
-                                                }, React.createElement("span", { className: "material-symbols-outlined" }, "remove")) : null
-                                            );
-                                        }),
-                                        React.createElement("button", {
-                                            type: "button",
-                                            className: "text-xs text-blue-500 font-bold self-start mt-1 hover:underline flex items-center gap-1",
-                                            onClick: function() {
-                                                var newMap = Object.assign({}, localMap);
-                                                var newArr = groupArray.slice();
-                                                newArr.push('');
-                                                newMap[keyGrp] = newArr.join(',');
-                                                setLocalMap(newMap);
-                                            }
-                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), " เพิ่มกลุ่มสินค้า")
-                                    )
+                                React.createElement("div", { className: "flex gap-2 items-center" },
+                                    React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16" }, "กลุ่มสินค้า"),
+                                    React.createElement("input", {
+                                        type: "text",
+                                        list: "db-groups-list-" + idx,
+                                        className: "flex-1 p-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50",
+                                        placeholder: "จับคู่กลุ่ม",
+                                        value: valGrp,
+                                        onChange: function(e) {
+                                            var newMap = Object.assign({}, localMap);
+                                            newMap[keyGrp] = e.target.value;
+                                            setLocalMap(newMap);
+                                        }
+                                    })
                                 ),
                                 React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ผูกแบรนด์"),
@@ -6481,196 +6397,91 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                 ),
                                 req.needsModel ? React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุรุ่น"),
-                                    React.createElement("div", { className: "flex-1 border border-slate-300 rounded bg-green-50 max-h-32 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                        availableModelsArr.length > 0 ? availableModelsArr.map(function(m, mIdx) {
-                                            var isChecked = false;
-                                            var strM = String(m);
-                                            for (var i=0; i<modelArray.length; i++) {
-                                                if (String(modelArray[i]) === strM) { isChecked = true; break; }
-                                            }
-                                            var CheckboxIcon = isChecked 
-                                                ? React.createElement("span", { className: "material-symbols-outlined text-green-600 text-[18px]" }, "check_box")
-                                                : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
-
-                                            return React.createElement("div", { 
-                                                key: m, 
-                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1 select-none",
-                                                onClick: function(e) {
-                                                    var isCheckedNow = !isChecked;
-                                                    setLocalMap(function(prev) {
-                                                        var newMap = Object.assign({}, prev);
-                                                        var currentVal = prev[keyModel] || '';
-                                                        var currentArr = parseArray(currentVal);
-                                                        var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                        var mIndex = -1;
-                                                        for (var j=0; j<newArr.length; j++) {
-                                                            if (String(newArr[j]) === strM) { mIndex = j; break; }
-                                                        }
-                                                        if (isCheckedNow && mIndex === -1) {
-                                                            newArr.push(strM);
-                                                        } else if (!isCheckedNow && mIndex > -1) {
-                                                            newArr.splice(mIndex, 1);
-                                                        }
+                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                        modelArray.map(function(modelItem, mIdx) {
+                                            return React.createElement("div", { key: mIdx, className: "flex items-center gap-1" },
+                                                React.createElement("input", {
+                                                    type: "text",
+                                                    list: "db-models-list-" + idx,
+                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-green-500 bg-green-50 outline-none",
+                                                    placeholder: "ระบุรุ่น (Model)",
+                                                    value: modelItem.trim(),
+                                                    onChange: function(e) {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = modelArray.slice();
+                                                        newArr[mIdx] = e.target.value;
                                                         newMap[keyModel] = newArr.join(',');
-                                                        return newMap;
-                                                    });
-                                                }
-                                            },
-                                                CheckboxIcon,
-                                                React.createElement("span", { className: "truncate" }, strM)
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }),
+                                                modelArray.length > 1 ? React.createElement("button", {
+                                                    type: "button",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                    onClick: function() {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = modelArray.slice();
+                                                        newArr.splice(mIdx, 1);
+                                                        newMap[keyModel] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
                                             );
-                                        }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูลรุ่นสำหรับแบรนด์ที่เลือก")
+                                        }),
+                                        React.createElement("button", {
+                                            type: "button",
+                                            className: "self-start text-xs text-green-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                            onClick: function() {
+                                                var newMap = Object.assign({}, localMap);
+                                                var currStr = newMap[keyModel] || '';
+                                                newMap[keyModel] = currStr ? currStr + ',' : ',';
+                                                setLocalMap(newMap);
+                                            }
+                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่มรุ่น")
                                     )
                                 ) : null,
                                 req.needsSku ? React.createElement("div", { className: "flex gap-2 items-start" },
                                     React.createElement("label", { className: "text-xs font-bold text-slate-500 w-16 mt-2" }, "ระบุ SKU"),
-                                    React.createElement("div", { className: "flex-1 border border-slate-300 rounded bg-orange-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                        availableSkusArr.length > 0 ? availableSkusArr.map(function(s, sIdx) {
-                                            var isChecked = false;
-                                            var strS = String(s);
-                                            for (var i=0; i<skuArray.length; i++) {
-                                                if (String(skuArray[i]) === strS) { isChecked = true; break; }
-                                            }
-                                            var CheckboxIcon = isChecked 
-                                                ? React.createElement("span", { className: "material-symbols-outlined text-orange-600 text-[18px]" }, "check_box")
-                                                : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
-
-                                            return React.createElement("div", { 
-                                                key: s, 
-                                                className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1 select-none",
-                                                onClick: function(e) {
-                                                    var isCheckedNow = !isChecked;
-                                                    setLocalMap(function(prev) {
-                                                        var newMap = Object.assign({}, prev);
-                                                        var currentVal = prev[keySku] || '';
-                                                        var currentArr = parseArray(currentVal);
-                                                        var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                        var sIndex = -1;
-                                                        for (var j=0; j<newArr.length; j++) {
-                                                            if (String(newArr[j]) === strS) { sIndex = j; break; }
-                                                        }
-                                                        if (isCheckedNow && sIndex === -1) {
-                                                            newArr.push(strS);
-                                                        } else if (!isCheckedNow && sIndex > -1) {
-                                                            newArr.splice(sIndex, 1);
-                                                        }
+                                    React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
+                                        skuArray.map(function(skuItem, sIdx) {
+                                            return React.createElement("div", { key: sIdx, className: "flex items-center gap-1" },
+                                                React.createElement("input", {
+                                                    type: "text",
+                                                    list: "db-skus-list-" + idx,
+                                                    className: "flex-1 p-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-orange-500 bg-orange-50 outline-none",
+                                                    placeholder: "ระบุ SKU",
+                                                    value: skuItem.trim(),
+                                                    onChange: function(e) {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = skuArray.slice();
+                                                        newArr[sIdx] = e.target.value;
                                                         newMap[keySku] = newArr.join(',');
-                                                        return newMap;
-                                                    });
-                                                }
-                                            },
-                                                CheckboxIcon,
-                                                React.createElement("span", { className: "truncate" }, strS)
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }),
+                                                skuArray.length > 1 ? React.createElement("button", {
+                                                    type: "button",
+                                                    className: "text-red-500 hover:bg-red-50 p-1 rounded",
+                                                    onClick: function() {
+                                                        var newMap = Object.assign({}, localMap);
+                                                        var newArr = skuArray.slice();
+                                                        newArr.splice(sIdx, 1);
+                                                        newMap[keySku] = newArr.join(',');
+                                                        setLocalMap(newMap);
+                                                    }
+                                                }, React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "remove")) : null
                                             );
-                                        }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SKU สำหรับรุ่นที่เลือก")
-                                    )
-                                ) : null,
-                                (valGrp === 'ปลา' || valGrp === 'นก' || valGrp === 'สัตว์ฟันแทะ' || t.group === 'ปลา' || t.group === 'นก' || t.group === 'สัตว์ฟันแทะ') ? React.createElement("div", { className: "flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100" },
-                                    React.createElement("label", { className: "flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer" },
-                                        React.createElement("input", {
-                                            type: "checkbox",
-                                            checked: isSubCatEnabled,
-                                            onChange: function(e) {
-                                                var newMap = Object.assign({}, localMap);
-                                                newMap[keyEnableSubCat] = e.target.checked ? 'true' : 'false';
-                                                if (!e.target.checked) {
-                                                    newMap[keySubCat] = '';
-                                                    newMap[keyDescLoc] = '';
-                                                }
-                                                setLocalMap(newMap);
-                                            },
-                                            className: "w-4 h-4 text-blue-600 rounded cursor-pointer"
                                         }),
-                                        "ระบุ SUB_CATEGORY / DESC_LOC"
-                                    ),
-                                    isSubCatEnabled ? React.createElement("div", { className: "flex gap-2 items-start pl-6" },
-                                        React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
-                                            React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "SUB_CATEGORY"),
-                                            React.createElement("div", { className: "border border-slate-300 rounded bg-purple-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                                availableSubCatsArr.length > 0 ? availableSubCatsArr.map(function(s, sIdx) {
-                                                    var isChecked = false;
-                                                    var strS = String(s);
-                                                    for (var i=0; i<subCatArray.length; i++) {
-                                                        if (String(subCatArray[i]) === strS) { isChecked = true; break; }
-                                                    }
-                                                    var CheckboxIcon = isChecked 
-                                                        ? React.createElement("span", { className: "material-symbols-outlined text-purple-600 text-[18px]" }, "check_box")
-                                                        : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
-
-                                                    return React.createElement("div", { 
-                                                        key: s, 
-                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1 select-none",
-                                                        onClick: function(e) {
-                                                            var isCheckedNow = !isChecked;
-                                                            setLocalMap(function(prev) {
-                                                                var newMap = Object.assign({}, prev);
-                                                                var currentVal = prev[keySubCat] || '';
-                                                                var currentArr = parseArray(currentVal);
-                                                                var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                                var sIndex = -1;
-                                                                for (var j=0; j<newArr.length; j++) {
-                                                                    if (String(newArr[j]) === strS) { sIndex = j; break; }
-                                                                }
-                                                                if (isCheckedNow && sIndex === -1) {
-                                                                    newArr.push(strS);
-                                                                } else if (!isCheckedNow && sIndex > -1) {
-                                                                    newArr.splice(sIndex, 1);
-                                                                }
-                                                                newMap[keySubCat] = newArr.join(',');
-                                                                return newMap;
-                                                            });
-                                                        }
-                                                    },
-                                                        CheckboxIcon,
-                                                        React.createElement("span", { className: "truncate" }, strS)
-                                                    );
-                                                }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล SUB_CATEGORY")
-                                            )
-                                        ),
-                                        React.createElement("div", { className: "flex-1 flex flex-col gap-1" },
-                                            React.createElement("label", { className: "text-xs font-bold text-slate-500" }, "DESC_LOC"),
-                                            React.createElement("div", { className: "border border-slate-300 rounded bg-teal-50 max-h-40 overflow-y-auto p-2 grid grid-cols-1 md:grid-cols-2 gap-1" },
-                                                availableDescLocsArr.length > 0 ? availableDescLocsArr.map(function(s, sIdx) {
-                                                    var isChecked = false;
-                                                    var strS = String(s);
-                                                    for (var i=0; i<descLocArray.length; i++) {
-                                                        if (String(descLocArray[i]) === strS) { isChecked = true; break; }
-                                                    }
-                                                    var CheckboxIcon = isChecked 
-                                                        ? React.createElement("span", { className: "material-symbols-outlined text-teal-600 text-[18px]" }, "check_box")
-                                                        : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
-
-                                                    return React.createElement("div", { 
-                                                        key: s, 
-                                                        className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1 select-none",
-                                                        onClick: function(e) {
-                                                            var isCheckedNow = !isChecked;
-                                                            setLocalMap(function(prev) {
-                                                                var newMap = Object.assign({}, prev);
-                                                                var currentVal = prev[keyDescLoc] || '';
-                                                                var currentArr = parseArray(currentVal);
-                                                                var newArr = currentArr.filter(function(x) { return x && String(x).trim() !== ''; });
-                                                                var sIndex = -1;
-                                                                for (var j=0; j<newArr.length; j++) {
-                                                                    if (String(newArr[j]) === strS) { sIndex = j; break; }
-                                                                }
-                                                                if (isCheckedNow && sIndex === -1) {
-                                                                    newArr.push(strS);
-                                                                } else if (!isCheckedNow && sIndex > -1) {
-                                                                    newArr.splice(sIndex, 1);
-                                                                }
-                                                                newMap[keyDescLoc] = newArr.join(',');
-                                                                return newMap;
-                                                            });
-                                                        }
-                                                    },
-                                                        CheckboxIcon,
-                                                        React.createElement("span", { className: "truncate" }, strS)
-                                                    );
-                                                }) : React.createElement("div", { className: "text-xs text-slate-400 italic" }, "ไม่มีข้อมูล DESC_LOC")
-                                            )
-                                        )
-                                    ) : null
+                                        React.createElement("button", {
+                                            type: "button",
+                                            className: "self-start text-xs text-orange-600 flex items-center gap-1 mt-1 hover:underline font-bold",
+                                            onClick: function() {
+                                                var newMap = Object.assign({}, localMap);
+                                                var currStr = newMap[keySku] || '';
+                                                newMap[keySku] = currStr ? currStr + ',' : ',';
+                                                setLocalMap(newMap);
+                                            }
+                                        }, React.createElement("span", { className: "material-symbols-outlined text-[14px]" }, "add"), "เพิ่ม SKU")
+                                    )
                                 ) : null
                             )
                         )
@@ -6693,16 +6504,6 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   );
 };
 var App = function App() {
-  var _useStateNotifs = React.useState([]), systemNotifications = _useStateNotifs[0], setSystemNotifications = _useStateNotifs[1];
-  var _useStateNotifOpen = React.useState(false), isSystemNotificationsOpen = _useStateNotifOpen[0], setIsSystemNotificationsOpen = _useStateNotifOpen[1];
-  var _useStateUnreadNotif = React.useState(false), hasUnreadNotifs = _useStateUnreadNotif[0], setHasUnreadNotifs = _useStateUnreadNotif[1];
-
-  var addNotification = function(msg, type) {
-    var notif = { id: Date.now() + Math.random(), message: msg, type: type || "info", time: new Date() };
-    setSystemNotifications(function(prev) { return [notif].concat(prev).slice(0, 50); });
-    setHasUnreadNotifs(true);
-
-  };
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
@@ -6711,18 +6512,7 @@ var App = function App() {
   var _useStateSettingMenu = React.useState(false), isSettingMenuOpen = _useStateSettingMenu[0], setIsSettingMenuOpen = _useStateSettingMenu[1];
   var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
   var _useStateTargetUploadConfirm = React.useState(null), targetUploadConfirm = _useStateTargetUploadConfirm[0], setTargetUploadConfirm = _useStateTargetUploadConfirm[1];
-  var _useStateUploadTargetRegion = React.useState(''), uploadTargetRegion = _useStateUploadTargetRegion[0], setUploadTargetRegion = _useStateUploadTargetRegion[1];
-  var dbDistrictsForUpload = React.useMemo(function() {
-      var regions = new Set();
-      if (allData && allData.monthly) {
-          allData.monthly.forEach(function(row) {
-              if (row.region && row.region !== '-') {
-                  regions.add(row.region);
-              }
-          });
-      }
-      return Array.from(regions).sort();
-  }, [allData]);
+
   
   React.useEffect(function() {
     var timer;
@@ -6737,7 +6527,7 @@ var App = function App() {
             }
             if (typeof window.GridStack === 'undefined') {
                 console.warn("GridStack is not loaded yet. Retrying in 500ms.");
-                timer = setTimeout(initGrid, 250);
+                timer = setTimeout(initGrid, 500);
                 return;
             }
             
@@ -6753,7 +6543,7 @@ var App = function App() {
                     column: 12,
                     margin: 10,
                     handle: '.major-section-head',
-                    float: false,
+                    float: true,
                     animate: true,
                     disableOneColumnMode: true,
                     resizable: {
@@ -6794,7 +6584,7 @@ var App = function App() {
             } catch (err) {
                 console.error("GridStack init error:", err);
             }
-        }, 250);
+        }, 100);
     };
     
     initGrid();
@@ -6806,7 +6596,7 @@ var App = function App() {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }, [activeTab]); // Only re-init when tab changes
+  }, [activeTab, sectionOpen, sectionExpanded, filteredData, customWidgets, metricMode, unitMode]); // Re-init when layout or data changes
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
@@ -6879,11 +6669,6 @@ var App = function App() {
     _useState10 = _slicedToArray(_useState1, 2),
     allData = _useState10[0],
     setAllData = _useState10[1];
-
-  var dbDistrictsForUpload = React.useMemo(function() {
-      return Array.from(new Set((allData.monthly||[]).map(function(r) { return r.region || r.district; }).filter(Boolean))).sort();
-  }, [allData.monthly]);
-
   var _useState11 = useState('monthly'),
     _useState12 = _slicedToArray(_useState11, 2),
     viewMode = _useState12[0],
@@ -6917,7 +6702,7 @@ var App = function App() {
           var layouts = JSON.parse(localStorage.getItem('dashboard_layouts') || '{}');
           var saved = JSON.parse(localStorage.getItem('dashboard_section_open'));
           if (Object.keys(layouts).length === 0 || !saved) {
-              if (window.applyDefaultLayout) window.applyDefaultLayout(4);
+              if (window.applyDefaultLayout) window.applyDefaultLayout(4, true);
               return JSON.parse(localStorage.getItem('dashboard_section_open')) || DEFAULT_SECTION_STATE;
           }
           return saved;
@@ -7148,7 +6933,6 @@ var App = function App() {
   var showStatus = function showStatus(message) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'info';
     if (!message) return;
-    if (type === "success" || type === "error") addNotification(message, type);
     setStatusInfo({
       type: type,
       message: message,
@@ -7188,7 +6972,6 @@ var App = function App() {
   };
   var finishLoadingStatus = function finishLoadingStatus(message) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'success';
-    if (typeof addNotification === 'function') addNotification(message, type);
     setStatusInfo(function (prev) {
       return {
         type: type,
@@ -7211,18 +6994,6 @@ var App = function App() {
     });
   };
   
-  React.useEffect(function() {
-    var timer;
-    if (statusInfo.message && !statusInfo.loading) {
-      timer = setTimeout(function() {
-        closeStatusPopup();
-      }, 3000);
-    }
-    return function() {
-      if (timer) clearTimeout(timer);
-    };
-  }, [statusInfo.message, statusInfo.loading]);
-
   React.useEffect(function() {
     var handleGlobalKeyDown = function(e) {
       if (e.key === 'Enter') {
@@ -7395,7 +7166,7 @@ var App = function App() {
               if (data) {
                 setAllData(normalizeAllDataShape(data));
                 setIsUsingSavedData(true);
-                // removed annoying popup
+                // Removed showStatus on tab switch
                 setIsLoading(false);
               } else {
                 setAllData(normalizeAllDataShape());
@@ -7436,9 +7207,6 @@ var App = function App() {
   }, [authUser && authUser.username, JSON.stringify(lockedFilters)]);
   useEffect(function () {
     if (authUser && window.downloadSalesFromSupabase) {
-      if (window.TargetMatch && window.TargetMatch.loadConfigFromSupabase) {
-        window.TargetMatch.loadConfigFromSupabase();
-      }
       var today = new Date().toISOString().split('T')[0];
       var lastSync = localStorage.getItem('salytix_last_sync_date');
       if (lastSync !== today) {
@@ -8073,10 +7841,6 @@ var App = function App() {
                                       }
                                     }
                                   });
-                                  appendRows(chunkRows, part);
-                                  _context1.n = 7;
-                                  return nextTick();
-                                case 7:
                                   startRow += chunkSize;
                                   _context1.n = 6;
                                   break;
@@ -8171,32 +7935,7 @@ var App = function App() {
                           var map = {};
                           var timeCols = [];
                           headerRow.forEach(function (h, idx) {
-                            var str = String(h !== null && h !== void 0 ? h : '').toLowerCase().trim();
-                            var sanitizedRaw = String(h || '').toUpperCase().replace(/[\u200B-\u200D\uFEFF\xA0\s]/g, '');
-                            if (sanitizedRaw.includes('SALES_DATE') || sanitizedRaw.includes('SALESDATE')) { map['date'] = idx; }
-                            else if (sanitizedRaw.includes('SALES_AMOUNT') || sanitizedRaw.includes('SALESAMOUNT')) { map['amount'] = idx; }
-                            else if (sanitizedRaw.includes('SALES_QTY') || sanitizedRaw.includes('SALESQTY')) { map['qty'] = idx; }
-                            else if (sanitizedRaw.includes('WGHTONS') || sanitizedRaw.includes('WGH(TONS)')) { map['ton'] = idx; }
-                            else if (sanitizedRaw.includes('REGION') && sanitizedRaw.length < 10) { map['region'] = idx; }
-                            else if (sanitizedRaw.includes('PROVINCE') && sanitizedRaw.length < 15) { map['province'] = idx; }
-                            else if (sanitizedRaw.includes('SECTION') && sanitizedRaw.length < 15) { map['district'] = idx; }
-                            else if ((sanitizedRaw.includes('CV_NAME') || sanitizedRaw.includes('CVNAME')) && !sanitizedRaw.includes('SUB')) { map['cv'] = idx; }
-                            else if (sanitizedRaw.includes('CATEGORY') && !sanitizedRaw.includes('SUB')) { map['group'] = idx; }
-                            else if (sanitizedRaw.includes('BRAND') && !sanitizedRaw.includes('CODE')) { map['brand'] = idx; }
-                            else if (sanitizedRaw.includes('SUB_CATEGORY') || sanitizedRaw.includes('SUBCATEGORY')) { map['model'] = idx; }
-                            else if (sanitizedRaw.includes('SIZE') && sanitizedRaw.length < 10) { map['size'] = idx; }
-                            else if (sanitizedRaw.includes('BRAND_CODE') || sanitizedRaw.includes('BRANDCODE')) { map['sku'] = idx; }
-                            else if (sanitizedRaw.includes('REBATE')) { map['rebate'] = idx; }
-                            else if (sanitizedRaw.includes('SET')) { map['set'] = idx; }
-                            else {
-                              for (var key in COLUMN_KEYWORDS) {
-                                if (COLUMN_KEYWORDS[key].some(function (k) {
-                                  return str.includes(k);
-                                })) {
-                                  if (map[key] === undefined) map[key] = idx;
-                                }
-                              }
-                            }
+                            robustMapColumn(h, idx, map, false);
 	                            var parsedType = parseHeaderToType(h);
 	                            if (parsedType) timeCols.push(_objectSpread({
 	                              index: idx,
@@ -8236,37 +7975,16 @@ var App = function App() {
                           });
                           return result;
                         };
-                        shouldSkipRow = function shouldSkipRow(row, map) {
+                        shouldSkipRow = function shouldSkipRow(row) {
                           if (!row || row.length === 0) return true;
-                          
-                          // 1. Keyword check across ALL cells (catches Pivot Table subtotals like "Toyota Total")
-                          var hasTotalKeyword = false;
-                          for (var i = 0; i < row.length; i++) {
-                            var cellText = String(row[i] !== null && row[i] !== void 0 ? row[i] : '').trim().toLowerCase();
-                            if (!cellText || cellText === '-') continue;
-                            if (cellText === 'total' || cellText === 'รวม' || cellText.includes('ยอดรวม') || cellText.includes('ผลรวม') || cellText.includes('รวมทั้งสิ้น') || cellText.includes('สรุป') || cellText === 'grand total' || cellText.includes('row labels') || cellText.startsWith('sum of') || cellText.includes('(all)') || cellText.endsWith(' total') || cellText.endsWith(' รวม')) {
-                              hasTotalKeyword = true;
-                              break;
-                            }
-                          }
-                          if (hasTotalKeyword) return true;
-                          
-                          // 2. Granularity check: Pivot subtotals leave granular columns empty
-                          if (map) {
-                            var granularKeys = ['sku', 'size', 'model', 'brand', 'group'];
-                            var mostGranularKey = null;
-                            for (var j = 0; j < granularKeys.length; j++) {
-                              if (map[granularKeys[j]] !== undefined && map[granularKeys[j]] !== -1) {
-                                mostGranularKey = granularKeys[j];
-                                break;
-                              }
-                            }
-                            if (mostGranularKey) {
-                               var val = String(row[map[mostGranularKey]] || '').trim();
-                               if (val === '' || val === '-') return true; // Most granular product info missing = subtotal row
-                            }
-                          }
-
+                          var firstMeaningful = row.find(function (cell) {
+                            return String(cell !== null && cell !== void 0 ? cell : '').trim() !== '';
+                          });
+                          if (firstMeaningful === undefined) return true;
+                          var lower = String(firstMeaningful).trim().toLowerCase();
+                          if (!lower) return true;
+                          if (lower.includes('total') || lower === 'รวม' || lower.includes('row labels')) return true;
+                          if (lower.startsWith('sum of') || lower.includes('(all)')) return true;
                           return false;
                         };
                         extractDimensions = function extractDimensions(row, map) {
@@ -8312,7 +8030,11 @@ var App = function App() {
                                   return _context10.a(2, []);
                                 case 1:
                                   _findHeaderRow = findHeaderRow(rows), headerIdx = _findHeaderRow.index, headerRow = _findHeaderRow.row;
-                                  _mapColumns = mapColumns(headerRow), map = _mapColumns.map, timeCols = _mapColumns.timeCols;
+                                  map = {};
+                                  headerRow.forEach(function(c, idx) {
+                                      robustMapColumn(c, idx, map, false);
+                                  });
+                                  timeCols = mapColumns(headerRow).timeCols;
                                   usableTimeCols = dedupeTimeCols(timeCols.filter(function (t) {
                                     return t.type === expectedTimeType;
                                   }));
@@ -8335,7 +8057,7 @@ var App = function App() {
                                   return maybeYield(i - headerIdx);
                                 case 4:
                                   row = rows[i] || [];
-                                  if (!shouldSkipRow(row, map)) {
+                                  if (!shouldSkipRow(row)) {
                                     _context10.n = 5;
                                     break;
                                   }
@@ -8438,37 +8160,18 @@ var App = function App() {
                         };
                         parseGenericRows = /*#__PURE__*/function () {
                           var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(rows) {
-                            var options, _findHeaderRow2, headerIdx, headerRow, _mapColumns2, map, timeCols, usableTimeCols, targetSheetMetric, targetSheetYear, salesSheetYear, results, i, row, dimensions, tIndex, t, val, date, targetValue, targetTon;
+                            var options, _findHeaderRow2, headerIdx, headerRow, map, timeCols, usableTimeCols, targetSheetMetric, targetSheetYear, salesSheetYear, results, i, row, dimensions, tIndex, t, val, date, targetValue, targetTon;
                             return _regenerator().w(function (_context11) {
                               while (1) switch (_context11.n) {
                                 case 0:
                                   options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
                                   _findHeaderRow2 = findHeaderRow(rows), headerIdx = _findHeaderRow2.index, headerRow = _findHeaderRow2.row;
-                                  _mapColumns2 = mapColumns(headerRow), map = _mapColumns2.map, timeCols = _mapColumns2.timeCols;
+                                  map = {};
+                                  headerRow.forEach(function(c, idx) {
+                                      robustMapColumn(c, idx, map, false);
+                                  });
+                                  timeCols = mapColumns(headerRow).timeCols;
                                   usableTimeCols = dedupeTimeCols(timeCols);
-                                  var isTransactional = headerRow.some(function(c) { return String(c || '').toLowerCase().trim() === 'sales_date'; });
-                                  var dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
-                                  if (isTransactional) {
-                                      headerRow.forEach(function(c, idx) {
-                                          var colName = String(c || '').toUpperCase().trim();
-                                          var cLower = String(c || '').toLowerCase().replace(/\s+/g, '');
-                                          if (colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') dbMap.date = idx;
-                                          if (colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') dbMap.amount = idx;
-                                          if (colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') dbMap.qty = idx;
-                                          if (colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) dbMap.ton = idx;
-                                          if (colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') dbMap.region = idx;
-                                          if (colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') dbMap.district = idx; // mapped to district
-                                          if (colName === 'PROVINCE' || cLower === 'จังหวัด') dbMap.province = idx; // mapped to province
-                                          if (colName === 'CV_NAME' || cLower.includes('cv') || cLower === 'ลูกค้า') dbMap.cv = idx;
-                                          if (colName === 'CATEGORY' || cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')) dbMap.group = idx;
-                                          if (colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || cLower.includes('brand')) dbMap.brand = idx;
-                                          if (colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) dbMap.model = idx;
-                                          if (colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) dbMap.size = idx;
-                                          if (colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า') || cLower.includes('code') || cLower.includes('item')) dbMap.sku = idx;
-                                          if (colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) dbMap.rebate = idx;
-                                          if (colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) dbMap.set = idx;
-                                      });
-                                  }
                                   targetSheetMetric = type === 'target' ? detectTargetMetricContext(options.sheetName) : 'value';
                                   targetSheetYear = type === 'target' ? extractYearLabelFromText(options.sheetName) || normalizeYearLabel(currentYear) : normalizeYearLabel(currentYear);
                                   salesSheetYear = type === 'sales' ? normalizeYearLabel(options.preferredYearHint || extractYearLabelFromText(options.sheetName) || currentYear) : '';
@@ -8488,7 +8191,7 @@ var App = function App() {
                                   return maybeYield(i - headerIdx);
                                 case 2:
                                   row = rows[i] || [];
-                                  if (!shouldSkipRow(row, map)) {
+                                  if (!shouldSkipRow(row)) {
                                     _context11.n = 3;
                                     break;
                                   }
@@ -8619,30 +8322,10 @@ var App = function App() {
                                   }
                                   return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 6:
-                                  headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
-                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
-                                  headerRow.forEach(function(colName, idx) {
-                                      var cLower = colName.toLowerCase().replace(/\\s+/g, '');
-                                      if ((colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') && dbMap.date === -1) dbMap.date = idx;
-
-                                      if ((colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') && dbMap.amount === -1) dbMap.amount = idx;
-                                      if ((colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') && dbMap.qty === -1) dbMap.qty = idx;
-                                      if ((colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) && dbMap.ton === -1) dbMap.ton = idx;
-                                      if ((colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') && dbMap.region === -1) dbMap.region = idx;
-                                      if ((colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') && dbMap.province === -1) dbMap.province = idx;
-                                      if ((colName === 'PROVINCE' || cLower === 'จังหวัด') && dbMap.district === -1) dbMap.district = idx;
-                                       if ((colName === 'CV_NAME' || cLower === 'cvname' || (!cLower.includes('sub') && cLower.includes('cv')) || cLower === 'ลูกค้า') && dbMap.cv === -1) dbMap.cv = idx;
-                                       if ((colName === 'CATEGORY' || (!cLower.includes('sub') && (cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')))) && dbMap.group === -1) dbMap.group = idx;
-                                       if ((colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || (!cLower.includes('code') && cLower.includes('brand'))) && dbMap.brand === -1) dbMap.brand = idx;
-                                       if ((colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) && dbMap.model === -1) dbMap.model = idx;
-                                       if ((colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) && dbMap.size === -1) dbMap.size = idx;
-                                       if ((colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า' ) || cLower.includes('code') || cLower.includes('item')) && dbMap.sku === -1) dbMap.sku = idx;
-                                       if ((colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) && dbMap.rebate === -1) dbMap.rebate = idx;
-                                       if ((colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) && dbMap.set === -1) dbMap.set = idx;
-                                       if ((colName === 'SUB_CATEGORY' || cLower === 'subcategory') && dbMap.subCategory === -1) dbMap.subCategory = idx;
-                                       if ((colName === 'DESC_LOC' || cLower === 'descloc') && dbMap.descLoc === -1) dbMap.descLoc = idx;
-
-
+                                  headerRow = rows[headerRowIdx];
+                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                  headerRow.forEach(function(c, idx) {
+                                      robustMapColumn(c, idx, dbMap, true);
                                   });
                                   _i = headerRowIdx + 1;
                                 case 7:
@@ -8655,12 +8338,8 @@ var App = function App() {
                                     _context12.n = 9;
                                     break;
                                   }
-                                  if (shouldSkipRow(row, dbMap)) {
-                                    _context12.n = 9;
-                                    break;
-                                  }
                                   dateStr = String(row[dbMap.date] || '').trim();
-                                  if (!dateStr || dateStr === '-') {
+                                  if (!dateStr) {
                                     _context12.n = 9;
                                     break;
                                   }
@@ -8712,9 +8391,7 @@ var App = function App() {
                                       brand: normalizeDimensionValue(row[dbMap.brand]),
                                       model: normalizeDimensionValue(row[dbMap.model]),
                                       size: normalizeDimensionValue(row[dbMap.size]),
-                                      sku: normalizeDimensionValue(row[dbMap.sku]),
-                                      rebate: normalizeDimensionValue(row[dbMap.rebate]),
-                                      set: normalizeDimensionValue(row[dbMap.set]), subCategory: normalizeDimensionValue(row[dbMap.subCategory]), descLoc: normalizeDimensionValue(row[dbMap.descLoc])
+                                      sku: normalizeDimensionValue(row[dbMap.sku])
                                   };
                                   dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
                                   id = "m-" + Math.random();
@@ -9210,7 +8887,7 @@ var App = function App() {
                             return rawTargets;
                         };
                         parseTargetWorkbook = function (originalParseTargetWorkbook) {
-                          return function wrappedParseTargetWorkbook(workbook, parseOptions) {
+                          return function wrappedParseTargetWorkbook(workbook) {
                             var firstSheetName = workbook.SheetNames[0];
                             var rawTargets = window.XLSX ? window.XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {defval: ''}) : [];
                             var hasNnsSheet = (workbook.SheetNames || []).some(function (name) {
@@ -9220,30 +8897,17 @@ var App = function App() {
                               return String(name || '').startsWith('เขต');
                             });
                             
-                            var resultPromise;
+                            var resultPromise = Promise.resolve({ monthly: [], yearly: [] });
                             if (hasTG26) {
                                 resultPromise = parseTG26Workbook(workbook).then(function(tgRaw) {
                                     return { monthly: [], yearly: [], tg26RawTargets: tgRaw };
                                 });
                             } else if (hasNnsSheet) {
                                 resultPromise = parseDistrictTargetWorkbook(workbook);
-                            } else {
-                                resultPromise = originalParseTargetWorkbook(workbook);
                             }
                             
                             return resultPromise.then(function(res) {
                                 res.rawTargets = rawTargets;
-                                if (parseOptions && parseOptions.targetRegion) {
-                                    if (res.monthly) {
-                                        res.monthly.forEach(function(r) { r.region = parseOptions.targetRegion; });
-                                    }
-                                    if (res.yearly) {
-                                        res.yearly.forEach(function(r) { r.region = parseOptions.targetRegion; });
-                                    }
-                                    if (res.tg26RawTargets) {
-                                        res.tg26RawTargets.forEach(function(r) { r.region = parseOptions.targetRegion; });
-                                    }
-                                }
                                 return res;
                             });
                           };
@@ -9429,7 +9093,7 @@ var App = function App() {
                         }
                         _context16.p = 19;
                         _context16.n = 20;
-                        return parseTargetWorkbook(workbook, parseOptions);
+                        return parseTargetWorkbook(workbook);
                       case 20:
                         parsed = _context16.v;
                         _context16.n = 23;
@@ -9552,7 +9216,6 @@ var App = function App() {
         _t16,
         _t17,
         _t18;
-      var _startTime = performance.now();
       return _regenerator().w(function (_context19) {
         while (1) switch (_context19.p = _context19.n) {
           case 0:
@@ -9567,7 +9230,7 @@ var App = function App() {
             setIsLoading(true);
             if (statusInfo.loading) updateLoadingStatus(type === 'sales' ? 'กำลังอ่านไฟล์ยอดขาย...' : 'กำลังอ่านไฟล์เป้าหมาย...', Math.max(Number(statusInfo.progress || 0), 62), true);else startLoadingStatus(type === 'sales' ? 'กำลังเตรียมอ่านไฟล์ยอดขาย...' : 'กำลังเตรียมอ่านไฟล์เป้าหมาย...', 12, true);
             _context19.n = 2;
-            return processFile(file, type, options);
+            return processFile(file, type);
           case 2:
             parsedData = _context19.v;
             if (parsedData) {
@@ -9651,13 +9314,9 @@ var App = function App() {
             return _context19.a(2, true);
           case 14:
             if (!silentStatus) {
-              var _timeTaken = ((performance.now() - _startTime) / 1000).toFixed(1);
-              var _timeMsg = " (ใช้เวลา " + _timeTaken + " วินาที)";
-              if (bindHandle && fileHandle) finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E41\u0E25\u0E30\u0E1C\u0E39\u0E01\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34\u0E41\u0E25\u0E49\u0E27") + _timeMsg, 'success');else finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08") + _timeMsg, 'success');
+              if (bindHandle && fileHandle) finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u0E41\u0E25\u0E30\u0E1C\u0E39\u0E01\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34\u0E41\u0E25\u0E49\u0E27"), 'success');else finishLoadingStatus("\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14".concat(type === 'sales' ? ' Sales' : ' Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08"), 'success');
             } else {
-              var _timeTaken2 = ((performance.now() - _startTime) / 1000).toFixed(1);
-              var _timeMsg2 = " (ใช้เวลา " + _timeTaken2 + " วินาที)";
-              finishLoadingStatus((type === 'sales' ? 'โหลดข้อมูลยอดขายสำเร็จ' : 'โหลดข้อมูลเป้าหมายสำเร็จ') + _timeMsg2, 'success');
+              closeStatusPopup();
             }
             setIsLoading(false);
             return _context19.a(2, true);
@@ -9776,7 +9435,7 @@ var App = function App() {
               _context20.n = 16;
               break;
             }
-return _context20.a(2, false);
+            return _context20.a(2, false);
           case 16:
             setAllData(nextData);
             setFilters(buildLockedFiltersState(lockedFilters));
@@ -9892,8 +9551,8 @@ return _context20.a(2, false);
             }
             return _context22.a(2);
           case 1:
-            if (type === 'target') {
-              setTargetUploadConfirm({ file: file, type: type, inputElement: event.target, hasExisting: (allData.targets || []).length > 0 });
+            if (type === 'target' && (allData.targets || []).length > 0) {
+              setTargetUploadConfirm({ file: file, type: type, inputElement: event.target });
               return _context22.a(2);
             }
             _context22.n = 2;
@@ -10637,17 +10296,6 @@ return _context20.a(2, false);
               });
               return _context25.a(2);
             case 3:
-              if (importType === 'target') {
-                setTargetUploadConfirm({
-                  file: file,
-                  type: importType,
-                  inputElement: null,
-                  hasExisting: (allData.targets || []).length > 0,
-                  isBridge: true,
-                  bridgeEvent: event
-                });
-                return _context25.a(2);
-              }
               _context25.n = 4;
               return processAndStoreFile(file, importType, {
                 bindHandle: false,
@@ -10656,7 +10304,7 @@ return _context20.a(2, false);
             case 4:
               ok = _context25.v;
               msgText = ok ? "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 ".concat(importType === 'sales' ? 'Sales' : 'Target', " \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (").concat(file.name, ")") : "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 ".concat(importType === 'sales' ? 'Sales' : 'Target', " \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08");
-              if (typeof showStatus === 'function') showStatus(msgText, ok ? 'success' : 'error');
+              showStatus(msgText, ok ? 'success' : 'error');
               replyBridgeMessage(event, {
                 type: 'pcg-import-result',
                 dataset: importType,
@@ -10901,7 +10549,18 @@ return _context20.a(2, false);
   var getUniqueValues = function getUniqueValues(key) {
     if (lockedFilters[key] && lockedFilters[key].length > 0) return lockedFilters[key];
     var context = rawData.filter(function (item) {
-      return item && _typeof(item) === 'object' && matchesFilters(item, false, [key]);
+      return item && _typeof(item) === 'object' && Object.entries(filters).every(function (_ref42) {
+        var _ref43 = _slicedToArray(_ref42, 2),
+          k = _ref43[0],
+          v = _ref43[1];
+        if (k === key || !v || v.length === 0) return true;
+        var itemValue = getFilterItemValue(item, k);
+        if (k === 'month') {
+          if (!itemValue) return true;
+          return v.includes(itemValue);
+        }
+        return v.includes(itemValue);
+      });
     });
     if (key === 'month') {
       return THAI_MONTHS.filter(function (monthLabel) {
@@ -11103,9 +10762,7 @@ return _context20.a(2, false);
     var monthsSet = new Set();
     filteredData.forEach(function (item) {
       if (item.date) {
-        if (activeTrendYears.includes(getYearLabelFromItem(item))) {
-          monthsSet.add(getMonthYearLabelFromItem(item));
-        }
+        monthsSet.add(getMonthYearLabelFromItem(item));
       }
     });
     return Array.from(monthsSet).sort(function(a,b){
@@ -11118,7 +10775,7 @@ return _context20.a(2, false);
       };
       return getDateForSort(a) - getDateForSort(b);
     });
-  }, [viewMode, filteredData, activeTrendYears]);
+  }, [viewMode, filteredData]);
 
   var activeChartSeries = useMemo(function () {
     return viewMode === 'daily' ? activeDailyMonths : activeTrendYears;
@@ -13318,7 +12975,7 @@ return _context20.a(2, false);
         if (lastSync === today) return;
     }
     if (window.downloadSalesFromSupabase) {
-        if (isAutoSync !== true) {
+        if (!isAutoSync) {
             updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
         }
         window.downloadSalesFromSupabase().then(function(finalData) {
@@ -13335,30 +12992,17 @@ return _context20.a(2, false);
             var timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
-            if (isAutoSync !== true) {
+            if (!isAutoSync) {
                 finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
-                setTimeout(() => {
-                    // Force a complete page reload to ensure GridStack initializes perfectly with the new data
-                    window.location.reload();
-                }, 100);
-            } else {
-                // For auto-sync, just try to re-layout gridstack
-                setTimeout(() => {
-                    var gridEl = document.querySelector('.grid-stack');
-                    if (gridEl && gridEl.gridstack) {
-                        try { gridEl.gridstack.compact(); } catch(e){}
-                    }
-                }, 250);
             }
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
-            if (isAutoSync !== true) {
+            if (!isAutoSync) {
                 finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
-                setTimeout(() => alert('เกิดข้อผิดพลาดในการซิงค์: ' + err.message), 100);
             }
         });
     } else {
-        if (isAutoSync !== true) alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
+        if (!isAutoSync) alert("ระบบดาวน์โหลดข้อมูลจากคลาวด์ยังไม่พร้อมใช้งาน");
     }
   };
   var applyAIAction = function applyAIAction(actionPayload) {
@@ -13851,7 +13495,7 @@ return _context20.a(2, false);
     }
   }, "\u0E2B\u0E32\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E14\u0E39\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22 \u0E43\u0E2B\u0E49\u0E40\u0E02\u0E49\u0E32\u0E14\u0E49\u0E27\u0E22\u0E1A\u0E31\u0E0D\u0E0A\u0E35 area_admin \u0E2B\u0E23\u0E37\u0E2D user \u0E02\u0E2D\u0E07\u0E20\u0E32\u0E04/\u0E40\u0E02\u0E15\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E44\u0E27\u0E49\u0E43\u0E19\u0E0A\u0E35\u0E15 USERS"))))))));
   return /*#__PURE__*/React.createElement("div", {
-    className: `dashboard-shell flex h-screen w-full text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
+    cclassName: `dashboard-shell flex h-screen text-slate-900 overflow-hidden bg-background text-on-background font-body-md transition-all duration-300 ${isSidebarOpen ? "md:pl-64" : "pl-0"}`,
     style: {
       background: 'var(--bg)'
     }
@@ -13980,7 +13624,7 @@ return _context20.a(2, false);
     }, 
       /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-3" },
         /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "center_focus_strong"),
-        "Campaign"
+        "Target Match"
       ),
       /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: activeTab === 'target_match' ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
     ),
@@ -13988,11 +13632,11 @@ return _context20.a(2, false);
       /*#__PURE__*/React.createElement("button", {
         onClick: function() { setIsTargetMappingModalOpen(true); },
         className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2"
-      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " Target Match"),
+      }, /*#__PURE__*/React.createElement(Icon, { name: "Settings", size: 14 }), " จับคู่ข้อมูลดิบ (Data Mapping)"),
       /*#__PURE__*/React.createElement("button", {
         onClick: function() { if(window.TargetMatch) window.TargetMatch.openModal(); },
         className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2 mt-1"
-      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "16px" } }, "stars"), " Setting Rebate & Point Program")
+      }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "16px" } }, "stars"), " ตั้งค่ากฎโบนัส (Bonus Rules)")
     )
   ), 
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
@@ -14133,10 +13777,10 @@ return _context20.a(2, false);
     className: "absolute right-0 mt-2 w-56 bg-white dark:bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 font-body-md"
   },
     /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wide border-b border-outline-variant/30 mb-1" }, "เลือกเทมเปลต"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 1. ภาพรวม"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, /*#__PURE__*/React.createElement(Icon, { name: "Leaderboard", size: 14 }), " 2. ผู้บริหาร"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 3. พนักงานขาย"),
-    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 4. สินค้า (Product Focus)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(1); } }, " 1. ผู้บริหาร"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(2); } }, /*#__PURE__*/React.createElement(Icon, { name: "Storefront", size: 14 }), " 2. พนักงานขาย"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(3); } }, /*#__PURE__*/React.createElement(Icon, { name: "LocalMall", size: 14 }), " 3. สินค้า (Product Focus)"),
+    /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(4); } }, /*#__PURE__*/React.createElement(Icon, { name: "GridView", size: 14 }), " 4. ภาพรวม"),
     /*#__PURE__*/React.createElement("button", { className: "w-full text-left px-4 py-2 hover:bg-surface-container-low transition-colors text-xs text-on-surface flex items-center gap-2", onClick: function(){ window.applyDefaultLayout(5); } }, /*#__PURE__*/React.createElement(Icon, { name: "TableChart", size: 14 }), " 5. Pivot Table")
   )), /*#__PURE__*/React.createElement("button", {
     className: "ai-launch-btn",
@@ -14147,27 +13791,10 @@ return _context20.a(2, false);
   }, "AI")) : null), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-1 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors " + (systemNotifications.length > 0 ? "relative" : ""),
-    onClick: function() { setIsSystemNotificationsOpen(!isSystemNotificationsOpen); if (!isSystemNotificationsOpen) setHasUnreadNotifs(false); }
+    className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined text-[20px]"
-  }, "notifications"), hasUnreadNotifs && /*#__PURE__*/React.createElement("span", { className: "absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" })),
-  isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", { className: "fixed inset-0 z-40", onClick: function() { setIsSystemNotificationsOpen(false); } }),
-  isSystemNotificationsOpen && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-12 right-12 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant py-2 z-50 flex flex-col max-h-96"
-  }, /*#__PURE__*/React.createElement("div", { className: "px-4 py-2 font-bold border-b border-outline-variant/30 text-sm" }, "การแจ้งเตือน"),
-  /*#__PURE__*/React.createElement("div", { className: "overflow-y-auto flex-1 custom-scrollbar" },
-    systemNotifications.length === 0 ? /*#__PURE__*/React.createElement("div", { className: "p-4 text-center text-sm text-slate-500" }, "ไม่มีการแจ้งเตือนใหม่") :
-    systemNotifications.map(function(n) {
-      return /*#__PURE__*/React.createElement("div", { key: n.id, className: "px-4 py-3 border-b border-outline-variant/10 hover:bg-surface-container-low text-sm flex gap-3" },
-        /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined " + (n.type === 'success' ? "text-green-600" : "text-red-600") }, n.type === 'success' ? "check_circle" : "error"),
-        /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
-          /*#__PURE__*/React.createElement("span", { className: "text-slate-800" }, n.message),
-          /*#__PURE__*/React.createElement("span", { className: "text-xs text-slate-400 mt-1" }, n.time.toLocaleTimeString("th-TH"))
-        )
-      );
-    })
-  )), /*#__PURE__*/React.createElement("button", {
+  }, "notifications")), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() { if (typeof setIsDarkMode !== 'undefined') setIsDarkMode(!isDarkMode); },
     className: "w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
@@ -14226,96 +13853,26 @@ return _context20.a(2, false);
         React.createElement("div", { className: "w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4" },
             React.createElement("span", { className: "material-symbols-outlined text-blue-600 text-2xl" }, "cloud_upload")
         ),
-        React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-2" }, "อัปโหลดข้อมูลเป้าหมาย"),
-        React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "กรุณาเลือกภาค/เขตการขายสำหรับข้อมูลเป้าหมายชุดนี้"),
-        
-        React.createElement("div", { className: "mb-6 text-left" },
-            React.createElement("label", { className: "block text-sm font-medium text-slate-700 mb-2" }, "เลือกภาค/เขตการขาย (อ้างอิงจากข้อมูลยอดขาย)"),
-            React.createElement("select", {
-                className: "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
-                value: uploadTargetRegion,
-                onChange: function(e) { setUploadTargetRegion(e.target.value); }
-            },
-                React.createElement("option", { value: "" }, "-- เลือกภาค/เขตการขาย --"),
-                dbDistrictsForUpload.map(function(dist) {
-                    return React.createElement("option", { key: dist, value: dist }, dist);
-                })
-            )
-        ),
-        
-        targetUploadConfirm.hasExisting && React.createElement("p", { className: "text-sm text-amber-600 mb-4 bg-amber-50 p-2 rounded border border-amber-200" }, "มีข้อมูลเป้าหมายเดิมอยู่ในระบบแล้ว คุณต้องการอัปโหลดข้อมูลใหม่นี้อย่างไร?"),
-
+        React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-2" }, "พบข้อมูลเป้าหมายเดิม"),
+        React.createElement("p", { className: "text-sm text-slate-600 mb-6" }, "มีข้อมูลเป้าหมายเดิมอยู่ในระบบแล้ว คุณต้องการอัปโหลดข้อมูลใหม่นี้อย่างไร?"),
         React.createElement("div", { className: "flex flex-col gap-2" },
-            React.createElement("button", { 
-                className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2 " + (!uploadTargetRegion ? "opacity-50 cursor-not-allowed" : ""),
-                disabled: !uploadTargetRegion,
-                onClick: function() { 
-                    var file = targetUploadConfirm.file;
-                    var inputEl = targetUploadConfirm.inputElement;
-                    var isBridge = targetUploadConfirm.isBridge;
-                    var bridgeEvent = targetUploadConfirm.bridgeEvent;
-                    if (inputEl) inputEl.value = '';
-                    setTargetUploadConfirm(null);
-                    var startTime = performance.now();
-                    processAndStoreFile(file, 'target', { silentStatus: isBridge, isAppend: true, targetRegion: uploadTargetRegion }).then(function(ok) {
-                        var endTime = performance.now();
-                        var timeTaken = ((endTime - startTime) / 1000).toFixed(2);
-                        if (isBridge && bridgeEvent) {
-                            var msgText = ok ? "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (\u0E43\u0E0A\u0E49\u0E40\u0E27\u0E25\u0E32 " + timeTaken + " \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35)" : "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08";
-                            if (typeof showStatus === 'function') showStatus(msgText, ok ? 'success' : 'error');
-                            if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
-                                type: 'pcg-import-result',
-                                dataset: 'target',
-                                ok: ok,
-                                message: msgText
-                            });
-                        }
-                    });
-                }
-            }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), targetUploadConfirm.hasExisting ? "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)" : "ยืนยันอัปโหลด"),
-            
-            targetUploadConfirm.hasExisting && React.createElement("button", { 
-                className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1 " + (!uploadTargetRegion ? "opacity-50 cursor-not-allowed" : ""),
-                disabled: !uploadTargetRegion,
-                onClick: function() { 
-                    var file = targetUploadConfirm.file;
-                    var inputEl = targetUploadConfirm.inputElement;
-                    var isBridge = targetUploadConfirm.isBridge;
-                    var bridgeEvent = targetUploadConfirm.bridgeEvent;
-                    if (inputEl) inputEl.value = '';
-                    setTargetUploadConfirm(null);
-                    var startTime = performance.now();
-                    processAndStoreFile(file, 'target', { silentStatus: isBridge, isAppend: false, targetRegion: uploadTargetRegion }).then(function(ok) {
-                        var endTime = performance.now();
-                        var timeTaken = ((endTime - startTime) / 1000).toFixed(2);
-                        if (isBridge && bridgeEvent) {
-                            var msgText = ok ? "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (\u0E43\u0E0A\u0E49\u0E40\u0E27\u0E25\u0E32 " + timeTaken + " \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35)" : "\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08";
-                            if (typeof showStatus === 'function') showStatus(msgText, ok ? 'success' : 'error');
-                            if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
-                                type: 'pcg-import-result',
-                                dataset: 'target',
-                                ok: ok,
-                                message: msgText
-                            });
-                        }
-                    });
-                }
-            }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
-            
+            React.createElement("button", { className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2", onClick: function() { 
+                var file = targetUploadConfirm.file;
+                var inputEl = targetUploadConfirm.inputElement;
+                if (inputEl) inputEl.value = '';
+                setTargetUploadConfirm(null);
+                processAndStoreFile(file, 'target', { silentStatus: false, isAppend: true });
+            } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)"),
+            React.createElement("button", { className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1", onClick: function() { 
+                var file = targetUploadConfirm.file;
+                var inputEl = targetUploadConfirm.inputElement;
+                if (inputEl) inputEl.value = '';
+                setTargetUploadConfirm(null);
+                processAndStoreFile(file, 'target', { silentStatus: false, isAppend: false });
+            } }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
             React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() { 
                 if (targetUploadConfirm && targetUploadConfirm.inputElement) targetUploadConfirm.inputElement.value = '';
-                var isBridge = targetUploadConfirm && targetUploadConfirm.isBridge;
-                var bridgeEvent = targetUploadConfirm && targetUploadConfirm.bridgeEvent;
                 setTargetUploadConfirm(null); 
-                if (isBridge && bridgeEvent) {
-                    if (typeof showStatus === 'function') showStatus("\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target", 'error');
-                    if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
-                        type: 'pcg-import-result',
-                        dataset: 'target',
-                        ok: false,
-                        message: "\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target"
-                    });
-                }
             } }, "ยกเลิก")
         )
     )
@@ -14351,43 +13908,26 @@ return _context20.a(2, false);
                     var modelKey = 'model||' + row.group + '||' + row.brand;
                     var skuKey = 'sku||' + row.group + '||' + row.brand;
                     var distKey = 'dist||' + row.district;
-                    var subCatKey = 'subCat||' + row.group + '||' + row.brand;
-                    var descLocKey = 'descLoc||' + row.group + '||' + row.brand;
                     
                     var mapBrandVal = newMap[brandKey] || '';
                     var mapGroupVal = newMap[groupKey] !== undefined ? newMap[groupKey] : (newMap[legacyGroupKey] || '');
                     var mapModelVal = newMap[modelKey] || '';
                     var mapSkuVal = newMap[skuKey] || '';
-                    var mapSubCatVal = newMap[subCatKey] || '';
-                    var mapDescLocVal = newMap[descLocKey] || '';
                     var mapDistVal = newMap[distKey] || row.district;
                     
                     if (mapBrandVal.trim() !== '') {
-                        var parseMapVal = function(val) {
-                            if (!val) return [];
-                            if (Array.isArray(val)) return val;
-                            var strVal = String(val);
-                            try { if (strVal.startsWith('[')) return JSON.parse(strVal); } catch(e) {}
-                            return strVal.split(',');
-                        };
-                        
-                        var mappedBrands = parseMapVal(mapBrandVal).map(function(s) { return String(s).trim(); }).filter(Boolean);
-                        var mappedModelsStr = mapModelVal.trim() !== '' ? parseMapVal(mapModelVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedSkusStr = mapSkuVal.trim() !== '' ? parseMapVal(mapSkuVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedSubCatStr = mapSubCatVal.trim() !== '' ? parseMapVal(mapSubCatVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedDescLocStr = mapDescLocVal.trim() !== '' ? parseMapVal(mapDescLocVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
-                        var mappedGroupStr = mapGroupVal.trim() !== '' ? parseMapVal(mapGroupVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : 'Total Target';
+                        var mappedBrands = mapBrandVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                        var mappedModelsStr = mapModelVal.trim() !== '' ? mapModelVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
+                        var mappedSkusStr = mapSkuVal.trim() !== '' ? mapSkuVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('||') : '-';
                         
                         if (mappedBrands.length > 0) {
                             var mappedBrandStr = mappedBrands.join('||');
                             mappedTargets.push(Object.assign({}, row, {
                                 district: mapDistVal,
-                                group: mappedGroupStr,
+                                group: mapGroupVal || 'Total Target',
                                 brand: mappedBrandStr,
                                 model: mappedModelsStr,
                                 sku: mappedSkusStr,
-                                subCategory: mappedSubCatStr,
-                                descLoc: mappedDescLocStr,
                                 targetLevel: 'brand',
                                 targetValue: row.value,
                                 targetTon: 0,
@@ -14408,8 +13948,6 @@ return _context20.a(2, false);
                                 brand: 'Total Target',
                                 model: '-',
                                 sku: '-',
-                                subCategory: '-',
-                                descLoc: '-',
                                 targetLevel: 'district',
                                 targetValue: row.value,
                                 targetTon: 0,
@@ -14448,7 +13986,15 @@ return _context20.a(2, false);
                 
                 if (!newAllData.monthly) newAllData.monthly = [];
                 mappedTargets.forEach(function(t) {
-                    newAllData.monthly.push(t);
+                    var existing = newAllData.monthly.find(function(m) {
+                        return m.district === t.district && m.brand === t.brand && m.model === t.model && m.sku === t.sku && m.monthIndex === t.monthIndex && m.year === t.year;
+                    });
+                    if (existing) {
+                        existing.targetValue = (existing.targetValue || 0) + t.targetValue;
+                        existing.target = existing.targetValue;
+                    } else {
+                        newAllData.monthly.push(t);
+                    }
                 });
                 
                 setAllData(newAllData);
@@ -14456,7 +14002,7 @@ return _context20.a(2, false);
                 setPendingTG26Data(null);
                 finishLoadingStatus('ประมวลผลเป้าหมายสำเร็จ', 'success');
                 setIsLoading(false);
-            }, 250);
+            }, 500);
         }
       }), /*#__PURE__*/React.createElement(SalesGuideWeightModal, {
         isOpen: isSalesGuideWeightModalOpen,
@@ -14670,15 +14216,15 @@ return _context20.a(2, false);
     size: 14
   }))), sectionExpanded.trend && /*#__PURE__*/React.createElement("div", {
     className: "fade-in flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, viewMode !== 'daily' && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 border rounded-lg p-2 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mb-2"
-  }, viewMode === 'monthly' || viewMode === 'daily' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
+  }, viewMode === 'monthly' ? 'เลือกปีที่ต้องการแสดงเส้นกราฟ' : 'เลือกปีที่ต้องการแสดงข้อมูลรายปี'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, trendYearsDisplay.length === 0 ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
-  }, viewMode === 'monthly' || viewMode === 'daily' ? 'ยังไม่มีข้อมูล' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
+  }, viewMode === 'monthly' ? 'ยังไม่มีข้อมูลรายเดือน' : 'ยังไม่มีข้อมูลรายปี') : trendYearsDisplay.map(function (yearLabel) {
     var checked = activeTrendYears.includes(yearLabel);
     return /*#__PURE__*/React.createElement("button", {
       key: yearLabel,
@@ -14850,7 +14396,25 @@ return _context20.a(2, false);
     className: "text-[1rem] leading-tight font-bold text-orange-700 mt-0.5 text-center"
   }, Number.isFinite(Number(latestMonthlyVsPrevYearAvgStats === null || latestMonthlyVsPrevYearAvgStats === void 0 ? void 0 : latestMonthlyVsPrevYearAvgStats.pct)) ? "".concat(Number(latestMonthlyVsPrevYearAvgStats.pct).toFixed(1), "%") : '-'), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] leading-tight text-slate-400 mt-0.5 text-center"
-  }, latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.latestYear && latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.prevYear ? "".concat(latestMonthlyVsPrevYearAvgStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyVsPrevYearAvgStats.monthIndex], " ") : '').concat(latestMonthlyVsPrevYearAvgStats.latestYear, " / AVG ").concat(latestMonthlyVsPrevYearAvgStats.prevYear) : '-'))))))) : null), (sectionOpen.brands ? /*#__PURE__*/React.createElement("div", getGridProps("card-2", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+  }, latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.latestYear && latestMonthlyVsPrevYearAvgStats !== null && latestMonthlyVsPrevYearAvgStats !== void 0 && latestMonthlyVsPrevYearAvgStats.prevYear ? "".concat(latestMonthlyVsPrevYearAvgStats.monthIndex !== null ? "".concat(THAI_MONTHS[latestMonthlyVsPrevYearAvgStats.monthIndex], " ") : '').concat(latestMonthlyVsPrevYearAvgStats.latestYear, " / AVG ").concat(latestMonthlyVsPrevYearAvgStats.prevYear) : '-'))))))) : null), (sectionOpen.district ? /*#__PURE__*/React.createElement("div", getGridProps("card-6", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "major-section-head cursor-move"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold"
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E23\u0E32\u0E22\u0E1B\u0E35"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { return toggleExpanded('district'); },
+    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+  }, sectionExpanded.district ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
+    name: sectionExpanded.district ? "ChevronUp" : "ChevronDown",
+    size: 14
+  }))), sectionExpanded.district && /*#__PURE__*/React.createElement("div", {
+    className: "fade-in flex flex-col flex-1 min-h-0"
+  }, /*#__PURE__*/React.createElement(TargetBarChart, {
+    data: districtData,
+    metric: metricMode,
+    unit: unitMode
+  }))))) : null), (sectionOpen.brands ? /*#__PURE__*/React.createElement("div", getGridProps("card-2", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
     className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill top-brands-panel"
   }, /*#__PURE__*/React.createElement("div", {
     className: "major-section-head cursor-move"
@@ -14893,6 +14457,36 @@ return _context20.a(2, false);
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 text-right mt-1"
   }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null), 
+
+(sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
+    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "major-section-head cursor-move"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "Store",
+    className: "text-blue-500"
+  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 20 \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A + Others"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { return toggleExpanded('shops'); },
+    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+  }, sectionExpanded.shops ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
+    name: sectionExpanded.shops ? "ChevronUp" : "ChevronDown",
+    size: 14
+  }))), sectionExpanded.shops && /*#__PURE__*/React.createElement("div", {
+    className: "fade-in flex flex-col flex-1 min-h-0"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] text-slate-500 mb-1.5 shrink-0"
+  }, topShopsComparisonMonthIndex !== null ? "\u0E41\u0E2A\u0E14\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E30\u0E2A\u0E21\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E0A\u0E48\u0E27\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E01\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E1B\u0E35 (\u0E1B\u0E35\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E01\u0E48\u0E2D\u0E19)" : "\u0E41\u0E2A\u0E14\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E41\u0E22\u0E01\u0E15\u0E32\u0E21\u0E1B\u0E35 (\u0E1B\u0E35\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E01\u0E48\u0E2D\u0E19)"), /*#__PURE__*/React.createElement(ScrollableBarChart, {
+    data: topShopsData,
+    color: "#6366f1",
+    series: topShopsYearSeries,
+    tooltipComponent: /*#__PURE__*/React.createElement(SimpleTooltip, {
+      metric: metricMode,
+      unit: unitMode
+    })
+  }))))) : null),
+
 customWidgets.map(function(widget) {
   return React.createElement("div", getGridProps("cw-" + widget.id, 12, 4),
     React.createElement("div", { className: "grid-stack-item-content" },
@@ -14997,54 +14591,7 @@ customWidgets.map(function(widget) {
   onChange: function onChange(val) {
     return handleRepeatGapFilterChange('gapMonths', val);
   }
-})), /*#__PURE__*/React.createElement(RepeatPurchaseGapList, { data: limitedRepeatPurchaseGapItems, metric: metricMode, unit: unitMode }))))) : null),
-
-(sectionOpen.shops ? /*#__PURE__*/React.createElement("div", getGridProps("card-5", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head cursor-move"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-base font-bold flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Store",
-    className: "text-blue-500"
-  }), " \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 20 \u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A + Others"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('shops'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.shops ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.shops ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.shops && /*#__PURE__*/React.createElement("div", {
-    className: "fade-in flex flex-col flex-1 min-h-0"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500 mb-1.5 shrink-0"
-  }, topShopsComparisonMonthIndex !== null ? "\u0E41\u0E2A\u0E14\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E2A\u0E30\u0E2A\u0E21\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E0A\u0E48\u0E27\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E01\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E1B\u0E35 (\u0E1B\u0E35\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E01\u0E48\u0E2D\u0E19)" : "\u0E41\u0E2A\u0E14\u0E07\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E41\u0E22\u0E01\u0E15\u0E32\u0E21\u0E1B\u0E35 (\u0E1B\u0E35\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E01\u0E48\u0E2D\u0E19)"), /*#__PURE__*/React.createElement(ScrollableBarChart, {
-    data: topShopsData,
-    color: "#6366f1",
-    series: topShopsYearSeries,
-    tooltipComponent: /*#__PURE__*/React.createElement(SimpleTooltip, {
-      metric: metricMode,
-      unit: unitMode
-    })
-  }))))) : null), (sectionOpen.district ? /*#__PURE__*/React.createElement("div", getGridProps("card-6", 12, 4), /*#__PURE__*/React.createElement("div", { className: "grid-stack-item-content" }, /*#__PURE__*/React.createElement("div", {
-    className: "dashboard-card bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant responsive-card-fill"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "major-section-head cursor-move"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-base font-bold"
-  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E23\u0E32\u0E22\u0E1B\u0E35"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { return toggleExpanded('district'); },
-    className: "inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-  }, sectionExpanded.district ? 'ย่อ' : 'ขยาย', /*#__PURE__*/React.createElement(Icon, {
-    name: sectionExpanded.district ? "ChevronUp" : "ChevronDown",
-    size: 14
-  }))), sectionExpanded.district && /*#__PURE__*/React.createElement("div", {
-    className: "fade-in flex flex-col flex-1 min-h-0"
-  }, /*#__PURE__*/React.createElement(TargetBarChart, {
-    data: districtData,
-    metric: metricMode,
-    unit: unitMode
-  }))))) : null))))));
+})), /*#__PURE__*/React.createElement(RepeatPurchaseGapList, { data: limitedRepeatPurchaseGapItems, metric: metricMode, unit: unitMode }))))) : null))))));
 };
 var AppErrorBoundary = /*#__PURE__*/function (_React$Component) {
   function AppErrorBoundary(props) {
@@ -15628,13 +15175,10 @@ try {
 
     <script>
 /**
- * Target Match Module - Injected via Vanilla JS
- * Connects with index.txt via window.TargetMatch
+ * Target Match Module
  */
-
 window.TargetMatch = (function() {
     let mergedData = null;
-    let extractedGroups = [];
     
     let targetConfig = {
         globalSettings: { allowOverlap: true },
@@ -15643,36 +15187,12 @@ window.TargetMatch = (function() {
     };
 
     try {
-        let savedProfiles = JSON.parse(localStorage.getItem('targetMatchProfiles'));
-        if (savedProfiles && savedProfiles.length > 0 && !savedProfiles[0].rebatePrograms) {
-            let old = savedProfiles[0];
-            if (old.rebateConfig && old.rebateConfig.percent > 0) {
-                targetConfig.rebatePrograms.push({
-                    id: 'rebate_' + Date.now(),
-                    name: old.name || 'Rebate Set 1',
-                    mappings: JSON.parse(JSON.stringify(old.mappings || {})),
-                    percent: old.rebateConfig.percent
-                });
-            }
-            if (old.pointConfig && old.pointConfig.tiers && old.pointConfig.tiers.length > 0) {
-                targetConfig.pointPrograms.push({
-                    id: 'point_' + Date.now(),
-                    name: old.name || 'Point Set 1',
-                    mappings: JSON.parse(JSON.stringify(old.mappings || {})),
-                    unit: old.pointConfig.unit || 'points',
-                    tiers: JSON.parse(JSON.stringify(old.pointConfig.tiers))
-                });
-            }
-            localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
-            localStorage.removeItem('targetMatchProfiles');
-        } else {
-            let savedConfig = JSON.parse(localStorage.getItem('targetMatchConfig'));
-            if (savedConfig) {
-                targetConfig = Object.assign(targetConfig, savedConfig);
-                if (!targetConfig.globalSettings) targetConfig.globalSettings = { allowOverlap: true };
-                if (!targetConfig.rebatePrograms) targetConfig.rebatePrograms = [];
-                if (!targetConfig.pointPrograms) targetConfig.pointPrograms = [];
-            }
+        let savedConfig = JSON.parse(localStorage.getItem('targetMatchConfig'));
+        if (savedConfig) {
+            targetConfig = Object.assign(targetConfig, savedConfig);
+            if (!targetConfig.globalSettings) targetConfig.globalSettings = { allowOverlap: true };
+            if (!targetConfig.rebatePrograms) targetConfig.rebatePrograms = [];
+            if (!targetConfig.pointPrograms) targetConfig.pointPrograms = [];
         }
     } catch(e) { console.error(e); }
 
@@ -15686,6 +15206,8 @@ window.TargetMatch = (function() {
             if (data && data.data) {
                 const dbConfig = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
                 targetConfig = Object.assign(targetConfig, dbConfig);
+                if (!targetConfig.rebatePrograms) targetConfig.rebatePrograms = [];
+                if (!targetConfig.pointPrograms) targetConfig.pointPrograms = [];
                 window.__TargetMatchConfig = targetConfig;
                 window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
                 renderUI();
@@ -15713,7 +15235,6 @@ window.TargetMatch = (function() {
     let activeProgramId = null;
     let activeProgramType = null;
     
-    // Working copy for the currently edited program
     let editingProgram = null; 
     let dbGroupsList = [];
     let dbBrandsList = [];
@@ -15731,28 +15252,66 @@ window.TargetMatch = (function() {
 
     function extractGroupsAndBrands() {
         if (!mergedData) return;
-        if (mergedData.rawTargets) {
-            const targetRows = mergedData.rawTargets;
-            let map = new Map();
-            targetRows.forEach(row => {
-                let group = row['กลุ่มสินค้า'] || row['กลุ่ม'] || row['Group'] || 'Uncategorized';
-                let brand = row['แบรนด์'] || row['Brand'] || 'Unknown Brand';
-                let key = group + '|' + brand;
-                if(!map.has(key)) map.set(key, { group, brand });
-            });
-            extractedGroups = Array.from(map.values());
-        }
         
         let groupsSet = new Set();
         let brandsSet = new Set();
+        let foundRebates = {};
+        let foundPoints = {};
+        
         if (mergedData.monthly) {
             mergedData.monthly.forEach(row => {
                 if (row.group) groupsSet.add(row.group);
                 if (row.brand) brandsSet.add(row.brand);
+                
+                if (row.rebate && row.rebate.trim() !== '' && row.rebate !== '-' && row.rebate !== '0') {
+                    if (!foundRebates[row.rebate]) foundRebates[row.rebate] = new Set();
+                    if (row.brand) foundRebates[row.rebate].add(row.brand);
+                }
+                if (row.set && row.set.trim() !== '' && row.set !== '-' && row.set !== '0') {
+                    if (!foundPoints[row.set]) foundPoints[row.set] = new Set();
+                    if (row.brand) foundPoints[row.set].add(row.brand);
+                }
             });
         }
-        dbGroupsList = Array.from(groupsSet);
-        dbBrandsList = Array.from(brandsSet);
+        dbGroupsList = Array.from(groupsSet).sort();
+        dbBrandsList = Array.from(brandsSet).sort();
+        
+        // Auto-initialize Programs from Database
+        Object.keys(foundRebates).forEach(rName => {
+            let existing = targetConfig.rebatePrograms.find(p => p.name === rName);
+            if (!existing) {
+                existing = {
+                    id: 'rebate_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    name: rName,
+                    percent: 5,
+                    brands: Array.from(foundRebates[rName])
+                };
+                targetConfig.rebatePrograms.push(existing);
+            } else {
+                let bSet = new Set(existing.brands || []);
+                foundRebates[rName].forEach(b => bSet.add(b));
+                existing.brands = Array.from(bSet);
+            }
+        });
+        
+        Object.keys(foundPoints).forEach(pName => {
+            let existing = targetConfig.pointPrograms.find(p => p.name === pName);
+            if (!existing) {
+                existing = {
+                    id: 'point_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    name: pName,
+                    unit: 'points',
+                    tiers: [{ threshold: 100000, reward: 1000 }],
+                    brands: Array.from(foundPoints[pName])
+                };
+                targetConfig.pointPrograms.push(existing);
+            } else {
+                let bSet = new Set(existing.brands || []);
+                foundPoints[pName].forEach(b => bSet.add(b));
+                existing.brands = Array.from(bSet);
+            }
+        });
+        saveConfigToSupabase();
     }
 
     function openModal() {
@@ -15771,100 +15330,8 @@ window.TargetMatch = (function() {
     function closeModal() {
         let modal = document.getElementById('target-match-modal');
         if (modal) modal.remove();
-    }
-
-    function saveGlobalConfig() {
-        targetConfig.globalSettings.allowOverlap = document.getElementById('tm-allow-overlap').checked;
-        localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
-        window.__TargetMatchConfig = targetConfig;
-        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
-        alert('บันทึกการตั้งค่าแคมเปญสำเร็จ!');
-        closeModal();
-    }
-
-    function saveEditingProgram() {
-        if (!editingProgram) return;
-        editingProgram.name = document.getElementById('tm-program-name').value || 'Untitled Program';
-        
-        // Mappings
-        const inputs = document.querySelectorAll('.tm-mapping-input');
-        inputs.forEach(input => {
-            const key = input.getAttribute('data-key');
-            if (input.value.trim()) {
-                editingProgram.mappings[key] = input.value.trim();
-            } else {
-                delete editingProgram.mappings[key];
-            }
-        });
-        
-        let allowOverlapEl = document.getElementById('tm-allow-overlap');
-        if (allowOverlapEl) {
-            editingProgram.allowOverlap = allowOverlapEl.checked;
-        }
-
-        if (activeProgramType === 'rebate') {
-            const pct = document.getElementById('tm-rebate-percent');
-            if (pct) editingProgram.percent = Number(pct.value);
-            let idx = targetConfig.rebatePrograms.findIndex(p => p.id === activeProgramId);
-            if (idx > -1) targetConfig.rebatePrograms[idx] = editingProgram;
-        } else {
-            const unit = document.getElementById('tm-point-unit');
-            if (unit) editingProgram.unit = unit.value;
-            editingProgram.tiers.sort((a, b) => a.threshold - b.threshold);
-            let idx = targetConfig.pointPrograms.findIndex(p => p.id === activeProgramId);
-            if (idx > -1) targetConfig.pointPrograms[idx] = editingProgram;
-        }
-
-        saveConfigToSupabase();
-        window.__TargetMatchConfig = targetConfig;
-        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
-        
-        // Go back to list
         activeProgramId = null;
         editingProgram = null;
-        renderUI();
-    }
-
-    function deleteProgram(id, type) {
-        if (!confirm('ยืนยันการลบแคมเปญนี้?')) return;
-        if (type === 'rebate') {
-            targetConfig.rebatePrograms = targetConfig.rebatePrograms.filter(p => p.id !== id);
-        } else {
-            targetConfig.pointPrograms = targetConfig.pointPrograms.filter(p => p.id !== id);
-        }
-        saveConfigToSupabase();
-        window.__TargetMatchConfig = targetConfig;
-        renderUI();
-    }
-
-    function addProgram(type) {
-        let id = type + '_' + Date.now();
-        let prog = {
-            id: id,
-            name: 'New ' + (type==='rebate'?'Rebate':'Point') + ' Program',
-            mappings: {},
-            allowOverlap: true
-        };
-        if (type === 'rebate') {
-            prog.percent = 0;
-            targetConfig.rebatePrograms.push(prog);
-        } else {
-            prog.unit = 'points';
-            prog.tiers = [{ threshold: 50000, reward: 100 }];
-            targetConfig.pointPrograms.push(prog);
-        }
-        openProgram(id, type);
-    }
-
-    function openProgram(id, type) {
-        activeProgramId = id;
-        activeProgramType = type;
-        if (type === 'rebate') {
-            editingProgram = JSON.parse(JSON.stringify(targetConfig.rebatePrograms.find(p => p.id === id)));
-        } else {
-            editingProgram = JSON.parse(JSON.stringify(targetConfig.pointPrograms.find(p => p.id === id)));
-        }
-        renderUI();
     }
 
     function switchTab(tab) {
@@ -15874,89 +15341,185 @@ window.TargetMatch = (function() {
         renderUI();
     }
 
-    function renderUI() {
-        let modal = document.getElementById('target-match-modal');
-        if (!modal) return;
+    function editProgram(type, id) {
+        activeProgramType = type;
+        activeProgramId = id;
+        if (type === 'rebate') {
+            editingProgram = JSON.parse(JSON.stringify(targetConfig.rebatePrograms.find(p => p.id === id)));
+        } else {
+            editingProgram = JSON.parse(JSON.stringify(targetConfig.pointPrograms.find(p => p.id === id)));
+        }
+        renderUI();
+    }
+
+    function addProgram(type) {
+        let prog = {
+            id: type + '_' + Date.now(),
+            name: 'New ' + (type==='rebate'?'Rebate':'Point') + ' Program',
+            brands: []
+        };
+        if (type === 'rebate') {
+            prog.percent = 5;
+            targetConfig.rebatePrograms.push(prog);
+        } else {
+            prog.unit = 'points';
+            prog.tiers = [{ threshold: 100000, reward: 1000 }];
+            targetConfig.pointPrograms.push(prog);
+        }
+        editProgram(type, prog.id);
+    }
+
+    function deleteProgram(type, id) {
+        if (!confirm('ยืนยันการลบแคมเปญนี้?')) return;
+        if (type === 'rebate') {
+            targetConfig.rebatePrograms = targetConfig.rebatePrograms.filter(p => p.id !== id);
+        } else {
+            targetConfig.pointPrograms = targetConfig.pointPrograms.filter(p => p.id !== id);
+        }
+        activeProgramId = null;
+        editingProgram = null;
+        renderUI();
+    }
+
+    function saveEditingProgram() {
+        let nameEl = document.getElementById('tm-program-name');
+        if (nameEl) editingProgram.name = nameEl.value.trim() || 'Untitled Program';
         
+        let allowOverlapEl = document.getElementById('tm-allow-overlap');
+        if (allowOverlapEl) {
+            targetConfig.globalSettings.allowOverlap = allowOverlapEl.checked;
+        }
+
+        if (activeProgramType === 'rebate') {
+            let pctEl = document.getElementById('tm-rebate-percent');
+            if (pctEl) editingProgram.percent = Number(pctEl.value);
+            let idx = targetConfig.rebatePrograms.findIndex(p => p.id === activeProgramId);
+            if (idx > -1) targetConfig.rebatePrograms[idx] = editingProgram;
+        } else {
+            let unitEl = document.getElementById('tm-point-unit');
+            if (unitEl) editingProgram.unit = unitEl.value;
+            editingProgram.tiers.sort((a, b) => a.threshold - b.threshold);
+            let idx = targetConfig.pointPrograms.findIndex(p => p.id === activeProgramId);
+            if (idx > -1) targetConfig.pointPrograms[idx] = editingProgram;
+        }
+
+        saveConfigToSupabase();
+        
+        window.__TargetMatchConfig = targetConfig;
+        localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
+        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
+        
+        activeProgramId = null;
+        editingProgram = null;
+        renderUI();
+    }
+
+    function getParticipatingBrandsHTML() {
         let html = `
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-blue-600">account_tree</span>
-                    ตั้งค่า Target Match & กฎโบนัส
-                </h2>
-                <button onclick="TargetMatch.closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <span class="material-symbols-outlined">close</span>
+            <datalist id="tm-db-brands-list">
+                ${dbBrandsList.map(b => `<option value="${b}"></option>`).join('')}
+            </datalist>
+            <div class="flex flex-col gap-2">
+                ${(editingProgram.brands || []).map((brand, idx) => `
+                    <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                        <span class="material-symbols-outlined text-gray-400">sell</span>
+                        <input type="text" class="flex-1 border-none focus:ring-0 text-sm font-medium text-gray-700 bg-transparent" 
+                               value="${brand}" list="tm-db-brands-list" placeholder="พิมพ์ชื่อแบรนด์"
+                               onchange="TargetMatch.updateEditingBrand(${idx}, this.value)">
+                        <button onclick="TargetMatch.removeEditingBrand(${idx})" class="text-gray-300 hover:text-red-500 p-1 rounded-md transition-colors" title="ลบแบรนด์">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                `).join('')}
+                ${(editingProgram.brands || []).length === 0 ? `<div class="text-sm text-gray-400 text-center py-4 italic">ยังไม่มีแบรนด์ที่เข้าร่วม</div>` : ''}
+                <button onclick="TargetMatch.addEditingBrand()" class="mt-2 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-gray-700 font-medium text-sm transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-sm">add</span> เพิ่มแบรนด์
                 </button>
             </div>
-            
-            <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
-                <!-- Sidebar Tabs -->
-                <div class="w-full md:w-64 bg-slate-50 border-r border-gray-200 flex flex-col">
-                    <button onclick="TargetMatch.switchTab('rebate')" class="w-full text-left px-5 py-4 border-b border-gray-100 flex items-center gap-3 transition-colors ${activeTab==='rebate'?'bg-blue-50 border-l-4 border-l-blue-600 text-blue-700':'hover:bg-gray-100 text-gray-600'}">
-                        <span class="material-symbols-outlined ${activeTab==='rebate'?'text-blue-600':'text-gray-400'}">percent</span>
-                        <span class="font-semibold text-sm">Rebate Programs</span>
-                    </button>
-                    <button onclick="TargetMatch.switchTab('point')" class="w-full text-left px-5 py-4 border-b border-gray-100 flex items-center gap-3 transition-colors ${activeTab==='point'?'bg-amber-50 border-l-4 border-l-amber-600 text-amber-700':'hover:bg-gray-100 text-gray-600'}">
-                        <span class="material-symbols-outlined ${activeTab==='point'?'text-amber-600':'text-gray-400'}">stars</span>
-                        <span class="font-semibold text-sm">Point Programs</span>
-                    </button>
-                </div>
+        `;
+        return html;
+    }
 
-                <!-- Main Content Area -->
-                <div class="flex-1 overflow-y-auto p-6 bg-white" id="tm-main-content">
-                    ${renderMainContent()}
+    function getRebateRuleHTML() {
+        return `
+            <div class="flex flex-col gap-3">
+                <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rebate Percent (%)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="tm-rebate-percent" value="${editingProgram.percent}" step="0.1" class="w-24 text-xl font-bold border-gray-300 rounded-lg p-2 text-center focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-blue-700">
+                        <span class="text-gray-600 font-medium">%</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">ยอดขายแบรนด์ที่กำหนด จะได้ Rebate คืนตามเปอร์เซ็นต์นี้</p>
                 </div>
             </div>
-        </div>
         `;
-        modal.innerHTML = html;
+    }
+
+    function getPointRuleHTML() {
+        let html = `
+            <div class="flex flex-col gap-3">
+                <div class="bg-white p-4 rounded-xl border border-amber-100 shadow-sm mb-2">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Point Unit</label>
+                    <select id="tm-point-unit" class="w-full text-sm border-gray-300 rounded-lg p-2.5 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 font-medium">
+                        <option value="points" ${editingProgram.unit === 'points' ? 'selected' : ''}>แจกเป็น Points</option>
+                        <option value="baht" ${editingProgram.unit === 'baht' ? 'selected' : ''}>แจกเป็น Cash/Baht</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tiers (ขั้นบันได)</label>
+                    ${editingProgram.tiers.map((tier, idx) => `
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative group">
+                            <div class="absolute -left-2.5 -top-2.5 bg-amber-100 text-amber-700 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border border-amber-200">${idx + 1}</div>
+                            <div class="flex flex-col w-1/2 ml-2">
+                                <span class="text-[10px] text-gray-500 uppercase font-bold mb-1">ยอดขายถึง</span>
+                                <input type="number" value="${tier.threshold}" onchange="TargetMatch.updateEditingTier(${idx}, 'threshold', this.value)" class="w-full text-sm border-gray-300 rounded focus:ring-amber-500">
+                            </div>
+                            <div class="flex flex-col w-1/2">
+                                <span class="text-[10px] text-gray-500 uppercase font-bold mb-1">รางวัล</span>
+                                <input type="number" value="${tier.reward}" onchange="TargetMatch.updateEditingTier(${idx}, 'reward', this.value)" class="w-full text-sm border-gray-300 rounded focus:ring-amber-500">
+                            </div>
+                            <button onclick="TargetMatch.removeEditingTier(${idx})" class="mt-4 text-red-400 hover:text-red-600 p-1"><span class="material-symbols-outlined">delete</span></button>
+                        </div>
+                    `).join('')}
+                    <button onclick="TargetMatch.addEditingTier()" class="mt-2 py-2 border-2 border-dashed border-amber-300 rounded-lg text-amber-600 hover:bg-amber-50 font-medium text-sm flex items-center justify-center gap-1">
+                        <span class="material-symbols-outlined text-sm">add</span> เพิ่มขั้นบันได
+                    </button>
+                </div>
+            </div>
+        `;
+        return html;
     }
 
     function renderMainContent() {
-        if (activeProgramId) {
-            // Edit Mode
+        if (activeProgramId && editingProgram) {
             return `
-                <div class="flex flex-col gap-6">
-                    <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex flex-col h-full animate-fade-in pb-20">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                         <div class="flex items-center gap-3">
-                            <button onclick="TargetMatch.switchTab('${activeTab}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
-                                <span class="material-symbols-outlined">arrow_back</span>
-                            </button>
-                            <h3 class="text-lg font-bold text-gray-800">ตั้งค่าแคมเปญ</h3>
+                            <div class="w-10 h-10 rounded-full ${activeProgramType==='rebate'?'bg-blue-100 text-blue-600':'bg-amber-100 text-amber-600'} flex items-center justify-center">
+                                <span class="material-symbols-outlined">${activeProgramType==='rebate'?'percent':'stars'}</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">ตั้งค่าแคมเปญ</h3>
+                                <p class="text-xs text-gray-500">กำหนดชื่อแบรนด์ที่เข้าร่วมและกฎการคำนวณ</p>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <div class="flex-1">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อแคมเปญ (Campaign Name)</label>
-                            <input type="text" id="tm-program-name" value="${editingProgram.name}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-4 border bg-gray-50">
-                        </div>
-                        <div class="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <label class="flex items-start gap-3 cursor-pointer">
-                                <div class="mt-1">
-                                    <input type="checkbox" id="tm-allow-overlap" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${editingProgram.allowOverlap !== false ? 'checked' : ''}>
-                                </div>
-                                <div>
-                                    <div class="font-semibold text-gray-800 text-sm">อนุญาตให้คิดโบนัสทับซ้อนได้</div>
-                                    <div class="text-xs text-gray-500 mt-1">หากแบรนด์นี้ไปอยู่ในแคมเปญอื่นด้วย ยอดขายจะนำไปคิดให้ทั้ง 2 แคมเปญ</div>
-                                </div>
-                            </label>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-gray-600">ชื่อแคมเปญ:</span>
+                            <input type="text" id="tm-program-name" value="${editingProgram.name}" class="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 font-bold text-slate-700 w-64 shadow-sm">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <!-- Data Mapping Tree -->
                         <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col h-[500px]">
                             <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 font-semibold text-slate-700 flex-shrink-0">
-                                1. จับคู่แบรนด์ (Data Mapping)
+                                1. แบรนด์ที่เข้าร่วม (Participating Brands)
                             </div>
                             <div class="p-4 flex-1 overflow-y-auto bg-gray-50/30">
-                                ${getTreeHTML()}
+                                ${getParticipatingBrandsHTML()}
                             </div>
                         </div>
 
-                        <!-- Rule Config -->
                         <div class="border ${activeProgramType==='rebate'?'border-blue-200 bg-blue-50/30':'border-amber-200 bg-amber-50/30'} rounded-xl overflow-hidden shadow-sm flex flex-col h-[500px]">
                             <div class="${activeProgramType==='rebate'?'bg-blue-100/50 border-blue-200 text-blue-800':'bg-amber-100/50 border-amber-200 text-amber-800'} px-4 py-3 border-b font-semibold flex items-center gap-2 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg">${activeProgramType==='rebate'?'percent':'stars'}</span>
@@ -15968,7 +15531,7 @@ window.TargetMatch = (function() {
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t">
+                    <div class="flex justify-end gap-3 pt-4 border-t mt-4">
                         <button onclick="TargetMatch.switchTab('${activeTab}')" class="px-5 py-2.5 text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
                         <button onclick="TargetMatch.saveEditingProgram()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-sm transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm">save</span> บันทึกแคมเปญนี้
@@ -15977,199 +15540,104 @@ window.TargetMatch = (function() {
                 </div>
             `;
         } else {
-            // List Mode
             let list = activeTab === 'rebate' ? targetConfig.rebatePrograms : targetConfig.pointPrograms;
             let themeClass = activeTab === 'rebate' ? 'blue' : 'amber';
             let iconName = activeTab === 'rebate' ? 'percent' : 'stars';
             
             return `
-                <div class="flex flex-col h-full">
+                <div class="flex flex-col h-full animate-fade-in">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-bold text-gray-800">${activeTab === 'rebate' ? 'Rebate Programs' : 'Point Programs'}</h3>
-                        <button onclick="TargetMatch.addProgram('${activeTab}')" class="px-4 py-2 bg-${themeClass}-600 hover:bg-${themeClass}-700 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2 text-sm">
+                        <div>
+                            <h3 class="font-bold text-xl text-slate-800">${activeTab === 'rebate' ? 'Rebate Programs' : 'Point Programs'}</h3>
+                            <p class="text-sm text-gray-500">จัดการแคมเปญ ${activeTab === 'rebate' ? 'ส่วนลด (Rebate)' : 'สะสมแต้ม (Points)'}</p>
+                        </div>
+                        <button onclick="TargetMatch.addProgram('${activeTab}')" class="bg-${themeClass}-600 hover:bg-${themeClass}-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm">add</span> สร้างแคมเปญใหม่
                         </button>
                     </div>
 
-                    ${list.length === 0 ? `
-                        <div class="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl py-12">
-                            <span class="material-symbols-outlined text-5xl mb-3 text-gray-300">folder_open</span>
-                            <p>ยังไม่มีแคมเปญในหมวดหมู่นี้</p>
-                        </div>
-                    ` : `
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${list.map(p => `
-                                <div class="border border-gray-200 rounded-xl p-5 hover:border-${themeClass}-400 hover:shadow-md transition-all bg-white relative group">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-8 h-8 rounded-full bg-${themeClass}-100 text-${themeClass}-600 flex items-center justify-center">
-                                                <span class="material-symbols-outlined text-sm">${iconName}</span>
-                                            </div>
-                                            <div class="font-bold text-gray-800">${p.name}</div>
-                                        </div>
-                                        <button onclick="TargetMatch.deleteProgram('${p.id}', '${activeTab}')" class="text-gray-300 hover:text-red-500 transition-colors">
-                                            <span class="material-symbols-outlined text-sm">delete</span>
-                                        </button>
-                                    </div>
-                                    <div class="text-xs text-gray-500 mb-4 flex gap-3">
-                                        <span><b class="text-gray-700">${Object.keys(p.mappings).length}</b> Brands Mapped</span>
-                                        ${activeTab==='rebate' ? `<span><b class="text-gray-700">${p.percent}%</b> Rebate</span>` : `<span><b class="text-gray-700">${p.tiers.length}</b> Tiers</span>`}
-                                    </div>
-                                    <button onclick="TargetMatch.openProgram('${p.id}', '${activeTab}')" class="w-full py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
-                                        แก้ไขแคมเปญ (Edit)
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${list.map(p => `
+                            <div class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow relative group cursor-pointer" onclick="TargetMatch.editProgram('${activeTab}', '${p.id}')">
+                                <div class="w-10 h-10 rounded-full bg-${themeClass}-50 text-${themeClass}-600 flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined">${iconName}</span>
+                                </div>
+                                <h4 class="font-bold text-gray-800 text-lg mb-1 truncate" title="${p.name}">${p.name}</h4>
+                                <div class="text-xs text-gray-500 mb-4 flex gap-3">
+                                    <span><b class="text-gray-700">${(p.brands || []).length}</b> Brands</span>
+                                    ${activeTab==='rebate' ? `<span><b class="text-gray-700">${p.percent}%</b> Rebate</span>` : `<span><b class="text-gray-700">${p.tiers.length}</b> Tiers</span>`}
+                                </div>
+                                <div class="flex justify-between items-center mt-2 pt-3 border-t border-gray-100">
+                                    <span class="text-xs text-${themeClass}-600 font-medium">กดเพื่อแก้ไข</span>
+                                    <button onclick="event.stopPropagation(); TargetMatch.deleteProgram('${activeTab}', '${p.id}')" class="text-gray-300 hover:text-red-500 transition-colors p-1 rounded-md" title="ลบ">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
                                     </button>
                                 </div>
-                            `).join('')}
-                        </div>
-                    `}
-                </div>
-            `;
-        }
-    }
-
-    function getTreeHTML() {
-        let grouped = {};
-        extractedGroups.forEach(item => {
-            if (!grouped[item.group]) grouped[item.group] = [];
-            grouped[item.group].push(item.brand);
-        });
-
-        if (extractedGroups.length === 0) {
-            return `<div class="text-gray-500 text-sm text-center py-6">ไม่พบข้อมูล กลุ่ม/แบรนด์ ในไฟล์ Target</div>`;
-        }
-
-        let html = `
-            <datalist id="tm-db-groups-list">
-                ${dbGroupsList.map(g => `<option value="${g}"></option>`).join('')}
-            </datalist>
-            <datalist id="tm-db-brands-list">
-                ${dbBrandsList.map(b => `<option value="${b}"></option>`).join('')}
-            </datalist>
-        `;
-        for (const [group, brands] of Object.entries(grouped)) {
-            let groupKey = 'group||' + group;
-            let groupVal = editingProgram.mappings[groupKey] || '';
-            html += `
-                <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm mb-3">
-                    <div class="font-bold text-slate-800 border-b border-gray-100 pb-2 mb-2 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-gray-400">folder</span> ${group}
-                        </div>
-                        <div class="flex items-center gap-2 font-normal w-1/2 justify-end">
-                            <span class="text-xs text-gray-500 whitespace-nowrap">ผูกกลุ่มกับ:</span>
-                            <input type="text" placeholder="พิมพ์ชื่อกลุ่ม" list="tm-db-groups-list"
-                                class="tm-mapping-input w-2/3 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50" 
-                                data-key="${groupKey}" value="${groupVal}">
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2 pl-6 border-l-2 border-gray-100 ml-3 py-1">
-                        ${brands.map(brand => {
-                            let key = group + '|' + brand;
-                            let val = editingProgram.mappings[key] || '';
-                            return `
-                                <div class="flex items-center gap-3">
-                                    <span class="material-symbols-outlined text-gray-400 text-sm">subdirectory_arrow_right</span>
-                                    <div class="w-1/3 text-sm text-gray-700 font-medium truncate" title="${brand}">${brand}</div>
-                                    <div class="flex-1 flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-gray-100">
-                                        <span class="text-xs text-gray-500 whitespace-nowrap pl-1">ผูกกับ:</span>
-                                        <input type="text" placeholder="พิมพ์ชื่อแบรนด์" list="tm-db-brands-list"
-                                            class="tm-mapping-input flex-1 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50" 
-                                            data-key="${key}" value="${val}">
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
+                            </div>
+                        `).join('')}
+                        
+                        ${list.length === 0 ? `
+                            <div class="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+                                <span class="material-symbols-outlined text-4xl mb-3 opacity-50">inventory_2</span>
+                                <p>ยังไม่มีแคมเปญ</p>
+                                <p class="text-sm">กดปุ่ม "สร้างแคมเปญใหม่" ด้านบนเพื่อเริ่มต้น</p>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
         }
-        return html;
     }
 
-    function getRebateRuleHTML() {
-        return `
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
-                <div class="flex items-center gap-2">
-                    <input type="number" id="tm-rebate-percent" value="${editingProgram.percent}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 border text-lg font-bold text-blue-700">
-                    <span class="text-gray-500 font-medium text-lg">%</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">ยอดขายสะสมของแบรนด์ที่จับคู่ไว้ในแคมเปญนี้ จะนำมาคิดเงินคืนตามเปอร์เซ็นต์ที่ตั้งไว้</p>
-            </div>
-        `;
-    }
-
-    function getPointRuleHTML() {
-        let html = `
-            <div class="mb-5">
-                <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
-                <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2.5 px-3 border bg-white">
-                    <option value="points" ${editingProgram.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
-                    <option value="baht" ${editingProgram.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
-                </select>
-            </div>
-            
-            <div class="border-t border-amber-200/50 pt-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
-                <div class="flex flex-col gap-2 mb-4">
-        `;
+    function renderUI() {
+        const modal = document.getElementById('target-match-modal');
+        if (!modal) return;
         
-        editingProgram.tiers.forEach((tier, index) => {
-            html += `
-                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative">
-                    <div class="absolute -left-2.5 -top-2.5 bg-amber-100 text-amber-700 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border border-amber-200">
-                        ${index + 1}
+        let html = `
+        <div class="bg-white w-[95vw] max-w-6xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            <!-- Header -->
+            <div class="bg-slate-800 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-500/20 p-2 rounded-lg">
+                        <span class="material-symbols-outlined text-blue-400">tune</span>
                     </div>
-                    <div class="flex flex-col w-1/2 ml-2">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">ยอดขายถึง (Baht)</span>
-                        <input type="number" onchange="TargetMatch.updateEditingTier(${index}, 'threshold', this.value)" value="${tier.threshold}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                    <div>
+                        <h2 class="text-lg font-bold">ตั้งค่า Target Match & Programs</h2>
+                        <p class="text-xs text-slate-400 font-medium">เชื่อมโยงแบรนด์และกำหนดเงื่อนไข Rebate/Point</p>
                     </div>
-                    <div class="flex flex-col w-1/2">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">รางวัลที่ได้</span>
-                        <input type="number" onchange="TargetMatch.updateEditingTier(${index}, 'reward', this.value)" value="${tier.reward}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
-                    </div>
-                    <button onclick="TargetMatch.removeEditingTier(${index})" class="mt-4 text-red-400 hover:text-red-600 transition-colors p-1" title="ลบเงื่อนไข">
-                        <span class="material-symbols-outlined text-lg">delete</span>
-                    </button>
                 </div>
-            `;
-        });
-
-        if (editingProgram.tiers.length === 0) {
-            html += `<div class="text-sm text-gray-400 text-center py-2 italic">ยังไม่มีเงื่อนไขขั้นบันได</div>`;
-        }
-
-        html += `
-                </div>
-                <button onclick="TargetMatch.addEditingTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
+                <button onclick="TargetMatch.closeModal()" class="text-slate-400 hover:text-white hover:bg-slate-700 p-2 rounded-xl transition-colors">
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
+
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Sidebar -->
+                <div class="w-64 bg-slate-50 border-r border-gray-200 flex flex-col shrink-0">
+                    <div class="p-4 space-y-1">
+                        <button onclick="TargetMatch.switchTab('rebate')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'rebate' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}">
+                            <span class="material-symbols-outlined ${activeTab === 'rebate' ? 'text-blue-600' : 'text-gray-400'}">percent</span>
+                            Rebate Programs
+                        </button>
+                        <button onclick="TargetMatch.switchTab('point')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'point' ? 'bg-amber-100 text-amber-700 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}">
+                            <span class="material-symbols-outlined ${activeTab === 'point' ? 'text-amber-600' : 'text-gray-400'}">stars</span>
+                            Point Programs
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1 overflow-y-auto p-6 bg-white relative">
+                    ${renderMainContent()}
+                </div>
+            </div>
+        </div>
         `;
-        return html;
+        modal.innerHTML = html;
     }
 
-    function addEditingTier() {
-        if (!editingProgram) return;
-        let maxThreshold = 0;
-        if (editingProgram.tiers.length > 0) {
-            maxThreshold = Math.max(...editingProgram.tiers.map(t => t.threshold));
-        }
-        editingProgram.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
-        editingProgram.tiers.sort((a, b) => a.threshold - b.threshold);
-        renderUI(); // Re-render edit mode
-    }
-
-    function removeEditingTier(index) {
-        if (!editingProgram) return;
-        editingProgram.tiers.splice(index, 1);
-        renderUI();
-    }
-
-    function updateEditingTier(index, field, value) {
-        if (!editingProgram) return;
-        editingProgram.tiers[index][field] = Number(value);
-    }
+    // Call Supabase on init
+    loadConfigFromSupabase();
 
     return {
         onTargetDataLoaded,
@@ -16177,18 +15645,44 @@ window.TargetMatch = (function() {
         openModal,
         closeModal,
         switchTab,
+        editProgram,
         addProgram,
-        openProgram,
         deleteProgram,
-        saveGlobalConfig,
         saveEditingProgram,
-        addEditingTier,
-        removeEditingTier,
-        updateEditingTier,
-        loadConfigFromSupabase
+        
+        // Expose array helpers for inline HTML
+        updateEditingBrand: function(index, value) {
+            if (!editingProgram.brands) return;
+            editingProgram.brands[index] = value;
+        },
+        addEditingBrand: function() {
+            if (!editingProgram.brands) editingProgram.brands = [];
+            editingProgram.brands.push('');
+            renderUI();
+        },
+        removeEditingBrand: function(index) {
+            if (!editingProgram.brands) return;
+            editingProgram.brands.splice(index, 1);
+            renderUI();
+        },
+        addEditingTier: function() {
+            let maxThreshold = 0;
+            if (editingProgram.tiers.length > 0) {
+                maxThreshold = Math.max(...editingProgram.tiers.map(t => t.threshold));
+            }
+            editingProgram.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
+            editingProgram.tiers.sort((a, b) => a.threshold - b.threshold);
+            renderUI();
+        },
+        updateEditingTier: function(index, field, value) {
+            editingProgram.tiers[index][field] = Number(value);
+        },
+        removeEditingTier: function(index) {
+            editingProgram.tiers.splice(index, 1);
+            renderUI();
+        }
     };
 })();
-
 
 </script>
 </body>
