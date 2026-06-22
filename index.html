@@ -2363,6 +2363,9 @@ var robustMapColumn = function(c, idx, mapObj, isDbMap) {
 
     // EXACT MATCHES (Overwrite any previous fuzzy match)
     if (sanitizedRaw.includes('SALES_DATE') || sanitizedRaw.includes('SALESDATE') || sanitizedRaw.includes('TRANSACTION_DATE') || sanitizedRaw.includes('TRANSACTIONDATE')) { forceMap('date'); return; }
+    if (sanitizedRaw === 'YEAR_LABEL' || sanitizedRaw === 'YEARLABEL') { forceMap('year_label'); return; }
+    if (sanitizedRaw === 'MONTH_INDEX' || sanitizedRaw === 'MONTHINDEX') { forceMap('month_index'); return; }
+    if (sanitizedRaw === 'DAY') { forceMap('day'); return; }
     if (sanitizedRaw.includes('SALES_AMOUNT') || sanitizedRaw.includes('SALESAMOUNT') || sanitizedRaw === 'SALES') { forceMap('amount'); return; }
     if (sanitizedRaw.includes('SALES_QTY') || sanitizedRaw.includes('SALESQTY')) { forceMap('qty'); return; }
     if (sanitizedRaw.includes('WGHTONS') || sanitizedRaw.includes('WGH(TONS)')) { forceMap('ton'); return; }
@@ -2383,8 +2386,8 @@ var robustMapColumn = function(c, idx, mapObj, isDbMap) {
     var isCustGroup = hasCustomer && (str.includes('group') || str.includes('type') || str.includes('category') || str.includes('กลุ่ม') || str.includes('ประเภท') || str.includes('channel') || str.includes('ช่องทาง'));
     var isCode = str.includes('code') || str.includes('sku') || str.includes('รหัส') || str.includes('item');
 
-    if (mapIf('date', str === 'date' || str === 'วันที่' || str.includes('transaction'))) return;
-    if (mapIf('amount', str === 'amount' || str === 'sales' || str.includes('ยอดขาย'))) return;
+    if (mapIf('date', str === 'date' || str.includes('date') || str.includes('วันที่') || str.includes('transaction'))) return;
+    if (mapIf('amount', str === 'amount' || str.includes('amount') || str.includes('sales') || str.includes('ยอดขาย') || str.includes('ยอด') || str.includes('มูลค่า') || str.includes('net value') || str.includes('total'))) return;
     if (mapIf('qty', str === 'qty' || str.includes('จำนวน'))) return;
     if (mapIf('ton', str.includes('น้ำหนัก'))) return;
     if (mapIf('region', str.includes('zone') || str.includes('ภาค'))) return;
@@ -8326,7 +8329,7 @@ var App = function App() {
                                   for (i = 0; i < Math.min(200, rows.length); i++) {
                                       r = rows[i] || [];
                                       joined = r.join(' ').toLowerCase();
-                                      if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('transaction_date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี')) && (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('sales') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
+                                      if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('transaction_date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี') || (joined.includes('year_label') && joined.includes('month_index'))) && (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('sales') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
                                           headerRowIdx = i;
                                           break;
                                       }
@@ -8338,7 +8341,7 @@ var App = function App() {
                                   return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 6:
                                   headerRow = rows[headerRowIdx];
-                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                  dbMap = { date: -1, year_label: -1, month_index: -1, day: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
                                   headerRow.forEach(function(c, idx) {
                                       robustMapColumn(c, idx, dbMap, true);
                                   });
@@ -8353,33 +8356,39 @@ var App = function App() {
                                     _context12.n = 9;
                                     break;
                                   }
-                                  dateStr = String(row[dbMap.date] || '').trim();
-                                  if (!dateStr) {
-                                    _context12.n = 9;
-                                    break;
-                                  }
-                                  if (dateStr.includes('-')) {
-                                      var isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-                                      if (isoMatch) {
-                                          year = parseInt(isoMatch[1], 10);
-                                          month = parseInt(isoMatch[2], 10) - 1;
-                                          day = parseInt(isoMatch[3], 10);
-                                      } else {
-                                          var d = new Date(dateStr);
-                                          year = d.getFullYear();
-                                          month = d.getMonth();
-                                          day = d.getDate();
+                                  if (dbMap.year_label !== -1 && dbMap.month_index !== -1) {
+                                      year = parseInt(row[dbMap.year_label], 10);
+                                      month = parseInt(row[dbMap.month_index], 10);
+                                      day = dbMap.day !== -1 ? parseInt(row[dbMap.day], 10) || 1 : 1;
+                                      if (year > 2500) year -= 543;
+                                  } else {
+                                      dateStr = String(row[dbMap.date] || '').trim();
+                                      if (!dateStr && typeof row[dbMap.date] === 'number') {
+                                          var excelDate = new Date(Math.round((row[dbMap.date] - 25569) * 86400 * 1000));
+                                          year = excelDate.getFullYear(); month = excelDate.getMonth(); day = excelDate.getDate();
+                                      } else if (!dateStr) {
+                                          _context12.n = 9;
+                                          break;
+                                      } else if (dateStr.includes('-')) {
+                                          var isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                                          if (isoMatch) {
+                                              year = parseInt(isoMatch[1], 10);
+                                              month = parseInt(isoMatch[2], 10) - 1;
+                                              day = parseInt(isoMatch[3], 10);
+                                          } else {
+                                              var d = new Date(dateStr);
+                                              year = d.getFullYear(); month = d.getMonth(); day = d.getDate();
+                                          }
+                                      } else if (dateStr.includes('/')) {
+                                          parts = dateStr.split('/');
+                                          if (parts.length >= 3) {
+                                              day = parseInt(parts[0], 10);
+                                              month = parseInt(parts[1], 10) - 1;
+                                              year = parseInt(parts[2], 10);
+                                          }
                                       }
-                                  } else if (dateStr.includes('/')) {
-                                      parts = dateStr.split('/');
-                                      if (parts.length >= 3) {
-                                          day = parseInt(parts[0], 10);
-                                          month = parseInt(parts[1], 10) - 1;
-                                          year = parseInt(parts[2], 10);
-                                      }
                                   }
-                                  
-                                  if (year === undefined || isNaN(year) || isNaN(month) || isNaN(day)) {
+                                  if (year === undefined || isNaN(year) || isNaN(month)) {
                                       _context12.n = 9;
                                       break;
                                   }
@@ -8943,17 +8952,20 @@ var App = function App() {
                               return String(name || '').startsWith('เขต');
                             });
                             
-                            var resultPromise = Promise.resolve({ monthly: [], yearly: [] });
                             if (hasTG26) {
-                                resultPromise = parseTG26Workbook(workbook).then(function(tgRaw) {
-                                    return { monthly: [], yearly: [], tg26RawTargets: tgRaw };
+                                return parseTG26Workbook(workbook).then(function(tgRaw) {
+                                    return { monthly: [], yearly: [], tg26RawTargets: tgRaw, rawTargets: rawTargets };
                                 });
                             } else if (hasNnsSheet) {
-                                resultPromise = parseDistrictTargetWorkbook(workbook);
+                                return parseDistrictTargetWorkbook(workbook).then(function(res) {
+                                    res.rawTargets = rawTargets;
+                                    return res;
+                                });
                             }
                             
-                            return resultPromise.then(function(res) {
-                                res.rawTargets = rawTargets;
+                            // Fallback to original generic parsing
+                            return originalParseTargetWorkbook(workbook).then(function(res) {
+                                if (res) res.rawTargets = rawTargets;
                                 return res;
                             });
                           };
