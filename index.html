@@ -10596,6 +10596,12 @@ var parseDatabaseExport = async function(rows, type) {
           case 0:
             file = event.target.files[0];
             if (file) {
+              if (file.name && file.name.toLowerCase().endsWith('.xlsx')) {
+                  if (!window.confirm("🚨 คำเตือน:\n\nระบบตรวจพบว่าคุณกำลังอัปโหลดไฟล์ Excel (.xlsx) ซึ่งมีข้อมูลมหาศาล การให้เบราว์เซอร์อ่านไฟล์นี้อาจทำให้หน้าจอค้างไปหลายนาที\n\n✨ คำแนะนำเพื่อความเร็ว 100 เท่า! ✨\nกรุณาเปิดไฟล์นี้ในโปรแกรม Excel แล้วกด Save As -> เลือกนามสกุล 'CSV UTF-8' แล้วนำมาอัปโหลดใหม่ครับ\n\nคุณยังต้องการฝืนอัปโหลดไฟล์ .xlsx ต่อไป (รอนาน) หรือไม่?")) {
+                      event.target.value = '';
+                      return _context22.a(2);
+                  }
+              }
               _context22.n = 1;
               break;
             }
