@@ -9265,7 +9265,8 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         return parseWorkbookGeneric(workbook);
                       case 13:
                         parsed = _context16.v;
-                        if (parsed && _p2 && _p2.debugMsg) parsed.debugMsg = _p2.debugMsg + ' -> no_records';
+                        if (!parsed) parsed = { daily: [], monthly: [], yearly: [] };
+                        if (_p2 && _p2.debugMsg) parsed.debugMsg = _p2.debugMsg + ' -> no_records';
                       case 14:
                         _context16.n = 17;
                         break;
