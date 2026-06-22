@@ -2362,8 +2362,8 @@ var robustMapColumn = function(c, idx, mapObj, isDbMap) {
     };
 
     // EXACT MATCHES (Overwrite any previous fuzzy match)
-    if (sanitizedRaw.includes('SALES_DATE') || sanitizedRaw.includes('SALESDATE')) { forceMap('date'); return; }
-    if (sanitizedRaw.includes('SALES_AMOUNT') || sanitizedRaw.includes('SALESAMOUNT')) { forceMap('amount'); return; }
+    if (sanitizedRaw.includes('SALES_DATE') || sanitizedRaw.includes('SALESDATE') || sanitizedRaw.includes('TRANSACTION_DATE') || sanitizedRaw.includes('TRANSACTIONDATE')) { forceMap('date'); return; }
+    if (sanitizedRaw.includes('SALES_AMOUNT') || sanitizedRaw.includes('SALESAMOUNT') || sanitizedRaw === 'SALES') { forceMap('amount'); return; }
     if (sanitizedRaw.includes('SALES_QTY') || sanitizedRaw.includes('SALESQTY')) { forceMap('qty'); return; }
     if (sanitizedRaw.includes('WGHTONS') || sanitizedRaw.includes('WGH(TONS)')) { forceMap('ton'); return; }
     if (sanitizedRaw.includes('REGION') && sanitizedRaw.length < 10) { forceMap('region'); return; }
@@ -2383,8 +2383,8 @@ var robustMapColumn = function(c, idx, mapObj, isDbMap) {
     var isCustGroup = hasCustomer && (str.includes('group') || str.includes('type') || str.includes('category') || str.includes('กลุ่ม') || str.includes('ประเภท') || str.includes('channel') || str.includes('ช่องทาง'));
     var isCode = str.includes('code') || str.includes('sku') || str.includes('รหัส') || str.includes('item');
 
-    if (mapIf('date', str === 'date' || str === 'วันที่')) return;
-    if (mapIf('amount', str === 'amount' || str.includes('ยอดขาย'))) return;
+    if (mapIf('date', str === 'date' || str === 'วันที่' || str.includes('transaction'))) return;
+    if (mapIf('amount', str === 'amount' || str === 'sales' || str.includes('ยอดขาย'))) return;
     if (mapIf('qty', str === 'qty' || str.includes('จำนวน'))) return;
     if (mapIf('ton', str.includes('น้ำหนัก'))) return;
     if (mapIf('region', str.includes('zone') || str.includes('ภาค'))) return;
@@ -7899,7 +7899,7 @@ var App = function App() {
 	                              return cell.includes('ยอดขายอัปเดต') || cell.includes('updated');
 	                            });
 	                            var isTransactionalHeader = row.some(function (cell) {
-	                              return cell === 'sales_date' || cell === 'sales_doc_no';
+	                              return cell === 'sales_date' || cell === 'sales_doc_no' || cell === 'transaction_date';
 	                            });
 	                            var hasHeaderShape = score >= 3 || isTransactionalHeader;
 	                            var rowScore = timeCount * 20 + score * 8 + Math.min(nonEmptyCount, 20) + (hasHeaderShape ? 40 : 0) - (isUpdateRow && !hasHeaderShape ? 80 : 0) + (isTransactionalHeader ? 200 : 0);
@@ -8326,7 +8326,7 @@ var App = function App() {
                                   for (i = 0; i < Math.min(200, rows.length); i++) {
                                       r = rows[i] || [];
                                       joined = r.join(' ').toLowerCase();
-                                      if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี')) && (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
+                                      if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('transaction_date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี')) && (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('sales') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
                                           headerRowIdx = i;
                                           break;
                                       }
@@ -15364,27 +15364,13 @@ window.TargetMatch = (function() {
                 if (row.group) groupsSet.add(row.group);
                 if (row.brand) brandsSet.add(row.brand);
                 
-                let rebateVal = (row.rebate || '').trim();
-                let setVal = (row.set || '').trim();
-                
-                if (rebateVal !== '' && rebateVal !== '-' && rebateVal !== '0') {
-                    if (rebateVal.toLowerCase().includes('point') || rebateVal.includes('พอยท์')) {
-                         if (!foundPoints[rebateVal]) foundPoints[rebateVal] = new Set();
-                         if (row.brand) foundPoints[rebateVal].add(row.brand);
-                    } else {
-                         if (!foundRebates[rebateVal]) foundRebates[rebateVal] = new Set();
-                         if (row.brand) foundRebates[rebateVal].add(row.brand);
-                    }
+                if (row.rebate && row.rebate.trim() !== '' && row.rebate !== '-' && row.rebate !== '0') {
+                    if (!foundRebates[row.rebate]) foundRebates[row.rebate] = new Set();
+                    if (row.brand) foundRebates[row.rebate].add(row.brand);
                 }
-                
-                if (setVal !== '' && setVal !== '-' && setVal !== '0') {
-                    if (setVal.toLowerCase().includes('rebate') || setVal.includes('รีเบท')) {
-                        if (!foundRebates[setVal]) foundRebates[setVal] = new Set();
-                        if (row.brand) foundRebates[setVal].add(row.brand);
-                    } else {
-                        if (!foundPoints[setVal]) foundPoints[setVal] = new Set();
-                        if (row.brand) foundPoints[setVal].add(row.brand);
-                    }
+                if (row.set && row.set.trim() !== '' && row.set !== '-' && row.set !== '0') {
+                    if (!foundPoints[row.set]) foundPoints[row.set] = new Set();
+                    if (row.brand) foundPoints[row.set].add(row.brand);
                 }
             });
         }
@@ -15534,12 +15520,6 @@ window.TargetMatch = (function() {
             <datalist id="tm-db-brands-list">
                 ${dbBrandsList.map(b => `<option value="${b}"></option>`).join('')}
             </datalist>
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">แบรนด์ที่เลือก (${(editingProgram.brands || []).length})</span>
-                <button onclick="TargetMatch.loadBrandsFromDB()" class="text-[11px] text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors shadow-sm" title="ดึงรายชื่อแบรนด์ที่มีชื่อแคมเปญนี้ระบุไว้ในฐานข้อมูลยอดขาย">
-                    <span class="material-symbols-outlined text-[14px]">database</span> ดึงค่าตามชื่อแคมเปญ
-                </button>
-            </div>
             <div class="flex flex-col gap-2">
                 ${(editingProgram.brands || []).map((brand, idx) => `
                     <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
@@ -15772,32 +15752,6 @@ window.TargetMatch = (function() {
         saveEditingProgram,
         
         // Expose array helpers for inline HTML
-        loadBrandsFromDB: function() {
-            if (!mergedData || !mergedData.monthly) { alert('ไม่พบข้อมูลยอดขาย'); return; }
-            let programName = editingProgram.name.toLowerCase();
-            let foundBrands = new Set();
-            mergedData.monthly.forEach(row => {
-                if (!row.brand) return;
-                let rebateVal = (row.rebate || '').trim();
-                let setVal = (row.set || '').trim();
-                
-                let isMatch = false;
-                if (activeProgramType === 'rebate') {
-                    if (rebateVal.toLowerCase() === programName || setVal.toLowerCase() === programName) isMatch = true;
-                } else {
-                    if (setVal.toLowerCase() === programName || rebateVal.toLowerCase() === programName) isMatch = true;
-                }
-                if (isMatch) foundBrands.add(row.brand);
-            });
-            if (foundBrands.size > 0) {
-                let currentBrands = new Set(editingProgram.brands || []);
-                foundBrands.forEach(b => currentBrands.add(b));
-                editingProgram.brands = Array.from(currentBrands).sort();
-                renderUI();
-            } else {
-                alert(`ไม่พบแบรนด์ในฐานข้อมูลที่ระบุว่าเข้าร่วมแคมเปญ "${editingProgram.name}"\n(ระบบจะดึงข้อมูลตามชื่อแคมเปญที่ตั้งค่า)`);
-            }
-        },
         updateEditingBrand: function(index, value) {
             if (!editingProgram.brands) return;
             editingProgram.brands[index] = value;
