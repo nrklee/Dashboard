@@ -16,7 +16,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salytix V2.1 - Data Management</title>
+    <title>Salytix - Data Management</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500&family=Kanit:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -4697,7 +4697,7 @@ var LoginScreen = function LoginScreen(props) {
     style: { width: '160px', height: 'auto', display: 'block' }
   })
         ),
-        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Salytix V2.1"),
+        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Salytix"),
         /*#__PURE__*/React.createElement("p", { style: S.subtitle }, "Sign in to your enterprise suite")
       ),
       /*#__PURE__*/React.createElement("form", { style: S.form, onSubmit: handlePrimaryAction },
@@ -8321,6 +8321,7 @@ var App = function App() {
                                     _context12.n = 6;
                                     break;
                                   }
+                                  alert("ไม่พบหัวตารางในไฟล์ Excel ของคุณ\nระบบกำลังมองหาคำว่า Date, Sales, จำนวน, ยอดขาย ฯลฯ\n\nข้อมูลแถวแรกที่ระบบอ่านได้คือ:\n" + (rows[0] ? rows[0].join(' | ') : 'ไฟล์ว่างเปล่า'));
                                   return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
                                 case 6:
                                   headerRow = rows[headerRowIdx];
