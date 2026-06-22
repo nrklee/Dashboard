@@ -6184,8 +6184,9 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   (pendingData || []).forEach(function (row) {
     uniqueDistricts[row.district] = true;
     var key = 'brand||' + row.group + '||' + row.brand;
-    if (!uniqueTargets[key]) uniqueTargets[key] = { group: row.group, brand: row.brand, val: 0 };
-    uniqueTargets[key].val += row.value;
+    if (!uniqueTargets[key]) uniqueTargets[key] = { group: row.group, brand: row.brand, val: 0, ton: 0 };
+    uniqueTargets[key].val += (row.value || 0);
+    uniqueTargets[key].ton += (row.ton || 0);
   });
   var targetList = Object.values(uniqueTargets);
   var districtList = Object.keys(uniqueDistricts);
@@ -8311,7 +8312,7 @@ var App = function App() {
                                   for (i = 0; i < Math.min(200, rows.length); i++) {
                                       r = rows[i] || [];
                                       joined = r.join(' ').toLowerCase();
-                                      if (joined.includes('sales_date') && (joined.includes('sales_amount') || joined.includes('qty') || joined.includes('ton'))) {
+                                      if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี')) && (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
                                           headerRowIdx = i;
                                           break;
                                       }
@@ -8855,6 +8856,18 @@ var App = function App() {
                                 var ws = workbook.Sheets[sheetName];
                                 var rows = await sheetToRowsChunked(ws);
                                 
+                                var block1Unit = String((rows[0] && rows[0][2]) || (rows[1] && rows[1][2]) || '').trim();
+                                var block2Unit = String((rows[0] && rows[0][18]) || (rows[1] && rows[1][18]) || '').trim();
+                                
+                                var parseUnit = function(text) {
+                                    if (text.includes('พันบาท')) return { field: 'value', multiplier: 1000 };
+                                    if (text.includes('บาท')) return { field: 'value', multiplier: 1 };
+                                    if (text.includes('ตัน')) return { field: 'ton', multiplier: 1 };
+                                    return { field: 'value', multiplier: 1 };
+                                };
+                                var b1 = parseUnit(block1Unit);
+                                var b2 = parseUnit(block2Unit);
+
                                 var currentGroup = 'Uncategorized';
                                 for (var r = 0; r < rows.length; r++) {
                                     var row = rows[r] || [];
@@ -8868,15 +8881,34 @@ var App = function App() {
                                     if (!isNaN(parseInt(val0)) && row.length > 2) {
                                         var brandName = val1;
                                         for (var m = 0; m < 12; m++) {
-                                            var monthValue = Number(row[3 + m]) || 0;
-                                            if (monthValue > 0) {
-                                                rawTargets.push({
-                                                    district: district,
-                                                    group: currentGroup,
-                                                    brand: brandName,
-                                                    month: m + 1,
-                                                    value: monthValue
-                                                });
+                                            var targetObj = {
+                                                district: district,
+                                                group: currentGroup,
+                                                brand: brandName,
+                                                month: m + 1
+                                            };
+                                            var hasData = false;
+                                            
+                                            // Block 1 (Columns D to O => index 3 to 14)
+                                            var val1_raw = Number(row[3 + m]) || 0;
+                                            if (val1_raw > 0) {
+                                                targetObj[b1.field] = val1_raw * b1.multiplier;
+                                                hasData = true;
+                                            }
+                                            
+                                            // Block 2 (Columns T to AE => index 19 to 30)
+                                            var val2_raw = Number(row[19 + m]) || 0;
+                                            if (val2_raw > 0) {
+                                                if (b2.field === b1.field) {
+                                                    targetObj[b2.field] = (targetObj[b2.field] || 0) + (val2_raw * b2.multiplier);
+                                                } else {
+                                                    targetObj[b2.field] = val2_raw * b2.multiplier;
+                                                }
+                                                hasData = true;
+                                            }
+                                            
+                                            if (hasData) {
+                                                rawTargets.push(targetObj);
                                             }
                                         }
                                     } else if (val0 !== 'nan' && isNaN(parseInt(val0))) {
@@ -13929,8 +13961,8 @@ var App = function App() {
                                 model: mappedModelsStr,
                                 sku: mappedSkusStr,
                                 targetLevel: 'brand',
-                                targetValue: row.value,
-                                targetTon: 0,
+                                targetValue: row.value || 0,
+                                targetTon: row.ton || 0,
                                 sales: 0,
                                 qty: 0,
                                 ton: 0,
@@ -13949,8 +13981,8 @@ var App = function App() {
                                 model: '-',
                                 sku: '-',
                                 targetLevel: 'district',
-                                targetValue: row.value,
-                                targetTon: 0,
+                                targetValue: row.value || 0,
+                                targetTon: row.ton || 0,
                                 sales: 0,
                                 qty: 0,
                                 ton: 0,
