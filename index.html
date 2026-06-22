@@ -4079,16 +4079,18 @@ var formatMonthSerialLabel = function formatMonthSerialLabel(serial) {
 };
 var splitCSV = function splitCSV(str) {
   var result = [];
-  var current = '';
+  var start = 0;
+  var len = str.length;
   var inQuote = false;
-  for (var i = 0; i < str.length; i++) {
-    var _char = str[i];
-    if (_char === '"') inQuote = !inQuote;else if (_char === ',' && !inQuote) {
-      result.push(current);
-      current = '';
-    } else current += _char;
+  for (var i = 0; i < len; i++) {
+    if (str.charCodeAt(i) === 34) {
+        inQuote = !inQuote;
+    } else if (str.charCodeAt(i) === 44 && !inQuote) {
+        result.push(str.substring(start, i));
+        start = i + 1;
+    }
   }
-  result.push(current);
+  result.push(str.substring(start));
   return result.map(function (s) {
     return s.trim().replace(/^"|"$/g, '').replace(/,/g, '');
   });
