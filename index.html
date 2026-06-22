@@ -8306,7 +8306,8 @@ var App = function App() {
                                     _context12.n = 2;
                                     break;
                                   }
-                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'sales_failed_at_header_or_empty' });
+                                  var headRows = rows.slice(0,3).map(function(r) { return r.join('|'); }).join('  ;;  ');
+return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'hdr=-1,rows=' + headRows.substring(0, 100) });
                                 case 2:
                                   var _maxRows = -1;
                                   sheet = workbook.Sheets[sheetNames[0]];
@@ -8338,7 +8339,8 @@ var App = function App() {
                                     _context12.n = 6;
                                     break;
                                   }
-                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'sales_failed_at_header_or_empty' });
+                                  var headRows = rows.slice(0,3).map(function(r) { return r.join('|'); }).join('  ;;  ');
+return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'hdr=-1,rows=' + headRows.substring(0, 100) });
                                 case 6:
                                   headerRow = rows[headerRowIdx];
                                   dbMap = { date: -1, year_label: -1, month_index: -1, day: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
@@ -8403,6 +8405,8 @@ var App = function App() {
                                   qty = parseNumericValue(row[dbMap.qty]);
                                   ton = parseNumericValue(row[dbMap.ton]);
                                   if (amount === 0 && qty === 0 && ton === 0) {
+                                    if (!salesUpdateMeta._debugZeroSkipped) salesUpdateMeta._debugZeroSkipped = 0;
+                                    salesUpdateMeta._debugZeroSkipped++;
                                     _context12.n = 9;
                                     break;
                                   }
@@ -9256,9 +9260,11 @@ var App = function App() {
                           break;
                         }
                         _context16.n = 13;
+                        var _p2 = parsed;
                         return parseWorkbookGeneric(workbook);
                       case 13:
                         parsed = _context16.v;
+                        if (parsed && _p2 && _p2.debugMsg) parsed.debugMsg = _p2.debugMsg + ' -> no_records';
                       case 14:
                         _context16.n = 17;
                         break;
@@ -9267,9 +9273,11 @@ var App = function App() {
                         _t13 = _context16.v;
                         console.warn('Raw sales parser failed, fallback to generic parser', _t13);
                         _context16.n = 16;
+                        var _prevParsed = parsed;
                         return parseWorkbookGeneric(workbook);
                       case 16:
                         parsed = _context16.v;
+                        if (parsed && _prevParsed && _prevParsed.debugMsg) parsed.debugMsg = _prevParsed.debugMsg + ' -> generic_failed';
                       case 17:
                         _context16.n = 26;
                         break;
