@@ -10137,25 +10137,59 @@ var parseDatabaseExport = async function(rows, type) {
   
   // Fast CSV Parser
   function fastParseCSV(text) {
-      var rows = []; var currentRow = []; var currentCell = ""; var inQuotes = false;
-      for (var i = 0; i < text.length; i++) {
-          var char = text[i];
-          if (inQuotes) {
-              if (char === '"') {
-                  if (i + 1 < text.length && text[i + 1] === '"') { currentCell += '"'; i++; } else { inQuotes = false; }
-              } else { currentCell += char; }
+      var rows = [];
+      var row = [];
+      var i = 0;
+      var len = text.length;
+      while (i < len) {
+          if (text.charCodeAt(i) === 34) { // '"'
+              var j = i + 1;
+              while (j < len) {
+                  j = text.indexOf('"', j);
+                  if (j === -1) { j = len; break; }
+                  if (text.charCodeAt(j+1) === 34) { 
+                      j += 2;
+                  } else {
+                      break;
+                  }
+              }
+              var cell = text.substring(i + 1, j).replace(/""/g, '"');
+              row.push(cell);
+              i = j + 1; 
+              if (text.charCodeAt(i) === 44) i++; 
+              else if (text.charCodeAt(i) === 13) { 
+                  i++; 
+                  if (text.charCodeAt(i) === 10) i++; 
+                  rows.push(row); 
+                  row = []; 
+              }
+              else if (text.charCodeAt(i) === 10) { 
+                  i++; 
+                  rows.push(row); 
+                  row = []; 
+              }
           } else {
-              if (char === '"') { inQuotes = true; }
-              else if (char === ',') { currentRow.push(currentCell); currentCell = ""; }
-              else if (char === '\n' || char === '\r') {
-                  currentRow.push(currentCell);
-                  if (currentRow.length > 1 || currentCell !== "") { rows.push(currentRow); }
-                  currentRow = []; currentCell = "";
-                  if (char === '\r' && i + 1 < text.length && text[i + 1] === '\n') i++;
-              } else { currentCell += char; }
+              var nextComma = text.indexOf(',', i);
+              var nextNL = text.indexOf('\n', i);
+              if (nextComma === -1) nextComma = len;
+              if (nextNL === -1) nextNL = len;
+              var next = Math.min(nextComma, nextNL);
+              
+              var cell = text.substring(i, next);
+              if (cell.charCodeAt(cell.length-1) === 13) cell = cell.substring(0, cell.length-1);
+              row.push(cell);
+              
+              i = next;
+              if (i === nextComma) {
+                  i++;
+              } else if (i === nextNL) {
+                  i++;
+                  rows.push(row);
+                  row = [];
+              }
           }
       }
-      if (currentRow.length > 1 || currentCell !== "") { currentRow.push(currentCell); rows.push(currentRow); }
+      if (row.length > 0) rows.push(row);
       return rows;
   }
 
