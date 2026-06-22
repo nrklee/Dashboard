@@ -8306,7 +8306,7 @@ var App = function App() {
                                     _context12.n = 2;
                                     break;
                                   }
-                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
+                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'sales_failed_at_header_or_empty' });
                                 case 2:
                                   var _maxRows = -1;
                                   sheet = workbook.Sheets[sheetNames[0]];
@@ -8338,7 +8338,7 @@ var App = function App() {
                                     _context12.n = 6;
                                     break;
                                   }
-                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
+                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'sales_failed_at_header_or_empty' });
                                 case 6:
                                   headerRow = rows[headerRowIdx];
                                   dbMap = { date: -1, year_label: -1, month_index: -1, day: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
@@ -8963,10 +8963,85 @@ var App = function App() {
                                 });
                             }
                             
-                            // Fallback to original generic parsing
-                            return originalParseTargetWorkbook(workbook).then(function(res) {
-                                if (res) res.rawTargets = rawTargets;
-                                return res;
+                            // Flat Target DB Parser
+                            var tryFlatTarget = async function() {
+                                var sheetNames = workbook.SheetNames || [];
+                                if (sheetNames.length === 0) return null;
+                                var sheet = workbook.Sheets[sheetNames[0]];
+                                var rows = await sheetToRowsChunked(sheet);
+                                var headerIdx = -1;
+                                for (var i=0; i<Math.min(100, rows.length); i++) {
+                                    var r = rows[i] || [];
+                                    var joined = r.join(' ').toLowerCase();
+                                    if ((joined.includes('year_label') || joined.includes('year')) && (joined.includes('target_value') || joined.includes('target'))) {
+                                        headerIdx = i; break;
+                                    }
+                                }
+                                if (headerIdx === -1) return null;
+                                
+                                var headerRow = rows[headerIdx];
+                                var dbMap = { year_label: -1, month_index: -1, target_value: -1, target_ton: -1, target_level: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1 };
+                                
+                                headerRow.forEach(function(c, idx) {
+                                    var val = String(c || '').trim().toLowerCase();
+                                    if (val === 'year_label' || val === 'yearlabel') dbMap.year_label = idx;
+                                    else if (val === 'month_index' || val === 'monthindex') dbMap.month_index = idx;
+                                    else if (val === 'target_value' || val === 'targetvalue' || val === 'target' || val === 'เป้าหมาย') dbMap.target_value = idx;
+                                    else if (val === 'target_ton' || val === 'targetton' || val === 'ton' || val === 'เป้าตัน') dbMap.target_ton = idx;
+                                    else if (val === 'target_level' || val === 'targetlevel') dbMap.target_level = idx;
+                                    else robustMapColumn(c, idx, dbMap, true);
+                                });
+                                
+                                var monthly = [];
+                                for (var r=headerIdx+1; r<rows.length; r++) {
+                                    var row = rows[r] || [];
+                                    if (row.length === 0) continue;
+                                    
+                                    var y = dbMap.year_label !== -1 ? parseInt(row[dbMap.year_label], 10) : undefined;
+                                    var m = dbMap.month_index !== -1 ? parseInt(row[dbMap.month_index], 10) : undefined;
+                                    if (isNaN(y) || isNaN(m)) continue;
+                                    if (y > 2500) y -= 543;
+                                    
+                                    var val = dbMap.target_value !== -1 ? parseNumericValue(row[dbMap.target_value]) : 0;
+                                    var ton = dbMap.target_ton !== -1 ? parseNumericValue(row[dbMap.target_ton]) : 0;
+                                    if (val === 0 && ton === 0) continue;
+                                    
+                                    var dims = {
+                                        region: normalizeDimensionValue(row[dbMap.region]),
+                                        province: normalizeDimensionValue(row[dbMap.province]),
+                                        district: normalizeDimensionValue(row[dbMap.district]),
+                                        cv: normalizeDimensionValue(row[dbMap.cv]),
+                                        group: normalizeDimensionValue(row[dbMap.group]),
+                                        brand: normalizeDimensionValue(row[dbMap.brand]),
+                                        model: normalizeDimensionValue(row[dbMap.model]),
+                                        size: normalizeDimensionValue(row[dbMap.size]),
+                                        sku: normalizeDimensionValue(row[dbMap.sku]),
+                                        rebate: normalizeDimensionValue(row[dbMap.rebate]),
+                                        set: normalizeDimensionValue(row[dbMap.set])
+                                    };
+                                    
+                                    monthly.push(Object.assign({
+                                        id: "target-" + dims.region + "-" + dims.brand + "-" + y + "-" + m,
+                                        year: y,
+                                        month: m,
+                                        target: val,
+                                        targetValue: val,
+                                        targetTon: ton,
+                                        targetLevel: dbMap.target_level !== -1 ? normalizeDimensionValue(row[dbMap.target_level]) : 'total',
+                                        qty: 0,
+                                        ton: 0
+                                    }, dims));
+                                }
+                                
+                                if (monthly.length > 0) return { monthly: monthly, yearly: [], rawTargets: rawTargets };
+                                return null;
+                            };
+                            return tryFlatTarget().then(function(flatRes) {
+                                if (flatRes) return flatRes;
+                                return originalParseTargetWorkbook(workbook).then(function(res) {
+                                    if (res) res.rawTargets = rawTargets;
+                                    return res;
+                                });
                             });
                           };
                         }(parseTargetWorkbook);
@@ -9229,7 +9304,7 @@ var App = function App() {
                           _context16.n = 27;
                           break;
                         }
-                        throw new Error('ไฟล์ว่างเปล่า หรือหารูปแบบตารางที่ระบบรองรับไม่เจอ กรุณาเปิดไฟล์ด้วย Excel ก๊อปปี้ข้อมูลทั้งหมด (Ctrl+A, Ctrl+C) ไปวางในไฟล์ใหม่ (Ctrl+V) แล้วเซฟและลองอีกครั้ง');
+                                                throw new Error('DEBUG: type=' + type + ', sheets=' + (workbook.SheetNames || []).join(',') + ', totalFound=' + _totalFound + ', debugMsg=' + ((parsed && parsed.debugMsg) || 'none') + '. กรุณาแคปรูปหน้านี้ให้ Developer');
                       case 27:
                         updateLoadingStatus(type === 'sales' ? 'กำลังสรุปข้อมูลยอดขาย...' : 'กำลังสรุปข้อมูลเป้าหมาย...', 82, false);
                         resolve(parsed);
