@@ -9797,14 +9797,18 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         workbook = null;
                         readStage = 'read-array-primary';
                         _context16.p = 3;
-                        workbook = XLSX.read(data, {
-                          type: 'array',
-                          dense: false,
-                          cellFormula: false,
-                          cellStyles: false,
-                          cellNF: false,
-                          cellHTML: false
-                        });
+                        if (window.__cachedWorkbook && window.__cachedFile === file) {
+                            workbook = window.__cachedWorkbook;
+                        } else {
+                            workbook = XLSX.read(data, {
+                              type: 'array',
+                              dense: false,
+                              cellFormula: false,
+                              cellStyles: false,
+                              cellNF: false,
+                              cellHTML: false
+                            });
+                        }
                         _context16.n = 10;
                         break;
                       case 4:
@@ -10132,8 +10136,20 @@ var parseDatabaseExport = async function(workbook, type) {
   
   var processFile = async function(file, type) {
       try {
+          if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังอ่านโครงสร้างไฟล์...', 15);
+          // Yield to allow UI to update
+          await new Promise(function(r) { setTimeout(r, 50); });
           var data = await file.arrayBuffer();
-          var workbook = XLSX.read(data, { type: 'array' });
+          var workbook = XLSX.read(data, {
+              type: 'array',
+              dense: false,
+              cellFormula: false,
+              cellStyles: false,
+              cellNF: false,
+              cellHTML: false
+          });
+          window.__cachedWorkbook = workbook;
+          window.__cachedFile = file;
           
           var firstFewRows = "";
           try {
@@ -10152,6 +10168,8 @@ var parseDatabaseExport = async function(workbook, type) {
               }
           } catch(e) {}
 
+          window.__cachedWorkbook = workbook;
+          window.__cachedFile = file;
           var dbParsed = await parseDatabaseExport(workbook, type);
           if (dbParsed) {
               console.log('Intercepted by Dedicated DB Parser!', dbParsed);
