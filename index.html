@@ -7692,6 +7692,18 @@ var App = function App() {
   
   var [isTargetMappingModalOpen, setIsTargetMappingModalOpen] = useState(false);
   var [pendingTG26Data, setPendingTG26Data] = useState(null);
+  
+  window.updateSyncProgress = function(message, progress, statusType) {
+      if (statusType === 'success') {
+          finishLoadingStatus(message, 'success');
+          setIsLoading(false);
+      } else if (statusType === 'error') {
+          finishLoadingStatus(message, 'error');
+          setIsLoading(false);
+      } else {
+          updateLoadingStatus(message, progress, false);
+      }
+  };
   var [targetMappings, setTargetMappings] = useState(function() {
       try { return JSON.parse(localStorage.getItem('tg26_target_mappings')) || {}; }
       catch(e) { return {}; }
@@ -10551,7 +10563,9 @@ var parseDatabaseExport = async function(rows, type) {
             } else {
               closeStatusPopup();
             }
-            setIsLoading(false);
+            if (!window.uploadSalesToSupabase) {
+                setIsLoading(false);
+            }
             return _context19.a(2, true);
         }
       }, _callee18, null, [[10, 13]]);
@@ -14608,21 +14622,34 @@ var parseDatabaseExport = async function(rows, type) {
     localStorage.setItem('dashboard_section_open', JSON.stringify(nextState));
     setSectionOpen(nextState);
   };
-  if (isLoading) return /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col h-screen items-center justify-center",
-    style: {
-      background: 'var(--bg)'
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "Loader",
-    size: 48,
-    className: "text-blue-600 mb-4"
-  }), /*#__PURE__*/React.createElement("h2", {
-    className: "text-xl font-bold",
-    style: {
-      color: 'var(--text)'
-    }
-  }, "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25..."));
+  if (isLoading) {
+    var progressVal = statusInfo && statusInfo.progress ? Number(statusInfo.progress) : 0;
+    var statusMsg = statusInfo && statusInfo.message ? statusInfo.message : "กำลังโหลดข้อมูล...";
+    return /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col h-screen items-center justify-center p-4",
+      style: {
+        background: 'var(--bg)'
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "Loader",
+      size: 48,
+      className: "text-blue-600 mb-4 animate-spin"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-xl font-bold text-center max-w-md mb-3",
+      style: {
+        color: 'var(--text)'
+      }
+    }, statusMsg), progressVal > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "w-64 bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden mb-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-600 h-2.5 rounded-full transition-all duration-300",
+      style: {
+        width: "".concat(progressVal, "%")
+      }
+    })), progressVal > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-slate-500 font-semibold"
+    }, "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32 ".concat(Math.round(progressVal), "%")));
+  }
   if (isAuthChecking) return /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col h-screen items-center justify-center",
     style: {
