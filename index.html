@@ -3051,9 +3051,8 @@ window.applyTargetMappingToSales = function(allData, uiMap) {
         if (r.level === 1) brandMap[r.val.toLowerCase()] = r.target;
     });
     
-    allData.monthly.forEach(function(row) {
-        if (row.id && row.id.startsWith('tg26-')) return;
-        if (!(row.sales > 0 || row.qty > 0 || row.ton > 0)) return;
+    var mapSingleRow = function(row) {
+        if (row.id && row.id.startsWith('tg26-')) return null;
         
         row.tg26_matched_group = '';
         row.tg26_matched_brand = '';
@@ -3071,19 +3070,35 @@ window.applyTargetMappingToSales = function(allData, uiMap) {
         else if (b && brandMap[b]) matchedTarget = brandMap[b];
         
         if (matchedTarget) {
-            row.original_group = row.group;
-            row.original_brand = row.brand;
-            row.group = matchedTarget.group;
-            row.brand = matchedTarget.brand;
             row.tg26_matched_group = matchedTarget.group;
             row.tg26_matched_brand = matchedTarget.brand;
-        } else {
-            var unKey = b + ' | ' + (m || '-') + ' | ' + (s || '-');
-            if (!unmappedMap[unKey]) unmappedMap[unKey] = { brand: row.brand, item: row.sku || row.model || row.brand || 'Unknown', sales: 0, qty: 0 };
-            unmappedMap[unKey].sales += (row.sales || 0);
-            unmappedMap[unKey].qty += (row.qty || 0);
+            return matchedTarget;
         }
-    });
+        return null;
+    };
+
+    if (allData.monthly) {
+        allData.monthly.forEach(function(row) {
+            var matched = mapSingleRow(row);
+            if (!matched && (row.sales > 0 || row.qty > 0 || row.ton > 0)) {
+                var s = String(row.sku || '').toLowerCase().trim();
+                var m = String(row.model || '').toLowerCase().trim();
+                var b = String(row.brand || '').toLowerCase().trim();
+                var itemNorm = String(row.itemNormalNet || '').toLowerCase().trim();
+                if (itemNorm && !s) s = itemNorm;
+                var unKey = b + ' | ' + (m || '-') + ' | ' + (s || '-');
+                if (!unmappedMap[unKey]) unmappedMap[unKey] = { brand: row.brand, item: row.sku || row.model || row.brand || 'Unknown', sales: 0, qty: 0 };
+                unmappedMap[unKey].sales += (row.sales || 0);
+                unmappedMap[unKey].qty += (row.qty || 0);
+            }
+        });
+    }
+    if (allData.daily) {
+        allData.daily.forEach(mapSingleRow);
+    }
+    if (allData.yearly) {
+        allData.yearly.forEach(mapSingleRow);
+    }
     
     return Object.values(unmappedMap).sort(function(a,b) { return b.sales - a.sales; });
 };
@@ -7434,7 +7449,18 @@ var App = function App() {
   var _useState1 = useState(normalizeAllDataShape()),
     _useState10 = _slicedToArray(_useState1, 2),
     allData = _useState10[0],
-    setAllData = _useState10[1];
+    _setAllDataRaw = _useState10[1];
+  
+  var setAllData = function setAllData(newData) {
+      if (newData && newData.monthly && typeof window.applyTargetMappingToSales === 'function') {
+          var currentMappings = {};
+          try {
+              currentMappings = JSON.parse(localStorage.getItem('tg26_target_mappings')) || {};
+          } catch(e) {}
+          window.applyTargetMappingToSales(newData, currentMappings);
+      }
+      _setAllDataRaw(newData);
+  };
   var _useState11 = useState('monthly'),
     _useState12 = _slicedToArray(_useState11, 2),
     viewMode = _useState12[0],
@@ -7673,6 +7699,40 @@ var App = function App() {
   
   useEffect(function() {
       localStorage.setItem('tg26_target_mappings', JSON.stringify(targetMappings));
+      if (window.saveTargetMappingsToSupabase) {
+          window.saveTargetMappingsToSupabase(targetMappings).catch(function(e) {
+              console.error("Failed to sync target mappings to Supabase:", e);
+          });
+      }
+  }, [targetMappings]);
+
+  useEffect(function() {
+      if (authUser && window.loadTargetMappingsFromSupabase) {
+          window.loadTargetMappingsFromSupabase().then(function(cloudMappings) {
+              if (cloudMappings && Object.keys(cloudMappings).length > 0) {
+                  setTargetMappings(cloudMappings);
+              }
+          }).catch(function(e) {
+              console.error("Failed to load target mappings from Supabase:", e);
+          });
+      }
+  }, [authUser]);
+
+  useEffect(function() {
+      if (allData && allData.monthly && Object.keys(targetMappings).length > 0) {
+          var newAllData = Object.assign({}, allData);
+          if (newAllData.monthly) {
+              newAllData.monthly = newAllData.monthly.map(function(r) { return Object.assign({}, r); });
+          }
+          if (newAllData.daily) {
+              newAllData.daily = newAllData.daily.map(function(r) { return Object.assign({}, r); });
+          }
+          if (newAllData.yearly) {
+              newAllData.yearly = newAllData.yearly.map(function(r) { return Object.assign({}, r); });
+          }
+          window.applyTargetMappingToSales(newAllData, targetMappings);
+          _setAllDataRaw(newAllData);
+      }
   }, [targetMappings]);
 
   var salesInputRef = useRef(null);
@@ -8049,6 +8109,8 @@ var App = function App() {
       cv: normalizeDimensionValue(row.cv),
       group: normalizeDimensionValue(row.group),
       brand: normalizeDimensionValue(row.brand),
+      tg26_matched_group: normalizeDimensionValue(row.tg26_matched_group || ''),
+      tg26_matched_brand: normalizeDimensionValue(row.tg26_matched_brand || ''),
       model: normalizeDimensionValue(row.model),
       size: normalizeDimensionValue(row.size),
       sku: normalizeDimensionValue(row.sku),
@@ -10433,7 +10495,10 @@ var parseDatabaseExport = async function(rows, type) {
             if (type === 'target' && parsedData.tg26RawTargets && parsedData.tg26RawTargets.length > 0) {
                 window._tg26IsAppend = isAppend;
                 setPendingTG26Data(parsedData.tg26RawTargets);
-                // setIsTargetMappingModalOpen(true);
+                // อัปโหลดข้อมูลเป้าหมายดิบเข้า Supabase ก่อน return
+                if (window.uploadSalesToSupabase) {
+                    window.uploadSalesToSupabase(parsedData, type, isAppend).catch(function(err){ console.error("Supabase TG26 upload error:", err); });
+                }
                 finishLoadingStatus('อ่านไฟล์เป้าหมายสำเร็จ กรุณาไปตั้งค่าการจับคู่ข้อมูลที่เมนู "Target Match"', 'success');
                 setIsLoading(false);
                 return _context19.a(2, true);
@@ -11581,6 +11646,12 @@ var parseDatabaseExport = async function(rows, type) {
       if (monthIndex === null || monthIndex < 0 || monthIndex > 11) return null;
       return THAI_MONTHS[monthIndex];
     }
+    if (key === 'brand') {
+      return item && item.tg26_matched_brand ? item.tg26_matched_brand : (item === null || item === void 0 ? void 0 : item.brand);
+    }
+    if (key === 'group') {
+      return item && item.tg26_matched_group ? item.tg26_matched_group : (item === null || item === void 0 ? void 0 : item.group);
+    }
     return item === null || item === void 0 ? void 0 : item[key];
   };
   var matchesFilters = function matchesFilters(item) {
@@ -12436,8 +12507,8 @@ var parseDatabaseExport = async function(rows, type) {
       brandMonthTotals = {},
       brandSizeMonthTotals = {};
     topBrandsScopedData.forEach(function (item) {
-      var groupName = normalizeDimensionValue(item.group);
-      var brandName = normalizeDimensionValue(item.brand);
+      var groupName = normalizeDimensionValue(item.tg26_matched_group || item.group);
+      var brandName = normalizeDimensionValue(item.tg26_matched_brand || item.brand);
       var sizeName = normalizeDimensionValue(item.size);
       var combinedName = buildTopBrandName(groupName, brandName);
       var key = [groupName || '-', brandName || '-'].join('||');
@@ -12461,8 +12532,8 @@ var parseDatabaseExport = async function(rows, type) {
       if (selectedTopBrandsYear && String(getYearLabelFromItem(item, false)) !== String(selectedTopBrandsYear)) return false;
       return true;
     }).forEach(function (item) {
-      var groupName = normalizeDimensionValue(item.group);
-      var brandName = normalizeDimensionValue(item.brand);
+      var groupName = normalizeDimensionValue(item.tg26_matched_group || item.group);
+      var brandName = normalizeDimensionValue(item.tg26_matched_brand || item.brand);
       var sizeName = normalizeDimensionValue(item.size);
       var combinedName = buildTopBrandName(groupName, brandName);
       var key = [groupName || '-', brandName || '-'].join('||');
@@ -12630,8 +12701,8 @@ var parseDatabaseExport = async function(rows, type) {
       if (item.monthSerial !== focusMonthSerial && !previousMonthSerials.includes(item.monthSerial)) return;
       var cv = normalizeDimensionValue(item.cv);
       if (!cv || cv === '-') return;
-      var groupName = normalizeDimensionValue(item.group);
-      var brand = normalizeDimensionValue(item.brand);
+      var groupName = normalizeDimensionValue(item.tg26_matched_group || item.group);
+      var brand = normalizeDimensionValue(item.tg26_matched_brand || item.brand);
       if (shouldExcludeSalesGuideRow(groupName, brand)) return;
       var value = getValue(item);
       if (!storeMap[cv]) {
@@ -12772,8 +12843,8 @@ var parseDatabaseExport = async function(rows, type) {
     var grouped = {};
     recentRows.forEach(function (item) {
       var cv = normalizeDimensionValue(item.cv);
-      var groupName = normalizeDimensionValue(item.group);
-      var brand = normalizeDimensionValue(item.brand);
+      var groupName = normalizeDimensionValue(item.tg26_matched_group || item.group);
+      var brand = normalizeDimensionValue(item.tg26_matched_brand || item.brand);
       if (cv === '-' && groupName === '-' && brand === '-') return;
       var key = [cv, groupName, brand].join('||');
       if (!grouped[key]) {
