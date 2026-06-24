@@ -2604,107 +2604,27 @@ function saveSettings(newSettings) {
 
 window.openColumnSettingsModal = function() {
     let m = document.getElementById('my-col-modal');
-    if(m) {
-        m.remove();
+    if(!m) {
+        m = document.createElement('div');
+        m.id = 'my-col-modal';
+        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        const inner = document.createElement('div');
+        inner.className = 'p-4';
+        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = 'X ปิด';
+        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
+        closeBtn.onclick = () => m.style.display = 'none';
+        inner.appendChild(closeBtn);
+        
+        m.appendChild(inner);
+        document.body.appendChild(m);
     }
-    m = document.createElement('div');
-    m.id = 'my-col-modal';
-    m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    
-    const inner = document.createElement('div');
-    inner.className = 'p-6';
-    inner.style.cssText = 'background:white;border-radius:12px;width:700px;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 10px 25px rgba(0,0,0,0.2);display:flex;flex-direction:column;gap:16px;';
-    
-    const header = document.createElement('div');
-    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;padding-bottom:12px;position:sticky;top:0;background:white;z-index:10;';
-    header.innerHTML = '<h2 style="margin:0;font-size:18px;font-weight:bold;color:#1f2937;">ตั้งค่าชื่อและซ่อนคอลัมน์</h2>';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '✕';
-    closeBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;padding:4px;';
-    closeBtn.onclick = () => m.style.display = 'none';
-    header.appendChild(closeBtn);
-    inner.appendChild(header);
-
-    const listContainer = document.createElement('div');
-    listContainer.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding-bottom:20px;';
-    
-    // Copy current settings
-    let localSettings = JSON.parse(JSON.stringify(currentSettings));
-    
-    localSettings.forEach((col, idx) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;';
-        
-        const checkWrap = document.createElement('div');
-        checkWrap.style.cssText = 'display:flex;align-items:center;gap:6px;width:120px;';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = col.visible;
-        checkbox.style.cssText = 'width:16px;height:16px;cursor:pointer;';
-        checkbox.onchange = (e) => { localSettings[idx].visible = e.target.checked; };
-        
-        const label = document.createElement('label');
-        label.innerText = 'แสดงคอลัมน์';
-        label.style.cssText = 'font-size:13px;color:#4b5563;cursor:pointer;';
-        label.onclick = () => checkbox.click();
-        
-        checkWrap.appendChild(checkbox);
-        checkWrap.appendChild(label);
-        
-        const origName = document.createElement('div');
-        origName.innerText = col.originalName;
-        origName.style.cssText = 'width:200px;font-size:13px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;';
-        origName.title = col.originalName;
-        
-        const aliasInput = document.createElement('input');
-        aliasInput.type = 'text';
-        aliasInput.value = col.alias;
-        aliasInput.placeholder = 'ชื่อที่ต้องการแสดง';
-        aliasInput.style.cssText = 'flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;outline:none;';
-        aliasInput.oninput = (e) => { localSettings[idx].alias = e.target.value; };
-        
-        row.appendChild(checkWrap);
-        row.appendChild(origName);
-        row.appendChild(aliasInput);
-        listContainer.appendChild(row);
-    });
-    
-    inner.appendChild(listContainer);
-    
-    const footer = document.createElement('div');
-    footer.style.cssText = 'display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e5e7eb;padding-top:16px;position:sticky;bottom:0;background:white;z-index:10;';
-    
-    const resetBtn = document.createElement('button');
-    resetBtn.innerText = 'คืนค่าเริ่มต้น';
-    resetBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-weight:500;cursor:pointer;font-size:14px;';
-    resetBtn.onclick = () => {
-        if(confirm('ต้องการคืนค่าการตั้งค่าคอลัมน์ทั้งหมดเป็นค่าเริ่มต้นใช่หรือไม่?')) {
-            saveSettings(defaultColumns);
-            window.location.reload();
-        }
-    };
-    
-    const saveBtn = document.createElement('button');
-    saveBtn.innerText = 'บันทึกการตั้งค่า';
-    saveBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:none;background:#3b82f6;color:white;font-weight:500;cursor:pointer;font-size:14px;';
-    saveBtn.onclick = () => {
-        saveSettings(localSettings);
-        m.style.display = 'none';
-        alert('บันทึกการตั้งค่าคอลัมน์เรียบร้อยแล้ว ระบบจะทำการรีเฟรชหน้าจอใหม่');
-        window.location.reload();
-    };
-    
-    footer.appendChild(resetBtn);
-    footer.appendChild(saveBtn);
-    inner.appendChild(footer);
-    
-    m.appendChild(inner);
-    document.body.appendChild(m);
     m.style.display = 'flex';
 }
 window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
-    if (!parsedData) return;
+    if (!parsedData || !parsedData.monthly) return;
 
     // Create a custom full-screen loading overlay
     const overlay = document.createElement('div');
@@ -2721,14 +2641,26 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
 
+        const progressEl = overlay.querySelector('#upload-progress-text');
+        const updateProgress = (msg, percent, statusType) => {
+            if (progressEl) progressEl.innerText = msg;
+            if (typeof window.updateSyncProgress === 'function') {
+                window.updateSyncProgress(msg, percent, statusType);
+            }
+        };
+
         const tableName = type === 'sales' ? 'sales_raw' : 'targets_raw';
+        updateProgress("กำลังตรวจสอบโครงสร้างตารางข้อมูล...", 5);
         
         // Map data to DB schema
-        const combinedData = [];
-        if (parsedData.monthly) combinedData.push(...parsedData.monthly);
-        if (parsedData.daily) combinedData.push(...parsedData.daily);
+        let dataToProcess = parsedData.monthly || [];
+        if ((type === 'target' || type === 'targets') && parsedData.tg26RawTargets && parsedData.tg26RawTargets.length > 0) {
+            dataToProcess = parsedData.tg26RawTargets;
+        } else if ((type === 'target' || type === 'targets') && parsedData.rawTargets && parsedData.rawTargets.length > 0) {
+            dataToProcess = parsedData.rawTargets;
+        }
         
-        const rowsToInsert = combinedData.map(row => {
+        const rowsToInsert = dataToProcess.map(row => {
             if (type === 'sales') {
                 return {
                     year_label: String(row.year || ''),
@@ -2738,78 +2670,118 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
+                    size: row.size || '',
+                    sku: row.sku || '',
+                    cv: row.cv || '',
                     group: row.group || '',
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
-                    size: row.size || '',
-                    sku: row.sku || '',
-                    cv: row.cv || '',
                     sales: Number(row.sales || 0),
                     qty: Number(row.qty || 0),
                     ton: Number(row.ton || 0),
-                    raw_json: row // store original row as JSON for future use
+                    raw_json: row
                 };
             } else {
                 return {
                     year_label: String(row.year || ''),
-                    month_index: Number(row.monthIndex || 0),
+                    month_index: Number(row.monthIndex !== undefined ? row.monthIndex : (row.month ? row.month - 1 : 0)),
                     day: Number(row.day || 0),
                     region: row.region || '',
                     province: row.province || '',
                     district: row.district || '',
-                    brand: row.brand || '',
                     group: row.group || '',
+                    brand: row.brand || '',
                     model: row.model || '',
-                    rebate: row.rebate || '',
-                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
-                    target_value: Number(row.targetValue || 0),
-                    target_ton: Number(row.targetTon || 0),
-                    target_level: row.targetLevel || '',
+                    target_value: Number(row.targetValue || row.value || 0),
+                    target_ton: Number(row.targetTon || row.ton || 0),
+                    target_level: row.targetLevel || 'raw',
                     raw_json: row
                 };
             }
         });
 
         // 1. Delete old data if not append
-        const progressEl = document.getElementById('upload-progress-text');
         if (!isAppend) {
-            if (progressEl) progressEl.innerText = `กำลังลบข้อมูลเก่าในตาราง ${tableName}...`;
+            updateProgress(`กำลังลบข้อมูลเก่าในตาราง ${tableName}...`, 8);
             // Use RPC to truncate table safely and avoid 1000-row delete limit
             const rpcName = type === 'sales' ? 'truncate_sales_raw' : 'truncate_targets_raw';
             const { error: deleteError } = await window.supabase.rpc(rpcName);
             
             if (deleteError) {
                 console.error("RPC truncate failed, falling back to delete...", deleteError);
-                const { error: fallbackError } = await window.supabase
-                    .from(tableName)
-                    .delete()
-                    .neq('year_label', 'impossible_value_to_force_delete_all');
-                if (fallbackError) throw fallbackError;
+                let deletedCount = 1000;
+                let loopCount = 0;
+                while (deletedCount > 0 && loopCount < 100) {
+                    loopCount++;
+                    updateProgress(`กำลังลบข้อมูลเก่า (ลบแล้ว ${loopCount * 1000} แถว)...`, 8);
+                    const { data, error: fallbackError } = await window.supabase
+                        .from(tableName)
+                        .delete()
+                        .neq('year_label', 'impossible_value_to_force_delete_all')
+                        .select('id')
+                        .limit(1000);
+                    if (fallbackError) throw fallbackError;
+                    deletedCount = data ? data.length : 0;
+                }
             }
         }
         
-        // 2. Insert new data in batches of 1000
-        const BATCH_SIZE = 1000;
-        const totalBatches = Math.ceil(rowsToInsert.length / BATCH_SIZE);
-        
-        for (let i = 0; i < totalBatches; i++) {
-            if (progressEl) progressEl.innerText = `กำลังบันทึกข้อมูลส่วนที่ ${i + 1}/${totalBatches}... (${Math.min((i + 1) * BATCH_SIZE, rowsToInsert.length)}/${rowsToInsert.length} บรรทัด)`;
-            
-            const batch = rowsToInsert.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
-            const { error: insertError } = await window.supabase.from(tableName).insert(batch);
-            
-            if (insertError) throw insertError;
+        // 2. Insert new data in batches of 2000 in parallel with concurrency limit & retry logic
+        const BATCH_SIZE = 2000;
+        const batches = [];
+        for (let i = 0; i < rowsToInsert.length; i += BATCH_SIZE) {
+            batches.push(rowsToInsert.slice(i, i + BATCH_SIZE));
         }
+        
+        let completedBatches = 0;
+        const uploadBatchWithRetry = async (batch, batchIndex, retries = 3) => {
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const { error: insertError } = await window.supabase.from(tableName).insert(batch);
+                    if (insertError) throw insertError;
+                    
+                    completedBatches++;
+                    const percent = 10 + Math.round((completedBatches / batches.length) * 85);
+                    updateProgress(`กำลังบันทึกข้อมูลส่วนที่ ${completedBatches}/${batches.length}... (${Math.min(completedBatches * BATCH_SIZE, rowsToInsert.length)}/${rowsToInsert.length} บรรทัด)`, percent);
+                    return; // Success!
+                } catch (err) {
+                    console.warn(`Batch ${batchIndex + 1} attempt ${attempt} failed:`, err);
+                    if (attempt === retries) throw err; // Re-throw if all retries failed
+                    // Exponential backoff delay
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                }
+            }
+        };
+
+        const CONCURRENCY = 6;
+        const queue = batches.map((batch, idx) => () => uploadBatchWithRetry(batch, idx));
+        const runQueue = async () => {
+            const workers = [];
+            const next = async () => {
+                if (queue.length === 0) return;
+                const task = queue.shift();
+                await task();
+                await next();
+            };
+            for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) {
+                workers.push(next());
+            }
+            await Promise.all(workers);
+        };
+
+        await runQueue();
         
         overlay.remove();
         console.log(`บันทึกข้อมูล ${type} สำเร็จ! (${rowsToInsert.length} บรรทัด)`);
+        updateProgress(`บันทึกข้อมูล ${type === 'sales' ? 'ยอดขาย' : 'เป้าหมาย'} สำเร็จ! (${rowsToInsert.length} บรรทัด)`, 100, 'success');
         
     } catch (error) {
         overlay.remove();
         console.error("Upload Error:", error);
+        updateProgress(error.message || String(error), 0, 'error');
         
         const errorOverlay = document.createElement('div');
         errorOverlay.innerHTML = `
@@ -2830,34 +2802,77 @@ window.downloadSalesFromSupabase = async function() {
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
         
+        const updateProgress = (msg, percent) => {
+            if (typeof window.updateSyncProgress === 'function') {
+                window.updateSyncProgress(msg, percent);
+            }
+        };
+
+        updateProgress("กำลังเตรียมดาวน์โหลดข้อมูลยอดขายล่าสุด...", 10);
+        
         // Fetch all rows from the aggregated views
         // Note: Supabase free tier has a default 1000 row limit on select. We must handle pagination if needed.
         // Wait, the javascript SDK's default limit is 1000, we should override it or paginate.
-        // Refactored to fetch concurrently for better performance
-        const fetchTable = async (tableName) => {
-            let result = [];
-            let hasMore = true;
-            let start = 0;
-            let limit = 1000;
-            while(hasMore) {
-                const { data, error } = await window.supabase.from(tableName).select('*').range(start, start + limit - 1);
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    result = result.concat(data);
-                    start += limit;
-                    if (data.length < limit) hasMore = false;
-                } else {
-                    hasMore = false;
-                }
+        let allMonthly = [];
+        let allYearly = [];
+        let allDaily = [];
+        
+        // Fetch Monthly
+        let hasMore = true;
+        let start = 0;
+        let limit = 1000;
+        let page = 1;
+        while(hasMore) {
+            updateProgress(`กำลังโหลดข้อมูลยอดขายรายเดือน หน้าที่ ${page}...`, 15 + Math.min(page * 5, 20));
+            const { data, error } = await window.supabase.from('dashboard_monthly_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allMonthly = allMonthly.concat(data);
+                start += limit;
+                page++;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
             }
-            return result;
-        };
-
-        const [allMonthly, allYearly, allDaily] = await Promise.all([
-            fetchTable('dashboard_monthly_view'),
-            fetchTable('dashboard_yearly_view'),
-            fetchTable('dashboard_daily_view')
-        ]);
+        }
+        
+        // Fetch Yearly
+        hasMore = true;
+        start = 0;
+        page = 1;
+        while(hasMore) {
+            updateProgress(`กำลังโหลดข้อมูลยอดขายรายปี หน้าที่ ${page}...`, 40 + Math.min(page * 5, 15));
+            const { data, error } = await window.supabase.from('dashboard_yearly_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allYearly = allYearly.concat(data);
+                start += limit;
+                page++;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
+        
+        // Fetch Daily
+        hasMore = true;
+        start = 0;
+        page = 1;
+        while(hasMore) {
+            updateProgress(`กำลังโหลดข้อมูลยอดขายรายวัน หน้าที่ ${page}...`, 60 + Math.min(page * 3, 30));
+            const { data, error } = await window.supabase.from('dashboard_daily_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allDaily = allDaily.concat(data);
+                start += limit;
+                page++;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
+        
+        updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 95);
         
         // Map DB columns back to frontend expected object format
         const mapRow = (r, isYearly, isDaily) => {
@@ -2880,13 +2895,13 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.group || '',
-                model: r.model || '',
-                rebate: r.rebate || '',
-                set: r.set || '',
                 size: r.size,
                 sku: r.sku,
                 cv: r.cv || '',
+                group: r.group || (r.raw_json && r.raw_json.group) || '',
+                model: r.model || (r.raw_json && r.raw_json.model) || '',
+                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
+                set: r.set || (r.raw_json && r.raw_json.set) || '',
                 sales: Number(r.sales || 0),
                 qty: Number(r.qty || 0),
                 ton: Number(r.ton || 0),
@@ -2913,11 +2928,55 @@ window.downloadSalesFromSupabase = async function() {
             daily: allDaily.map(r => mapRow(r, false, true))
         };
         
+        finalData.targets = finalData.monthly.filter(r => r.type === 'target');
+        
         return finalData;
 
     } catch (error) {
         console.error("Download Error:", error);
         throw error;
+    }
+};
+
+window.saveTargetMappingsToSupabase = async function(mappings) {
+    try {
+        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
+        
+        const { error } = await window.supabase
+            .from('app_data')
+            .upsert({
+                id: 'tg26_target_mappings',
+                data: mappings,
+                updated_at: new Date().toISOString()
+            });
+            
+        if (error) throw error;
+        console.log("บันทึก Target Mappings ลง Supabase สำเร็จ");
+        return { ok: true };
+    } catch (error) {
+        console.error("Error saving target mappings to Supabase:", error);
+        throw error;
+    }
+};
+
+window.loadTargetMappingsFromSupabase = async function() {
+    try {
+        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
+        
+        const { data, error } = await window.supabase
+            .from('app_data')
+            .select('*')
+            .eq('id', 'tg26_target_mappings')
+            .maybeSingle();
+            
+        if (error) throw error;
+        if (data && data.data) {
+            return data.data;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error loading target mappings from Supabase:", error);
+        return null;
     }
 };
 
@@ -8683,6 +8742,7 @@ var App = function App() {
                                       }
                                     }
                                   });
+                                  appendRows(chunkRows, part);
                                   startRow += chunkSize;
                                   _context1.n = 6;
                                   break;
@@ -9964,11 +10024,12 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         } else {
                             workbook = XLSX.read(data, {
                               type: 'array',
-                              dense: false,
+                              dense: true,
                               cellFormula: false,
                               cellStyles: false,
                               cellNF: false,
-                              cellHTML: false
+                              cellHTML: false,
+                              cellText: false
                             });
                         }
                         _context16.n = 10;
@@ -9984,11 +10045,12 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         _context16.p = 6;
                         workbook = XLSX.read(data, {
                           type: 'array',
-                          dense: false,
+                          dense: true,
                           cellFormula: false,
                           cellStyles: false,
                           cellNF: false,
-                          cellHTML: false
+                          cellHTML: false,
+                          cellText: false
                         });
                         _context16.n = 10;
                         break;
@@ -10007,11 +10069,12 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         _context16.p = 8;
                         workbook = XLSX.read(binaryString, {
                           type: 'binary',
-                          dense: false,
+                          dense: true,
                           cellFormula: false,
                           cellStyles: false,
                           cellNF: false,
-                          cellHTML: false
+                          cellHTML: false,
+                          cellText: false
                         });
                         _context16.n = 10;
                         break;
@@ -10373,13 +10436,13 @@ var parseDatabaseExport = async function(rows, type) {
               await new Promise(function(r) { setTimeout(r, 50); });
               var data = await file.arrayBuffer();
               var workbook = XLSX.read(data, {
-                  type: 'array', dense: false, cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false
+                  type: 'array', dense: true, cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false, cellText: false
               });
               window.__cachedWorkbook = workbook;
               window.__cachedFile = file;
               var sheetNames = workbook.SheetNames || [];
               var firstSheet = sheetNames[0] ? workbook.Sheets[sheetNames[0]] : null;
-              if (firstSheet) rows = typeof XLSX !== 'undefined' ? XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: ''}) : [];
+              if (firstSheet) rows = typeof XLSX !== 'undefined' ? XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: '', raw: true}) : [];
               if (rows.length > 0) firstFewRows = rows.slice(0, 3).map(function(r) { return r.join('|'); }).join('\n');
           }
 
