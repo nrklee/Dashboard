@@ -3481,10 +3481,13 @@ var normalizeSheetUpdateDisplayValue = function normalizeSheetUpdateDisplayValue
 var extractSheetUpdateLabel = function extractSheetUpdateLabel(sheet) {
   if (!sheet || !sheet['!ref']) return '';
   try {
+    var rng = XLSX.utils.decode_range(sheet['!ref']);
+    rng.e.r = Math.min(rng.e.r, rng.s.r + 20);
     var rows = XLSX.utils.sheet_to_json(sheet, {
       header: 1,
       blankrows: false,
-      raw: false
+      raw: true,
+      range: rng
     });
     var maxRows = Math.min(60, rows.length);
     var bestCandidate = null;
@@ -8535,7 +8538,7 @@ var App = function App() {
 	      var rows = XLSX.utils.sheet_to_json(sheet, {
 	        header: 1,
 	        blankrows: false,
-	        raw: false,
+	        raw: true,
 	        defval: ''
 	      });
 	      var headerInfo = findWideSalesHeaderInfo(rows, workbookOptions, sheetName);
@@ -8667,55 +8670,14 @@ var App = function App() {
                                   }
                                   return _context1.a(2, []);
                                 case 2:
-                                  decodedRange = null;
-                                  _context1.p = 3;
-                                  decodedRange = XLSX.utils.decode_range(ref);
-                                  _context1.n = 5;
-                                  break;
-                                case 4:
-                                  _context1.p = 4;
-                                  _t7 = _context1.v;
-                                  console.warn('decode_range failed, fallback to direct sheet_to_json', _t7);
-	                                  return _context1.a(2, XLSX.utils.sheet_to_json(sheet, {
-	                                    header: 1,
-	                                    blankrows: false,
-	                                    raw: false,
-	                                    dateNF: 'yyyy-mm-dd'
-	                                  }));
-                                case 5:
-                                  chunkRows = [];
-                                  chunkSize = isIOSDevice ? 1400 : 5000;
-                                  startRow = decodedRange.s.r;
-                                case 6:
-                                  if (!(startRow <= decodedRange.e.r)) {
-                                    _context1.n = 8;
-                                    break;
-                                  }
-                                  endRow = Math.min(decodedRange.e.r, startRow + chunkSize - 1);
-	                                  part = XLSX.utils.sheet_to_json(sheet, {
-	                                    header: 1,
-	                                    blankrows: false,
-	                                    raw: false,
-	                                    dateNF: 'yyyy-mm-dd',
-	                                    range: {
-                                      s: {
-                                        r: startRow,
-                                        c: decodedRange.s.c
-                                      },
-                                      e: {
-                                        r: endRow,
-                                        c: decodedRange.e.c
-                                      }
-                                    }
-                                  });
-                                  appendRows(chunkRows, part);
-                                  startRow += chunkSize;
-                                  _context1.n = 6;
-                                  break;
-                                case 8:
-                                  return _context1.a(2, chunkRows);
+                                  if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังอ่านข้อมูลตาราง...', 45);
+                                  return _context1.a(2, XLSX.utils.sheet_to_json(sheet, {
+                                    header: 1,
+                                    blankrows: false,
+                                    raw: true
+                                  }));
                               }
-                            }, _callee1, null, [[3, 4]]);
+                            }, _callee1);
                           }));
                           return function sheetToRowsChunked(_x10) {
                             return _ref18.apply(this, arguments);
@@ -10220,7 +10182,9 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                 showStatus('อ่านไฟล์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
                 resolve(null);
               };
-              if (file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file);else reader.readAsArrayBuffer(file);
+              if (window.__cachedWorkbook && window.__cachedFile === file) {
+                setTimeout(function() { reader.onload({ target: { result: new ArrayBuffer(0) } }); }, 0);
+              } else if (file && file.name && file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file);else reader.readAsArrayBuffer(file);
             }));
         }
       }, _callee16);
@@ -10407,6 +10371,8 @@ var parseDatabaseExport = async function(rows, type) {
               });
               window.__cachedWorkbook = workbook;
               window.__cachedFile = file;
+              if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังวิเคราะห์โครงสร้างข้อมูล...', 40);
+              await new Promise(function(r) { setTimeout(r, 10); });
               var sheetNames = workbook.SheetNames || [];
               var firstSheet = sheetNames[0] ? workbook.Sheets[sheetNames[0]] : null;
               if (firstSheet && typeof XLSX !== 'undefined') {
