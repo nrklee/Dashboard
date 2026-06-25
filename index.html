@@ -8557,7 +8557,7 @@ var App = function App() {
 	      for (var rowIndex = headerInfo.rowIndex + 1; rowIndex < rows.length; rowIndex++) {
 	        var row = rows[rowIndex] || [];
 	        var dimensions = normalizeWideSalesDimensions(row, headerInfo.map);
-	['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'].map(function (key) {
+	        var dimensionValues = ['region', 'province', 'district', 'cv', 'group', 'brand', 'model', 'size', 'sku', 'flavor'].map(function (key) {
 	          return dimensions[key];
 	        });
 	        if (dimensionValues.every(function (value) {
@@ -8670,7 +8670,10 @@ var App = function App() {
                                   }
                                   return _context1.a(2, []);
                                 case 2:
-                                  if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังอ่านข้อมูลตาราง...', 45);
+                                  if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังแปลงข้อมูลตาราง...', 55);
+                                  _context1.n = 3;
+                                  return nextTick();
+                                case 3:
                                   return _context1.a(2, XLSX.utils.sheet_to_json(sheet, {
                                     header: 1,
                                     blankrows: false,
@@ -10392,6 +10395,8 @@ var parseDatabaseExport = async function(rows, type) {
       } catch (e) {
           console.error('Error in wrapper parseDatabaseExport:', e);
       }
+      if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังวิเคราะห์ข้อมูลตาราง...', 48);
+      await new Promise(function(r) { setTimeout(r, 10); });
       return await _processFileOriginal(file, type);
   };
   var refreshAutoSyncFlag = /*#__PURE__*/function () {
