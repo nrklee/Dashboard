@@ -2626,31 +2626,13 @@ window.openColumnSettingsModal = function() {
 window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
     if (!parsedData || !parsedData.monthly) return;
 
-    // Create a custom full-screen loading overlay
-    const overlay = document.createElement('div');
-    overlay.innerHTML = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;">
-            <div style="font-size:24px;margin-bottom:15px;font-weight:bold;">☁️ กำลังบันทึกข้อมูลดิบ (Raw Data) ลงฐานข้อมูล...</div>
-            <div style="font-size:16px;color:#ccc;margin-bottom:30px;" id="upload-progress-text">ระบบกำลังเตรียมข้อมูล...</div>
-            <div style="border:5px solid #f3f3f3;border-top:5px solid #3b82f6;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;"></div>
-            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-        </div>
-    `;
-    document.body.appendChild(overlay);
+    // OFFLINE-FIRST SILENT BACKGROUND STREAMING UPLOAD
+    console.log(`[Offline-First Track B] เริ่มทยอยอัปโหลดข้อมูล ${type} ขึ้นคลาวด์เบื้องหลังเงียบๆ...`);
     
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
 
-        const progressEl = overlay.querySelector('#upload-progress-text');
-        const updateProgress = (msg, percent, statusType) => {
-            if (progressEl) progressEl.innerText = msg;
-            if (typeof window.updateSyncProgress === 'function') {
-                window.updateSyncProgress(msg, percent, statusType);
-            }
-        };
-
         const tableName = type === 'sales' ? 'sales_raw' : 'targets_raw';
-        updateProgress("กำลังตรวจสอบโครงสร้างตารางข้อมูล...", 5);
         
         // Map data to DB schema
         let dataToProcess = parsedData.monthly || [];
@@ -2703,9 +2685,6 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
             }
         });
 
-        // 1. Prepare data for Upsert (Skip if exists)
-        // We will no longer delete old data. Instead, we generate a unique signature for each row.
-        
         // Helper function to generate SHA-256 hash for a row
         const generateRowSignature = async (rowStr) => {
             const encoder = new TextEncoder();
@@ -2715,29 +2694,16 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         };
 
-        updateProgress("กำลังประมวลผลลายเซ็นข้อมูล (Row Signatures)...", 8);
+        const rowsWithSignature = await Promise.all(rowsToInsert.map(async (row) => {
+            const signature = await generateRowSignature(JSON.stringify(row.raw_json));
+            return { ...row, row_signature: signature };
+        }));
         
-        // Generate signatures for all rows
-        for (let i = 0; i < rowsToInsert.length; i++) {
-            const row = rowsToInsert[i];
-            // Create a deterministic string of all values to check for exact match
-            const rowString = type === 'sales' 
-                ? `${row.year_label}|${row.month_index}|${row.day}|${row.region}|${row.province}|${row.district}|${row.brand}|${row.size}|${row.sku}|${row.cv}|${row.group}|${row.model}|${row.rebate}|${row.set}|${row.sales}|${row.qty}|${row.ton}`
-                : `${row.year_label}|${row.month_index}|${row.day}|${row.region}|${row.province}|${row.district}|${row.group}|${row.brand}|${row.model}|${row.size}|${row.sku}|${row.target_value}|${row.target_ton}|${row.target_level}`;
-            
-            row.row_signature = await generateRowSignature(rowString);
-            
-            if (i % 5000 === 0) {
-                updateProgress(`กำลังสร้างลายเซ็นข้อมูล ${i}/${rowsToInsert.length}...`, 8 + Math.round((i/rowsToInsert.length)*10));
-            }
-        }
-        
-        // 2. Insert new data in batches
-        // Reduce batch size to prevent payload too large errors and timeouts
+        // Insert new data in batches
         const BATCH_SIZE = 1000;
         const batches = [];
-        for (let i = 0; i < rowsToInsert.length; i += BATCH_SIZE) {
-            batches.push(rowsToInsert.slice(i, i + BATCH_SIZE));
+        for (let i = 0; i < rowsWithSignature.length; i += BATCH_SIZE) {
+            batches.push(rowsWithSignature.slice(i, i + BATCH_SIZE));
         }
         
         let completedBatches = 0;
@@ -2751,18 +2717,15 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     if (insertError) throw insertError;
                     
                     completedBatches++;
-                    const percent = 20 + Math.round((completedBatches / batches.length) * 75);
-                    updateProgress(`กำลังบันทึกข้อมูลส่วนที่ ${completedBatches}/${batches.length}... (${Math.min(completedBatches * BATCH_SIZE, rowsToInsert.length)}/${rowsToInsert.length} บรรทัด)`, percent);
                     return; // Success!
                 } catch (err) {
-                    console.warn(`Batch ${batchIndex + 1} attempt ${attempt} failed:`, err);
-                    if (attempt === retries) throw err; // Re-throw if all retries failed
-                    await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // Increased backoff
+                    console.warn(`[Background Sync] Batch ${batchIndex + 1} attempt ${attempt} failed:`, err);
+                    if (attempt === retries) throw err;
+                    await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
                 }
             }
         };
 
-        // Reduce concurrency to prevent overwhelming Supabase
         const CONCURRENCY = 3;
         const queue = batches.map((batch, idx) => () => uploadBatchWithRetry(batch, idx));
         const runQueue = async () => {
@@ -2781,28 +2744,24 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
 
         await runQueue();
         
-        overlay.remove();
-        console.log(`บันทึกข้อมูล ${type} สำเร็จ! (${rowsToInsert.length} บรรทัด)`);
-        updateProgress(`บันทึกข้อมูล ${type === 'sales' ? 'ยอดขาย' : 'เป้าหมาย'} สำเร็จ! (${rowsToInsert.length} บรรทัด)`, 100, 'success');
+        console.log(`[Background Sync] บันทึกข้อมูล ${type} สำเร็จ 100%! (${rowsToInsert.length} บรรทัด)`);
+        
+        // TRIGGER NOTIFICATION BELL BADGE
+        if (window._setUnmappedSalesWarnings) {
+            window._setUnmappedSalesWarnings(prev => [
+                { item: `☁️ ซิงค์คลาวด์เสร็จสิ้น`, sales: `${rowsToInsert.length.toLocaleString()} แถว`, brand: `อัปโหลดข้อมูล ${type === 'sales' ? 'ยอดขาย' : 'เป้าหมาย'} เข้า Supabase สำเร็จ` },
+                ...prev
+            ]);
+        }
         
     } catch (error) {
-        overlay.remove();
-        console.error("Upload Error:", error);
-        updateProgress(error.message || String(error), 0, 'error');
-        
-        const errorOverlay = document.createElement('div');
-        errorOverlay.innerHTML = `
-            <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;padding:20px;text-align:center;">
-                <div style="font-size:48px;margin-bottom:15px;">❌</div>
-                <div style="font-size:24px;margin-bottom:15px;font-weight:bold;color:#ef4444;">เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Database</div>
-                <div style="font-size:16px;color:#ccc;margin-bottom:30px;max-width:500px;line-height:1.5;">${error.message || String(error)}</div>
-                <button id="close-error-btn" style="background:#ef4444;color:white;border:none;padding:12px 30px;font-size:16px;border-radius:8px;cursor:pointer;font-weight:bold;">ปิดหน้าต่างนี้</button>
-            </div>
-        `;
-        document.body.appendChild(errorOverlay);
-        document.getElementById('close-error-btn').addEventListener('click', () => {
-            errorOverlay.remove();
-        });
+        console.error("[Background Sync Error]:", error);
+        if (window._setUnmappedSalesWarnings) {
+            window._setUnmappedSalesWarnings(prev => [
+                { item: `❌ อัปโหลดคลาวด์ล้มเหลว`, sales: `เกิดข้อผิดพลาด`, brand: error.message || String(error) },
+                ...prev
+            ]);
+        }
     }
 };
 window.downloadSalesFromSupabase = async function() {
@@ -10697,9 +10656,7 @@ var parseDatabaseExport = async function(rows, type) {
             } else {
               closeStatusPopup();
             }
-            if (!window.uploadSalesToSupabase) {
-                setIsLoading(false);
-            }
+            setIsLoading(false); // ALWAYS CLOSE LOADING FOR OFFLINE INSTANT USE!
             return _context19.a(2, true);
         }
       }, _callee18, null, [[10, 13]]);
