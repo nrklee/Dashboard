@@ -9955,7 +9955,6 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         } else {
                             workbook = XLSX.read(data, {
                               type: 'array',
-                              dense: true,
                               cellFormula: false,
                               cellStyles: false,
                               cellNF: false,
@@ -9976,7 +9975,6 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         _context16.p = 6;
                         workbook = XLSX.read(data, {
                           type: 'array',
-                          dense: true,
                           cellFormula: false,
                           cellStyles: false,
                           cellNF: false,
@@ -10000,7 +9998,6 @@ return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUp
                         _context16.p = 8;
                         workbook = XLSX.read(binaryString, {
                           type: 'binary',
-                          dense: true,
                           cellFormula: false,
                           cellStyles: false,
                           cellNF: false,
@@ -10370,7 +10367,7 @@ var parseDatabaseExport = async function(rows, type) {
               
               var data = await file.arrayBuffer();
               var workbook = XLSX.read(data, {
-                  type: 'array', dense: true, cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false, cellText: false
+                  type: 'array', cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false, cellText: false
               });
               window.__cachedWorkbook = workbook;
               window.__cachedFile = file;
