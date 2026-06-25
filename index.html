@@ -10458,9 +10458,18 @@ var parseDatabaseExport = async function(rows, type) {
                                   });
                                   var sheetNames = workbook.SheetNames || [];
                                   var firstSheet = sheetNames[0] ? workbook.Sheets[sheetNames[0]] : null;
-                                  var rows = firstSheet ? XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: '', raw: true}) : [];
                                   
-                                  self.postMessage({ success: true, rows: rows, workbook: workbook });
+                                  // Only extract first 15 rows for the Database Export checker to save time!
+                                  var rows = [];
+                                  if (firstSheet) {
+                                      var range = XLSX.utils.decode_range(firstSheet['!ref'] || "A1:A1");
+                                      range.e.r = Math.min(range.e.r, range.s.r + 15);
+                                      rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: '', raw: true, blankrows: false, range: range});
+                                  }
+                                  
+                                  // Stringify workbook to prevent DataCloneError on massive files
+                                  var wbStr = JSON.stringify(workbook);
+                                  self.postMessage({ success: true, rows: rows, workbookStr: wbStr });
                               } catch (err) {
                                   self.postMessage({ success: false, error: err.message || String(err) });
                               }
@@ -10473,7 +10482,7 @@ var parseDatabaseExport = async function(rows, type) {
                       worker.onmessage = function(e) {
                           URL.revokeObjectURL(workerUrl);
                           if (e.data.success) {
-                              resolve({ rows: e.data.rows, workbook: e.data.workbook });
+                              resolve({ rows: e.data.rows, workbookStr: e.data.workbookStr });
                           } else {
                               reject(new Error(e.data.error));
                           }
@@ -10490,7 +10499,7 @@ var parseDatabaseExport = async function(rows, type) {
                   });
                   
                   rows = workerResult.rows || [];
-                  window.__cachedWorkbook = workerResult.workbook;
+                  window.__cachedWorkbook = JSON.parse(workerResult.workbookStr);
                   window.__cachedFile = file;
                   if (rows.length > 0) firstFewRows = rows.slice(0, 3).map(function(r) { return r.join('|'); }).join('\n');
                   
