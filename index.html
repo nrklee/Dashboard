@@ -2703,34 +2703,38 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
             }
         });
 
-        // 1. Delete old data if not append
-        if (!isAppend) {
-            updateProgress(`กำลังลบข้อมูลเก่าในตาราง ${tableName}...`, 8);
-            // Use RPC to truncate table safely and avoid 1000-row delete limit
-            const rpcName = type === 'sales' ? 'truncate_sales_raw' : 'truncate_targets_raw';
-            const { error: deleteError } = await window.supabase.rpc(rpcName);
+        // 1. Prepare data for Upsert (Skip if exists)
+        // We will no longer delete old data. Instead, we generate a unique signature for each row.
+        
+        // Helper function to generate SHA-256 hash for a row
+        const generateRowSignature = async (rowStr) => {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(rowStr);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        };
+
+        updateProgress("กำลังประมวลผลลายเซ็นข้อมูล (Row Signatures)...", 8);
+        
+        // Generate signatures for all rows
+        for (let i = 0; i < rowsToInsert.length; i++) {
+            const row = rowsToInsert[i];
+            // Create a deterministic string of all values to check for exact match
+            const rowString = type === 'sales' 
+                ? `${row.year_label}|${row.month_index}|${row.day}|${row.region}|${row.province}|${row.district}|${row.brand}|${row.size}|${row.sku}|${row.cv}|${row.group}|${row.model}|${row.rebate}|${row.set}|${row.sales}|${row.qty}|${row.ton}`
+                : `${row.year_label}|${row.month_index}|${row.day}|${row.region}|${row.province}|${row.district}|${row.group}|${row.brand}|${row.model}|${row.size}|${row.sku}|${row.target_value}|${row.target_ton}|${row.target_level}`;
             
-            if (deleteError) {
-                console.error("RPC truncate failed, falling back to delete...", deleteError);
-                let deletedCount = 1000;
-                let loopCount = 0;
-                while (deletedCount > 0 && loopCount < 100) {
-                    loopCount++;
-                    updateProgress(`กำลังลบข้อมูลเก่า (ลบแล้ว ${loopCount * 1000} แถว)...`, 8);
-                    const { data, error: fallbackError } = await window.supabase
-                        .from(tableName)
-                        .delete()
-                        .neq('year_label', 'impossible_value_to_force_delete_all')
-                        .select('id')
-                        .limit(1000);
-                    if (fallbackError) throw fallbackError;
-                    deletedCount = data ? data.length : 0;
-                }
+            row.row_signature = await generateRowSignature(rowString);
+            
+            if (i % 5000 === 0) {
+                updateProgress(`กำลังสร้างลายเซ็นข้อมูล ${i}/${rowsToInsert.length}...`, 8 + Math.round((i/rowsToInsert.length)*10));
             }
         }
         
-        // 2. Insert new data in batches of 2000 in parallel with concurrency limit & retry logic
-        const BATCH_SIZE = 2000;
+        // 2. Insert new data in batches
+        // Reduce batch size to prevent payload too large errors and timeouts
+        const BATCH_SIZE = 1000;
         const batches = [];
         for (let i = 0; i < rowsToInsert.length; i += BATCH_SIZE) {
             batches.push(rowsToInsert.slice(i, i + BATCH_SIZE));
@@ -2740,23 +2744,26 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
         const uploadBatchWithRetry = async (batch, batchIndex, retries = 3) => {
             for (let attempt = 1; attempt <= retries; attempt++) {
                 try {
-                    const { error: insertError } = await window.supabase.from(tableName).insert(batch);
+                    const { error: insertError } = await window.supabase.from(tableName).upsert(batch, { 
+                        onConflict: 'row_signature', 
+                        ignoreDuplicates: true 
+                    });
                     if (insertError) throw insertError;
                     
                     completedBatches++;
-                    const percent = 10 + Math.round((completedBatches / batches.length) * 85);
+                    const percent = 20 + Math.round((completedBatches / batches.length) * 75);
                     updateProgress(`กำลังบันทึกข้อมูลส่วนที่ ${completedBatches}/${batches.length}... (${Math.min(completedBatches * BATCH_SIZE, rowsToInsert.length)}/${rowsToInsert.length} บรรทัด)`, percent);
                     return; // Success!
                 } catch (err) {
                     console.warn(`Batch ${batchIndex + 1} attempt ${attempt} failed:`, err);
                     if (attempt === retries) throw err; // Re-throw if all retries failed
-                    // Exponential backoff delay
-                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                    await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // Increased backoff
                 }
             }
         };
 
-        const CONCURRENCY = 6;
+        // Reduce concurrency to prevent overwhelming Supabase
+        const CONCURRENCY = 3;
         const queue = batches.map((batch, idx) => () => uploadBatchWithRetry(batch, idx));
         const runQueue = async () => {
             const workers = [];
@@ -10432,18 +10439,73 @@ var parseDatabaseExport = async function(rows, type) {
               window.__cachedFile = null;
               if (rows.length > 0) firstFewRows = rows.slice(0, 3).map(function(r) { return r.join('|'); }).join('\n');
           } else {
-              if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังอ่านไฟล์ Excel...', 18);
-              await new Promise(function(r) { setTimeout(r, 50); });
+              if (typeof updateLoadingStatus === 'function') updateLoadingStatus('กำลังอ่านไฟล์ Excel... (ไม่ค้างแน่นอน)', 18);
+              await new Promise(function(r) { setTimeout(r, 100); });
+              
               var data = await file.arrayBuffer();
-              var workbook = XLSX.read(data, {
-                  type: 'array', dense: true, cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false, cellText: false
-              });
-              window.__cachedWorkbook = workbook;
-              window.__cachedFile = file;
-              var sheetNames = workbook.SheetNames || [];
-              var firstSheet = sheetNames[0] ? workbook.Sheets[sheetNames[0]] : null;
-              if (firstSheet) rows = typeof XLSX !== 'undefined' ? XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: '', raw: true}) : [];
-              if (rows.length > 0) firstFewRows = rows.slice(0, 3).map(function(r) { return r.join('|'); }).join('\n');
+              
+              // -------------------------------------------------------------
+              // WEB WORKER FOR XLSX PARSING TO PREVENT UI FREEZE
+              // -------------------------------------------------------------
+              try {
+                  const workerResult = await new Promise((resolve, reject) => {
+                      const workerCode = `
+                          importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+                          self.onmessage = function(e) {
+                              try {
+                                  var workbook = XLSX.read(e.data.buffer, {
+                                      type: 'array', dense: true, cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false, cellText: false
+                                  });
+                                  var sheetNames = workbook.SheetNames || [];
+                                  var firstSheet = sheetNames[0] ? workbook.Sheets[sheetNames[0]] : null;
+                                  var rows = firstSheet ? XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: '', raw: true}) : [];
+                                  
+                                  self.postMessage({ success: true, rows: rows, workbook: workbook });
+                              } catch (err) {
+                                  self.postMessage({ success: false, error: err.message || String(err) });
+                              }
+                          };
+                      `;
+                      const blob = new Blob([workerCode], { type: 'application/javascript' });
+                      const workerUrl = URL.createObjectURL(blob);
+                      const worker = new Worker(workerUrl);
+                      
+                      worker.onmessage = function(e) {
+                          URL.revokeObjectURL(workerUrl);
+                          if (e.data.success) {
+                              resolve({ rows: e.data.rows, workbook: e.data.workbook });
+                          } else {
+                              reject(new Error(e.data.error));
+                          }
+                          worker.terminate();
+                      };
+                      
+                      worker.onerror = function(err) {
+                          URL.revokeObjectURL(workerUrl);
+                          reject(err);
+                          worker.terminate();
+                      };
+                      
+                      worker.postMessage({ buffer: data }, [data]);
+                  });
+                  
+                  rows = workerResult.rows || [];
+                  window.__cachedWorkbook = workerResult.workbook;
+                  window.__cachedFile = file;
+                  if (rows.length > 0) firstFewRows = rows.slice(0, 3).map(function(r) { return r.join('|'); }).join('\n');
+                  
+              } catch (workerErr) {
+                  console.error('Worker failed, falling back to sync parse:', workerErr);
+                  var workbook = XLSX.read(data, {
+                      type: 'array', dense: true, cellFormula: false, cellStyles: false, cellNF: false, cellHTML: false, cellText: false
+                  });
+                  window.__cachedWorkbook = workbook;
+                  window.__cachedFile = file;
+                  var sheetNames = workbook.SheetNames || [];
+                  var firstSheet = sheetNames[0] ? workbook.Sheets[sheetNames[0]] : null;
+                  if (firstSheet) rows = typeof XLSX !== 'undefined' ? XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: '', raw: true}) : [];
+                  if (rows.length > 0) firstFewRows = rows.slice(0, 3).map(function(r) { return r.join('|'); }).join('\n');
+              }
           }
 
           var dbParsed = await parseDatabaseExport(rows, type);
