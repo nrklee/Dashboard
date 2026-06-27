@@ -2495,50 +2495,6 @@ try {
 }
 
 
-window.downloadSalesFromSupabase = async function() {
-    try {
-        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
-        
-        const { data: metaDataRow, error: metaError } = await window.supabase.from('app_data').select('*').eq('id', 'latest_sales_meta').maybeSingle();
-        if (metaError) throw metaError;
-        
-        if (!metaDataRow) throw new Error("ยังไม่มีข้อมูลยอดขายในระบบ (ไม่พบ Meta)");
-        
-        const metaData = typeof metaDataRow.data === "string" ? JSON.parse(metaDataRow.data) : metaDataRow.data;
-        const totalChunks = metaData.totalChunks || 0;
-        
-        if (totalChunks === 0) throw new Error("ข้อมูลยอดขายไม่สมบูรณ์ (จำนวนท่อน = 0)");
-        
-        const chunkIds = [];
-        for (let i = 0; i < totalChunks; i++) {
-            chunkIds.push(`latest_sales_chunk_${i}`);
-        }
-        
-        const { data: chunkRows, error: chunkError } = await window.supabase.from('app_data').select('*').in('id', chunkIds);
-        if (chunkError) throw chunkError;
-        
-        let fullBase64 = "";
-        for (let i = 0; i < totalChunks; i++) {
-            const chunkRow = chunkRows.find(r => r.id === `latest_sales_chunk_${i}`);
-            if (!chunkRow) throw new Error(`ข้อมูลยอดขายหายไปท่อนที่ ${i}`);
-            const chunkParsed = JSON.parse(chunkRow.data);
-            fullBase64 += chunkParsed.chunkData;
-        }
-        
-        const arr = fullBase64.split(',');
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new File([u8arr], metaData.fileName || "latest_sales.xlsx", { type: mime });
-    } catch (error) {
-        console.error("Download Error:", error);
-        throw error;
-    }
-};
 
 const defaultColumns = [
 {id:"col_1",originalName:"SALES_DATE",alias:"ยอดขายวันที่",visible:true},
@@ -2789,55 +2745,69 @@ window.downloadSalesFromSupabase = async function() {
                 window.updateSyncProgress(msg, percent);
             }
         };
+        
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        // Resilient paginated fetch with retry + delay
+        const fetchAllRows = async (tableName, selectCols, label) => {
+            let allRows = [];
+            let start = 0;
+            const limit = 1000;
+            let page = 1;
+            const MAX_RETRIES = 3;
+            
+            while(true) {
+                let retries = 0;
+                let success = false;
+                
+                while (retries < MAX_RETRIES && !success) {
+                    try {
+                        updateProgress(`กำลังโหลด${label} หน้าที่ ${page} (${allRows.length.toLocaleString()} แถว)...`, Math.min(10 + page, 85));
+                        
+                        let query = window.supabase.from(tableName).select(selectCols);
+                        query = query.range(start, start + limit - 1);
+                        
+                        const { data, error } = await query;
+                        if (error) throw error;
+                        
+                        if (data && data.length > 0) {
+                            allRows = allRows.concat(data);
+                            start += limit;
+                            page++;
+                            success = true;
+                            if (data.length < limit) return allRows; // last page
+                        } else {
+                            return allRows; // no more data
+                        }
+                    } catch (err) {
+                        retries++;
+                        console.warn(`[Cloud Sync] ${label} page ${page} retry ${retries}/${MAX_RETRIES}: ${err.message}`);
+                        if (retries >= MAX_RETRIES) {
+                            console.warn(`[Cloud Sync] ${label} หยุดที่ ${allRows.length} แถว (max retries reached)`);
+                            if (allRows.length > 0) return allRows; // return partial
+                            throw err;
+                        }
+                        await delay(2000 * retries); // exponential backoff
+                    }
+                }
+                
+                // Small delay between pages to avoid overwhelming Supabase free tier
+                if (page % 10 === 0) {
+                    await delay(500);
+                }
+            }
+        };
 
         updateProgress("กำลังเตรียมดาวน์โหลดข้อมูลยอดขายล่าสุด...", 10);
         
-        // Fetch raw rows directly from sales_raw (avoids view timeout)
-        let allRawSales = [];
-        let hasMore = true;
-        let start = 0;
-        const limit = 1000;
-        let page = 1;
-        while(hasMore) {
-            updateProgress(`กำลังโหลดข้อมูลยอดขาย หน้าที่ ${page}...`, 10 + Math.min(page * 2, 40));
-            const { data, error } = await window.supabase
-                .from('sales_raw')
-                .select('year_label,month_index,day,region,province,district,brand,size,sku,cv,category,model,rebate,set,sales,qty,ton,sub_cv_name,cv_type,desc_loc,raw_json')
-                .range(start, start + limit - 1);
-            if (error) throw error;
-            if (data && data.length > 0) {
-                allRawSales = allRawSales.concat(data);
-                start += limit;
-                page++;
-                if (data.length < limit) hasMore = false;
-            } else {
-                hasMore = false;
-            }
-        }
+        // Fetch raw rows directly from sales_raw (no raw_json to reduce payload)
+        const salesCols = 'year_label,month_index,day,region,province,district,brand,size,sku,cv,category,model,rebate,set,sales,qty,ton,sub_cv_name,cv_type,desc_loc';
+        const allRawSales = await fetchAllRows('sales_raw', salesCols, 'ข้อมูลยอดขาย');
         
-        updateProgress(`โหลดข้อมูลยอดขาย ${allRawSales.length.toLocaleString()} แถวเสร็จแล้ว กำลังสร้างโครงสร้างข้อมูล...`, 55);
+        updateProgress(`โหลดข้อมูลยอดขาย ${allRawSales.length.toLocaleString()} แถวเสร็จแล้ว`, 55);
         
         // Fetch targets_raw
-        let allRawTargets = [];
-        hasMore = true;
-        start = 0;
-        page = 1;
-        while(hasMore) {
-            updateProgress(`กำลังโหลดข้อมูลเป้าหมาย หน้าที่ ${page}...`, 55 + Math.min(page * 3, 15));
-            const { data, error } = await window.supabase
-                .from('targets_raw')
-                .select('*')
-                .range(start, start + limit - 1);
-            if (error) throw error;
-            if (data && data.length > 0) {
-                allRawTargets = allRawTargets.concat(data);
-                start += limit;
-                page++;
-                if (data.length < limit) hasMore = false;
-            } else {
-                hasMore = false;
-            }
-        }
+        const allRawTargets = await fetchAllRows('targets_raw', '*', 'ข้อมูลเป้าหมาย');
         
         updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 75);
         
@@ -2860,13 +2830,13 @@ window.downloadSalesFromSupabase = async function() {
                 size: r.size || '',
                 sku: r.sku || '',
                 cv: r.cv || '',
-                subCvName: r.sub_cv_name || (r.raw_json && r.raw_json.subCvName) || '',
-                cvType: r.cv_type || (r.raw_json && r.raw_json.cvType) || '',
-                descLoc: r.desc_loc || (r.raw_json && r.raw_json.descLoc) || '',
-                group: r.category || (r.raw_json && (r.raw_json.group || r.raw_json.category)) || '',
+                subCvName: r.sub_cv_name || '',
+                cvType: r.cv_type || '',
+                descLoc: r.desc_loc || '',
+                group: r.category || '',
                 model: r.model || '',
-                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
-                set: r.set || (r.raw_json && r.raw_json.set) || '',
+                rebate: r.rebate || '',
+                set: r.set || '',
                 sales: Number(r.sales || 0),
                 qty: Number(r.qty || 0),
                 ton: Number(r.ton || 0),
@@ -2908,7 +2878,6 @@ window.downloadSalesFromSupabase = async function() {
         };
         
         const dailySales = allRawSales.map(mapSalesRow);
-        const monthlySales = dailySales; // monthly = all individual rows (same as daily for frontend)
         
         // Build yearly entries by aggregating
         const yearlyMap = {};
@@ -2946,7 +2915,7 @@ window.downloadSalesFromSupabase = async function() {
         updateProgress("กำลังรวมข้อมูลทั้งหมด...", 90);
         
         const finalData = {
-            monthly: monthlySales.concat(monthlyTargets),
+            monthly: dailySales.concat(monthlyTargets),
             yearly: yearlySales.concat(yearlyTargets),
             daily: dailySales
         };
