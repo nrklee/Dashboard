@@ -10,12 +10,13 @@
             metaViewport.name = 'viewport';
             document.head.appendChild(metaViewport);
         }
-        metaViewport.content = 'width=1280';
+        metaViewport.content = 'width=1440';
     })();
     </script>
 
     <meta charset="UTF-8">
-    <title>Salytix V2.1 - Data Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salytix - Data Management</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500&family=Kanit:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -91,6 +92,7 @@
         }
     </script>
     <style>
+
         /* GLOBAL TOGGLE STYLES FIX */
         .toggle-group {
             display: inline-flex !important;
@@ -576,6 +578,628 @@ button.bg-blue-600:hover, button.bg-orange-500:hover {
     
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
+
+
+        /* ===== Utility Classes (Tailwind-lite static replacement) ===== */
+        .border { border-width:1px !important; border-style:solid !important; border-color:var(--border) !important; }
+        .hidden { display:none !important; }
+        .block { display:block !important; }
+        .flex { display:flex !important; }
+        .inline-flex { display:inline-flex !important; }
+        .grid { display:grid !important; }
+        .flex-col { flex-direction:column !important; }
+        .flex-wrap { flex-wrap:wrap !important; }
+        .flex-1 { flex:1 1 0% !important; }
+        .flex-shrink-0, .shrink-0 { flex-shrink:0 !important; }
+        .items-center { align-items:center !important; }
+        .items-start { align-items:flex-start !important; }
+        .justify-between { justify-content:space-between !important; }
+        .justify-center { justify-content:center !important; }
+        .justify-end { justify-content:flex-end !important; }
+        .justify-self-end { justify-self:end !important; }
+        .self-center { align-self:center !important; }
+        .relative { position:relative !important; }
+        .absolute { position:absolute !important; }
+        .fixed { position:fixed !important; }
+        .sticky { position:sticky !important; }
+        .inset-0 { inset:0 !important; }
+        .top-0 { top:0 !important; }
+        .top-4 { top:1rem !important; }
+        .right-4 { right:1rem !important; }
+        .left-2\.5 { left:0.625rem !important; }
+        .z-10 { z-index:10 !important; }
+        .z-20 { z-index:20 !important; }
+        .z-50 { z-index:50 !important; }
+        .z-\[100\] { z-index:100 !important; }
+        .w-4 { width:1rem !important; }
+        .w-5 { width:1.25rem !important; }
+        .w-6 { width:1.5rem !important; }
+        .w-24 { width:6rem !important; }
+        .w-full { width:100% !important; }
+        .h-1\.5 { height:0.375rem !important; }
+        .h-4 { height:1rem !important; }
+        .h-5 { height:1.25rem !important; }
+        .h-6 { height:1.5rem !important; }
+        .h-64 { height:16rem !important; }
+        .h-80 { height:20rem !important; }
+        .h-96 { height:24rem !important; }
+        .h-\[30rem\] { height:30rem !important; }
+        .h-full { height:100% !important; }
+        .h-screen { height:100vh !important; }
+        .min-h-0 { min-height:0 !important; }
+        .min-h-screen { min-height:100vh !important; }
+        .max-h-56 { max-height:14rem !important; }
+        .max-h-60 { max-height:15rem !important; }
+        .max-h-\[60vh\] { max-height:60vh !important; }
+        .min-w-0 { min-width:0 !important; }
+        .min-w-\[56px\] { min-width:56px !important; }
+        .min-w-\[72px\] { min-width:72px !important; }
+        .min-w-\[92px\] { min-width:92px !important; }
+        .min-w-\[170px\] { min-width:170px !important; }
+        .max-w-md { max-width:28rem !important; }
+        .max-w-2xl { max-width:42rem !important; }
+        .max-w-\[120px\] { max-width:120px !important; }
+        .max-w-\[150px\] { max-width:150px !important; }
+        .overflow-auto { overflow:auto !important; }
+        .overflow-hidden { overflow:hidden !important; }
+        .overflow-y-auto { overflow-y:auto !important; }
+        .cursor-pointer { cursor:pointer !important; }
+        .break-words { overflow-wrap:break-word !important; }
+        .truncate { overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+        .whitespace-nowrap { white-space:nowrap !important; }
+        .rounded { border-radius:0.25rem !important; }
+        .rounded-lg { border-radius:0.5rem !important; }
+        .rounded-xl { border-radius:0.75rem !important; }
+        .rounded-full { border-radius:9999px !important; }
+        .text-white { color:#ffffff !important; }
+        .text-green-500 { color:#22c55e !important; }
+        .text-indigo-600 { color:#4f46e5 !important; }
+        .text-orange-700 { color:#c2410c !important; }
+        .text-emerald-600 { color:#059669 !important; }
+        .text-emerald-700 { color:#047857 !important; }
+        .text-rose-600 { color:#e11d48 !important; }
+        .text-rose-700 { color:#be123c !important; }
+        .bg-slate-400 { background-color:#94a3b8 !important; }
+        .bg-yellow-400 { background-color:#facc15 !important; }
+        .bg-blue-500 { background-color:var(--accent) !important; }
+        .border-blue-600 { border-color:var(--accent) !important; }
+        .border-b { border-bottom-width:1px !important; border-bottom-style:solid !important; }
+        .border-t { border-top-width:1px !important; border-top-style:solid !important; }
+        .last\:border-0:last-child { border-width:0 !important; }
+        .last\:border-b-0:last-child { border-bottom-width:0 !important; }
+        .font-normal { font-weight:400 !important; }
+        .font-medium { font-weight:500 !important; }
+        .font-semibold { font-weight:600 !important; }
+        .font-bold { font-weight:700 !important; }
+        .font-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace !important; }
+        .font-sans { font-family:"Inter","Noto Sans Thai",system-ui,sans-serif !important; }
+        .leading-tight { line-height:1.25 !important; }
+        .text-left { text-align:left !important; }
+        .text-center { text-align:center !important; }
+        .text-right { text-align:right !important; }
+        .uppercase { text-transform:uppercase !important; }
+        .tabular-nums { font-variant-numeric:tabular-nums !important; }
+        .text-\[10px\] { font-size:10px !important; line-height:1rem !important; }
+        .text-\[11px\] { font-size:11px !important; line-height:1rem !important; }
+        .text-xs { font-size:0.75rem !important; line-height:1rem !important; }
+        .text-sm { font-size:0.875rem !important; line-height:1.25rem !important; }
+        .text-base { font-size:1rem !important; line-height:1.5rem !important; }
+        .text-lg { font-size:1.125rem !important; line-height:1.75rem !important; }
+        .text-xl { font-size:1.25rem !important; line-height:1.75rem !important; }
+        .m-4 { margin:1rem !important; }
+        .mx-auto { margin-left:auto !important; margin-right:auto !important; }
+        .ml-1 { margin-left:0.25rem !important; }
+        .ml-auto { margin-left:auto !important; }
+        .mr-1 { margin-right:0.25rem !important; }
+        .mr-2 { margin-right:0.5rem !important; }
+        .mt-0\.5 { margin-top:0.125rem !important; }
+        .mt-1 { margin-top:0.25rem !important; }
+        .mt-2 { margin-top:0.5rem !important; }
+        .mt-3 { margin-top:0.75rem !important; }
+        .mt-4 { margin-top:1rem !important; }
+        .mb-1 { margin-bottom:0.25rem !important; }
+        .mb-2 { margin-bottom:0.5rem !important; }
+        .mb-3 { margin-bottom:0.75rem !important; }
+        .mb-4 { margin-bottom:1rem !important; }
+        .mb-6 { margin-bottom:1.5rem !important; }
+        .p-1\.5 { padding:0.375rem !important; }
+        .p-2 { padding:0.5rem !important; }
+        .p-3 { padding:0.75rem !important; }
+        .p-4 { padding:1rem !important; }
+        .p-5 { padding:1.25rem !important; }
+        .p-6 { padding:1.5rem !important; }
+        .px-1 { padding-left:0.25rem !important; padding-right:0.25rem !important; }
+        .px-2 { padding-left:0.5rem !important; padding-right:0.5rem !important; }
+        .px-3 { padding-left:0.75rem !important; padding-right:0.75rem !important; }
+        .px-4 { padding-left:1rem !important; padding-right:1rem !important; }
+        .py-1 { padding-top:0.25rem !important; padding-bottom:0.25rem !important; }
+        .py-2 { padding-top:0.5rem !important; padding-bottom:0.5rem !important; }
+        .py-2\.5 { padding-top:0.625rem !important; padding-bottom:0.625rem !important; }
+        .py-3 { padding-top:0.75rem !important; padding-bottom:0.75rem !important; }
+        .py-5 { padding-top:1.25rem !important; padding-bottom:1.25rem !important; }
+        .pb-1 { padding-bottom:0.25rem !important; }
+        .pb-2 { padding-bottom:0.5rem !important; }
+        .pl-8 { padding-left:2rem !important; }
+        .pr-1 { padding-right:0.25rem !important; }
+        .pr-2 { padding-right:0.5rem !important; }
+        .pr-8 { padding-right:2rem !important; }
+        .pt-3 { padding-top:0.75rem !important; }
+        .gap-1 { gap:0.25rem !important; }
+        .gap-1\.5 { gap:0.375rem !important; }
+        .gap-2 { gap:0.5rem !important; }
+        .gap-3 { gap:0.75rem !important; }
+        .gap-4 { gap:1rem !important; }
+        .gap-6 { gap:1.5rem !important; }
+        .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top:0.375rem !important; }
+        .grid-cols-1 { grid-template-columns:repeat(1,minmax(0,1fr)) !important; }
+        .grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+        .grid-cols-\[minmax\(0\,1\.45fr\)_minmax\(0\,1fr\)_minmax\(0\,1fr\)_auto_auto_18px\] { grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) minmax(0,1fr) auto auto 18px !important; }
+        .lg\:col-span-1 { }
+        .lg\:col-span-2 { }
+        .shadow-sm { box-shadow:var(--shadow-sm) !important; }
+        .shadow-md, .shadow-xl, .shadow-2xl { box-shadow:var(--shadow-lg) !important; }
+        .transition-all { transition:all .2s ease !important; }
+        .transition-colors { transition:color .2s ease, background-color .2s ease, border-color .2s ease !important; }
+        .transition-transform { transition:transform .2s ease !important; }
+        .duration-200 { transition-duration:.2s !important; }
+        .animate-spin { animation:spin 1s linear infinite !important; }
+        .fade-in, .animate-in { animation:fadeIn .2s ease !important; }
+        .zoom-in-95 { transform:scale(.95); }
+        .hover\:underline:hover { text-decoration:underline !important; }
+        .hover\:shadow-sm:hover { box-shadow:var(--shadow-sm) !important; }
+        .hover\:text-slate-600:hover { color:var(--text-sec) !important; }
+        .hover\:bg-slate-50:hover,
+        .hover\:bg-slate-200:hover { background-color:var(--bg-soft) !important; }
+        .hover\:bg-blue-50:hover,
+        .hover\:bg-blue-100:hover { background-color:var(--accent-soft) !important; }
+        .focus\:outline-none:focus { outline:none !important; }
+        .focus\:border-blue-500:focus { border-color:var(--accent) !important; }
+        /* Phone: single column by default */
+        @media (max-width:479px) {
+            .grid-cols-2 { grid-template-columns:repeat(1,minmax(0,1fr)) !important; }
+            .gap-4 { gap:0.625rem !important; }
+            .gap-6 { gap:0.75rem !important; }
+            .p-5 { padding:0.875rem !important; }
+            .p-6 { padding:1rem !important; }
+            .h-64 { height:13rem !important; }
+            .h-80 { height:16rem !important; }
+            .h-96 { height:18rem !important; }
+            .h-\[30rem\] { height:20rem !important; }
+        }
+        @media (min-width:480px) and (max-width:639px) {
+            .grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+        }
+        @media (min-width:640px) {
+            .sm\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+        }
+        @media (min-width:768px) {
+            .md\:flex { display:flex !important; }
+            .md\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+            .md\:grid-cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+            .md\:grid-cols-4 { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+        }
+        /* iPad / tablet landscape */
+        @media (min-width:1024px) {
+            .md\:grid-cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+            .lg\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+            .lg\:grid-cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+            .lg\:grid-cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+            .lg\:grid-cols-6 { grid-template-columns:repeat(6,minmax(0,1fr)) !important; }
+            .lg\:col-span-1 { grid-column:span 1 / span 1 !important; }
+            .lg\:col-span-2 { grid-column:span 2 / span 2 !important; }
+        }
+        @media (min-width:1280px) {
+            .xl\:grid-cols-5 { grid-template-columns:repeat(5,minmax(0,1fr)) !important; }
+            .xl\:grid-cols-10 { grid-template-columns:repeat(10,minmax(0,1fr)) !important; }
+        }
+        /* Smooth scrolling for touch */
+        @media (pointer:coarse) {
+            .overflow-y-auto, .overflow-auto, .custom-scrollbar { -webkit-overflow-scrolling:touch; }
+            .custom-scrollbar::-webkit-scrollbar { width:3px;height:3px; }
+        }
+
+
+
+        /* ──────────────────────────────────────────────
+           1.  HEADER: WRAP-BASED MULTI-LINE LAYOUT
+               Toggle groups → Row 1
+               Action buttons → Row 2 (right-aligned)
+           ────────────────────────────────────────────── */
+        @media(max-width:767px) {
+
+            /* Push the AI/theme/logout/menu cluster to the right end */
+            .ai-launch-btn {
+                margin-left: auto !important;
+            }
+
+            /* Ensure action buttons never wrap away from each other */
+            .ai-launch-btn, .theme-toggle, .logout-btn, .menu-btn {
+                flex-shrink: 0;
+            }
+
+            
+            .toggle-btn {
+                border: 1px solid var(--border) !important;
+                border-radius: 6px !important;
+                color: var(--text-sec) !important;
+                background: var(--surface-alt) !important;
+                transition: all 0.2s ease !important;
+                font-weight: 600 !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .toggle-btn:hover {
+                background: var(--bg-soft) !important;
+                border-color: var(--border) !important;
+                color: var(--text) !important;
+            }
+            .toggle-btn.active {
+                background: var(--accent) !important;
+                border-color: var(--accent-border) !important;
+                color: var(--accent-text, #fff) !important;
+                box-shadow: var(--shadow-sm) !important;
+            }
+/* Toggle groups: don't shrink, keep natural width */
+            .toggle-group {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-shrink: 0;
+            }
+
+            /* Controls row: consistent gap, allow wrapping */
+            .app-header-controls {
+                gap: 6px !important;
+                align-items: center;
+                padding-bottom: 2px;
+            }
+
+            /* Logout: show icon only — hide Thai text, show exit icon */
+            .logout-btn {
+                font-size: 0 !important;
+                min-width: 38px !important;
+                width: 38px !important;
+                padding: 0 !important;
+                position: relative;
+                overflow: visible;
+            }
+            .logout-btn::before {
+                content: '🚪';
+                font-size: 16px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Header title: keep compact */
+            .dashboard-header h1 {
+                font-size: 13px !important;
+                white-space: nowrap;
+            }
+        }
+
+        /* ──────────────────────────────────────────────
+           2.  SMALL PHONES (≤560px)
+               Tighter padding, compact controls
+           ────────────────────────────────────────────── */
+        @media(max-width:560px) {
+
+            .app-header-controls {
+                gap: 5px !important;
+            }
+
+            .dashboard-shell {
+                padding-top: env(safe-area-inset-top);
+            }
+
+            .dashboard-header {
+                padding: calc(8px + env(safe-area-inset-top)) 10px 8px !important;
+                gap: 6px !important;
+            }
+
+            .dashboard-header h1 {
+                font-size: 11px !important;
+                line-height: 1.2 !important;
+                white-space: normal !important;
+                max-width: calc(100vw - 24px);
+            }
+
+            /* Toggle buttons: slightly more compact text */
+            .toggle-btn {
+                padding: 5px 9px !important;
+                font-size: 10px !important;
+            }
+
+            /* AI button: smaller */
+            .ai-launch-btn {
+                min-width: 36px !important;
+                height: 34px !important;
+                padding: 0 7px !important;
+                font-size: 11px !important;
+            }
+
+            /* Theme + menu: compact square */
+            .theme-toggle {
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 14px !important;
+            }
+            .menu-btn {
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 16px !important;
+            }
+
+            /* Filters bar: reduce top padding slightly */
+            .dashboard-filters {
+                padding: 12px 10px 12px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 0 !important;
+            }
+
+            .filters-head-row {
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+                margin-bottom: 10px !important;
+                width: 100% !important;
+            }
+
+            .filters-title {
+                flex: 1 1 100% !important;
+                max-width: 100% !important;
+                font-size: 12px !important;
+                line-height: 1.4 !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            .filters-head-actions {
+                width: auto !important;
+                margin-left: auto !important;
+                justify-content: flex-end !important;
+                gap: 8px !important;
+            }
+
+            .filters-head-actions button {
+                min-height: 34px;
+                padding: 6px 10px;
+                border-radius: 10px;
+            }
+
+            .filters-source-meta {
+                font-size: 10.5px !important;
+                line-height: 1.65 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .filters-source-meta-row {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 4px !important;
+                padding: 8px 10px !important;
+                border-radius: 10px !important;
+            }
+
+            .filters-source-sep {
+                display: none !important;
+            }
+
+            .filters-source-label {
+                min-width: 0 !important;
+                font-size: 10px !important;
+                letter-spacing: 0.02em !important;
+                text-transform: uppercase !important;
+            }
+
+            .filters-source-badge {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 6px 8px !important;
+                border-radius: 8px !important;
+                box-sizing: border-box !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            /* Section label: slightly smaller */
+            .sec-title {
+                font-size: 13px !important;
+            }
+
+            /* KPI label size */
+            .kpi-card {
+                padding: 12px 14px !important;
+            }
+        }
+
+        /* ──────────────────────────────────────────────
+           3.  VERY SMALL PHONES (≤390px — SE, older)
+               Ultra compact but still usable
+           ────────────────────────────────────────────── */
+        @media(max-width:390px) {
+
+            .dashboard-header {
+                padding: calc(6px + env(safe-area-inset-top)) 8px 8px !important;
+            }
+
+            .toggle-btn {
+                padding: 4px 7px !important;
+                font-size: 9.5px !important;
+            }
+            .toggle-group {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0 !important;
+                gap: 6px !important;
+            }
+            .toggle-btn {
+                border: 1px solid var(--border) !important;
+                border-radius: 6px !important;
+                color: var(--text-sec) !important;
+                background: var(--surface-alt) !important;
+                transition: all 0.2s ease !important;
+                font-weight: 600 !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .toggle-btn:hover {
+                background: var(--bg-soft) !important;
+                border-color: var(--border) !important;
+                color: var(--text) !important;
+            }
+            .toggle-btn.active {
+                background: var(--accent) !important;
+                border-color: var(--accent-border) !important;
+                color: var(--accent-text, #fff) !important;
+                box-shadow: var(--shadow-sm) !important;
+            }
+
+            .ai-launch-btn {
+                min-width: 34px !important;
+                padding: 0 5px !important;
+                font-size: 10px !important;
+            }
+
+            .theme-toggle {
+                width: 32px !important;
+                min-width: 32px !important;
+                height: 32px !important;
+                font-size: 13px !important;
+            }
+            .menu-btn {
+                width: 32px !important;
+                min-width: 32px !important;
+                height: 32px !important;
+            }
+
+            .logout-btn {
+                min-width: 34px !important;
+                width: 34px !important;
+            }
+            .logout-btn::before {
+                font-size: 15px;
+            }
+
+            /* Header title: minimal */
+            .dashboard-header h1 {
+                font-size: 10px !important;
+            }
+
+            .filters-title {
+                font-size: 11px !important;
+            }
+
+            .filters-head-actions {
+                gap: 6px !important;
+            }
+
+            .filters-head-actions button {
+                font-size: 11px !important;
+            }
+
+            .filters-panel-content {
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                max-height: min(68dvh, 720px) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                padding-right: 2px !important;
+                padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+                -webkit-overflow-scrolling: touch !important;
+                overscroll-behavior: contain !important;
+                touch-action: pan-y !important;
+            }
+
+            .filters-source-label {
+                min-width: 72px;
+            }
+
+            /* Filters: stacked 1-col */
+            .filters-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* ──────────────────────────────────────────────
+           4.  TOUCH DEVICE FEEDBACK
+               Active-state scale + momentum scrolling
+           ────────────────────────────────────────────── */
+        @media(pointer:coarse) {
+
+            /* Tap response for interactive elements */
+            .toggle-btn:active {
+                transform: scale(0.91) !important;
+                transition: transform 0.07s ease !important;
+            }
+            .kpi-card:active {
+                transform: scale(0.985) translateY(0) !important;
+                transition: transform 0.07s ease !important;
+            }
+            .dashboard-card:active {
+                transform: scale(0.985) translateY(0) !important;
+                transition: transform 0.07s ease !important;
+            }
+            .drawer-btn:active {
+                opacity: 0.7;
+                transform: scale(0.97);
+                transition: all 0.07s ease;
+            }
+            .logout-btn:active, .menu-btn:active, .theme-toggle:active {
+                opacity: 0.75;
+                transform: scale(0.92);
+                transition: all 0.07s ease;
+            }
+
+            /* Momentum scrolling for key panels */
+            .drawer-content,
+            .ai-chat-list,
+            .dropdown-content,
+            .repeat-gap-list-shell,
+            .sales-guide-list-shell {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+        }
+
+        /* ──────────────────────────────────────────────
+           5.  LANDSCAPE PHONE
+               Compact spacing when rotated
+           ────────────────────────────────────────────── */
+        @media(max-height:480px) and (orientation:landscape) and (pointer:coarse) {
+
+            .dashboard-header {
+                padding: 5px 12px !important;
+            }
+            .dashboard-filters {
+                padding: 5px 10px !important;
+            }
+            .kpi-card {
+                padding: 8px 12px !important;
+                border-radius: 8px !important;
+            }
+            .dashboard-card {
+                border-radius: 8px !important;
+            }
+            .dashboard-main {
+                padding: 6px !important;
+                padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important;
+            }
+
+            /* Smaller chart heights in landscape */
+            .h-64 { height: 11rem !important; }
+            .h-80 { height: 13rem !important; }
+            .h-96 { height: 15rem !important; }
+        }
+
+    
+
 </style>
 </head>
 <body>
@@ -1980,119 +2604,30 @@ function saveSettings(newSettings) {
 
 window.openColumnSettingsModal = function() {
     let m = document.getElementById('my-col-modal');
-    if(m) {
-        m.remove();
+    if(!m) {
+        m = document.createElement('div');
+        m.id = 'my-col-modal';
+        m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        const inner = document.createElement('div');
+        inner.className = 'p-4';
+        inner.style.cssText = 'background:white;padding:20px;border-radius:10px;width:600px;max-height:80vh;overflow-y:auto;position:relative;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = 'X ปิด';
+        closeBtn.style.cssText = 'position:absolute;top:15px;right:15px;background:#ef4444;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-weight:bold;';
+        closeBtn.onclick = () => m.style.display = 'none';
+        inner.appendChild(closeBtn);
+        
+        m.appendChild(inner);
+        document.body.appendChild(m);
     }
-    m = document.createElement('div');
-    m.id = 'my-col-modal';
-    m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    
-    const inner = document.createElement('div');
-    inner.className = 'p-6';
-    inner.style.cssText = 'background:white;border-radius:12px;width:700px;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 10px 25px rgba(0,0,0,0.2);display:flex;flex-direction:column;gap:16px;';
-    
-    const header = document.createElement('div');
-    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;padding-bottom:12px;position:sticky;top:0;background:white;z-index:10;';
-    header.innerHTML = '<h2 style="margin:0;font-size:18px;font-weight:bold;color:#1f2937;">ตั้งค่าชื่อและซ่อนคอลัมน์</h2>';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '✕';
-    closeBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;padding:4px;';
-    closeBtn.onclick = () => m.style.display = 'none';
-    header.appendChild(closeBtn);
-    inner.appendChild(header);
-
-    const listContainer = document.createElement('div');
-    listContainer.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding-bottom:20px;';
-    
-    // Copy current settings
-    let localSettings = JSON.parse(JSON.stringify(currentSettings));
-    
-    localSettings.forEach((col, idx) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;';
-        
-        const checkWrap = document.createElement('div');
-        checkWrap.style.cssText = 'display:flex;align-items:center;gap:6px;width:120px;';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = col.visible;
-        checkbox.style.cssText = 'width:16px;height:16px;cursor:pointer;';
-        checkbox.onchange = (e) => { localSettings[idx].visible = e.target.checked; };
-        
-        const label = document.createElement('label');
-        label.innerText = 'แสดงคอลัมน์';
-        label.style.cssText = 'font-size:13px;color:#4b5563;cursor:pointer;';
-        label.onclick = () => checkbox.click();
-        
-        checkWrap.appendChild(checkbox);
-        checkWrap.appendChild(label);
-        
-        const origName = document.createElement('div');
-        origName.innerText = col.originalName;
-        origName.style.cssText = 'width:200px;font-size:13px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;';
-        origName.title = col.originalName;
-        
-        const aliasInput = document.createElement('input');
-        aliasInput.type = 'text';
-        aliasInput.value = col.alias;
-        aliasInput.placeholder = 'ชื่อที่ต้องการแสดง';
-        aliasInput.style.cssText = 'flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;outline:none;';
-        aliasInput.oninput = (e) => { localSettings[idx].alias = e.target.value; };
-        
-        row.appendChild(checkWrap);
-        row.appendChild(origName);
-        row.appendChild(aliasInput);
-        listContainer.appendChild(row);
-    });
-    
-    inner.appendChild(listContainer);
-    
-    const footer = document.createElement('div');
-    footer.style.cssText = 'display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #e5e7eb;padding-top:16px;position:sticky;bottom:0;background:white;z-index:10;';
-    
-    const resetBtn = document.createElement('button');
-    resetBtn.innerText = 'คืนค่าเริ่มต้น';
-    resetBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-weight:500;cursor:pointer;font-size:14px;';
-    resetBtn.onclick = () => {
-        if(confirm('ต้องการคืนค่าการตั้งค่าคอลัมน์ทั้งหมดเป็นค่าเริ่มต้นใช่หรือไม่?')) {
-            saveSettings(defaultColumns);
-            window.location.reload();
-        }
-    };
-    
-    const saveBtn = document.createElement('button');
-    saveBtn.innerText = 'บันทึกการตั้งค่า';
-    saveBtn.style.cssText = 'padding:8px 16px;border-radius:6px;border:none;background:#3b82f6;color:white;font-weight:500;cursor:pointer;font-size:14px;';
-    saveBtn.onclick = () => {
-        saveSettings(localSettings);
-        m.style.display = 'none';
-        alert('บันทึกการตั้งค่าคอลัมน์เรียบร้อยแล้ว ระบบจะทำการรีเฟรชหน้าจอใหม่');
-        window.location.reload();
-    };
-    
-    footer.appendChild(resetBtn);
-    footer.appendChild(saveBtn);
-    inner.appendChild(footer);
-    
-    m.appendChild(inner);
-    document.body.appendChild(m);
     m.style.display = 'flex';
 }
 window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
     if (!parsedData || !parsedData.monthly) return;
 
-    // Create a custom full-screen loading overlay
-    const overlay = document.createElement('div');
-    overlay.innerHTML = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;">
-            <div style="font-size:24px;margin-bottom:15px;font-weight:bold;">☁️ กำลังบันทึกข้อมูลดิบ (Raw Data) ลงฐานข้อมูล...</div>
-            <div style="font-size:16px;color:#ccc;margin-bottom:30px;" id="upload-progress-text">ระบบกำลังเตรียมข้อมูล...</div>
-            <div style="border:5px solid #f3f3f3;border-top:5px solid #3b82f6;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;"></div>
-            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-        </div>
-    `;
-    document.body.appendChild(overlay);
+    // OFFLINE-FIRST SILENT BACKGROUND STREAMING UPLOAD
+    console.log(`[Offline-First Track B] เริ่มทยอยอัปโหลดข้อมูล ${type} ขึ้นคลาวด์เบื้องหลังเงียบๆ...`);
     
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
@@ -2100,7 +2635,14 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
         const tableName = type === 'sales' ? 'sales_raw' : 'targets_raw';
         
         // Map data to DB schema
-        const rowsToInsert = parsedData.monthly.map(row => {
+        let dataToProcess = parsedData.monthly || [];
+        if ((type === 'target' || type === 'targets') && parsedData.tg26RawTargets && parsedData.tg26RawTargets.length > 0) {
+            dataToProcess = parsedData.tg26RawTargets;
+        } else if ((type === 'target' || type === 'targets') && parsedData.rawTargets && parsedData.rawTargets.length > 0) {
+            dataToProcess = parsedData.rawTargets;
+        }
+        
+        const rowsToInsert = dataToProcess.map(row => {
             if (type === 'sales') {
                 return {
                     year_label: String(row.year || ''),
@@ -2110,126 +2652,193 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     province: row.province || '',
                     district: row.district || '',
                     brand: row.brand || '',
-                    category: row.group || '',
-                    model: row.model || '',
-                    rebate: row.rebate || '',
-                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
                     cv: row.cv || '',
+                    group: row.group || '',
+                    model: row.model || '',
+                    rebate: row.rebate || '',
+                    set: row.set || '',
                     sales: Number(row.sales || 0),
                     qty: Number(row.qty || 0),
                     ton: Number(row.ton || 0),
-                    raw_json: row // store original row as JSON for future use
+                    raw_json: row
                 };
             } else {
                 return {
                     year_label: String(row.year || ''),
-                    month_index: Number(row.monthIndex || 0),
+                    month_index: Number(row.monthIndex !== undefined ? row.monthIndex : (row.month ? row.month - 1 : 0)),
                     day: Number(row.day || 0),
                     region: row.region || '',
                     province: row.province || '',
                     district: row.district || '',
+                    group: row.group || '',
                     brand: row.brand || '',
-                    category: row.group || '',
                     model: row.model || '',
-                    rebate: row.rebate || '',
-                    set: row.set || '',
                     size: row.size || '',
                     sku: row.sku || '',
-                    target_value: Number(row.targetValue || 0),
-                    target_ton: Number(row.targetTon || 0),
-                    target_level: row.targetLevel || '',
+                    target_value: Number(row.targetValue || row.value || 0),
+                    target_ton: Number(row.targetTon || row.ton || 0),
+                    target_level: row.targetLevel || 'raw',
                     raw_json: row
                 };
             }
         });
 
-        // 1. Delete old data if not append
-        const progressEl = document.getElementById('upload-progress-text');
-        if (!isAppend) {
-            if (progressEl) progressEl.innerText = `กำลังลบข้อมูลเก่าในตาราง ${tableName}...`;
-            // Use RPC to truncate table safely and avoid 1000-row delete limit
-            const rpcName = type === 'sales' ? 'truncate_sales_raw' : 'truncate_targets_raw';
-            const { error: deleteError } = await window.supabase.rpc(rpcName);
-            
-            if (deleteError) {
-                console.error("RPC truncate failed, falling back to delete...", deleteError);
-                const { error: fallbackError } = await window.supabase
-                    .from(tableName)
-                    .delete()
-                    .neq('year_label', 'impossible_value_to_force_delete_all');
-                if (fallbackError) throw fallbackError;
-            }
-        }
+        // Helper function to generate SHA-256 hash for a row
+        const generateRowSignature = async (rowStr) => {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(rowStr);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        };
+
+        const rowsWithSignature = await Promise.all(rowsToInsert.map(async (row) => {
+            const signature = await generateRowSignature(JSON.stringify(row.raw_json));
+            return { ...row, row_signature: signature };
+        }));
         
-        // 2. Insert new data in batches of 1000
+        // Insert new data in batches
         const BATCH_SIZE = 1000;
-        const totalBatches = Math.ceil(rowsToInsert.length / BATCH_SIZE);
-        
-        for (let i = 0; i < totalBatches; i++) {
-            if (progressEl) progressEl.innerText = `กำลังบันทึกข้อมูลส่วนที่ ${i + 1}/${totalBatches}... (${Math.min((i + 1) * BATCH_SIZE, rowsToInsert.length)}/${rowsToInsert.length} บรรทัด)`;
-            
-            const batch = rowsToInsert.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
-            const { error: insertError } = await window.supabase.from(tableName).insert(batch);
-            
-            if (insertError) throw insertError;
+        const batches = [];
+        for (let i = 0; i < rowsWithSignature.length; i += BATCH_SIZE) {
+            batches.push(rowsWithSignature.slice(i, i + BATCH_SIZE));
         }
         
-        overlay.remove();
-        console.log(`บันทึกข้อมูล ${type} สำเร็จ! (${rowsToInsert.length} บรรทัด)`);
+        let completedBatches = 0;
+        const uploadBatchWithRetry = async (batch, batchIndex, retries = 3) => {
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const { error: insertError } = await window.supabase.from(tableName).upsert(batch, { 
+                        onConflict: 'row_signature', 
+                        ignoreDuplicates: true 
+                    });
+                    if (insertError) throw insertError;
+                    
+                    completedBatches++;
+                    return; // Success!
+                } catch (err) {
+                    console.warn(`[Background Sync] Batch ${batchIndex + 1} attempt ${attempt} failed:`, err);
+                    if (attempt === retries) throw err;
+                    await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+                }
+            }
+        };
+
+        const CONCURRENCY = 3;
+        const queue = batches.map((batch, idx) => () => uploadBatchWithRetry(batch, idx));
+        const runQueue = async () => {
+            const workers = [];
+            const next = async () => {
+                if (queue.length === 0) return;
+                const task = queue.shift();
+                await task();
+                await next();
+            };
+            for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) {
+                workers.push(next());
+            }
+            await Promise.all(workers);
+        };
+
+        await runQueue();
+        
+        console.log(`[Background Sync] บันทึกข้อมูล ${type} สำเร็จ 100%! (${rowsToInsert.length} บรรทัด)`);
+        
+        // TRIGGER NOTIFICATION BELL BADGE
+        if (window._setUnmappedSalesWarnings) {
+            window._setUnmappedSalesWarnings(prev => [
+                { item: `☁️ ซิงค์คลาวด์เสร็จสิ้น`, sales: `${rowsToInsert.length.toLocaleString()} แถว`, brand: `อัปโหลดข้อมูล ${type === 'sales' ? 'ยอดขาย' : 'เป้าหมาย'} เข้า Supabase สำเร็จ` },
+                ...prev
+            ]);
+        }
         
     } catch (error) {
-        overlay.remove();
-        console.error("Upload Error:", error);
-        
-        const errorOverlay = document.createElement('div');
-        errorOverlay.innerHTML = `
-            <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;padding:20px;text-align:center;">
-                <div style="font-size:48px;margin-bottom:15px;">❌</div>
-                <div style="font-size:24px;margin-bottom:15px;font-weight:bold;color:#ef4444;">เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Database</div>
-                <div style="font-size:16px;color:#ccc;margin-bottom:30px;max-width:500px;line-height:1.5;">${error.message || String(error)}</div>
-                <button id="close-error-btn" style="background:#ef4444;color:white;border:none;padding:12px 30px;font-size:16px;border-radius:8px;cursor:pointer;font-weight:bold;">ปิดหน้าต่างนี้</button>
-            </div>
-        `;
-        document.body.appendChild(errorOverlay);
-        document.getElementById('close-error-btn').addEventListener('click', () => {
-            errorOverlay.remove();
-        });
+        console.error("[Background Sync Error]:", error);
+        if (window._setUnmappedSalesWarnings) {
+            window._setUnmappedSalesWarnings(prev => [
+                { item: `❌ อัปโหลดคลาวด์ล้มเหลว`, sales: `เกิดข้อผิดพลาด`, brand: error.message || String(error) },
+                ...prev
+            ]);
+        }
     }
 };
 window.downloadSalesFromSupabase = async function() {
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
         
+        const updateProgress = (msg, percent) => {
+            if (typeof window.updateSyncProgress === 'function') {
+                window.updateSyncProgress(msg, percent);
+            }
+        };
+
+        updateProgress("กำลังเตรียมดาวน์โหลดข้อมูลยอดขายล่าสุด...", 10);
+        
         // Fetch all rows from the aggregated views
         // Note: Supabase free tier has a default 1000 row limit on select. We must handle pagination if needed.
         // Wait, the javascript SDK's default limit is 1000, we should override it or paginate.
-        // Refactored to fetch concurrently for better performance
-        const fetchTable = async (tableName) => {
-            let result = [];
-            let hasMore = true;
-            let start = 0;
-            let limit = 1000;
-            while(hasMore) {
-                const { data, error } = await window.supabase.from(tableName).select('*').range(start, start + limit - 1);
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    result = result.concat(data);
-                    start += limit;
-                    if (data.length < limit) hasMore = false;
-                } else {
-                    hasMore = false;
-                }
+        let allMonthly = [];
+        let allYearly = [];
+        let allDaily = [];
+        
+        // Fetch Monthly
+        let hasMore = true;
+        let start = 0;
+        let limit = 1000;
+        let page = 1;
+        while(hasMore) {
+            updateProgress(`กำลังโหลดข้อมูลยอดขายรายเดือน หน้าที่ ${page}...`, 15 + Math.min(page * 5, 20));
+            const { data, error } = await window.supabase.from('dashboard_monthly_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allMonthly = allMonthly.concat(data);
+                start += limit;
+                page++;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
             }
-            return result;
-        };
-
-        const [allMonthly, allYearly, allDaily] = await Promise.all([
-            fetchTable('dashboard_monthly_view'),
-            fetchTable('dashboard_yearly_view'),
-            fetchTable('dashboard_daily_view')
-        ]);
+        }
+        
+        // Fetch Yearly
+        hasMore = true;
+        start = 0;
+        page = 1;
+        while(hasMore) {
+            updateProgress(`กำลังโหลดข้อมูลยอดขายรายปี หน้าที่ ${page}...`, 40 + Math.min(page * 5, 15));
+            const { data, error } = await window.supabase.from('dashboard_yearly_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allYearly = allYearly.concat(data);
+                start += limit;
+                page++;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
+        
+        // Fetch Daily
+        hasMore = true;
+        start = 0;
+        page = 1;
+        while(hasMore) {
+            updateProgress(`กำลังโหลดข้อมูลยอดขายรายวัน หน้าที่ ${page}...`, 60 + Math.min(page * 3, 30));
+            const { data, error } = await window.supabase.from('dashboard_daily_view').select('*').range(start, start + limit - 1);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allDaily = allDaily.concat(data);
+                start += limit;
+                page++;
+                if (data.length < limit) hasMore = false;
+            } else {
+                hasMore = false;
+            }
+        }
+        
+        updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 95);
         
         // Map DB columns back to frontend expected object format
         const mapRow = (r, isYearly, isDaily) => {
@@ -2252,13 +2861,13 @@ window.downloadSalesFromSupabase = async function() {
                 province: r.province,
                 district: r.district,
                 brand: r.brand,
-                group: r.category || r.group || (r.raw_json && r.raw_json.category) || (r.raw_json && r.raw_json.group) || '',
-                model: r.model || (r.raw_json && r.raw_json.model) || '',
-                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
-                set: r.set || (r.raw_json && r.raw_json.set) || '',
                 size: r.size,
                 sku: r.sku,
                 cv: r.cv || '',
+                group: r.group || (r.raw_json && r.raw_json.group) || '',
+                model: r.model || (r.raw_json && r.raw_json.model) || '',
+                rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
+                set: r.set || (r.raw_json && r.raw_json.set) || '',
                 sales: Number(r.sales || 0),
                 qty: Number(r.qty || 0),
                 ton: Number(r.ton || 0),
@@ -2285,11 +2894,55 @@ window.downloadSalesFromSupabase = async function() {
             daily: allDaily.map(r => mapRow(r, false, true))
         };
         
+        finalData.targets = finalData.monthly.filter(r => r.type === 'target');
+        
         return finalData;
 
     } catch (error) {
         console.error("Download Error:", error);
         throw error;
+    }
+};
+
+window.saveTargetMappingsToSupabase = async function(mappings) {
+    try {
+        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
+        
+        const { error } = await window.supabase
+            .from('app_data')
+            .upsert({
+                id: 'tg26_target_mappings',
+                data: mappings,
+                updated_at: new Date().toISOString()
+            });
+            
+        if (error) throw error;
+        console.log("บันทึก Target Mappings ลง Supabase สำเร็จ");
+        return { ok: true };
+    } catch (error) {
+        console.error("Error saving target mappings to Supabase:", error);
+        throw error;
+    }
+};
+
+window.loadTargetMappingsFromSupabase = async function() {
+    try {
+        if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
+        
+        const { data, error } = await window.supabase
+            .from('app_data')
+            .select('*')
+            .eq('id', 'tg26_target_mappings')
+            .maybeSingle();
+            
+        if (error) throw error;
+        if (data && data.data) {
+            return data.data;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error loading target mappings from Supabase:", error);
+        return null;
     }
 };
 
@@ -2398,7 +3051,7 @@ var COLUMN_KEYWORDS = {
     var layouts = localStorage.getItem('dashboard_layouts');
     var isV2 = localStorage.getItem('dashboard_v2_init');
     var shouldApplyDefault = false;
-    
+
     if (!isV2) {
         shouldApplyDefault = true;
         localStorage.setItem('dashboard_v2_init', 'true');
@@ -2411,7 +3064,7 @@ var COLUMN_KEYWORDS = {
             }
         } catch(e) {}
     }
-    
+
     if (shouldApplyDefault) {
         localStorage.setItem('dashboard_layouts', JSON.stringify({'card-1':{x:0,y:0,w:12,h:7},'card-6':{x:0,y:7,w:12,h:4},'card-2':{x:0,y:11,w:6,h:5},'card-5':{x:6,y:11,w:6,h:5},'card-3':{x:0,y:16,w:6,h:5},'card-4':{x:6,y:16,w:6,h:5}}));
         localStorage.setItem('dashboard_section_open', JSON.stringify({filters:true,kpi:true,trend:true,salesGuide:true,repeatGap:true,brands:true,shops:true,district:true}));
@@ -2506,12 +3159,12 @@ window.applyDefaultLayout = function(type) {
 
     localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
     localStorage.setItem('dashboard_section_open', JSON.stringify(sectionOpen));
-    
+
     if (typeof setSectionOpen === 'function') { setSectionOpen(sectionOpen); }
     // Close dropdown
     var details = document.querySelector('#default-layout-details');
     if (details) details.removeAttribute('open');
-    
+
     // Reload to apply new layout
     window.location.reload();
 };
@@ -3829,8 +4482,8 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
   }, label, " :"), /*#__PURE__*/React.createElement("input", {
     type: type,
     value: startDate || '',
-    onChange: function(e) { 
-      onChange(e.target.value, endDate); 
+    onChange: function(e) {
+      onChange(e.target.value, endDate);
       if (e.target && e.target.blur) e.target.blur();
     },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
@@ -3839,8 +4492,8 @@ var DateRangeFilter = function DateRangeFilter(_ref) {
   }, "-"), /*#__PURE__*/React.createElement("input", {
     type: type,
     value: endDate || '',
-    onChange: function(e) { 
-      onChange(startDate, e.target.value); 
+    onChange: function(e) {
+      onChange(startDate, e.target.value);
       if (e.target && e.target.blur) e.target.blur();
     },
     className: "text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:border-blue-500 min-h-[34px]"
@@ -5637,12 +6290,12 @@ var SalesGuideWeightModal = function SalesGuideWeightModal(_ref) {
                     min: 0,
                     max: 100,
                     value: localW[i] || 0,
-                    onChange: function(e) { 
+                    onChange: function(e) {
                       var val = parseInt(e.target.value);
                       if (isNaN(val)) val = 0;
                       if (val > 100) val = 100;
                       if (val < 0) val = 0;
-                      handleSlider(i, val); 
+                      handleSlider(i, val);
                     },
                     className: 'focus:outline-none focus:ring-1 focus:ring-blue-500',
                     style: { width: '48px', textAlign: 'center', fontSize: '14px', fontWeight: 800, color: colors[i], border: '1.5px solid var(--border)', borderRadius: '6px', padding: '2px', background: '#fff' }
@@ -5680,8 +6333,8 @@ var CustomDashboardModal = function CustomDashboardModal(_ref) {
     setSectionOpen = _ref.setSectionOpen,
     allData = _ref.allData,
     onAddWidget = _ref.onAddWidget;
-    
-  
+
+
   var sectionIcons = {
     filters: "filter_alt",
     kpi: "monitoring",
@@ -5750,34 +6403,34 @@ var sectionTitles = {
     return arr.slice(0, 50); // limit 50 points
   }, [allData, xAxisKey, yAxisKey]);
 
-  
+
   useEffect(function() {
     var timer;
     if (activeTab === 'layout' && isOpen) {
         timer = setTimeout(function() {
             var mockGridEl = document.querySelector('#mock-grid');
             if (!mockGridEl || !window.GridStack) return;
-            
+
             if (mockGridEl.gridstack) {
                 try { mockGridEl.gridstack.destroy(false); } catch(e){}
             }
-            
+
             var mGrid = GridStack.init({
                 cellHeight: 80,
                 column: 12,
                 margin: 10,
                 acceptWidgets: false,
-                
-                
+
+
                 removable: true,
                 removeTimeout: 100
             }, mockGridEl);
-            
+
             window.toggleMockWidget = function(key) {
                 if (!mGrid) return;
                 var id = widgetMapping[key];
                 var node = mGrid.engine.nodes.find(function(n) { return n.id === id || (n.el && n.el.getAttribute('gs-id') === id); });
-                
+
                 if (!node) {
                     var el = mGrid.addWidget({
                         id: id,
@@ -5786,7 +6439,7 @@ var sectionTitles = {
                         content: '<div class="h-full w-full bg-surface-alt rounded-lg border border-outline-variant p-4 flex flex-col items-center justify-center relative"><span class="absolute top-2 right-2 text-red-500 hover:bg-red-50 rounded-full cursor-pointer material-symbols-outlined text-[20px]" onclick="window.removeMockWidget(this)">close</span><span class="material-symbols-outlined text-4xl opacity-20 mb-2">' + (sectionIcons[key] || 'widgets') + '</span><p class="font-bold text-center text-sm text-slate-700">' + (sectionTitles[key] || key) + '</p></div>'
                     });
                     if (el) el.setAttribute('gs-id', id);
-                    
+
                     if (typeof setSectionOpen === 'function') {
                         setSectionOpen(function(prev) { var next = Object.assign({}, prev); next[key] = true; return next; });
                     }
@@ -5817,10 +6470,10 @@ window.removeMockWidget = function(btn) {
                 }
             };
 
-            
+
             var layouts = {};
             try { layouts = JSON.parse(localStorage.getItem('dashboard_layouts')) || {}; } catch(e){}
-            
+
             var widgetMapping = {
                 trend: 'card-1',
                 brands: 'card-2',
@@ -5830,7 +6483,7 @@ window.removeMockWidget = function(btn) {
                 district: 'card-6',
                 kpi: 'card-0'
             };
-            
+
             var initialNodes = [];
             Object.keys(sectionOpen).forEach(function(key) {
                 if (sectionOpen[key] && widgetMapping[key]) {
@@ -5847,9 +6500,9 @@ window.removeMockWidget = function(btn) {
                     });
                 }
             });
-            
+
             mGrid.load(initialNodes);
-            
+
             mGrid.on('added', function(e, items) {
                 items.forEach(function(item) {
                     if (item.el && item.el.getAttribute('data-widget')) {
@@ -5870,12 +6523,12 @@ window.removeMockWidget = function(btn) {
 
   var renderPreviewChart = function() {
     if (previewData.length === 0) return React.createElement("div", {className: "text-center text-slate-500 py-10"}, "No Data");
-    
+
     var ChartElement = LineChart;
     var DataElement = Line;
     if (chartType === 'Bar') { ChartElement = BarChart; DataElement = Bar; }
     if (chartType === 'Area') { ChartElement = AreaChart; DataElement = Area; }
-    
+
     if (chartType === 'Pie') {
       return React.createElement(ResponsiveContainer, {width: "100%", height: 300},
         React.createElement(PieChart, null,
@@ -5893,7 +6546,7 @@ window.removeMockWidget = function(btn) {
         )
       );
     }
-    
+
     return React.createElement(ResponsiveContainer, {width: "100%", height: 300},
       React.createElement(ChartElement, {data: previewData},
         React.createElement(CartesianGrid, {strokeDasharray: "3 3"}),
@@ -5930,17 +6583,17 @@ window.removeMockWidget = function(btn) {
             React.createElement("div", { id: "available-widgets", className: "flex flex-col gap-3" },
               Object.keys(sectionTitles).map(function(key) {
                 var isOpen = sectionOpen[key];
-                return React.createElement("div", { 
-                  key: key, 
+                return React.createElement("div", {
+                  key: key,
                   className: "p-3 bg-surface rounded-lg border cursor-pointer transition-colors flex items-center justify-between " + (isOpen ? "border-primary bg-blue-50/30" : "border-outline-variant hover:border-primary"),
                   onClick: function() { window.toggleMockWidget(key); }
-                }, 
+                },
                   React.createElement("div", { className: "flex items-center gap-3 h-full" },
                     React.createElement("span", { className: "material-symbols-outlined text-xl opacity-60" }, sectionIcons[key] || 'widgets'),
                     React.createElement("span", { className: "font-medium" }, sectionTitles[key] || key)
                   ),
                   React.createElement("div", { className: "flex items-center" },
-                    isOpen ? React.createElement("span", { className: "material-symbols-outlined text-primary text-xl" }, "check_circle") : 
+                    isOpen ? React.createElement("span", { className: "material-symbols-outlined text-primary text-xl" }, "check_circle") :
                              React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-xl" }, "radio_button_unchecked")
                   )
                 );
@@ -5983,7 +6636,7 @@ window.removeMockWidget = function(btn) {
                                 layouts[id] = { x: node.x, y: node.y, w: node.w, h: node.h };
                             }
                         });
-                        
+
                         localStorage.setItem('dashboard_layouts', JSON.stringify(layouts));
                         localStorage.setItem('dashboard_section_open', JSON.stringify(newSectionOpen));
                         window.location.reload();
@@ -6006,7 +6659,7 @@ window.removeMockWidget = function(btn) {
                 className: "w-full p-2 rounded border border-slate-300",
                 value: chartType,
                 onChange: function(e) { setChartType(e.target.value); }
-              }, 
+              },
                 React.createElement("option", { value: "Line" }, "Line Chart"),
                 React.createElement("option", { value: "Bar" }, "Bar Chart"),
                 React.createElement("option", { value: "Area" }, "Area Chart"),
@@ -6070,7 +6723,7 @@ var CustomWidget = function CustomWidget(_ref) {
   var widget = _ref.widget,
       allData = _ref.allData,
       onRemove = _ref.onRemove;
-  
+
   var previewData = useMemo(function() {
     if (!allData || !allData.monthly) return [];
     var grouped = {};
@@ -6129,20 +6782,20 @@ var CustomWidget = function CustomWidget(_ref) {
           React.createElement("tfoot", { className: "bg-slate-50 sticky bottom-0 border-t-2 border-slate-200" },
             React.createElement("tr", null,
               React.createElement("td", { className: "px-5 py-3 text-slate-800 font-extrabold" }, "\u0E23\u0E27\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"),
-              React.createElement("td", { className: "px-5 py-3 text-right text-blue-700 font-extrabold text-base" }, 
+              React.createElement("td", { className: "px-5 py-3 text-right text-blue-700 font-extrabold text-base" },
                 previewData.reduce(function(sum, row) { return sum + Number(row.value || 0); }, 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
               )
             )
           )
         )
       ) :
-    widget.chartType === 'Pie' ? 
+    widget.chartType === 'Pie' ?
       React.createElement(ResponsiveContainer, { width: "100%", height: "100%", minHeight: 300 },
         React.createElement(PieChart, null,
           React.createElement(Pie, { data: previewData, dataKey: "value", nameKey: "name", cx: "50%", cy: "50%", outerRadius: 100, fill: "#3b82f6", label: true }),
           React.createElement(Tooltip, null)
         )
-      ) : 
+      ) :
       React.createElement(ResponsiveContainer, { width: "100%", height: "100%", minHeight: 300 },
         React.createElement(ChartElement, { data: previewData },
           React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
@@ -6165,7 +6818,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     setMappings = _ref.setMappings,
     allData = _ref.allData,
     onSaveAndProcess = _ref.onSaveAndProcess;
-  
+
   var _useState = React.useState(mappings || {}),
     localMap = _useState[0],
     setLocalMap = _useState[1];
@@ -6182,7 +6835,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   });
   var targetList = Object.values(uniqueTargets);
   var districtList = Object.keys(uniqueDistricts);
-  
+
   var dbBrands = new Set();
   var dbGroups = new Set();
   var dbModels = new Set();
@@ -6246,7 +6899,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
     setMappings(localMap);
     if (onSaveAndProcess) onSaveAndProcess(localMap);
   };
-  
+
   var checkRequiresAdvancedFields = function(groupStr) {
       var str = String(groupStr || '').toLowerCase();
       var needsModel = str.includes('ปลา') || str.includes('หญ้า') || str.includes('นก') || str.includes('ม้า') || str.includes('สัตว์ฟันแทะ');
@@ -6257,7 +6910,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
   return React.createElement("div", { className: "status-modal-overlay z-[9999]" },
     React.createElement("div", { className: "status-modal flex flex-col", style: { width: '800px', maxWidth: '95vw', maxHeight: '90vh' } },
       React.createElement("div", { className: "status-modal-head border-b border-slate-200" },
-        React.createElement("div", { className: "status-modal-title flex items-center gap-2" }, 
+        React.createElement("div", { className: "status-modal-title flex items-center gap-2" },
             React.createElement("span", { className: "material-symbols-outlined text-blue-600" }, "account_tree"),
             "ตั้งค่า Target Match (จับคู่เขต, กลุ่ม, แบรนด์, รุ่น, SKU) [V2.4]"
         ),
@@ -6287,9 +6940,9 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var keyDescLoc = 'descLoc||' + t.group + '||' + t.brand;
                     var keyEnableSubCat = 'enableSubCat||' + t.group + '||' + t.brand;
 
-                    
+
                     var legacyKeyGrp = 'group||' + t.group;
-                    
+
                     var valBrand = localMap[keyBrand] || '';
                     var valGrp = localMap[keyGrp] !== undefined ? localMap[keyGrp] : (localMap[legacyKeyGrp] || '');
                     var valModel = localMap[keyModel] || '';
@@ -6298,7 +6951,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var valDescLoc = localMap[keyDescLoc] || '';
                     var isSubCatEnabled = localMap[keyEnableSubCat] === 'true';
 
-                    
+
                     var parseArray = function(val) {
                         if (!val) return [''];
                         if (Array.isArray(val)) return val.length > 0 ? val : [''];
@@ -6314,7 +6967,7 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var skuArray = parseArray(valSku);
                     var subCatArray = parseArray(valSubCat);
                     var descLocArray = parseArray(valDescLoc);
-                    
+
                     var activeGroups = groupArray.filter(function(g) { return g && String(g).trim() !== ''; });
                     var activeBrands = brandArray.filter(function(b) { return b && String(b).trim() !== ''; });
                     var activeModels = modelArray.filter(function(m) { return m && String(m).trim() !== ''; });
@@ -6333,18 +6986,18 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                         allData.monthly.forEach(function(row) {
                             var matchGroup = filterGroups.length === 0 || filterGroups.includes(row.group);
                             var matchBrand = filterBrands.length === 0 || filterBrands.includes(row.brand);
-                            
+
                             if (matchBrand && row.group) availableGroups.add(row.group);
                             if (matchGroup && row.brand) availableBrands.add(row.brand);
-                            
+
                             if (matchGroup && matchBrand) {
                                 if (row.model) availableModels.add(row.model);
-                                
+
                                 var matchModel = activeModels.length === 0 || activeModels.includes(row.model);
                                 if (matchModel) {
                                     if (row.sku) availableSkus.add(row.sku);
                                 }
-                                
+
                                 if (row.subCategory) availableSubCats.add(row.subCategory);
                                 if (row.descLoc) availableDescLocs.add(row.descLoc);
                             }
@@ -6363,10 +7016,10 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                     var availableSkusArr = Array.from(availableSkus);
                     var availableSubCatsArr = Array.from(availableSubCats);
                     var availableDescLocsArr = Array.from(availableDescLocs);
-                    
+
                     // Determine if advanced fields are needed
                     var req = checkRequiresAdvancedFields(valGrp || t.group);
-                    
+
                     return React.createElement("div", { key: idx, className: "bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2 hover:border-blue-300 transition-colors" },
                         React.createElement("datalist", { id: "db-brands-list-" + idx }, Array.from(availableBrands).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
                         React.createElement("datalist", { id: "db-groups-list-" + idx }, Array.from(availableGroups).map(function(v) { return React.createElement("option", { key: v, value: v }); })),
@@ -6488,12 +7141,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             for (var i=0; i<modelArray.length; i++) {
                                                 if (String(modelArray[i]) === strM) { isChecked = true; break; }
                                             }
-                                            var CheckboxIcon = isChecked 
+                                            var CheckboxIcon = isChecked
                                                 ? React.createElement("span", { className: "material-symbols-outlined text-green-600 text-[18px]" }, "check_box")
                                                 : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
 
-                                            return React.createElement("div", { 
-                                                key: m, 
+                                            return React.createElement("div", {
+                                                key: m,
                                                 className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-green-100 rounded px-1 select-none",
                                                 onClick: function(e) {
                                                     var isCheckedNow = !isChecked;
@@ -6531,12 +7184,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                             for (var i=0; i<skuArray.length; i++) {
                                                 if (String(skuArray[i]) === strS) { isChecked = true; break; }
                                             }
-                                            var CheckboxIcon = isChecked 
+                                            var CheckboxIcon = isChecked
                                                 ? React.createElement("span", { className: "material-symbols-outlined text-orange-600 text-[18px]" }, "check_box")
                                                 : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
 
-                                            return React.createElement("div", { 
-                                                key: s, 
+                                            return React.createElement("div", {
+                                                key: s,
                                                 className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-orange-100 rounded px-1 select-none",
                                                 onClick: function(e) {
                                                     var isCheckedNow = !isChecked;
@@ -6593,12 +7246,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     for (var i=0; i<subCatArray.length; i++) {
                                                         if (String(subCatArray[i]) === strS) { isChecked = true; break; }
                                                     }
-                                                    var CheckboxIcon = isChecked 
+                                                    var CheckboxIcon = isChecked
                                                         ? React.createElement("span", { className: "material-symbols-outlined text-purple-600 text-[18px]" }, "check_box")
                                                         : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
 
-                                                    return React.createElement("div", { 
-                                                        key: s, 
+                                                    return React.createElement("div", {
+                                                        key: s,
                                                         className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-purple-100 rounded px-1 select-none",
                                                         onClick: function(e) {
                                                             var isCheckedNow = !isChecked;
@@ -6636,12 +7289,12 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
                                                     for (var i=0; i<descLocArray.length; i++) {
                                                         if (String(descLocArray[i]) === strS) { isChecked = true; break; }
                                                     }
-                                                    var CheckboxIcon = isChecked 
+                                                    var CheckboxIcon = isChecked
                                                         ? React.createElement("span", { className: "material-symbols-outlined text-teal-600 text-[18px]" }, "check_box")
                                                         : React.createElement("span", { className: "material-symbols-outlined text-slate-300 text-[18px]" }, "check_box_outline_blank");
 
-                                                    return React.createElement("div", { 
-                                                        key: s, 
+                                                    return React.createElement("div", {
+                                                        key: s,
                                                         className: "flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-teal-100 rounded px-1 select-none",
                                                         onClick: function(e) {
                                                             var isCheckedNow = !isChecked;
@@ -6680,13 +7333,13 @@ var TargetMappingModal = function TargetMappingModal(_ref) {
         )
       ),
       React.createElement("div", { className: "p-4 border-t border-slate-200 bg-white flex justify-end gap-3" },
-        React.createElement("button", { 
-            className: "px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors", 
-            onClick: onClose 
+        React.createElement("button", {
+            className: "px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors",
+            onClick: onClose
         }, "ยกเลิก"),
-        React.createElement("button", { 
-            className: "px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm", 
-            onClick: handleSave 
+        React.createElement("button", {
+            className: "px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm",
+            onClick: handleSave
         }, "บันทึกและประมวลผลยอดเป้าหมาย")
       )
     )
@@ -6723,10 +7376,10 @@ var App = function App() {
       }
       return Array.from(regions).sort();
   }, [allData]);
-  
+
   React.useEffect(function() {
     var timer;
-    
+
     var initGrid = function() {
         if (timer) clearTimeout(timer);
         timer = setTimeout(function() {
@@ -6740,12 +7393,12 @@ var App = function App() {
                 timer = setTimeout(initGrid, 250);
                 return;
             }
-            
+
             // Destroy existing instance to prevent stale references when React re-renders
             if (gridEl.gridstack) {
                 try { gridEl.gridstack.destroy(false); } catch(e) {}
             }
-            
+
             // Initialize fresh GridStack
             try {
                 var grid = window.GridStack.init({
@@ -6760,10 +7413,10 @@ var App = function App() {
                         handles: 'se'
                     }
                 }, gridEl);
-                
+
                 // Add a class so fallback CSS can be disabled
                 gridEl.classList.add('grid-stack-instance');
-                
+
                 // Force save initial layout so React's next render gets the auto-placed coordinates
                 var engineNodes = grid.engine.nodes;
                 if (engineNodes && engineNodes.length > 0) {
@@ -6777,7 +7430,7 @@ var App = function App() {
                     });
                     localStorage.setItem('dashboard_layouts', JSON.stringify(initialLayouts));
                 }
-                
+
                 // Save layout on change
                 grid.on('change', function(event, items) {
                     if (!items) return;
@@ -6796,9 +7449,9 @@ var App = function App() {
             }
         }, 250);
     };
-    
+
     initGrid();
-    
+
     return function() {
         if (timer) clearTimeout(timer);
         var gridEl = document.querySelector('.grid-stack');
@@ -7112,14 +7765,14 @@ var App = function App() {
   useEffect(function() {
       localStorage.setItem('dashboard_custom_widgets', JSON.stringify(customWidgets));
   }, [customWidgets]);
-  
+
   var [isTargetMappingModalOpen, setIsTargetMappingModalOpen] = useState(false);
   var [pendingTG26Data, setPendingTG26Data] = useState(null);
   var [targetMappings, setTargetMappings] = useState(function() {
       try { return JSON.parse(localStorage.getItem('tg26_target_mappings')) || {}; }
       catch(e) { return {}; }
   });
-  
+
   useEffect(function() {
       localStorage.setItem('tg26_target_mappings', JSON.stringify(targetMappings));
   }, [targetMappings]);
@@ -7210,7 +7863,7 @@ var App = function App() {
       startedAt: 0
     });
   };
-  
+
   React.useEffect(function() {
     var timer;
     if (statusInfo.message && !statusInfo.loading) {
@@ -8238,7 +8891,7 @@ var App = function App() {
                         };
                         shouldSkipRow = function shouldSkipRow(row, map) {
                           if (!row || row.length === 0) return true;
-                          
+
                           // 1. Keyword check across ALL cells (catches Pivot Table subtotals like "Toyota Total")
                           var hasTotalKeyword = false;
                           for (var i = 0; i < row.length; i++) {
@@ -8250,7 +8903,7 @@ var App = function App() {
                             }
                           }
                           if (hasTotalKeyword) return true;
-                          
+
                           // 2. Granularity check: Pivot subtotals leave granular columns empty
                           if (map) {
                             var granularKeys = ['sku', 'size', 'model', 'brand', 'group'];
@@ -8582,168 +9235,201 @@ var App = function App() {
                             return _ref20.apply(this, arguments);
                           };
                         }();
+var parseSalesRows = function(rows, parseOptions, sheet) {
+                            var salesUpdateMeta = createEmptySalesUpdateMeta();
+                            var daily = [];
+                            var monthly = [];
+                            var yearly = [];
+                            
+                            var headerRowIdx = -1;
+                            for (var i = 0; i < Math.min(200, rows.length); i++) {
+                                var r = rows[i] || [];
+                                var joined = r.join(' ').toLowerCase();
+                                if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('transaction_date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี')) && 
+                                    (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('sales') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
+                                    headerRowIdx = i;
+                                    break;
+                                }
+                            }
+                            
+                            if (headerRowIdx === -1) {
+                                var headRows = rows.slice(0,3).map(function(r) { return r.join('|'); }).join('  ;;  ');
+                                return { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta, debugMsg: 'hdr=-1,rows=' + headRows.substring(0, 100) };
+                            }
+                            
+                            var headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
+                            var dbMap = { date: -1, year_label: -1, month_index: -1, day: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
+                            
+                            headerRow.forEach(function(colName, idx) {
+                                var cLower = colName.toLowerCase().replace(/\s+/g, '');
+                                if ((colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') && dbMap.date === -1) dbMap.date = idx;
+                                if ((colName === 'YEAR_LABEL' || cLower === 'yearlabel') && dbMap.year_label === -1) dbMap.year_label = idx;
+                                if ((colName === 'MONTH_INDEX' || cLower === 'monthindex') && dbMap.month_index === -1) dbMap.month_index = idx;
+                                if (colName === 'DAY' && dbMap.day === -1) dbMap.day = idx;
+                                if ((colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') && dbMap.amount === -1) dbMap.amount = idx;
+                                if ((colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') && dbMap.qty === -1) dbMap.qty = idx;
+                                if ((colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) && dbMap.ton === -1) dbMap.ton = idx;
+                                if ((colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') && dbMap.region === -1) dbMap.region = idx;
+                                if ((colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') && dbMap.province === -1) dbMap.province = idx;
+                                if ((colName === 'PROVINCE' || cLower === 'จังหวัด') && dbMap.district === -1) dbMap.district = idx;
+                                if ((colName === 'CV_NAME' || cLower === 'cvname' || (!cLower.includes('sub') && cLower.includes('cv')) || cLower === 'ลูกค้า') && dbMap.cv === -1) dbMap.cv = idx;
+                                if ((colName === 'CATEGORY' || (!cLower.includes('sub') && (cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')))) && dbMap.group === -1) dbMap.group = idx;
+                                if ((colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || (!cLower.includes('code') && cLower.includes('brand'))) && dbMap.brand === -1) dbMap.brand = idx;
+                                if ((colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) && dbMap.model === -1) dbMap.model = idx;
+                                if ((colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) && dbMap.size === -1) dbMap.size = idx;
+                                if ((colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า' ) || cLower.includes('code') || cLower.includes('item')) && dbMap.sku === -1) dbMap.sku = idx;
+                                if ((colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) && dbMap.rebate === -1) dbMap.rebate = idx;
+                                if ((colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) && dbMap.set === -1) dbMap.set = idx;
+                                if ((colName === 'SUB_CATEGORY' || cLower === 'subcategory') && dbMap.subCategory === -1) dbMap.subCategory = idx;
+                                if ((colName === 'DESC_LOC' || cLower === 'descloc') && dbMap.descLoc === -1) dbMap.descLoc = idx;
+                            });
+                            
+                            for (var _i = headerRowIdx + 1; _i < rows.length; _i++) {
+                                var row = rows[_i] || [];
+                                if (row.length === 0) continue;
+                                
+                                var year = undefined;
+                                var month = undefined;
+                                var day = 1;
+                                
+                                if (dbMap.year_label !== -1 && dbMap.month_index !== -1) {
+                                    year = parseInt(row[dbMap.year_label], 10);
+                                    month = parseInt(row[dbMap.month_index], 10);
+                                    day = dbMap.day !== -1 ? parseInt(row[dbMap.day], 10) || 1 : 1;
+                                    if (year > 2500) year -= 543;
+                                } else {
+                                    var rawDate = row[dbMap.date];
+                                    if (typeof rawDate === 'number') {
+                                        var excelDate = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+                                        var userTimezoneOffset = excelDate.getTimezoneOffset() * 60000;
+                                        var localDate = new Date(excelDate.getTime() + userTimezoneOffset);
+                                        year = localDate.getFullYear();
+                                        month = localDate.getMonth();
+                                        day = localDate.getDate();
+                                    } else {
+                                        var dateStr = String(rawDate || '').trim();
+                                        if (!dateStr || dateStr === '-') continue;
+                                        
+                                        if (!isNaN(dateStr) && dateStr !== '') {
+                                            var num = Number(dateStr);
+                                            var excelDate = new Date(Math.round((num - 25569) * 86400 * 1000));
+                                            var userTimezoneOffset = excelDate.getTimezoneOffset() * 60000;
+                                            var localDate = new Date(excelDate.getTime() + userTimezoneOffset);
+                                            year = localDate.getFullYear();
+                                            month = localDate.getMonth();
+                                            day = localDate.getDate();
+                                        } else if (dateStr.includes('-')) {
+                                            var isoMatch = dateStr.match(/^(\d{4})[-/](\d{2})[-/](\d{2})/);
+                                            if (isoMatch) {
+                                                year = parseInt(isoMatch[1], 10);
+                                                month = parseInt(isoMatch[2], 10) - 1;
+                                                day = parseInt(isoMatch[3], 10);
+                                            } else {
+                                                var d = new Date(dateStr);
+                                                year = d.getFullYear(); month = d.getMonth(); day = d.getDate();
+                                            }
+                                        } else if (dateStr.includes('/')) {
+                                            var parts = dateStr.split('/');
+                                            if (parts.length >= 3) {
+                                                day = parseInt(parts[0], 10);
+                                                month = parseInt(parts[1], 10) - 1;
+                                                year = parseInt(parts[2], 10);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (year === undefined || isNaN(year) || isNaN(month) || isNaN(day)) {
+                                    continue;
+                                }
+                                
+                                if (year > 2500) year -= 543;
+                                var dateObj = new Date(year, month, day);
+                                if (isNaN(dateObj.getTime())) {
+                                    continue;
+                                }
+                                
+                                var amount = parseNumericValue(row[dbMap.amount]);
+                                var qty = parseNumericValue(row[dbMap.qty]);
+                                var ton = parseNumericValue(row[dbMap.ton]);
+                                if (amount === 0 && qty === 0 && ton === 0) {
+                                    if (!salesUpdateMeta._debugZeroSkipped) salesUpdateMeta._debugZeroSkipped = 0;
+                                    salesUpdateMeta._debugZeroSkipped++;
+                                    continue;
+                                }
+                                
+                                var dimensions = {
+                                    region: normalizeDimensionValue(row[dbMap.region]),
+                                    province: normalizeDimensionValue(row[dbMap.province]),
+                                    district: normalizeDistrictName(normalizeDimensionValue(row[dbMap.district])),
+                                    cv: normalizeDimensionValue(row[dbMap.cv]),
+                                    group: normalizeDimensionValue(row[dbMap.group]),
+                                    brand: normalizeDimensionValue(row[dbMap.brand]),
+                                    model: normalizeDimensionValue(row[dbMap.model]),
+                                    size: normalizeDimensionValue(row[dbMap.size]),
+                                    sku: normalizeDimensionValue(row[dbMap.sku]),
+                                    rebate: dbMap.rebate !== -1 ? normalizeDimensionValue(row[dbMap.rebate]) : '',
+                                    set: dbMap.set !== -1 ? normalizeDimensionValue(row[dbMap.set]) : '',
+                                    subCategory: dbMap.subCategory !== -1 ? normalizeDimensionValue(row[dbMap.subCategory]) : '',
+                                    descLoc: dbMap.descLoc !== -1 ? normalizeDimensionValue(row[dbMap.descLoc]) : ''
+                                };
+                                dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
+                                var id = "m-" + Math.random();
+                                var dataRow = _objectSpread({
+                                    id: id,
+                                    date: toLocalISOString(dateObj),
+                                    day: day,
+                                    monthIndex: month,
+                                    year: String(year + 543),
+                                    sales: amount,
+                                    target: 0,
+                                    targetValue: 0,
+                                    targetTon: 0,
+                                    targetLevel: undefined,
+                                    qty: qty,
+                                    ton: ton
+                                }, dimensions);
+                                monthly.push(dataRow);
+                                daily.push(_objectSpread({}, dataRow, { id: "d-" + Math.random() }));
+                            }
+                            
+                            yearly = buildYearlyEntriesFromMonthly(monthly);
+                            var dm = 'hdr=' + headerRowIdx + ',zeroSkipped=' + (salesUpdateMeta._debugZeroSkipped||0) + ',daily=' + daily.length + ',monthly=' + monthly.length + ',dbMapDate=' + dbMap.date + ',y=' + dbMap.year_label + ',m=' + dbMap.month_index + ',amt=' + dbMap.amount;
+                            return { daily: daily, monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta, debugMsg: dm };
+                        };
+                        window.parseSalesRows = parseSalesRows;
                         parseSalesWorkbook = /*#__PURE__*/function () {
-                          var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook) {
-                            var salesUpdateMeta, daily, monthly, yearly, sheetNames, sheet, rows, headerRowIdx, i, r, joined, headerRow, dbMap, _i, row, dateStr, parts, day, month, year, dateObj, amount, qty, ton, dimensions, id;
+                          var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(workbook, parseOptions) {
+                            var sheetNames, sheet, rows, result;
                             return _regenerator().w(function (_context12) {
                               while (1) switch (_context12.n) {
                                 case 0:
-                                  salesUpdateMeta = createEmptySalesUpdateMeta();
-                                  daily = [];
-                                  monthly = [];
-                                  yearly = [];
                                   sheetNames = workbook.SheetNames || [];
                                   if (!(sheetNames.length === 0)) {
                                     _context12.n = 2;
                                     break;
                                   }
-                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
+                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: createEmptySalesUpdateMeta(), debugMsg: 'no sheets' });
                                 case 2:
                                   sheet = workbook.Sheets[sheetNames[0]];
+                                  var _maxRows = -1;
+                                  for (var _si = 0; _si < sheetNames.length; _si++) {
+                                      var _st = workbook.Sheets[sheetNames[_si]];
+                                      if (_st && _st['!ref']) {
+                                          var _rng = XLSX.utils.decode_range(_st['!ref']);
+                                          var _rCount = _rng.e.r - _rng.s.r;
+                                          if (_rCount > _maxRows) {
+                                              _maxRows = _rCount;
+                                              sheet = _st;
+                                          }
+                                      }
+                                  }
                                   _context12.n = 4;
                                   return sheetToRowsChunked(sheet);
                                 case 4:
                                   rows = _context12.v;
-                                  headerRowIdx = -1;
-                                  for (i = 0; i < Math.min(200, rows.length); i++) {
-                                      r = rows[i] || [];
-                                      joined = r.join(' ').toLowerCase();
-                                      if (joined.includes('sales_date') && (joined.includes('sales_amount') || joined.includes('qty') || joined.includes('ton'))) {
-                                          headerRowIdx = i;
-                                          break;
-                                      }
-                                  }
-                                  if (headerRowIdx !== -1) {
-                                    _context12.n = 6;
-                                    break;
-                                  }
-                                  return _context12.a(2, { daily: [], monthly: [], yearly: [], salesUpdateMeta: salesUpdateMeta });
-                                case 6:
-                                  headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
-                                  dbMap = { date: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
-                                  headerRow.forEach(function(colName, idx) {
-                                      var cLower = colName.toLowerCase().replace(/\\s+/g, '');
-                                      if ((colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') && dbMap.date === -1) dbMap.date = idx;
-
-                                      if ((colName === 'SALES_AMOUNT' || cLower.includes('amount') || cLower === 'ยอดขาย') && dbMap.amount === -1) dbMap.amount = idx;
-                                      if ((colName === 'SALES_QTY' || cLower.includes('qty') || cLower === 'จำนวน' || cLower === 'ชิ้น') && dbMap.qty === -1) dbMap.qty = idx;
-                                      if ((colName === 'TOTAL_WGH (TONS)' || colName === 'SALES_WGH (TONS)' || cLower.includes('ton') || cLower.includes('ตัน')) && dbMap.ton === -1) dbMap.ton = idx;
-                                      if ((colName === 'REGION' || cLower === 'ภาค' || cLower === 'zone') && dbMap.region === -1) dbMap.region = idx;
-                                      if ((colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') && dbMap.province === -1) dbMap.province = idx;
-                                      if ((colName === 'PROVINCE' || cLower === 'จังหวัด') && dbMap.district === -1) dbMap.district = idx;
-                                       if ((colName === 'CV_NAME' || cLower === 'cvname' || (!cLower.includes('sub') && cLower.includes('cv')) || cLower === 'ลูกค้า') && dbMap.cv === -1) dbMap.cv = idx;
-                                       if ((colName === 'CATEGORY' || (!cLower.includes('sub') && (cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')))) && dbMap.group === -1) dbMap.group = idx;
-                                       if ((colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || (!cLower.includes('code') && cLower.includes('brand'))) && dbMap.brand === -1) dbMap.brand = idx;
-                                       if ((colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) && dbMap.model === -1) dbMap.model = idx;
-                                       if ((colName === 'SIZE' || cLower.includes('ขนาด') || cLower === 'weight' || cLower === 'น้ำหนัก' || cLower.includes('size')) && dbMap.size === -1) dbMap.size = idx;
-                                       if ((colName === 'BRAND_CODE' || cLower.includes('sku') || cLower.includes('รหัสสินค้า' ) || cLower.includes('code') || cLower.includes('item')) && dbMap.sku === -1) dbMap.sku = idx;
-                                       if ((colName === 'REBATE' || colName === 'ประเภท REBATE' || cLower.includes('rebate')) && dbMap.rebate === -1) dbMap.rebate = idx;
-                                       if ((colName === 'SET' || colName === 'ประเภท SET' || cLower.includes('set')) && dbMap.set === -1) dbMap.set = idx;
-                                       if ((colName === 'SUB_CATEGORY' || cLower === 'subcategory') && dbMap.subCategory === -1) dbMap.subCategory = idx;
-                                       if ((colName === 'DESC_LOC' || cLower === 'descloc') && dbMap.descLoc === -1) dbMap.descLoc = idx;
-
-
-                                  });
-                                  _i = headerRowIdx + 1;
-                                case 7:
-                                  if (!(_i < rows.length)) {
-                                    _context12.n = 12;
-                                    break;
-                                  }
-                                  row = rows[_i] || [];
-                                  if (row.length === 0) {
-                                    _context12.n = 9;
-                                    break;
-                                  }
-                                  if (shouldSkipRow(row, dbMap)) {
-                                    _context12.n = 9;
-                                    break;
-                                  }
-                                  dateStr = String(row[dbMap.date] || '').trim();
-                                  if (!dateStr || dateStr === '-') {
-                                    _context12.n = 9;
-                                    break;
-                                  }
-                                  if (dateStr.includes('-')) {
-                                      var isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-                                      if (isoMatch) {
-                                          year = parseInt(isoMatch[1], 10);
-                                          month = parseInt(isoMatch[2], 10) - 1;
-                                          day = parseInt(isoMatch[3], 10);
-                                      } else {
-                                          var d = new Date(dateStr);
-                                          year = d.getFullYear();
-                                          month = d.getMonth();
-                                          day = d.getDate();
-                                      }
-                                  } else if (dateStr.includes('/')) {
-                                      parts = dateStr.split('/');
-                                      if (parts.length >= 3) {
-                                          day = parseInt(parts[0], 10);
-                                          month = parseInt(parts[1], 10) - 1;
-                                          year = parseInt(parts[2], 10);
-                                      }
-                                  }
-                                  
-                                  if (year === undefined || isNaN(year) || isNaN(month) || isNaN(day)) {
-                                      _context12.n = 9;
-                                      break;
-                                  }
-                                  
-                                  if (year > 2500) year -= 543;
-                                  dateObj = new Date(year, month, day);
-                                  if (isNaN(dateObj.getTime())) {
-                                    _context12.n = 9;
-                                    break;
-                                  }
-                                  amount = parseNumericValue(row[dbMap.amount]);
-                                  qty = parseNumericValue(row[dbMap.qty]);
-                                  ton = parseNumericValue(row[dbMap.ton]);
-                                  if (amount === 0 && qty === 0 && ton === 0) {
-                                    _context12.n = 9;
-                                    break;
-                                  }
-                                  dimensions = {
-                                      region: normalizeDimensionValue(row[dbMap.region]),
-                                      province: normalizeDimensionValue(row[dbMap.province]),
-                                      district: normalizeDistrictName(normalizeDimensionValue(row[dbMap.district])),
-                                      cv: normalizeDimensionValue(row[dbMap.cv]),
-                                      group: normalizeDimensionValue(row[dbMap.group]),
-                                      brand: normalizeDimensionValue(row[dbMap.brand]),
-                                      model: normalizeDimensionValue(row[dbMap.model]),
-                                      size: normalizeDimensionValue(row[dbMap.size]),
-                                      sku: normalizeDimensionValue(row[dbMap.sku]),
-                                      rebate: normalizeDimensionValue(row[dbMap.rebate]),
-                                      set: normalizeDimensionValue(row[dbMap.set]), subCategory: normalizeDimensionValue(row[dbMap.subCategory]), descLoc: normalizeDimensionValue(row[dbMap.descLoc])
-                                  };
-                                  dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
-                                  id = "m-" + Math.random();
-                                  var dataRow = _objectSpread({
-                                      id: id,
-                                      date: toLocalISOString(dateObj),
-                                      day: day,
-                                      monthIndex: month,
-                                      year: String(year + 543),
-                                      sales: amount,
-                                      target: 0,
-                                      targetValue: 0,
-                                      targetTon: 0,
-                                      targetLevel: undefined,
-                                      qty: qty,
-                                      ton: ton
-                                  }, dimensions);
-                                  monthly.push(dataRow);
-                                  daily.push(_objectSpread({}, dataRow, { id: "d-" + Math.random() }));
-                                case 9:
-                                  _i++;
-                                  _context12.n = 7;
-                                  break;
-                                case 12:
-                                  yearly = buildYearlyEntriesFromMonthly(monthly);
-                                  if (monthly.length > 0) {
-                                      salesUpdateMeta.monthly.sales[monthly[0].year] = extractSheetUpdateLabel(sheet) || toLocalISOString(new Date()).substring(0, 10);
-                                  }
-                                  return _context12.a(2, { daily: daily, monthly: monthly, yearly: yearly, salesUpdateMeta: salesUpdateMeta });
+                                  result = parseSalesRows(rows, parseOptions, sheet);
+                                  return _context12.a(2, result);
                               }
                             }, _callee12);
                           }));
@@ -9163,31 +9849,31 @@ var App = function App() {
                             });
                           });
                         };
-                        
+
                         var parseTG26Workbook = async function(workbook) {
                             var rawTargets = [];
                             var sheetNames = workbook.SheetNames || [];
-                            
+
                             for (var i = 0; i < sheetNames.length; i++) {
                                 var sheetName = sheetNames[i];
                                 if (!sheetName.startsWith('เขต')) continue;
-                                
+
                                 var districtRaw = sheetName.replace('เขต', '').trim();
                                 var district = 'เขต' + districtRaw;
-                                
+
                                 var ws = workbook.Sheets[sheetName];
                                 var rows = await sheetToRowsChunked(ws);
-                                
+
                                 var currentGroup = 'Uncategorized';
                                 for (var r = 0; r < rows.length; r++) {
                                     var row = rows[r] || [];
                                     var val0 = String(row[0] || '').trim();
                                     var val1 = String(row[1] || '').trim();
-                                    
+
                                     if (!val0 || val0.toLowerCase() === 'brand' || val0 === 'Total' || val0.includes('เป้า') || val0.includes('ภาค')) {
                                         continue;
                                     }
-                                    
+
                                     if (!isNaN(parseInt(val0)) && row.length > 2) {
                                         var brandName = val1;
                                         for (var m = 0; m < 12; m++) {
@@ -9219,7 +9905,7 @@ var App = function App() {
                             var hasTG26 = (workbook.SheetNames || []).some(function (name) {
                               return String(name || '').startsWith('เขต');
                             });
-                            
+
                             var resultPromise;
                             if (hasTG26) {
                                 resultPromise = parseTG26Workbook(workbook).then(function(tgRaw) {
@@ -9230,7 +9916,7 @@ var App = function App() {
                             } else {
                                 resultPromise = originalParseTargetWorkbook(workbook);
                             }
-                            
+
                             return resultPromise.then(function(res) {
                                 res.rawTargets = rawTargets;
                                 if (parseOptions && parseOptions.targetRegion) {
@@ -9308,6 +9994,21 @@ var App = function App() {
                         rows = text.split('\n').map(function (r) {
                           return splitCSV(r.trim());
                         });
+                        var isTrans = false;
+                        for (var i = 0; i < Math.min(200, rows.length); i++) {
+                            var r = rows[i] || [];
+                            var joined = r.join(' ').toLowerCase();
+                            if ((joined.includes('sales_date') || joined.includes('sales date') || joined.includes('transaction_date') || joined.includes('date') || joined.includes('วันที่') || joined.includes('วัน/เดือน/ปี')) &&
+                                (joined.includes('sales_amount') || joined.includes('sales amount') || joined.includes('sales') || joined.includes('qty') || joined.includes('ton') || joined.includes('ยอดขาย') || joined.includes('ยอด') || joined.includes('จำนวน') || joined.includes('ชิ้น') || joined.includes('ตัน') || joined.includes('ปริมาณ'))) {
+                                isTrans = true;
+                                break;
+                            }
+                        }
+                        if (isTrans && type === 'sales') {
+                            parsed = parseSalesRows(rows, parseOptions);
+                            _context16.n = 27;
+                            break;
+                        }
                         _context16.n = 1;
                         return parseGenericRows(rows, _objectSpread({
                           sheetName: file.name
@@ -9867,7 +10568,7 @@ return _context20.a(2, false);
       return _ref34.apply(this, arguments);
     };
   }();
-  
+
   var openFilePickerForType = function(type) {
     if (useDirectUploadInput) {
       var fallbackInput = type === 'sales' ? salesInputRef.current : targetInputRef.current;
@@ -10177,7 +10878,7 @@ return _context20.a(2, false);
       showStatus('Export ข้อมูล Sales ไม่สำเร็จ', 'error');
     }
   };
-  
+
   var exportCustomSalesReport = function exportCustomSalesReport(config) {
     var formatYearHeader = function formatYearHeader(yearValue, style) {
         var yearText = String(yearValue || '').trim();
@@ -10191,11 +10892,11 @@ return _context20.a(2, false);
     try {
       var exportFilterState = buildLockedFiltersState(lockedFilters);
       var hasLockedExportScope = Object.keys(exportFilterState).length > 0;
-      
+
       // We will only use monthlySource for custom reports because yearly data doesn't have months.
       // If user selects "Year" axis, we can aggregate monthly data to year.
       var baseSource = filterRowsByFilterState(allData.monthly || [], exportFilterState);
-      
+
       if (baseSource.length === 0) {
         showStatus(hasLockedExportScope ? 'ไม่มีข้อมูล Sales ในสิทธิ์ที่ถูกล็อกสำหรับ Export' : 'ยังไม่มีข้อมูล Sales สำหรับ Export', 'error');
         return;
@@ -10206,10 +10907,10 @@ return _context20.a(2, false);
         var y = item.year;
         var m = item.monthIndex !== undefined ? item.monthIndex : item.month;
         if (!y || m === undefined) return false;
-        
+
         var ceYear = toCEYear(y) || y;
         var itemDateStr = item.date ? item.date : (ceYear + '-' + String(m + 1).padStart(2, '0') + '-01');
-        
+
         if (config.startDate && itemDateStr < config.startDate) return false;
         if (config.endDate && itemDateStr > config.endDate) return false;
         return true;
@@ -10299,14 +11000,14 @@ return _context20.a(2, false);
         });
 
         var headers = [].concat(dimHeaders, colDefs.map(function(c) { return c.label; }), ['รวมทั้งหมด']);
-        
+
         // Blank row logic
         var sheetRows = [headers].concat(rows);
         return XLSX.utils.aoa_to_sheet(sheetRows);
       };
 
       var workbook = XLSX.utils.book_new();
-      
+
       config.measurements.forEach(function(mKey) {
         var sheetName = mKey === 'qty' ? 'ปริมาณ (ชิ้น)' : mKey === 'ton' ? 'น้ำหนัก (ตัน)' : 'ยอดขาย (บาท)';
         var ws = buildSheet(mKey === 'qty' ? 'qty' : mKey === 'ton' ? 'ton' : 'sales');
@@ -10825,13 +11526,13 @@ return _context20.a(2, false);
       if (isTarget && (itemValue === null || itemValue === undefined || itemValue === '' || itemValue === '-')) {
         return true;
       }
-      
+
       // Support checking multi-mapped target rows (separated by ||)
       if (isTarget && typeof itemValue === 'string' && itemValue.includes('||')) {
           var subVals = itemValue.split('||');
           return subVals.some(function(sub) { return v.includes(sub); });
       }
-      
+
       return v.includes(itemValue);
     });
   };
@@ -10874,7 +11575,7 @@ return _context20.a(2, false);
       var source = rawData || [];
       var keys = ['region', 'province', 'district', 'brand'];
       var result = { region: [], province: [], district: [], brand: [] };
-      
+
       var getFilterItemValue = function(item, k) {
          if (item[k]) return item[k];
          if (item.properties && item.properties[k]) return item.properties[k];
@@ -13179,7 +13880,7 @@ return _context20.a(2, false);
       setAuthSessionExpiresAt(String(auth.expiresAt || ''));
       setAuthUser(auth.user);
       setAuthPassword('');
-      
+
       return result;
     }).catch(function (error) {
       setAuthError(error && error.message ? error.message : 'เข้าสู่ระบบไม่สำเร็จ');
@@ -13554,7 +14255,7 @@ return _context20.a(2, false);
       _React$useStateFS2 = _slicedToArray(_React$useStateFS, 2),
       filterSettings = _React$useStateFS2[0],
       setFilterSettings = _React$useStateFS2[1];
-      
+
   var _React$useStateFModal = React.useState(false),
       _React$useStateFModal2 = _slicedToArray(_React$useStateFModal, 2),
       showFilterSettingsModal = _React$useStateFModal2[0],
@@ -13569,7 +14270,7 @@ return _context20.a(2, false);
     _toConsumableArray(viewMode === 'monthly' ? [{
       key: 'dateRange',
       label: getFilterLabel('SALES_DATE', 'ช่วงเวลา')
-    }] : []), 
+    }] : []),
     _toConsumableArray(viewMode === 'yearly' ? [{
       key: 'year',
       label: getFilterLabel('YEAR', 'ปี')
@@ -13586,7 +14287,7 @@ return _context20.a(2, false);
         _React$useStateFSModalItems2 = _slicedToArray(_React$useStateFSModalItems, 2),
         items = _React$useStateFSModalItems2[0],
         setItems = _React$useStateFSModalItems2[1];
-        
+
     var _React$useStateDrag = React.useState(null),
         _React$useStateDrag2 = _slicedToArray(_React$useStateDrag, 2),
         draggedIdx = _React$useStateDrag2[0],
@@ -13617,7 +14318,7 @@ return _context20.a(2, false);
       var item = _objectSpread({}, newItems[idx]);
       item.visible = !item.visible;
       newItems[idx] = item;
-      
+
       if (item.visible) {
         newItems.splice(idx, 1);
         var lastVisibleIdx = -1;
@@ -13907,13 +14608,13 @@ return _context20.a(2, false);
     className: "font-body-sm text-on-surface-variant"
   }, "Sales Intelligence"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 px-4 flex-1"
-  }, 
+  },
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
     /*#__PURE__*/React.createElement("button", {
       onClick: function() { setIsDashboardMenuOpen(!isDashboardMenuOpen); },
       className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-bold hover:bg-surface-container-high w-full text-left"
-    }, 
-      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "dashboard"), 
+    },
+      /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "dashboard"),
       /*#__PURE__*/React.createElement("span", { className: "flex-1" }, "Dashboard"),
       /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: isDashboardMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
     ),
@@ -13936,7 +14637,7 @@ return _context20.a(2, false);
           key: id,
           onClick: function() { setActiveTab(id); },
           className: "text-left px-3 py-2 rounded-lg text-sm transition-colors flex justify-between items-center group " + (activeTab === id ? 'text-primary font-bold bg-surface-container-highest' : 'text-on-surface-variant hover:bg-surface-container-high')
-        }, 
+        },
           /*#__PURE__*/React.createElement("span", null, (4 + i) + ". " + cd),
           /*#__PURE__*/React.createElement("span", {
              onClick: function(e) {
@@ -13954,7 +14655,7 @@ return _context20.a(2, false);
         );
       }),
       (customDashboards.length < 5) && /*#__PURE__*/React.createElement("button", {
-        onClick: function() { 
+        onClick: function() {
           var name = window.prompt("ตั้งชื่อ Dashboard ใหม่ (New Create)");
           if (name && name.trim()) {
             var newDashboards = [].concat(customDashboards, [name.trim()]);
@@ -13966,18 +14667,18 @@ return _context20.a(2, false);
         className: "text-left px-3 py-2 rounded-lg text-sm transition-colors text-blue-600 font-medium hover:bg-blue-50 mt-1 flex items-center gap-1"
       }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-[16px]" }, "add"), "New Create")
     )
-  ), 
+  ),
   /*#__PURE__*/React.createElement("button", {
     onClick: function() { setActiveTab("import_export"); },
     className: "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'import_export' ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
   }, /*#__PURE__*/React.createElement("span", {
     className: "material-symbols-outlined"
-  }, "sync_alt"), "Import / Export"), 
+  }, "sync_alt"), "Import / Export"),
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
     /*#__PURE__*/React.createElement("button", {
       onClick: function() { setActiveTab(activeTab === "target_match" ? "" : "target_match"); },
       className: "flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors font-label-md " + (activeTab === 'target_match' ? 'text-primary font-bold bg-surface-container-high' : 'text-on-surface-variant font-bold hover:bg-surface-container-high')
-    }, 
+    },
       /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-3" },
         /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "center_focus_strong"),
         "Campaign"
@@ -13994,14 +14695,14 @@ return _context20.a(2, false);
         className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2 mt-1"
       }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "16px" } }, "stars"), " Setting Rebate & Point Program")
     )
-  ), 
+  ),
   /*#__PURE__*/React.createElement("div", { className: "flex flex-col" },
     /*#__PURE__*/React.createElement("button", {
       onClick: function() { setIsSettingMenuOpen(!isSettingMenuOpen); },
       className: "flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors font-label-md text-on-surface-variant font-bold hover:bg-surface-container-high"
-    }, 
+    },
       /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-3" },
-        /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "settings"), 
+        /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined" }, "settings"),
         /*#__PURE__*/React.createElement("span", null, "Setting")
       ),
       /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: isSettingMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
@@ -14228,7 +14929,7 @@ return _context20.a(2, false);
         ),
         React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-2" }, "อัปโหลดข้อมูลเป้าหมาย"),
         React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "กรุณาเลือกภาค/เขตการขายสำหรับข้อมูลเป้าหมายชุดนี้"),
-        
+
         React.createElement("div", { className: "mb-6 text-left" },
             React.createElement("label", { className: "block text-sm font-medium text-slate-700 mb-2" }, "เลือกภาค/เขตการขาย (อ้างอิงจากข้อมูลยอดขาย)"),
             React.createElement("select", {
@@ -14242,14 +14943,14 @@ return _context20.a(2, false);
                 })
             )
         ),
-        
+
         targetUploadConfirm.hasExisting && React.createElement("p", { className: "text-sm text-amber-600 mb-4 bg-amber-50 p-2 rounded border border-amber-200" }, "มีข้อมูลเป้าหมายเดิมอยู่ในระบบแล้ว คุณต้องการอัปโหลดข้อมูลใหม่นี้อย่างไร?"),
 
         React.createElement("div", { className: "flex flex-col gap-2" },
-            React.createElement("button", { 
+            React.createElement("button", {
                 className: "px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-sm flex items-center justify-center gap-2 " + (!uploadTargetRegion ? "opacity-50 cursor-not-allowed" : ""),
                 disabled: !uploadTargetRegion,
-                onClick: function() { 
+                onClick: function() {
                     var file = targetUploadConfirm.file;
                     var inputEl = targetUploadConfirm.inputElement;
                     var isBridge = targetUploadConfirm.isBridge;
@@ -14273,11 +14974,11 @@ return _context20.a(2, false);
                     });
                 }
             }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "add_circle"), targetUploadConfirm.hasExisting ? "อัปโหลดเพิ่ม (บวกเพิ่มข้อมูลใหม่)" : "ยืนยันอัปโหลด"),
-            
-            targetUploadConfirm.hasExisting && React.createElement("button", { 
+
+            targetUploadConfirm.hasExisting && React.createElement("button", {
                 className: "px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-lg hover:bg-red-100 font-bold flex items-center justify-center gap-2 mt-1 " + (!uploadTargetRegion ? "opacity-50 cursor-not-allowed" : ""),
                 disabled: !uploadTargetRegion,
-                onClick: function() { 
+                onClick: function() {
                     var file = targetUploadConfirm.file;
                     var inputEl = targetUploadConfirm.inputElement;
                     var isBridge = targetUploadConfirm.isBridge;
@@ -14301,12 +15002,12 @@ return _context20.a(2, false);
                     });
                 }
             }, React.createElement("span", { className: "material-symbols-outlined text-[18px]" }, "delete"), "อัปโหลดทับ (แทนที่ข้อมูลเก่า)"),
-            
-            React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() { 
+
+            React.createElement("button", { className: "px-4 py-2 mt-2 bg-transparent text-slate-500 rounded-lg hover:bg-slate-100 font-bold", onClick: function() {
                 if (targetUploadConfirm && targetUploadConfirm.inputElement) targetUploadConfirm.inputElement.value = '';
                 var isBridge = targetUploadConfirm && targetUploadConfirm.isBridge;
                 var bridgeEvent = targetUploadConfirm && targetUploadConfirm.bridgeEvent;
-                setTargetUploadConfirm(null); 
+                setTargetUploadConfirm(null);
                 if (isBridge && bridgeEvent) {
                     if (typeof showStatus === 'function') showStatus("\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01\u0E01\u0E32\u0E23\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 Target", 'error');
                     if (typeof replyBridgeMessage === 'function') replyBridgeMessage(bridgeEvent, {
@@ -14341,7 +15042,7 @@ return _context20.a(2, false);
             if (!pendingTG26Data) return;
             setIsLoading(true);
             updateLoadingStatus('กำลังผนวกยอดเป้าหมายเข้ากับระบบ...', 95, false);
-            
+
             setTimeout(function() {
                 var mappedTargets = [];
                 pendingTG26Data.forEach(function(row) {
@@ -14353,7 +15054,7 @@ return _context20.a(2, false);
                     var distKey = 'dist||' + row.district;
                     var subCatKey = 'subCat||' + row.group + '||' + row.brand;
                     var descLocKey = 'descLoc||' + row.group + '||' + row.brand;
-                    
+
                     var mapBrandVal = newMap[brandKey] || '';
                     var mapGroupVal = newMap[groupKey] !== undefined ? newMap[groupKey] : (newMap[legacyGroupKey] || '');
                     var mapModelVal = newMap[modelKey] || '';
@@ -14361,7 +15062,7 @@ return _context20.a(2, false);
                     var mapSubCatVal = newMap[subCatKey] || '';
                     var mapDescLocVal = newMap[descLocKey] || '';
                     var mapDistVal = newMap[distKey] || row.district;
-                    
+
                     if (mapBrandVal.trim() !== '') {
                         var parseMapVal = function(val) {
                             if (!val) return [];
@@ -14370,14 +15071,14 @@ return _context20.a(2, false);
                             try { if (strVal.startsWith('[')) return JSON.parse(strVal); } catch(e) {}
                             return strVal.split(',');
                         };
-                        
+
                         var mappedBrands = parseMapVal(mapBrandVal).map(function(s) { return String(s).trim(); }).filter(Boolean);
                         var mappedModelsStr = mapModelVal.trim() !== '' ? parseMapVal(mapModelVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
                         var mappedSkusStr = mapSkuVal.trim() !== '' ? parseMapVal(mapSkuVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
                         var mappedSubCatStr = mapSubCatVal.trim() !== '' ? parseMapVal(mapSubCatVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
                         var mappedDescLocStr = mapDescLocVal.trim() !== '' ? parseMapVal(mapDescLocVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : '-';
                         var mappedGroupStr = mapGroupVal.trim() !== '' ? parseMapVal(mapGroupVal).map(function(s) { return String(s).trim(); }).filter(Boolean).join('||') : 'Total Target';
-                        
+
                         if (mappedBrands.length > 0) {
                             var mappedBrandStr = mappedBrands.join('||');
                             mappedTargets.push(Object.assign({}, row, {
@@ -14424,10 +15125,10 @@ return _context20.a(2, false);
                             }));
                     }
                 });
-                
+
                 var newAllData = Object.assign({}, allData);
                 var tg26IsAppend = window._tg26IsAppend || false;
-                
+
                 if (!tg26IsAppend) {
                     if (newAllData.monthly) {
                         newAllData.monthly = newAllData.monthly.map(function(m) {
@@ -14445,12 +15146,12 @@ return _context20.a(2, false);
                     newAllData.targets = [].concat(newAllData.targets || [], mappedTargets);
                     newAllData.rawTargets = [].concat(newAllData.rawTargets || [], pendingTG26Data);
                 }
-                
+
                 if (!newAllData.monthly) newAllData.monthly = [];
                 mappedTargets.forEach(function(t) {
                     newAllData.monthly.push(t);
                 });
-                
+
                 setAllData(newAllData);
                 saveToStorage(newAllData);
                 setPendingTG26Data(null);
@@ -14761,7 +15462,7 @@ return _context20.a(2, false);
     var isPrev = yearLabel === sortedYears[1];
     var strokeColor = isLatest ? '#2563eb' : (isPrev ? '#8b5cf6' : COLORS[index % COLORS.length]);
     var ChartElement = isLatest ? Area : Line;
-    
+
     return /*#__PURE__*/React.createElement(ChartElement, {
       key: "sales-".concat(yearLabel),
       yAxisId: "left",
@@ -14892,7 +15593,7 @@ return _context20.a(2, false);
     unit: unitMode
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 text-right mt-1"
-  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null), 
+  }, "*\u0E04\u0E25\u0E34\u0E01\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E02\u0E19\u0E32\u0E14\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32"))))) : null),
 customWidgets.map(function(widget) {
   return React.createElement("div", getGridProps("cw-" + widget.id, 12, 4),
     React.createElement("div", { className: "grid-stack-item-content" },
@@ -15113,7 +15814,6 @@ try {
       + '</div></div>';
   }
 }
-
 </script>
 
     <!-- ===== MINIMAL LIGHT: DESIGN SYSTEM v2 ===== -->
@@ -15634,92 +16334,30 @@ try {
 
 window.TargetMatch = (function() {
     let mergedData = null;
-    let extractedGroups = [];
-    
-    let targetConfig = {
-        globalSettings: { allowOverlap: true },
-        rebatePrograms: [],
-        pointPrograms: []
+    let profiles = JSON.parse(localStorage.getItem('targetMatchProfiles') || '[]');
+    let currentProfile = {
+        name: 'Default Target Profile',
+        mappings: {}, // "Group Name|Brand Name": "DB Brand"
+        rebateConfig: { percent: 0 },
+        pointConfig: {
+            unit: 'points', // 'points' or 'baht'
+            tiers: [
+                { threshold: 50000, reward: 100 }
+            ]
+        }
     };
-
-    try {
-        let savedProfiles = JSON.parse(localStorage.getItem('targetMatchProfiles'));
-        if (savedProfiles && savedProfiles.length > 0 && !savedProfiles[0].rebatePrograms) {
-            let old = savedProfiles[0];
-            if (old.rebateConfig && old.rebateConfig.percent > 0) {
-                targetConfig.rebatePrograms.push({
-                    id: 'rebate_' + Date.now(),
-                    name: old.name || 'Rebate Set 1',
-                    mappings: JSON.parse(JSON.stringify(old.mappings || {})),
-                    percent: old.rebateConfig.percent
-                });
-            }
-            if (old.pointConfig && old.pointConfig.tiers && old.pointConfig.tiers.length > 0) {
-                targetConfig.pointPrograms.push({
-                    id: 'point_' + Date.now(),
-                    name: old.name || 'Point Set 1',
-                    mappings: JSON.parse(JSON.stringify(old.mappings || {})),
-                    unit: old.pointConfig.unit || 'points',
-                    tiers: JSON.parse(JSON.stringify(old.pointConfig.tiers))
-                });
-            }
-            localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
-            localStorage.removeItem('targetMatchProfiles');
-        } else {
-            let savedConfig = JSON.parse(localStorage.getItem('targetMatchConfig'));
-            if (savedConfig) {
-                targetConfig = Object.assign(targetConfig, savedConfig);
-                if (!targetConfig.globalSettings) targetConfig.globalSettings = { allowOverlap: true };
-                if (!targetConfig.rebatePrograms) targetConfig.rebatePrograms = [];
-                if (!targetConfig.pointPrograms) targetConfig.pointPrograms = [];
-            }
-        }
-    } catch(e) { console.error(e); }
-
-    window.__TargetMatchConfig = targetConfig;
-
-    async function loadConfigFromSupabase() {
-        if (!window.supabase) return;
-        try {
-            const { data, error } = await window.supabase.from('app_data').select('*').eq('id', 'target_match_config').maybeSingle();
-            if (error) throw error;
-            if (data && data.data) {
-                const dbConfig = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-                targetConfig = Object.assign(targetConfig, dbConfig);
-                window.__TargetMatchConfig = targetConfig;
-                window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
-                renderUI();
-            }
-        } catch (err) {
-            console.error("Error loading Campaign config from Supabase:", err);
-        }
+    if (profiles.length > 0) {
+        currentProfile = profiles[0]; // load first for now
     }
-
-    async function saveConfigToSupabase() {
-        if (!window.supabase) return;
-        try {
-            const { error } = await window.supabase.from('app_data').upsert({ 
-                id: 'target_match_config', 
-                data: JSON.stringify(targetConfig) 
-            });
-            if (error) throw error;
-        } catch (err) {
-            console.error("Error saving Campaign config to Supabase:", err);
-            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลไปยังฐานข้อมูล (Supabase): ' + (err.message || JSON.stringify(err)));
-        }
-    }
-
-    let activeTab = 'rebate'; // 'rebate', 'point', 'settings'
-    let activeProgramId = null;
-    let activeProgramType = null;
     
-    // Working copy for the currently edited program
-    let editingProgram = null; 
-    let dbGroupsList = [];
-    let dbBrandsList = [];
+    // Expose config globally so Dashboard charts can read it easily
+    window.__TargetMatchActiveProfile = currentProfile;
+
+    let extractedGroups = []; // Array of { group: '', brand: '' }
 
     function onTargetDataLoaded(data) {
         mergedData = data;
+        console.log('[TargetMatch] Target Data Loaded. Extracting groups...');
         extractGroupsAndBrands();
         openModal();
     }
@@ -15730,156 +16368,40 @@ window.TargetMatch = (function() {
     }
 
     function extractGroupsAndBrands() {
-        if (!mergedData) return;
-        if (mergedData.rawTargets) {
-            const targetRows = mergedData.rawTargets;
-            let map = new Map();
-            targetRows.forEach(row => {
-                let group = row['กลุ่มสินค้า'] || row['กลุ่ม'] || row['Group'] || 'Uncategorized';
-                let brand = row['แบรนด์'] || row['Brand'] || 'Unknown Brand';
-                let key = group + '|' + brand;
-                if(!map.has(key)) map.set(key, { group, brand });
-            });
-            extractedGroups = Array.from(map.values());
-        }
+        if (!mergedData || !mergedData.rawTargets) return;
+        const targetRows = mergedData.rawTargets;
         
-        let groupsSet = new Set();
-        let brandsSet = new Set();
-        if (mergedData.monthly) {
-            mergedData.monthly.forEach(row => {
-                if (row.group) groupsSet.add(row.group);
-                if (row.brand) brandsSet.add(row.brand);
-            });
-        }
-        dbGroupsList = Array.from(groupsSet);
-        dbBrandsList = Array.from(brandsSet);
+        let map = new Map();
+        targetRows.forEach(row => {
+            // Group is typically in 'กลุ่มสินค้า' and brand in 'แบรนด์'
+            let group = row['กลุ่มสินค้า'] || row['Group'] || 'Uncategorized';
+            let brand = row['แบรนด์'] || row['Brand'] || 'Unknown Brand';
+            let key = group + '|' + brand;
+            if(!map.has(key)) {
+                map.set(key, { group, brand });
+            }
+        });
+        extractedGroups = Array.from(map.values());
     }
 
     function openModal() {
+        // Create modal DOM if not exists
         let modal = document.getElementById('target-match-modal');
-        if (modal) modal.remove();
-        modal = document.createElement('div');
-        modal.id = 'target-match-modal';
-        modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity';
-        document.body.appendChild(modal);
-        activeTab = 'rebate';
-        activeProgramId = null;
-        editingProgram = null;
-        renderUI();
-    }
-
-    function closeModal() {
-        let modal = document.getElementById('target-match-modal');
-        if (modal) modal.remove();
-    }
-
-    function saveGlobalConfig() {
-        targetConfig.globalSettings.allowOverlap = document.getElementById('tm-allow-overlap').checked;
-        localStorage.setItem('targetMatchConfig', JSON.stringify(targetConfig));
-        window.__TargetMatchConfig = targetConfig;
-        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
-        alert('บันทึกการตั้งค่าแคมเปญสำเร็จ!');
-        closeModal();
-    }
-
-    function saveEditingProgram() {
-        if (!editingProgram) return;
-        editingProgram.name = document.getElementById('tm-program-name').value || 'Untitled Program';
-        
-        // Mappings
-        const inputs = document.querySelectorAll('.tm-mapping-input');
-        inputs.forEach(input => {
-            const key = input.getAttribute('data-key');
-            if (input.value.trim()) {
-                editingProgram.mappings[key] = input.value.trim();
-            } else {
-                delete editingProgram.mappings[key];
-            }
-        });
-        
-        let allowOverlapEl = document.getElementById('tm-allow-overlap');
-        if (allowOverlapEl) {
-            editingProgram.allowOverlap = allowOverlapEl.checked;
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'target-match-modal';
+            modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity';
+            document.body.appendChild(modal);
         }
-
-        if (activeProgramType === 'rebate') {
-            const pct = document.getElementById('tm-rebate-percent');
-            if (pct) editingProgram.percent = Number(pct.value);
-            let idx = targetConfig.rebatePrograms.findIndex(p => p.id === activeProgramId);
-            if (idx > -1) targetConfig.rebatePrograms[idx] = editingProgram;
-        } else {
-            const unit = document.getElementById('tm-point-unit');
-            if (unit) editingProgram.unit = unit.value;
-            editingProgram.tiers.sort((a, b) => a.threshold - b.threshold);
-            let idx = targetConfig.pointPrograms.findIndex(p => p.id === activeProgramId);
-            if (idx > -1) targetConfig.pointPrograms[idx] = editingProgram;
-        }
-
-        saveConfigToSupabase();
-        window.__TargetMatchConfig = targetConfig;
-        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: targetConfig }));
-        
-        // Go back to list
-        activeProgramId = null;
-        editingProgram = null;
-        renderUI();
-    }
-
-    function deleteProgram(id, type) {
-        if (!confirm('ยืนยันการลบแคมเปญนี้?')) return;
-        if (type === 'rebate') {
-            targetConfig.rebatePrograms = targetConfig.rebatePrograms.filter(p => p.id !== id);
-        } else {
-            targetConfig.pointPrograms = targetConfig.pointPrograms.filter(p => p.id !== id);
-        }
-        saveConfigToSupabase();
-        window.__TargetMatchConfig = targetConfig;
-        renderUI();
-    }
-
-    function addProgram(type) {
-        let id = type + '_' + Date.now();
-        let prog = {
-            id: id,
-            name: 'New ' + (type==='rebate'?'Rebate':'Point') + ' Program',
-            mappings: {},
-            allowOverlap: true
-        };
-        if (type === 'rebate') {
-            prog.percent = 0;
-            targetConfig.rebatePrograms.push(prog);
-        } else {
-            prog.unit = 'points';
-            prog.tiers = [{ threshold: 50000, reward: 100 }];
-            targetConfig.pointPrograms.push(prog);
-        }
-        openProgram(id, type);
-    }
-
-    function openProgram(id, type) {
-        activeProgramId = id;
-        activeProgramType = type;
-        if (type === 'rebate') {
-            editingProgram = JSON.parse(JSON.stringify(targetConfig.rebatePrograms.find(p => p.id === id)));
-        } else {
-            editingProgram = JSON.parse(JSON.stringify(targetConfig.pointPrograms.find(p => p.id === id)));
-        }
-        renderUI();
-    }
-
-    function switchTab(tab) {
-        activeTab = tab;
-        activeProgramId = null;
-        editingProgram = null;
+        modal.style.display = 'flex';
         renderUI();
     }
 
     function renderUI() {
         let modal = document.getElementById('target-match-modal');
-        if (!modal) return;
         
         let html = `
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="material-symbols-outlined text-blue-600">account_tree</span>
@@ -15890,190 +16412,111 @@ window.TargetMatch = (function() {
                 </button>
             </div>
             
-            <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
-                <!-- Sidebar Tabs -->
-                <div class="w-full md:w-64 bg-slate-50 border-r border-gray-200 flex flex-col">
-                    <button onclick="TargetMatch.switchTab('rebate')" class="w-full text-left px-5 py-4 border-b border-gray-100 flex items-center gap-3 transition-colors ${activeTab==='rebate'?'bg-blue-50 border-l-4 border-l-blue-600 text-blue-700':'hover:bg-gray-100 text-gray-600'}">
-                        <span class="material-symbols-outlined ${activeTab==='rebate'?'text-blue-600':'text-gray-400'}">percent</span>
-                        <span class="font-semibold text-sm">Rebate Programs</span>
-                    </button>
-                    <button onclick="TargetMatch.switchTab('point')" class="w-full text-left px-5 py-4 border-b border-gray-100 flex items-center gap-3 transition-colors ${activeTab==='point'?'bg-amber-50 border-l-4 border-l-amber-600 text-amber-700':'hover:bg-gray-100 text-gray-600'}">
-                        <span class="material-symbols-outlined ${activeTab==='point'?'text-amber-600':'text-gray-400'}">stars</span>
-                        <span class="font-semibold text-sm">Point Programs</span>
-                    </button>
+            <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+                
+                <!-- Tree View Section -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 font-semibold text-slate-700">
+                        1. จับคู่กลุ่มสินค้าและแบรนด์ (Data Mapping)
+                    </div>
+                    <div class="p-4 flex flex-col gap-3" id="tm-tree-container">
+                        <!-- Rendered Tree -->
+                    </div>
                 </div>
 
-                <!-- Main Content Area -->
-                <div class="flex-1 overflow-y-auto p-6 bg-white" id="tm-main-content">
-                    ${renderMainContent()}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Rebate Config -->
+                    <div class="border border-blue-100 rounded-xl overflow-hidden bg-blue-50/30 shadow-sm">
+                        <div class="bg-blue-100/50 px-4 py-3 border-b border-blue-100 font-semibold text-blue-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600 text-lg">percent</span>
+                            2. Rebate Program
+                        </div>
+                        <div class="p-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="tm-rebate-percent" value="${currentProfile.rebateConfig.percent}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                                <span class="text-gray-500 font-medium">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Point Program -->
+                    <div class="border border-amber-100 rounded-xl overflow-hidden bg-amber-50/30 shadow-sm">
+                        <div class="bg-amber-100/50 px-4 py-3 border-b border-amber-100 font-semibold text-amber-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-amber-600 text-lg">stars</span>
+                            3. Point Program (แบบขั้นบันได)
+                        </div>
+                        <div class="p-4 flex flex-col gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
+                                <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-white">
+                                    <option value="points" ${currentProfile.pointConfig.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
+                                    <option value="baht" ${currentProfile.pointConfig.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="border-t border-amber-200/50 pt-4">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
+                                <p class="text-xs text-gray-500 mb-3">*ยอดขายสะสมทะลุขั้นไหน จะได้รางวัลของขั้นนั้นบวกเพิ่มไปเรื่อยๆ</p>
+                                <div id="tm-tiers-container" class="flex flex-col gap-2 mb-3">
+                                    <!-- Rendered Tiers -->
+                                </div>
+                                <button onclick="TargetMatch.addTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-100 bg-slate-50 flex justify-end gap-3">
+                <button onclick="TargetMatch.closeModal()" class="px-5 py-2.5 text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
+                <button onclick="TargetMatch.saveConfig()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-sm transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    บันทึก & นำไปใช้ (Save & Apply)
+                </button>
             </div>
         </div>
         `;
         modal.innerHTML = html;
+        
+        renderTree();
+        renderTiers();
     }
 
-    function renderMainContent() {
-        if (activeProgramId) {
-            // Edit Mode
-            return `
-                <div class="flex flex-col gap-6">
-                    <div class="flex items-center justify-between border-b pb-3">
-                        <div class="flex items-center gap-3">
-                            <button onclick="TargetMatch.switchTab('${activeTab}')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
-                                <span class="material-symbols-outlined">arrow_back</span>
-                            </button>
-                            <h3 class="text-lg font-bold text-gray-800">ตั้งค่าแคมเปญ</h3>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <div class="flex-1">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อแคมเปญ (Campaign Name)</label>
-                            <input type="text" id="tm-program-name" value="${editingProgram.name}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-4 border bg-gray-50">
-                        </div>
-                        <div class="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <label class="flex items-start gap-3 cursor-pointer">
-                                <div class="mt-1">
-                                    <input type="checkbox" id="tm-allow-overlap" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${editingProgram.allowOverlap !== false ? 'checked' : ''}>
-                                </div>
-                                <div>
-                                    <div class="font-semibold text-gray-800 text-sm">อนุญาตให้คิดโบนัสทับซ้อนได้</div>
-                                    <div class="text-xs text-gray-500 mt-1">หากแบรนด์นี้ไปอยู่ในแคมเปญอื่นด้วย ยอดขายจะนำไปคิดให้ทั้ง 2 แคมเปญ</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <!-- Data Mapping Tree -->
-                        <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col h-[500px]">
-                            <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 font-semibold text-slate-700 flex-shrink-0">
-                                1. จับคู่แบรนด์ (Data Mapping)
-                            </div>
-                            <div class="p-4 flex-1 overflow-y-auto bg-gray-50/30">
-                                ${getTreeHTML()}
-                            </div>
-                        </div>
-
-                        <!-- Rule Config -->
-                        <div class="border ${activeProgramType==='rebate'?'border-blue-200 bg-blue-50/30':'border-amber-200 bg-amber-50/30'} rounded-xl overflow-hidden shadow-sm flex flex-col h-[500px]">
-                            <div class="${activeProgramType==='rebate'?'bg-blue-100/50 border-blue-200 text-blue-800':'bg-amber-100/50 border-amber-200 text-amber-800'} px-4 py-3 border-b font-semibold flex items-center gap-2 flex-shrink-0">
-                                <span class="material-symbols-outlined text-lg">${activeProgramType==='rebate'?'percent':'stars'}</span>
-                                2. เงื่อนไขแคมเปญ (Rules)
-                            </div>
-                            <div class="p-4 flex-1 overflow-y-auto">
-                                ${activeProgramType==='rebate' ? getRebateRuleHTML() : getPointRuleHTML()}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-4 border-t">
-                        <button onclick="TargetMatch.switchTab('${activeTab}')" class="px-5 py-2.5 text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
-                        <button onclick="TargetMatch.saveEditingProgram()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-sm transition-colors flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">save</span> บันทึกแคมเปญนี้
-                        </button>
-                    </div>
-                </div>
-            `;
-        } else {
-            // List Mode
-            let list = activeTab === 'rebate' ? targetConfig.rebatePrograms : targetConfig.pointPrograms;
-            let themeClass = activeTab === 'rebate' ? 'blue' : 'amber';
-            let iconName = activeTab === 'rebate' ? 'percent' : 'stars';
-            
-            return `
-                <div class="flex flex-col h-full">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-bold text-gray-800">${activeTab === 'rebate' ? 'Rebate Programs' : 'Point Programs'}</h3>
-                        <button onclick="TargetMatch.addProgram('${activeTab}')" class="px-4 py-2 bg-${themeClass}-600 hover:bg-${themeClass}-700 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2 text-sm">
-                            <span class="material-symbols-outlined text-sm">add</span> สร้างแคมเปญใหม่
-                        </button>
-                    </div>
-
-                    ${list.length === 0 ? `
-                        <div class="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl py-12">
-                            <span class="material-symbols-outlined text-5xl mb-3 text-gray-300">folder_open</span>
-                            <p>ยังไม่มีแคมเปญในหมวดหมู่นี้</p>
-                        </div>
-                    ` : `
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${list.map(p => `
-                                <div class="border border-gray-200 rounded-xl p-5 hover:border-${themeClass}-400 hover:shadow-md transition-all bg-white relative group">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-8 h-8 rounded-full bg-${themeClass}-100 text-${themeClass}-600 flex items-center justify-center">
-                                                <span class="material-symbols-outlined text-sm">${iconName}</span>
-                                            </div>
-                                            <div class="font-bold text-gray-800">${p.name}</div>
-                                        </div>
-                                        <button onclick="TargetMatch.deleteProgram('${p.id}', '${activeTab}')" class="text-gray-300 hover:text-red-500 transition-colors">
-                                            <span class="material-symbols-outlined text-sm">delete</span>
-                                        </button>
-                                    </div>
-                                    <div class="text-xs text-gray-500 mb-4 flex gap-3">
-                                        <span><b class="text-gray-700">${Object.keys(p.mappings).length}</b> Brands Mapped</span>
-                                        ${activeTab==='rebate' ? `<span><b class="text-gray-700">${p.percent}%</b> Rebate</span>` : `<span><b class="text-gray-700">${p.tiers.length}</b> Tiers</span>`}
-                                    </div>
-                                    <button onclick="TargetMatch.openProgram('${p.id}', '${activeTab}')" class="w-full py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
-                                        แก้ไขแคมเปญ (Edit)
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `}
-                </div>
-            `;
-        }
-    }
-
-    function getTreeHTML() {
+    function renderTree() {
+        const container = document.getElementById('tm-tree-container');
+        if (!container) return;
+        
+        // Group by 'กลุ่มสินค้า'
         let grouped = {};
         extractedGroups.forEach(item => {
             if (!grouped[item.group]) grouped[item.group] = [];
             grouped[item.group].push(item.brand);
         });
 
-        if (extractedGroups.length === 0) {
-            return `<div class="text-gray-500 text-sm text-center py-6">ไม่พบข้อมูล กลุ่ม/แบรนด์ ในไฟล์ Target</div>`;
-        }
-
-        let html = `
-            <datalist id="tm-db-groups-list">
-                ${dbGroupsList.map(g => `<option value="${g}"></option>`).join('')}
-            </datalist>
-            <datalist id="tm-db-brands-list">
-                ${dbBrandsList.map(b => `<option value="${b}"></option>`).join('')}
-            </datalist>
-        `;
+        let html = '';
         for (const [group, brands] of Object.entries(grouped)) {
-            let groupKey = 'group||' + group;
-            let groupVal = editingProgram.mappings[groupKey] || '';
             html += `
-                <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm mb-3">
-                    <div class="font-bold text-slate-800 border-b border-gray-100 pb-2 mb-2 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-gray-400">folder</span> ${group}
-                        </div>
-                        <div class="flex items-center gap-2 font-normal w-1/2 justify-end">
-                            <span class="text-xs text-gray-500 whitespace-nowrap">ผูกกลุ่มกับ:</span>
-                            <input type="text" placeholder="พิมพ์ชื่อกลุ่ม" list="tm-db-groups-list"
-                                class="tm-mapping-input w-2/3 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50" 
-                                data-key="${groupKey}" value="${groupVal}">
-                        </div>
+                <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm">
+                    <div class="font-bold text-slate-800 border-b border-gray-100 pb-2 mb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-gray-400">folder</span>
+                        ${group}
                     </div>
                     <div class="flex flex-col gap-2 pl-6 border-l-2 border-gray-100 ml-3 py-1">
                         ${brands.map(brand => {
                             let key = group + '|' + brand;
-                            let val = editingProgram.mappings[key] || '';
+                            let val = currentProfile.mappings[key] || '';
                             return `
                                 <div class="flex items-center gap-3">
                                     <span class="material-symbols-outlined text-gray-400 text-sm">subdirectory_arrow_right</span>
-                                    <div class="w-1/3 text-sm text-gray-700 font-medium truncate" title="${brand}">${brand}</div>
+                                    <div class="w-1/3 text-sm text-gray-700 font-medium">${brand}</div>
                                     <div class="flex-1 flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-gray-100">
                                         <span class="text-xs text-gray-500 whitespace-nowrap pl-1">ผูกกับ:</span>
-                                        <input type="text" placeholder="พิมพ์ชื่อแบรนด์" list="tm-db-brands-list"
-                                            class="tm-mapping-input flex-1 text-xs border border-gray-300 rounded py-1 px-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50" 
+                                        <input type="text" placeholder="พิมพ์ชื่อแบรนด์เป้าหมาย" 
+                                            class="tm-mapping-input flex-1 text-sm border border-gray-300 rounded py-1.5 px-2 focus:ring-blue-500 focus:border-blue-500 bg-white" 
                                             data-key="${key}" value="${val}">
                                     </div>
                                 </div>
@@ -16083,112 +16526,128 @@ window.TargetMatch = (function() {
                 </div>
             `;
         }
-        return html;
-    }
-
-    function getRebateRuleHTML() {
-        return `
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
-                <div class="flex items-center gap-2">
-                    <input type="number" id="tm-rebate-percent" value="${editingProgram.percent}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 border text-lg font-bold text-blue-700">
-                    <span class="text-gray-500 font-medium text-lg">%</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">ยอดขายสะสมของแบรนด์ที่จับคู่ไว้ในแคมเปญนี้ จะนำมาคิดเงินคืนตามเปอร์เซ็นต์ที่ตั้งไว้</p>
-            </div>
-        `;
-    }
-
-    function getPointRuleHTML() {
-        let html = `
-            <div class="mb-5">
-                <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
-                <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2.5 px-3 border bg-white">
-                    <option value="points" ${editingProgram.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
-                    <option value="baht" ${editingProgram.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
-                </select>
-            </div>
-            
-            <div class="border-t border-amber-200/50 pt-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
-                <div class="flex flex-col gap-2 mb-4">
-        `;
         
-        editingProgram.tiers.forEach((tier, index) => {
+        if (extractedGroups.length === 0) {
+            html = `<div class="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <span class="material-symbols-outlined text-gray-400 text-3xl mb-2 block">find_in_page</span>
+                        ไม่พบข้อมูล กลุ่มสินค้า/แบรนด์ ในไฟล์ Target ที่อัปโหลด
+                    </div>`;
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function renderTiers() {
+        const container = document.getElementById('tm-tiers-container');
+        if (!container) return;
+
+        let html = '';
+        currentProfile.pointConfig.tiers.forEach((tier, index) => {
             html += `
-                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative">
+                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative group">
                     <div class="absolute -left-2.5 -top-2.5 bg-amber-100 text-amber-700 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border border-amber-200">
                         ${index + 1}
                     </div>
                     <div class="flex flex-col w-1/2 ml-2">
                         <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">ยอดขายถึง (Baht)</span>
-                        <input type="number" onchange="TargetMatch.updateEditingTier(${index}, 'threshold', this.value)" value="${tier.threshold}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'threshold', this.value)" value="${tier.threshold}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
                     </div>
                     <div class="flex flex-col w-1/2">
                         <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">รางวัลที่ได้</span>
-                        <input type="number" onchange="TargetMatch.updateEditingTier(${index}, 'reward', this.value)" value="${tier.reward}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'reward', this.value)" value="${tier.reward}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
                     </div>
-                    <button onclick="TargetMatch.removeEditingTier(${index})" class="mt-4 text-red-400 hover:text-red-600 transition-colors p-1" title="ลบเงื่อนไข">
+                    <button onclick="TargetMatch.removeTier(${index})" class="mt-4 text-red-400 hover:text-red-600 transition-colors p-1" title="ลบเงื่อนไข">
                         <span class="material-symbols-outlined text-lg">delete</span>
                     </button>
                 </div>
             `;
         });
-
-        if (editingProgram.tiers.length === 0) {
-            html += `<div class="text-sm text-gray-400 text-center py-2 italic">ยังไม่มีเงื่อนไขขั้นบันได</div>`;
+        
+        if (currentProfile.pointConfig.tiers.length === 0) {
+            html = `<div class="text-sm text-gray-400 text-center py-2 italic">ยังไม่มีเงื่อนไขขั้นบันได</div>`;
         }
 
-        html += `
-                </div>
-                <button onclick="TargetMatch.addEditingTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
-                </button>
-            </div>
-        `;
-        return html;
+        container.innerHTML = html;
     }
 
-    function addEditingTier() {
-        if (!editingProgram) return;
+    function addTier() {
+        // Find max threshold to suggest the next one
         let maxThreshold = 0;
-        if (editingProgram.tiers.length > 0) {
-            maxThreshold = Math.max(...editingProgram.tiers.map(t => t.threshold));
+        if (currentProfile.pointConfig.tiers.length > 0) {
+            maxThreshold = Math.max(...currentProfile.pointConfig.tiers.map(t => t.threshold));
         }
-        editingProgram.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
-        editingProgram.tiers.sort((a, b) => a.threshold - b.threshold);
-        renderUI(); // Re-render edit mode
+        currentProfile.pointConfig.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
+        
+        // Sort tiers by threshold
+        currentProfile.pointConfig.tiers.sort((a, b) => a.threshold - b.threshold);
+        renderTiers();
     }
 
-    function removeEditingTier(index) {
-        if (!editingProgram) return;
-        editingProgram.tiers.splice(index, 1);
-        renderUI();
+    function removeTier(index) {
+        currentProfile.pointConfig.tiers.splice(index, 1);
+        renderTiers();
     }
 
-    function updateEditingTier(index, field, value) {
-        if (!editingProgram) return;
-        editingProgram.tiers[index][field] = Number(value);
+    function updateTier(index, field, value) {
+        currentProfile.pointConfig.tiers[index][field] = Number(value);
     }
 
+    function closeModal() {
+        let modal = document.getElementById('target-match-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function saveConfig() {
+        // Collect mappings
+        const inputs = document.querySelectorAll('.tm-mapping-input');
+        inputs.forEach(input => {
+            const key = input.getAttribute('data-key');
+            if (input.value.trim()) {
+                currentProfile.mappings[key] = input.value.trim();
+            } else {
+                delete currentProfile.mappings[key];
+            }
+        });
+
+        // Collect Rebate
+        const rebateInput = document.getElementById('tm-rebate-percent');
+        if(rebateInput) currentProfile.rebateConfig.percent = Number(rebateInput.value);
+
+        // Collect Point Unit
+        const unitInput = document.getElementById('tm-point-unit');
+        if(unitInput) currentProfile.pointConfig.unit = unitInput.value;
+
+        // Sort Tiers
+        currentProfile.pointConfig.tiers.sort((a, b) => a.threshold - b.threshold);
+
+        // Save
+        profiles[0] = currentProfile;
+        localStorage.setItem('targetMatchProfiles', JSON.stringify(profiles));
+        
+        // Update global variable for immediate dashboard sync
+        window.__TargetMatchActiveProfile = currentProfile;
+
+        // Trigger a custom event in case dashboard needs to re-render charts
+        window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: currentProfile }));
+
+        alert('บันทึกการตั้งค่า Target Match สำเร็จ! ข้อมูลพร้อมถูกนำไปคำนวณกราฟ');
+        closeModal();
+    }
+
+    // Public API
     return {
         onTargetDataLoaded,
         setTargetData,
         openModal,
         closeModal,
-        switchTab,
-        addProgram,
-        openProgram,
-        deleteProgram,
-        saveGlobalConfig,
-        saveEditingProgram,
-        addEditingTier,
-        removeEditingTier,
-        updateEditingTier,
-        loadConfigFromSupabase
+        saveConfig,
+        addTier,
+        removeTier,
+        updateTier
     };
 })();
-
 
 </script>
 </body>
