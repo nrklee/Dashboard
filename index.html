@@ -2658,7 +2658,7 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     size: row.size || '',
                     sku: row.sku || '',
                     cv: row.cv || '',
-                    group: row.group || '',
+                    category: row.group || row.category || '',
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
