@@ -2659,6 +2659,9 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     model: row.model || '',
                     rebate: row.rebate || '',
                     set: row.set || '',
+                    sub_cv_name: row.subCvName || '',
+                    cv_type: row.cvType || '',
+                    desc_loc: row.descLoc || '',
                     sales: Number(row.sales || 0),
                     qty: Number(row.qty || 0),
                     ton: Number(row.ton || 0),
@@ -2864,7 +2867,10 @@ window.downloadSalesFromSupabase = async function() {
                 size: r.size,
                 sku: r.sku,
                 cv: r.cv || '',
-                group: r.group || (r.raw_json && r.raw_json.group) || '',
+                subCvName: r.sub_cv_name || (r.raw_json && r.raw_json.subCvName) || '',
+                cvType: r.cv_type || (r.raw_json && r.raw_json.cvType) || '',
+                descLoc: r.desc_loc || (r.raw_json && r.raw_json.descLoc) || '',
+                group: r.group || r.category || (r.raw_json && (r.raw_json.group || r.raw_json.category)) || '',
                 model: r.model || (r.raw_json && r.raw_json.model) || '',
                 rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
                 set: r.set || (r.raw_json && r.raw_json.set) || '',
@@ -9258,10 +9264,33 @@ var parseSalesRows = function(rows, parseOptions, sheet) {
                             }
                             
                             var headerRow = rows[headerRowIdx].map(function(c) { return String(c || '').toUpperCase().trim(); });
-                            var dbMap = { date: -1, year_label: -1, month_index: -1, day: -1, amount: -1, qty: -1, ton: -1, region: -1, province: -1, district: -1, cv: -1, group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, subCategory: -1, descLoc: -1 };
+                            var dbMap = { 
+                                date: -1, year_label: -1, month_index: -1, day: -1, 
+                                amount: -1, qty: -1, ton: -1,
+                                sales_amount: -1, dn_amount: -1, cn_amount: -1,
+                                total_qty: -1, sales_qty: -1, free_qty: -1, dn_qty: -1, cn_qty: -1,
+                                total_wgh: -1, sales_wgh: -1, free_wgh: -1, dn_wgh: -1, cn_wgh: -1,
+                                region: -1, province: -1, district: -1, cv: -1, subCvName: -1, cvType: -1, 
+                                group: -1, brand: -1, model: -1, size: -1, sku: -1, rebate: -1, set: -1, 
+                                subCategory: -1, descLoc: -1 
+                            };
                             
                             headerRow.forEach(function(colName, idx) {
                                 var cLower = colName.toLowerCase().replace(/\s+/g, '');
+                                if (colName === 'SALES_AMOUNT') dbMap.sales_amount = idx;
+                                if (colName === 'DN_AMOUNT') dbMap.dn_amount = idx;
+                                if (colName === 'CN_AMOUNT') dbMap.cn_amount = idx;
+                                if (colName === 'TOTAL_QTY') dbMap.total_qty = idx;
+                                if (colName === 'SALES_QTY') dbMap.sales_qty = idx;
+                                if (colName === 'FREE_QTY') dbMap.free_qty = idx;
+                                if (colName === 'DN_QTY_MAS_UNIT') dbMap.dn_qty = idx;
+                                if (colName === 'CN_QTY_MAS_UNIT') dbMap.cn_qty = idx;
+                                if (colName === 'TOTAL_WGH (TONS)') dbMap.total_wgh = idx;
+                                if (colName === 'SALES_WGH (TONS)') dbMap.sales_wgh = idx;
+                                if (colName === 'FREE_WGH (TONS)') dbMap.free_wgh = idx;
+                                if (colName === 'DN_WGH (TONS)' || colName === 'DN_WGH (tons)') dbMap.dn_wgh = idx;
+                                if (colName === 'CN_WGH (TONS)' || colName === 'CN_WGH (tons)') dbMap.cn_wgh = idx;
+
                                 if ((colName === 'SALES_DATE' || cLower === 'salesdate' || cLower === 'วันที่') && dbMap.date === -1) dbMap.date = idx;
                                 if ((colName === 'YEAR_LABEL' || cLower === 'yearlabel') && dbMap.year_label === -1) dbMap.year_label = idx;
                                 if ((colName === 'MONTH_INDEX' || cLower === 'monthindex') && dbMap.month_index === -1) dbMap.month_index = idx;
@@ -9273,6 +9302,8 @@ var parseSalesRows = function(rows, parseOptions, sheet) {
                                 if ((colName === 'SECTION' || cLower === 'เขต' || cLower === 'อำเภอ') && dbMap.province === -1) dbMap.province = idx;
                                 if ((colName === 'PROVINCE' || cLower === 'จังหวัด') && dbMap.district === -1) dbMap.district = idx;
                                 if ((colName === 'CV_NAME' || cLower === 'cvname' || (!cLower.includes('sub') && cLower.includes('cv')) || cLower === 'ลูกค้า') && dbMap.cv === -1) dbMap.cv = idx;
+                                if ((colName === 'SUB_CV_NAME' || cLower === 'subcvname' || cLower === 'cvรอง') && dbMap.subCvName === -1) dbMap.subCvName = idx;
+                                if ((colName === 'CV_TYPE' || cLower === 'cvtype' || cLower === 'ประเภทลูกค้า') && dbMap.cvType === -1) dbMap.cvType = idx;
                                 if ((colName === 'CATEGORY' || (!cLower.includes('sub') && (cLower.includes('กลุ่ม') || cLower.includes('หมวด') || cLower.includes('group') || cLower.includes('cat')))) && dbMap.group === -1) dbMap.group = idx;
                                 if ((colName === 'BRAND' || cLower === 'แบรนด์' || cLower === 'ยี่ห้อ' || (!cLower.includes('code') && cLower.includes('brand'))) && dbMap.brand === -1) dbMap.brand = idx;
                                 if ((colName === 'SUB_CATEGORY' || cLower === 'รุ่น' || cLower === 'model' || cLower.includes('subcategory') || cLower.includes('sub_category')) && dbMap.model === -1) dbMap.model = idx;
@@ -9293,12 +9324,12 @@ var parseSalesRows = function(rows, parseOptions, sheet) {
                                 var day = 1;
                                 
                                 if (dbMap.year_label !== -1 && dbMap.month_index !== -1) {
-                                    year = parseInt(row[dbMap.year_label], 10);
-                                    month = parseInt(row[dbMap.month_index], 10);
-                                    day = dbMap.day !== -1 ? parseInt(row[dbMap.day], 10) || 1 : 1;
+                                    if (dbMap.year_label < row.length) year = parseInt(row[dbMap.year_label], 10);
+                                    if (dbMap.month_index < row.length) month = parseInt(row[dbMap.month_index], 10);
+                                    day = (dbMap.day !== -1 && dbMap.day < row.length) ? parseInt(row[dbMap.day], 10) || 1 : 1;
                                     if (year > 2500) year -= 543;
                                 } else {
-                                    var rawDate = row[dbMap.date];
+                                    var rawDate = (dbMap.date !== -1 && dbMap.date < row.length) ? row[dbMap.date] : undefined;
                                     if (typeof rawDate === 'number') {
                                         var excelDate = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
                                         var userTimezoneOffset = excelDate.getTimezoneOffset() * 60000;
@@ -9349,29 +9380,85 @@ var parseSalesRows = function(rows, parseOptions, sheet) {
                                     continue;
                                 }
                                 
-                                var amount = parseNumericValue(row[dbMap.amount]);
-                                var qty = parseNumericValue(row[dbMap.qty]);
-                                var ton = parseNumericValue(row[dbMap.ton]);
+                                var getNumericVal = function(key) {
+                                    var c_idx = dbMap[key];
+                                    if (c_idx === -1 || c_idx >= row.length) return 0;
+                                    return parseNumericValue(row[c_idx]);
+                                };
+
+                                var amount = 0;
+                                var qty = 0;
+                                var ton = 0;
+
+                                if (dbMap.sales_amount !== -1 || dbMap.dn_amount !== -1 || dbMap.cn_amount !== -1) {
+                                    var s_amt = getNumericVal('sales_amount');
+                                    var d_amt = getNumericVal('dn_amount');
+                                    var c_amt = getNumericVal('cn_amount');
+                                    amount = s_amt + d_amt - c_amt;
+                                } else if (dbMap.amount !== -1) {
+                                    amount = getNumericVal('amount');
+                                }
+
+                                if (dbMap.total_qty !== -1 || dbMap.sales_qty !== -1 || dbMap.dn_qty !== -1 || dbMap.cn_qty !== -1) {
+                                    var base_qty = 0;
+                                    if (dbMap.total_qty !== -1) {
+                                        base_qty = getNumericVal('total_qty');
+                                    } else {
+                                        var s_qty = getNumericVal('sales_qty');
+                                        var f_qty = getNumericVal('free_qty');
+                                        base_qty = s_qty + f_qty;
+                                    }
+                                    var d_qty = getNumericVal('dn_qty');
+                                    var c_qty = getNumericVal('cn_qty');
+                                    qty = base_qty + d_qty - c_qty;
+                                } else if (dbMap.qty !== -1) {
+                                    qty = getNumericVal('qty');
+                                }
+
+                                if (dbMap.total_wgh !== -1 || dbMap.sales_wgh !== -1 || dbMap.dn_wgh !== -1 || dbMap.cn_wgh !== -1) {
+                                    var base_wgh = 0;
+                                    if (dbMap.total_wgh !== -1) {
+                                        base_wgh = getNumericVal('total_wgh');
+                                    } else {
+                                        var s_wgh = getNumericVal('sales_wgh');
+                                        var f_wgh = getNumericVal('free_wgh');
+                                        base_wgh = s_wgh + f_wgh;
+                                    }
+                                    var d_wgh = getNumericVal('dn_wgh');
+                                    var c_wgh = getNumericVal('cn_wgh');
+                                    ton = base_wgh + d_wgh - c_wgh;
+                                } else if (dbMap.ton !== -1) {
+                                    ton = getNumericVal('ton');
+                                }
+
                                 if (amount === 0 && qty === 0 && ton === 0) {
                                     if (!salesUpdateMeta._debugZeroSkipped) salesUpdateMeta._debugZeroSkipped = 0;
                                     salesUpdateMeta._debugZeroSkipped++;
                                     continue;
                                 }
                                 
+                                var getStrVal = function(key) {
+                                    var c_idx = dbMap[key];
+                                    if (c_idx === -1 || c_idx >= row.length) return '';
+                                    return normalizeDimensionValue(row[c_idx]);
+                                };
+
                                 var dimensions = {
-                                    region: normalizeDimensionValue(row[dbMap.region]),
-                                    province: normalizeDimensionValue(row[dbMap.province]),
-                                    district: normalizeDistrictName(normalizeDimensionValue(row[dbMap.district])),
-                                    cv: normalizeDimensionValue(row[dbMap.cv]),
-                                    group: normalizeDimensionValue(row[dbMap.group]),
-                                    brand: normalizeDimensionValue(row[dbMap.brand]),
-                                    model: normalizeDimensionValue(row[dbMap.model]),
-                                    size: normalizeDimensionValue(row[dbMap.size]),
-                                    sku: normalizeDimensionValue(row[dbMap.sku]),
-                                    rebate: dbMap.rebate !== -1 ? normalizeDimensionValue(row[dbMap.rebate]) : '',
-                                    set: dbMap.set !== -1 ? normalizeDimensionValue(row[dbMap.set]) : '',
-                                    subCategory: dbMap.subCategory !== -1 ? normalizeDimensionValue(row[dbMap.subCategory]) : '',
-                                    descLoc: dbMap.descLoc !== -1 ? normalizeDimensionValue(row[dbMap.descLoc]) : ''
+                                    region: getStrVal('region'),
+                                    province: getStrVal('province'),
+                                    district: normalizeDistrictName(getStrVal('district')),
+                                    cv: getStrVal('cv'),
+                                    group: getStrVal('group'),
+                                    brand: getStrVal('brand'),
+                                    model: getStrVal('model'),
+                                    size: getStrVal('size'),
+                                    sku: getStrVal('sku'),
+                                    rebate: dbMap.rebate !== -1 ? getStrVal('rebate') : '',
+                                    set: dbMap.set !== -1 ? getStrVal('set') : '',
+                                    subCategory: dbMap.subCategory !== -1 ? getStrVal('subCategory') : '',
+                                    descLoc: dbMap.descLoc !== -1 ? getStrVal('descLoc') : '',
+                                    subCvName: dbMap.subCvName !== -1 ? getStrVal('subCvName') : '',
+                                    cvType: dbMap.cvType !== -1 ? getStrVal('cvType') : ''
                                 };
                                 dimensions.region = normalizeRegionName(dimensions.region, dimensions.district);
                                 var id = "m-" + Math.random();
@@ -14228,11 +14315,14 @@ return _context20.a(2, false);
     { key: 'province', label: getFilterLabel('PROVINCE', 'จังหวัด') },
     { key: 'district', label: getFilterLabel('SECTION', 'เขตการขาย') },
     { key: 'cv', label: getFilterLabel('CV_NAME', 'CV หลัก') },
+    { key: 'subCvName', label: getFilterLabel('SUB_CV_NAME', 'CV รอง') },
+    { key: 'cvType', label: getFilterLabel('CV_TYPE', 'ประเภทลูกค้า') },
     { key: 'group', label: getFilterLabel('CATEGORY', 'กลุ่ม') },
     { key: 'brand', label: getFilterLabel('BRAND', 'แบรนด์') },
     { key: 'model', label: getFilterLabel('SUB_CATEGORY', 'รุ่น') },
     { key: 'size', label: getFilterLabel('SIZE', 'ขนาด') },
     { key: 'sku', label: getFilterLabel('BRAND_CODE', 'รหัสสินค้า'), isWide: viewMode !== 'monthly' },
+    { key: 'descLoc', label: getFilterLabel('DESC_LOC', 'รายละเอียดสินค้า') },
     { key: 'rebate', label: getFilterLabel('Rebate', 'ประเภท Rebate') },
     { key: 'set', label: getFilterLabel('SET', 'ประเภท SET') }
   ];
