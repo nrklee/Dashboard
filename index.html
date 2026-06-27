@@ -2792,24 +2792,21 @@ window.downloadSalesFromSupabase = async function() {
 
         updateProgress("กำลังเตรียมดาวน์โหลดข้อมูลยอดขายล่าสุด...", 10);
         
-        // Fetch all rows from the aggregated views
-        // Note: Supabase free tier has a default 1000 row limit on select. We must handle pagination if needed.
-        // Wait, the javascript SDK's default limit is 1000, we should override it or paginate.
-        let allMonthly = [];
-        let allYearly = [];
-        let allDaily = [];
-        
-        // Fetch Monthly
+        // Fetch raw rows directly from sales_raw (avoids view timeout)
+        let allRawSales = [];
         let hasMore = true;
         let start = 0;
-        let limit = 1000;
+        const limit = 1000;
         let page = 1;
         while(hasMore) {
-            updateProgress(`กำลังโหลดข้อมูลยอดขายรายเดือน หน้าที่ ${page}...`, 15 + Math.min(page * 5, 20));
-            const { data, error } = await window.supabase.from('dashboard_monthly_view').select('*').range(start, start + limit - 1);
+            updateProgress(`กำลังโหลดข้อมูลยอดขาย หน้าที่ ${page}...`, 10 + Math.min(page * 2, 40));
+            const { data, error } = await window.supabase
+                .from('sales_raw')
+                .select('year_label,month_index,day,region,province,district,brand,size,sku,cv,category,model,rebate,set,sales,qty,ton,sub_cv_name,cv_type,desc_loc,raw_json')
+                .range(start, start + limit - 1);
             if (error) throw error;
             if (data && data.length > 0) {
-                allMonthly = allMonthly.concat(data);
+                allRawSales = allRawSales.concat(data);
                 start += limit;
                 page++;
                 if (data.length < limit) hasMore = false;
@@ -2818,16 +2815,22 @@ window.downloadSalesFromSupabase = async function() {
             }
         }
         
-        // Fetch Yearly
+        updateProgress(`โหลดข้อมูลยอดขาย ${allRawSales.length.toLocaleString()} แถวเสร็จแล้ว กำลังสร้างโครงสร้างข้อมูล...`, 55);
+        
+        // Fetch targets_raw
+        let allRawTargets = [];
         hasMore = true;
         start = 0;
         page = 1;
         while(hasMore) {
-            updateProgress(`กำลังโหลดข้อมูลยอดขายรายปี หน้าที่ ${page}...`, 40 + Math.min(page * 5, 15));
-            const { data, error } = await window.supabase.from('dashboard_yearly_view').select('*').range(start, start + limit - 1);
+            updateProgress(`กำลังโหลดข้อมูลเป้าหมาย หน้าที่ ${page}...`, 55 + Math.min(page * 3, 15));
+            const { data, error } = await window.supabase
+                .from('targets_raw')
+                .select('*')
+                .range(start, start + limit - 1);
             if (error) throw error;
             if (data && data.length > 0) {
-                allYearly = allYearly.concat(data);
+                allRawTargets = allRawTargets.concat(data);
                 start += limit;
                 page++;
                 if (data.length < limit) hasMore = false;
@@ -2836,87 +2839,124 @@ window.downloadSalesFromSupabase = async function() {
             }
         }
         
-        // Fetch Daily
-        hasMore = true;
-        start = 0;
-        page = 1;
-        while(hasMore) {
-            updateProgress(`กำลังโหลดข้อมูลยอดขายรายวัน หน้าที่ ${page}...`, 60 + Math.min(page * 3, 30));
-            const { data, error } = await window.supabase.from('dashboard_daily_view').select('*').range(start, start + limit - 1);
-            if (error) throw error;
-            if (data && data.length > 0) {
-                allDaily = allDaily.concat(data);
-                start += limit;
-                page++;
-                if (data.length < limit) hasMore = false;
-            } else {
-                hasMore = false;
-            }
-        }
+        updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 75);
         
-        updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 95);
-        
-        // Map DB columns back to frontend expected object format
-        const mapRow = (r, isYearly, isDaily) => {
-            const isTargetRow = r.id.startsWith('t');
-            const d = new Date();
-            // Create a fake date for filtering purposes
-            let dateStr = `${r.year}-01-01T00:00:00.000Z`;
-            if (!isYearly) {
-                if (isDaily) {
-                    dateStr = `${r.year}-${String(r.month_index + 1).padStart(2,'0')}-${String(r.day || 1).padStart(2,'0')}T00:00:00.000Z`;
-                } else {
-                    dateStr = `${r.year}-${String(r.month_index + 1).padStart(2,'0')}-01T00:00:00.000Z`;
-                }
-            }
-            
-            const obj = {
-                id: r.id,
-                year: r.year,
-                region: r.region,
-                province: r.province,
-                district: r.district,
-                brand: r.brand,
-                size: r.size,
-                sku: r.sku,
+        // Map raw sales row to frontend object
+        const mapSalesRow = (r) => {
+            const year = r.year_label;
+            const monthIndex = Number(r.month_index);
+            const day = Number(r.day || 1);
+            const dateStr = `${year}-${String(monthIndex + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}T00:00:00.000Z`;
+            return {
+                id: 'm-' + Math.random(),
+                year: year,
+                monthIndex: monthIndex,
+                day: day,
+                date: dateStr,
+                region: r.region || '',
+                province: r.province || '',
+                district: r.district || '',
+                brand: r.brand || '',
+                size: r.size || '',
+                sku: r.sku || '',
                 cv: r.cv || '',
                 subCvName: r.sub_cv_name || (r.raw_json && r.raw_json.subCvName) || '',
                 cvType: r.cv_type || (r.raw_json && r.raw_json.cvType) || '',
                 descLoc: r.desc_loc || (r.raw_json && r.raw_json.descLoc) || '',
-                group: r.group || r.category || (r.raw_json && (r.raw_json.group || r.raw_json.category)) || '',
-                model: r.model || (r.raw_json && r.raw_json.model) || '',
+                group: r.category || (r.raw_json && (r.raw_json.group || r.raw_json.category)) || '',
+                model: r.model || '',
                 rebate: r.rebate || (r.raw_json && r.raw_json.rebate) || '',
                 set: r.set || (r.raw_json && r.raw_json.set) || '',
                 sales: Number(r.sales || 0),
                 qty: Number(r.qty || 0),
                 ton: Number(r.ton || 0),
-                target: Number(r.target || 0),
-                targetValue: Number(r.targetvalue || 0),
-                targetTon: Number(r.targetton || 0),
-                targetLevel: r.targetlevel || undefined,
-                type: isTargetRow ? 'target' : 'sales'
+                target: 0,
+                targetValue: 0,
+                targetTon: 0,
+                targetLevel: undefined
             };
-            
-            if (!isYearly) {
-                obj.monthIndex = Number(r.month_index);
-                obj.date = dateStr;
-            }
-            if (isDaily) {
-                obj.day = Number(r.day || 0);
-            }
-            return obj;
         };
+        
+        // Map raw target row to frontend object
+        const mapTargetRow = (r) => {
+            const year = r.year_label;
+            const monthIndex = Number(r.month_index);
+            const dateStr = `${year}-${String(monthIndex + 1).padStart(2,'0')}-01T00:00:00.000Z`;
+            return {
+                id: 't-' + Math.random(),
+                year: year,
+                monthIndex: monthIndex,
+                date: dateStr,
+                region: r.region || '',
+                province: r.province || '',
+                district: r.district || '',
+                brand: r.brand || '',
+                size: r.size || '',
+                sku: r.sku || '',
+                cv: '',
+                group: r.group || '',
+                model: r.model || '',
+                sales: 0,
+                qty: 0,
+                ton: 0,
+                target: 1,
+                targetValue: Number(r.target_value || 0),
+                targetTon: Number(r.target_ton || 0),
+                targetLevel: r.target_level || undefined,
+                type: 'target'
+            };
+        };
+        
+        const dailySales = allRawSales.map(mapSalesRow);
+        const monthlySales = dailySales; // monthly = all individual rows (same as daily for frontend)
+        
+        // Build yearly entries by aggregating
+        const yearlyMap = {};
+        dailySales.forEach(row => {
+            const key = `${row.year}||${row.region}||${row.province}||${row.district}||${row.brand}||${row.size}||${row.sku}||${row.cv}||${row.group}||${row.model}||${row.rebate}||${row.set}`;
+            if (!yearlyMap[key]) {
+                yearlyMap[key] = { ...row, id: 'sy-' + Math.random() };
+                delete yearlyMap[key].monthIndex;
+                delete yearlyMap[key].day;
+                delete yearlyMap[key].date;
+            } else {
+                yearlyMap[key].sales += row.sales;
+                yearlyMap[key].qty += row.qty;
+                yearlyMap[key].ton += row.ton;
+            }
+        });
+        const yearlySales = Object.values(yearlyMap);
+        
+        // Build target monthly/yearly entries
+        const monthlyTargets = allRawTargets.map(mapTargetRow);
+        const yearlyTargetMap = {};
+        monthlyTargets.forEach(row => {
+            const key = `${row.year}||${row.region}||${row.province}||${row.district}||${row.brand}||${row.size}||${row.sku}||${row.group}||${row.model}`;
+            if (!yearlyTargetMap[key]) {
+                yearlyTargetMap[key] = { ...row, id: 'ty-' + Math.random() };
+                delete yearlyTargetMap[key].monthIndex;
+                delete yearlyTargetMap[key].date;
+            } else {
+                yearlyTargetMap[key].targetValue += row.targetValue;
+                yearlyTargetMap[key].targetTon += row.targetTon;
+            }
+        });
+        const yearlyTargets = Object.values(yearlyTargetMap);
+        
+        updateProgress("กำลังรวมข้อมูลทั้งหมด...", 90);
         
         const finalData = {
-            monthly: allMonthly.map(r => mapRow(r, false, false)),
-            yearly: allYearly.map(r => mapRow(r, true, false)),
-            daily: allDaily.map(r => mapRow(r, false, true))
+            monthly: monthlySales.concat(monthlyTargets),
+            yearly: yearlySales.concat(yearlyTargets),
+            daily: dailySales
         };
         
-        finalData.targets = finalData.monthly.filter(r => r.type === 'target');
+        finalData.targets = monthlyTargets;
+        
+        updateProgress("เสร็จสมบูรณ์!", 100);
         
         if (window.addNotification) {
-            window.addNotification(`✅ อัปเดตข้อมูลจากระบบคลาวด์สำเร็จแล้ว! (พบข้อมูลรายเดือน ${finalData.monthly.length.toLocaleString()} แถว)`, "success");
+            window.addNotification(`✅ อัปเดตข้อมูลจากระบบคลาวด์สำเร็จแล้ว! (ยอดขาย ${allRawSales.length.toLocaleString()} แถว, เป้าหมาย ${allRawTargets.length.toLocaleString()} แถว)`, "success");
         }
 
         return finalData;
