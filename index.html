@@ -2628,6 +2628,9 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
 
     // OFFLINE-FIRST SILENT BACKGROUND STREAMING UPLOAD
     console.log(`[Offline-First Track B] เริ่มทยอยอัปโหลดข้อมูล ${type} ขึ้นคลาวด์เบื้องหลังเงียบๆ...`);
+    if (window.addNotification) {
+        window.addNotification(`☁️ เริ่มอัปโหลดข้อมูล ${type === 'sales' ? 'ยอดขาย' : 'เป้าหมาย'} เข้า Supabase เบื้องหลัง...`, "info");
+    }
     
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
@@ -2748,6 +2751,9 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
         await runQueue();
         
         console.log(`[Background Sync] บันทึกข้อมูล ${type} สำเร็จ 100%! (${rowsToInsert.length} บรรทัด)`);
+        if (window.addNotification) {
+            window.addNotification(`✅ อัปโหลดข้อมูล ${type === 'sales' ? 'ยอดขาย' : 'เป้าหมาย'} (${rowsToInsert.length.toLocaleString()} แถว) เข้า Supabase สำเร็จแล้ว!`, "success");
+        }
         
         // TRIGGER NOTIFICATION BELL BADGE
         if (window._setUnmappedSalesWarnings) {
@@ -2759,6 +2765,9 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
         
     } catch (error) {
         console.error("[Background Sync Error]:", error);
+        if (window.addNotification) {
+            window.addNotification(`❌ อัปโหลดข้อมูลเข้า Supabase ล้มเหลว: ${error.message || String(error)}`, "error");
+        }
         if (window._setUnmappedSalesWarnings) {
             window._setUnmappedSalesWarnings(prev => [
                 { item: `❌ อัปโหลดคลาวด์ล้มเหลว`, sales: `เกิดข้อผิดพลาด`, brand: error.message || String(error) },
@@ -2771,6 +2780,10 @@ window.downloadSalesFromSupabase = async function() {
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
         
+        if (window.addNotification) {
+            window.addNotification("☁️ เริ่มดึงข้อมูลล่าสุดจากระบบคลาวด์ Supabase...", "info");
+        }
+
         const updateProgress = (msg, percent) => {
             if (typeof window.updateSyncProgress === 'function') {
                 window.updateSyncProgress(msg, percent);
@@ -2902,10 +2915,17 @@ window.downloadSalesFromSupabase = async function() {
         
         finalData.targets = finalData.monthly.filter(r => r.type === 'target');
         
+        if (window.addNotification) {
+            window.addNotification(`✅ อัปเดตข้อมูลจากระบบคลาวด์สำเร็จแล้ว! (พบข้อมูลรายเดือน ${finalData.monthly.length.toLocaleString()} แถว)`, "success");
+        }
+
         return finalData;
 
     } catch (error) {
         console.error("Download Error:", error);
+        if (window.addNotification) {
+            window.addNotification(`❌ ดึงข้อมูลจากระบบคลาวด์ล้มเหลว: ${error.message || String(error)}`, "error");
+        }
         throw error;
     }
 };
@@ -7360,8 +7380,16 @@ var App = function App() {
     var notif = { id: Date.now() + Math.random(), message: msg, type: type || "info", time: new Date() };
     setSystemNotifications(function(prev) { return [notif].concat(prev).slice(0, 50); });
     setHasUnreadNotifs(true);
-
   };
+  React.useEffect(function() {
+    window.addNotification = addNotification;
+    return function() {
+      if (window.addNotification === addNotification) {
+        window.addNotification = undefined;
+      }
+    };
+  }, [addNotification]);
+
 
   var _useStateTab = React.useState("dashboard"), activeTab = _useStateTab[0], setActiveTab = _useStateTab[1];
   var _useStateSalesGuideModal = React.useState(false), isSalesGuideWeightModalOpen = _useStateSalesGuideModal[0], setIsSalesGuideWeightModalOpen = _useStateSalesGuideModal[1];
