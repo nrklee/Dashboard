@@ -2730,86 +2730,134 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
         }
     }
 };
-window.downloadSalesFromSupabase = async function() {
+window.buildFullDataShape = function(dailySales, monthlyTargets) {
+    const yearlyMap = {};
+    (dailySales || []).forEach(row => {
+        const key = `${row.year}||${row.region}||${row.province}||${row.district}||${row.brand}||${row.size}||${row.sku}||${row.cv}||${row.group}||${row.model}||${row.rebate}||${row.set}`;
+        if (!yearlyMap[key]) {
+            yearlyMap[key] = { ...row, id: 'sy-' + Math.random() };
+            delete yearlyMap[key].monthIndex;
+            delete yearlyMap[key].day;
+            delete yearlyMap[key].date;
+        } else {
+            yearlyMap[key].sales += row.sales;
+            yearlyMap[key].qty += row.qty;
+            yearlyMap[key].ton += row.ton;
+        }
+    });
+    const yearlySales = Object.values(yearlyMap);
+    
+    const yearlyTargetMap = {};
+    (monthlyTargets || []).forEach(row => {
+        const key = `${row.year}||${row.region}||${row.province}||${row.district}||${row.brand}||${row.size}||${row.sku}||${row.group}||${row.model}`;
+        if (!yearlyTargetMap[key]) {
+            yearlyTargetMap[key] = { ...row, id: 'ty-' + Math.random() };
+            delete yearlyTargetMap[key].monthIndex;
+            delete yearlyTargetMap[key].date;
+        } else {
+            yearlyTargetMap[key].targetValue += row.targetValue;
+            yearlyTargetMap[key].targetTon += row.targetTon;
+        }
+    });
+    const yearlyTargets = Object.values(yearlyTargetMap);
+    
+    return {
+        monthly: (dailySales || []).concat(monthlyTargets || []),
+        yearly: yearlySales.concat(yearlyTargets),
+        daily: dailySales || [],
+        targets: monthlyTargets || []
+    };
+};
+
+window.downloadSalesFromSupabase = async function(options) {
     try {
         if (!window.supabase) throw new Error("Supabase Database ยังไม่พร้อมใช้งาน");
         
-        if (window.addNotification) {
-            window.addNotification("☁️ เริ่มดึงข้อมูลล่าสุดจากระบบคลาวด์ Supabase...", "info");
+        const stage = options && options.stage ? options.stage : 0;
+        const silent = options && options.silent === true;
+
+        if (!silent && window.addNotification && stage !== 2) {
+            window.addNotification(stage === 1 ? "☁️ เริ่มดึงข้อมูล 2 ปีล่าสุดจากระบบคลาวด์ Supabase..." : "☁️ เริ่มดึงข้อมูลล่าสุดจากระบบคลาวด์ Supabase...", "info");
         }
 
         const updateProgress = (msg, percent) => {
-            if (typeof window.updateSyncProgress === 'function') {
+            if (typeof window.updateSyncProgress === 'function' && !silent) {
                 window.updateSyncProgress(msg, percent);
             }
         };
         
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         
-        // Resilient paginated fetch with retry + delay
-        const fetchAllRows = async (tableName, selectCols, label) => {
+        // Resilient parallel paginated fetch with concurrency = 4
+        const fetchAllRows = async (tableName, selectCols, label, extraFilterFn) => {
             let allRows = [];
-            let start = 0;
             const limit = 1000;
-            let page = 1;
-            const MAX_RETRIES = 3;
-            
-            while(true) {
-                let retries = 0;
-                let success = false;
-                
-                while (retries < MAX_RETRIES && !success) {
-                    try {
-                        updateProgress(`กำลังโหลด${label} หน้าที่ ${page} (${allRows.length.toLocaleString()} แถว)...`, Math.min(10 + page, 85));
-                        
-                        let query = window.supabase.from(tableName).select(selectCols);
-                        query = query.range(start, start + limit - 1);
-                        
-                        const { data, error } = await query;
-                        if (error) throw error;
-                        
-                        if (data && data.length > 0) {
-                            allRows = allRows.concat(data);
-                            start += limit;
-                            page++;
-                            success = true;
-                            if (data.length < limit) return allRows; // last page
-                        } else {
-                            return allRows; // no more data
-                        }
-                    } catch (err) {
-                        retries++;
-                        console.warn(`[Cloud Sync] ${label} page ${page} retry ${retries}/${MAX_RETRIES}: ${err.message}`);
-                        if (retries >= MAX_RETRIES) {
-                            console.warn(`[Cloud Sync] ${label} หยุดที่ ${allRows.length} แถว (max retries reached)`);
-                            if (allRows.length > 0) return allRows; // return partial
-                            throw err;
-                        }
-                        await delay(2000 * retries); // exponential backoff
+            const CONCURRENCY = 4;
+            let page = 0;
+            let hasMore = true;
+
+            while (hasMore) {
+                const batchPromises = [];
+                for (let i = 0; i < CONCURRENCY; i++) {
+                    const start = (page + i) * limit;
+                    let query = window.supabase.from(tableName).select(selectCols);
+                    if (typeof extraFilterFn === 'function') {
+                        query = extraFilterFn(query);
+                    }
+                    query = query.range(start, start + limit - 1);
+                    batchPromises.push(
+                        (async (pNum, q) => {
+                            let retries = 0;
+                            while (retries < 3) {
+                                try {
+                                    const { data, error } = await q;
+                                    if (error) throw error;
+                                    return { page: pNum, data: data || [] };
+                                } catch (err) {
+                                    retries++;
+                                    if (retries >= 3) {
+                                        console.warn(`[Cloud Sync] ${label} page ${pNum} failed after 3 retries: ${err.message}`);
+                                        return { page: pNum, data: [] };
+                                    }
+                                    await delay(1500 * retries);
+                                }
+                            }
+                        })(page + i, query)
+                    );
+                }
+
+                const results = await Promise.all(batchPromises);
+                results.sort((a, b) => a.page - b.page);
+                for (let r of results) {
+                    if (r.data.length > 0) {
+                        allRows = allRows.concat(r.data);
+                    }
+                    if (r.data.length < limit) {
+                        hasMore = false;
+                        break;
                     }
                 }
-                
-                // Small delay between pages to avoid overwhelming Supabase free tier
-                if (page % 10 === 0) {
-                    await delay(500);
-                }
+
+                page += CONCURRENCY;
+                updateProgress(`กำลังโหลด${label} (${allRows.length.toLocaleString()} แถว)...`, Math.min(10 + Math.floor(page / 2), 85));
+                await delay(50);
             }
+            return allRows;
         };
 
         updateProgress("กำลังเตรียมดาวน์โหลดข้อมูลยอดขายล่าสุด...", 10);
         
-        // Fetch raw rows directly from sales_raw (no raw_json to reduce payload)
         const salesCols = 'year_label,month_index,day,region,province,district,brand,size,sku,cv,category,model,rebate,set,sales,qty,ton,sub_cv_name,cv_type,desc_loc';
-        const allRawSales = await fetchAllRows('sales_raw', salesCols, 'ข้อมูลยอดขาย');
+        const salesFilterFn = stage === 1 ? (q => q.gte('year_label', '2568')) : stage === 2 ? (q => q.lt('year_label', '2568')) : null;
+        const allRawSales = await fetchAllRows('sales_raw', salesCols, stage === 1 ? 'ข้อมูลยอดขาย (2 ปีล่าสุด)' : stage === 2 ? 'ข้อมูลยอดขาย (ปีย้อนหลัง)' : 'ข้อมูลยอดขาย', salesFilterFn);
         
         updateProgress(`โหลดข้อมูลยอดขาย ${allRawSales.length.toLocaleString()} แถวเสร็จแล้ว`, 55);
         
-        // Fetch targets_raw
-        const allRawTargets = await fetchAllRows('targets_raw', '*', 'ข้อมูลเป้าหมาย');
+        const targetFilterFn = stage === 1 ? (q => q.gte('year_label', '2568')) : stage === 2 ? (q => q.lt('year_label', '2568')) : null;
+        const allRawTargets = await fetchAllRows('targets_raw', '*', stage === 1 ? 'ข้อมูลเป้าหมาย (2 ปีล่าสุด)' : stage === 2 ? 'ข้อมูลเป้าหมาย (ปีย้อนหลัง)' : 'ข้อมูลเป้าหมาย', targetFilterFn);
         
         updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 75);
         
-        // Map raw sales row to frontend object
         const mapSalesRow = (r) => {
             const year = r.year_label;
             const monthIndex = Number(r.month_index);
@@ -2845,7 +2893,6 @@ window.downloadSalesFromSupabase = async function() {
             };
         };
         
-        // Map raw target row to frontend object
         const mapTargetRow = (r) => {
             const year = r.year_label;
             const monthIndex = Number(r.month_index);
@@ -2876,61 +2923,22 @@ window.downloadSalesFromSupabase = async function() {
         };
         
         const dailySales = allRawSales.map(mapSalesRow);
-        
-        // Build yearly entries by aggregating
-        const yearlyMap = {};
-        dailySales.forEach(row => {
-            const key = `${row.year}||${row.region}||${row.province}||${row.district}||${row.brand}||${row.size}||${row.sku}||${row.cv}||${row.group}||${row.model}||${row.rebate}||${row.set}`;
-            if (!yearlyMap[key]) {
-                yearlyMap[key] = { ...row, id: 'sy-' + Math.random() };
-                delete yearlyMap[key].monthIndex;
-                delete yearlyMap[key].day;
-                delete yearlyMap[key].date;
-            } else {
-                yearlyMap[key].sales += row.sales;
-                yearlyMap[key].qty += row.qty;
-                yearlyMap[key].ton += row.ton;
-            }
-        });
-        const yearlySales = Object.values(yearlyMap);
-        
-        // Build target monthly/yearly entries
         const monthlyTargets = allRawTargets.map(mapTargetRow);
-        const yearlyTargetMap = {};
-        monthlyTargets.forEach(row => {
-            const key = `${row.year}||${row.region}||${row.province}||${row.district}||${row.brand}||${row.size}||${row.sku}||${row.group}||${row.model}`;
-            if (!yearlyTargetMap[key]) {
-                yearlyTargetMap[key] = { ...row, id: 'ty-' + Math.random() };
-                delete yearlyTargetMap[key].monthIndex;
-                delete yearlyTargetMap[key].date;
-            } else {
-                yearlyTargetMap[key].targetValue += row.targetValue;
-                yearlyTargetMap[key].targetTon += row.targetTon;
-            }
-        });
-        const yearlyTargets = Object.values(yearlyTargetMap);
         
         updateProgress("กำลังรวมข้อมูลทั้งหมด...", 90);
-        
-        const finalData = {
-            monthly: dailySales.concat(monthlyTargets),
-            yearly: yearlySales.concat(yearlyTargets),
-            daily: dailySales
-        };
-        
-        finalData.targets = monthlyTargets;
+        const finalData = window.buildFullDataShape(dailySales, monthlyTargets);
         
         updateProgress("เสร็จสมบูรณ์!", 100);
         
-        if (window.addNotification) {
-            window.addNotification(`✅ อัปเดตข้อมูลจากระบบคลาวด์สำเร็จแล้ว! (ยอดขาย ${allRawSales.length.toLocaleString()} แถว, เป้าหมาย ${allRawTargets.length.toLocaleString()} แถว)`, "success");
+        if (!silent && window.addNotification && stage !== 2) {
+            window.addNotification(`✅ อัปเดตข้อมูลคลาวด์สำเร็จ! (ยอดขาย ${allRawSales.length.toLocaleString()} แถว)`, "success");
         }
 
         return finalData;
 
     } catch (error) {
         console.error("Download Error:", error);
-        if (window.addNotification) {
+        if (window.addNotification && !options?.silent) {
             window.addNotification(`❌ ดึงข้อมูลจากระบบคลาวด์ล้มเหลว: ${error.message || String(error)}`, "error");
         }
         throw error;
@@ -5376,7 +5384,7 @@ var LoginScreen = function LoginScreen(props) {
     style: { width: '160px', height: 'auto', display: 'block' }
   })
         ),
-        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Salytix V2.1"),
+        /*#__PURE__*/React.createElement("h1", { style: S.title }, "Salytix"),
         /*#__PURE__*/React.createElement("p", { style: S.subtitle }, "Sign in to your enterprise suite")
       ),
       /*#__PURE__*/React.createElement("form", { style: S.form, onSubmit: handlePrimaryAction },
@@ -14142,24 +14150,28 @@ return _context20.a(2, false);
     }
     if (window.downloadSalesFromSupabase) {
         if (isAutoSync !== true) {
-            updateLoadingStatus('กำลังโหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์...', 20, true);
+            updateLoadingStatus('กำลังโหลดข้อมูล 2 ปีล่าสุด (2568-2569)...', 20, true);
         }
-        window.downloadSalesFromSupabase().then(function(finalData) {
-            if (finalData && finalData.monthly) {
-                setAllData(finalData);
-                if (window.TargetMatch && window.TargetMatch.setTargetData) window.TargetMatch.setTargetData(finalData);
+        window.downloadSalesFromSupabase({ stage: 1, silent: isAutoSync === true }).then(function(stage1Data) {
+            if (stage1Data && stage1Data.monthly) {
+                setAllData(function(prev) {
+                    var oldDaily = (prev && prev.daily) ? prev.daily.filter(function(r) { return r && Number(r.year) < 2568; }) : [];
+                    var oldTargets = (prev && prev.targets) ? prev.targets.filter(function(r) { return r && Number(r.year) < 2568; }) : [];
+                    if (oldDaily.length > 0 && window.buildFullDataShape) {
+                        return window.buildFullDataShape(stage1Data.daily.concat(oldDaily), (stage1Data.targets || []).concat(oldTargets));
+                    }
+                    return stage1Data;
+                });
+                if (window.TargetMatch && window.TargetMatch.setTargetData) window.TargetMatch.setTargetData(stage1Data);
                 setFilters(buildLockedFiltersState(lockedFilters));
                 setRepeatGapFilters(createEmptyRepeatGapFilters());
-                return saveToStorage(finalData);
             }
-        }).then(function() {
-            localStorage.setItem('salytix_last_sync_date', today);
             var now = new Date();
             var timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
             if (isAutoSync !== true) {
-                finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
+                finishLoadingStatus('โหลด 2 ปีล่าสุดสำเร็จ! ระบบกำลังดึงข้อมูลปีย้อนหลังเบื้องหลังเงียบๆ...', 'success');
             }
             setTimeout(() => {
                 var gridEl = document.querySelector('.grid-stack');
@@ -14167,8 +14179,29 @@ return _context20.a(2, false);
                     try { gridEl.gridstack.compact(); } catch(e){}
                 }
             }, 250);
+
+            return window.downloadSalesFromSupabase({ stage: 2, silent: true });
+        }).then(function(stage2Data) {
+            if (stage2Data && stage2Data.daily && stage2Data.daily.length > 0) {
+                setAllData(function(currentData) {
+                    var latestDaily = (currentData && currentData.daily) ? currentData.daily.filter(function(r) { return r && Number(r.year) >= 2568; }) : [];
+                    var latestTargets = (currentData && currentData.targets) ? currentData.targets.filter(function(r) { return r && Number(r.year) >= 2568; }) : [];
+                    var fullDaily = latestDaily.concat(stage2Data.daily);
+                    var fullTargets = latestTargets.concat(stage2Data.targets || []);
+                    var finalFullData = window.buildFullDataShape ? window.buildFullDataShape(fullDaily, fullTargets) : currentData;
+                    saveToStorage(finalFullData);
+                    return finalFullData;
+                });
+            } else {
+                setAllData(function(currentData) {
+                    if (currentData) saveToStorage(currentData);
+                    return currentData;
+                });
+            }
+            localStorage.setItem('salytix_last_sync_date', today);
+            console.log("[Cloud Sync] Background full sync completed successfully.");
         }).catch(function(err) {
-            console.error("Manual sync failed:", err);
+            console.error("Sync failed:", err);
             if (isAutoSync !== true) {
                 finishLoadingStatus(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลจากระบบคลาวด์', 'error');
                 setTimeout(() => alert('เกิดข้อผิดพลาดในการซิงค์: ' + err.message), 100);
