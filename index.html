@@ -2788,11 +2788,11 @@ window.downloadSalesFromSupabase = async function(options) {
         
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         
-        // Resilient parallel paginated fetch with concurrency = 4
+        // Resilient parallel paginated fetch with concurrency = 8
         const fetchAllRows = async (tableName, selectCols, label, extraFilterFn) => {
             let allRows = [];
             const limit = 1000;
-            const CONCURRENCY = 4;
+            const CONCURRENCY = 8;
             let page = 0;
             let hasMore = true;
 
@@ -2839,8 +2839,8 @@ window.downloadSalesFromSupabase = async function(options) {
                 }
 
                 page += CONCURRENCY;
-                updateProgress(`กำลังโหลด${label} (${allRows.length.toLocaleString()} แถว)...`, Math.min(10 + Math.floor(page / 2), 85));
-                await delay(50);
+                updateProgress(`กำลังโหลด${label} (${allRows.length.toLocaleString()} แถว)...`, Math.min(10 + Math.floor(page), 85));
+                await delay(10);
             }
             return allRows;
         };
@@ -7888,6 +7888,7 @@ var App = function App() {
       };
     });
   };
+  window.updateSyncProgress = updateLoadingStatus;
   var finishLoadingStatus = function finishLoadingStatus(message) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'success';
     if (typeof addNotification === 'function') addNotification(message, type);
@@ -8143,11 +8144,15 @@ var App = function App() {
       }
       var today = new Date().toISOString().split('T')[0];
       var lastSync = localStorage.getItem('salytix_last_sync_date');
-      if (lastSync !== today) {
-        // Trigger auto-sync once a day per user/device
+      var hasSavedData = Boolean(localStorage.getItem('salytix_saved_data_v2'));
+      if (!hasSavedData) {
+        setTimeout(function() {
+          syncSalesFromSupabase(false);
+        }, 500);
+      } else if (lastSync !== today) {
         setTimeout(function() {
           syncSalesFromSupabase(true);
-        }, 1500); // small delay after login
+        }, 1500);
       }
     }
   }, [authUser]);
