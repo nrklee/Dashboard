@@ -16562,17 +16562,21 @@ window.TargetMatch = (function() {
     window.__TargetMatchActiveProfile = currentProfile;
 
     let extractedGroups = []; // Array of { group: '', brand: '' }
+    let extractedRebateBrands = [];
+    let extractedSetBrands = [];
 
     function onTargetDataLoaded(data) {
         mergedData = data;
         console.log('[TargetMatch] Target Data Loaded. Extracting groups...');
         extractGroupsAndBrands();
+        extractRebateAndSetBrands();
         openModal();
     }
 
     function setTargetData(data) {
         mergedData = data;
         extractGroupsAndBrands();
+        extractRebateAndSetBrands();
     }
 
     function extractGroupsAndBrands() {
@@ -16592,7 +16596,32 @@ window.TargetMatch = (function() {
         extractedGroups = Array.from(map.values());
     }
 
+    function extractRebateAndSetBrands() {
+        let rSet = new Set();
+        let sSet = new Set();
+        let sourceData = [];
+        if (mergedData && Array.isArray(mergedData.monthly)) sourceData = sourceData.concat(mergedData.monthly);
+        if (mergedData && Array.isArray(mergedData.daily)) sourceData = sourceData.concat(mergedData.daily);
+        if (window.salytixAllData && Array.isArray(window.salytixAllData.monthly)) sourceData = sourceData.concat(window.salytixAllData.monthly);
+        if (window.salytixAllData && Array.isArray(window.salytixAllData.daily)) sourceData = sourceData.concat(window.salytixAllData.daily);
+
+        sourceData.forEach(row => {
+            if (!row || !row.brand || row.brand === '-') return;
+            let b = String(row.brand).trim();
+            if (row.rebate && String(row.rebate).trim() !== '' && String(row.rebate).trim() !== '-') {
+                rSet.add(b);
+            }
+            if (row.set && String(row.set).trim() !== '' && String(row.set).trim() !== '-') {
+                sSet.add(b);
+            }
+        });
+        extractedRebateBrands = Array.from(rSet).sort();
+        extractedSetBrands = Array.from(sSet).sort();
+    }
+
     function openModal() {
+        extractGroupsAndBrands();
+        extractRebateAndSetBrands();
         // Create modal DOM if not exists
         let modal = document.getElementById('target-match-modal');
         if (!modal) {
@@ -16601,7 +16630,10 @@ window.TargetMatch = (function() {
             modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-opacity';
             document.body.appendChild(modal);
         }
-        modal.style.display = 'flex';
+        modal.onclick = function(e) {
+            if (e.target === modal) closeModal();
+        };
+        modal.style.setProperty('display', 'flex', 'important');
         renderUI();
     }
 
@@ -16615,7 +16647,7 @@ window.TargetMatch = (function() {
                     <span class="material-symbols-outlined text-blue-600">account_tree</span>
                     ตั้งค่า Target Match & กฎโบนัส
                 </h2>
-                <button onclick="TargetMatch.closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" onclick="event.preventDefault(); event.stopPropagation(); TargetMatch.closeModal();" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
@@ -16634,44 +16666,74 @@ window.TargetMatch = (function() {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Rebate Config -->
-                    <div class="border border-blue-100 rounded-xl overflow-hidden bg-blue-50/30 shadow-sm">
-                        <div class="bg-blue-100/50 px-4 py-3 border-b border-blue-100 font-semibold text-blue-800 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-blue-600 text-lg">percent</span>
-                            2. Rebate Program
-                        </div>
-                        <div class="p-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="tm-rebate-percent" value="${currentProfile.rebateConfig.percent}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
-                                <span class="text-gray-500 font-medium">%</span>
+                    <div class="border border-blue-100 rounded-xl overflow-hidden bg-blue-50/30 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="bg-blue-100/50 px-4 py-3 border-b border-blue-100 font-semibold text-blue-800 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-blue-600 text-lg">percent</span>
+                                    2. Rebate Program
+                                </div>
+                                <span class="text-xs bg-blue-200/70 text-blue-900 px-2.5 py-0.5 rounded-full font-bold">ร่วมรายการ ${extractedRebateBrands.length} แบรนด์</span>
+                            </div>
+                            <div class="p-4 flex flex-col gap-4">
+                                <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-2xs">
+                                    <label class="block text-xs font-bold text-blue-800 mb-2 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[15px]">verified</span>
+                                        แบรนด์ร่วมรายการ Rebate อัตโนมัติ (จากข้อมูล Rebate):
+                                    </label>
+                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                                        ${extractedRebateBrands.length > 0 ? extractedRebateBrands.map(b => `<span class="px-2 py-0.5 bg-blue-100 border border-blue-200 text-blue-800 text-xs rounded-full font-medium shadow-2xs">${b}</span>`).join('') : '<span class="text-xs text-gray-400 italic">ยังไม่พบแบรนด์ในคอลัมน์ Rebate</span>'}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="tm-rebate-percent" value="${currentProfile.rebateConfig.percent || 0}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border bg-white">
+                                        <span class="text-gray-500 font-medium">%</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Point Program -->
-                    <div class="border border-amber-100 rounded-xl overflow-hidden bg-amber-50/30 shadow-sm">
-                        <div class="bg-amber-100/50 px-4 py-3 border-b border-amber-100 font-semibold text-amber-800 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-amber-600 text-lg">stars</span>
-                            3. Point Program (แบบขั้นบันได)
-                        </div>
-                        <div class="p-4 flex flex-col gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
-                                <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-white">
-                                    <option value="points" ${currentProfile.pointConfig.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
-                                    <option value="baht" ${currentProfile.pointConfig.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
-                                </select>
-                            </div>
-                            
-                            <div class="border-t border-amber-200/50 pt-4">
-                                <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
-                                <p class="text-xs text-gray-500 mb-3">*ยอดขายสะสมทะลุขั้นไหน จะได้รางวัลของขั้นนั้นบวกเพิ่มไปเรื่อยๆ</p>
-                                <div id="tm-tiers-container" class="flex flex-col gap-2 mb-3">
-                                    <!-- Rendered Tiers -->
+                    <div class="border border-amber-100 rounded-xl overflow-hidden bg-amber-50/30 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="bg-amber-100/50 px-4 py-3 border-b border-amber-100 font-semibold text-amber-800 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-amber-600 text-lg">stars</span>
+                                    3. Point Program (แบบขั้นบันได)
                                 </div>
-                                <button onclick="TargetMatch.addTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
-                                </button>
+                                <span class="text-xs bg-amber-200/70 text-amber-900 px-2.5 py-0.5 rounded-full font-bold">ร่วมรายการ ${extractedSetBrands.length} แบรนด์</span>
+                            </div>
+                            <div class="p-4 flex flex-col gap-4">
+                                <div class="bg-white p-3 rounded-lg border border-amber-100 shadow-2xs">
+                                    <label class="block text-xs font-bold text-amber-800 mb-2 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[15px]">verified</span>
+                                        แบรนด์ร่วมรายการ Point/Set อัตโนมัติ (จากข้อมูล Set):
+                                    </label>
+                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                                        ${extractedSetBrands.length > 0 ? extractedSetBrands.map(b => `<span class="px-2 py-0.5 bg-amber-100 border border-amber-200 text-amber-800 text-xs rounded-full font-medium shadow-2xs">${b}</span>`).join('') : '<span class="text-xs text-gray-400 italic">ยังไม่พบแบรนด์ในคอลัมน์ Set</span>'}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
+                                    <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-white">
+                                        <option value="points" ${currentProfile.pointConfig.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
+                                        <option value="baht" ${currentProfile.pointConfig.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="border-t border-amber-200/50 pt-4">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
+                                    <p class="text-xs text-gray-500 mb-3">*ยอดขายสะสมทะลุขั้นไหน จะได้รางวัลของขั้นนั้นบวกเพิ่มไปเรื่อยๆ</p>
+                                    <div id="tm-tiers-container" class="flex flex-col gap-2 mb-3">
+                                        <!-- Rendered Tiers -->
+                                    </div>
+                                    <button type="button" onclick="TargetMatch.addTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -16680,7 +16742,7 @@ window.TargetMatch = (function() {
             </div>
 
             <div class="px-6 py-4 border-t border-gray-100 bg-slate-50 flex justify-end gap-3">
-                <button onclick="TargetMatch.closeModal()" class="px-5 py-2.5 text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
+                <button type="button" onclick="event.preventDefault(); event.stopPropagation(); TargetMatch.closeModal();" class="px-5 py-2.5 text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-xl font-medium transition-colors">ยกเลิก</button>
                 <button onclick="TargetMatch.saveConfig()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-sm transition-colors flex items-center gap-2">
                     <span class="material-symbols-outlined text-sm">save</span>
                     บันทึก & นำไปใช้ (Save & Apply)
@@ -16803,7 +16865,8 @@ window.TargetMatch = (function() {
     function closeModal() {
         let modal = document.getElementById('target-match-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.style.setProperty('display', 'none', 'important');
+            modal.remove();
         }
     }
 
