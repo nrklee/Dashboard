@@ -2792,7 +2792,7 @@ window.downloadSalesFromSupabase = async function(options) {
         const fetchAllRows = async (tableName, selectCols, label, extraFilterFn) => {
             let allRows = [];
             const limit = 1000;
-            const CONCURRENCY = 8;
+            const CONCURRENCY = 16;
             let page = 0;
             let hasMore = true;
 
@@ -2819,7 +2819,7 @@ window.downloadSalesFromSupabase = async function(options) {
                                         console.warn(`[Cloud Sync] ${label} page ${pNum} failed after 3 retries: ${err.message}`);
                                         return { page: pNum, data: [] };
                                     }
-                                    await delay(1500 * retries);
+                                    await delay(1000 * retries);
                                 }
                             }
                         })(page + i, query)
@@ -2848,13 +2848,13 @@ window.downloadSalesFromSupabase = async function(options) {
         updateProgress("กำลังเตรียมดาวน์โหลดข้อมูลยอดขายล่าสุด...", 10);
         
         const salesCols = 'year_label,month_index,day,region,province,district,brand,size,sku,cv,category,model,rebate,set,sales,qty,ton,sub_cv_name,cv_type,desc_loc';
-        const salesFilterFn = stage === 1 ? (q => q.gte('year_label', '2568')) : stage === 2 ? (q => q.lt('year_label', '2568')) : null;
-        const allRawSales = await fetchAllRows('sales_raw', salesCols, stage === 1 ? 'ข้อมูลยอดขาย (2 ปีล่าสุด)' : stage === 2 ? 'ข้อมูลยอดขาย (ปีย้อนหลัง)' : 'ข้อมูลยอดขาย', salesFilterFn);
+        const salesFilterFn = stage === 1 ? (q => q.gte('year_label', '2569')) : stage === 2 ? (q => q.lt('year_label', '2569')) : null;
+        const allRawSales = await fetchAllRows('sales_raw', salesCols, stage === 1 ? 'ข้อมูลยอดขายปีล่าสุด' : stage === 2 ? 'ข้อมูลยอดขายปีย้อนหลัง' : 'ข้อมูลยอดขาย', salesFilterFn);
         
         updateProgress(`โหลดข้อมูลยอดขาย ${allRawSales.length.toLocaleString()} แถวเสร็จแล้ว`, 55);
         
-        const targetFilterFn = stage === 1 ? (q => q.gte('year_label', '2568')) : stage === 2 ? (q => q.lt('year_label', '2568')) : null;
-        const allRawTargets = await fetchAllRows('targets_raw', '*', stage === 1 ? 'ข้อมูลเป้าหมาย (2 ปีล่าสุด)' : stage === 2 ? 'ข้อมูลเป้าหมาย (ปีย้อนหลัง)' : 'ข้อมูลเป้าหมาย', targetFilterFn);
+        const targetFilterFn = stage === 1 ? (q => q.gte('year_label', '2569')) : stage === 2 ? (q => q.lt('year_label', '2569')) : null;
+        const allRawTargets = await fetchAllRows('targets_raw', '*', stage === 1 ? 'ข้อมูลเป้าหมายปีล่าสุด' : stage === 2 ? 'ข้อมูลเป้าหมายปีย้อนหลัง' : 'ข้อมูลเป้าหมาย', targetFilterFn);
         
         updateProgress("กำลังประมวลผลโครงสร้างข้อมูล...", 75);
         
@@ -14188,13 +14188,13 @@ return _context20.a(2, false);
     }
     if (window.downloadSalesFromSupabase) {
         if (isAutoSync !== true) {
-            updateLoadingStatus('กำลังโหลดข้อมูล 2 ปีล่าสุด (2568-2569)...', 20, true);
+            updateLoadingStatus('กำลังโหลดข้อมูลปีปัจจุบัน (2569)...', 20, true);
         }
         window.downloadSalesFromSupabase({ stage: 1, silent: isAutoSync === true }).then(function(stage1Data) {
             if (stage1Data && stage1Data.monthly) {
                 setAllData(function(prev) {
-                    var oldDaily = (prev && prev.daily) ? prev.daily.filter(function(r) { return r && Number(r.year) < 2568; }) : [];
-                    var oldTargets = (prev && prev.targets) ? prev.targets.filter(function(r) { return r && Number(r.year) < 2568; }) : [];
+                    var oldDaily = (prev && prev.daily) ? prev.daily.filter(function(r) { return r && Number(r.year) < 2569; }) : [];
+                    var oldTargets = (prev && prev.targets) ? prev.targets.filter(function(r) { return r && Number(r.year) < 2569; }) : [];
                     var merged = stage1Data;
                     if (oldDaily.length > 0 && window.buildFullDataShape) {
                         merged = window.buildFullDataShape(stage1Data.daily.concat(oldDaily), (stage1Data.targets || []).concat(oldTargets));
@@ -14212,7 +14212,7 @@ return _context20.a(2, false);
             var dateString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
             if (isAutoSync !== true) {
-                finishLoadingStatus('โหลด 2 ปีล่าสุดสำเร็จ! ระบบกำลังดึงข้อมูลปีย้อนหลังเบื้องหลังเงียบๆ...', 'success');
+                finishLoadingStatus('โหลดข้อมูลปีปัจจุบันสำเร็จ! ระบบกำลังดึงข้อมูลปีย้อนหลังเบื้องหลังเงียบๆ...', 'success');
             }
             if (window.reinitDashboardGrid) {
                 window.reinitDashboardGrid(1500);
@@ -14229,8 +14229,8 @@ return _context20.a(2, false);
         }).then(function(stage2Data) {
             if (stage2Data && stage2Data.daily && stage2Data.daily.length > 0) {
                 setAllData(function(currentData) {
-                    var latestDaily = (currentData && currentData.daily) ? currentData.daily.filter(function(r) { return r && Number(r.year) >= 2568; }) : [];
-                    var latestTargets = (currentData && currentData.targets) ? currentData.targets.filter(function(r) { return r && Number(r.year) >= 2568; }) : [];
+                    var latestDaily = (currentData && currentData.daily) ? currentData.daily.filter(function(r) { return r && Number(r.year) >= 2569; }) : [];
+                    var latestTargets = (currentData && currentData.targets) ? currentData.targets.filter(function(r) { return r && Number(r.year) >= 2569; }) : [];
                     var fullDaily = latestDaily.concat(stage2Data.daily);
                     var fullTargets = latestTargets.concat(stage2Data.targets || []);
                     var finalFullData = window.buildFullDataShape ? window.buildFullDataShape(fullDaily, fullTargets) : currentData;
@@ -16571,6 +16571,9 @@ window.TargetMatch = (function() {
     let extractedGroups = []; // Array of { group: '', brand: '' }
     let extractedRebateBrands = [];
     let extractedSetBrands = [];
+    let extractedCVs = [];
+    let extractedPointCampaigns = new Map();
+    let activePointCampaignIndex = 0;
 
     function onTargetDataLoaded(data) {
         mergedData = data;
@@ -16606,6 +16609,8 @@ window.TargetMatch = (function() {
     function extractRebateAndSetBrands() {
         let rSet = new Set();
         let sSet = new Set();
+        let cSet = new Set();
+        let pMap = new Map();
         let sourceData = [];
         if (mergedData && Array.isArray(mergedData.monthly)) sourceData = sourceData.concat(mergedData.monthly);
         if (mergedData && Array.isArray(mergedData.daily)) sourceData = sourceData.concat(mergedData.daily);
@@ -16613,17 +16618,81 @@ window.TargetMatch = (function() {
         if (window.salytixAllData && Array.isArray(window.salytixAllData.daily)) sourceData = sourceData.concat(window.salytixAllData.daily);
 
         sourceData.forEach(row => {
-            if (!row || !row.brand || row.brand === '-') return;
+            if (!row) return;
+            if (row.cv && String(row.cv).trim() !== '' && String(row.cv).trim() !== '-') {
+                cSet.add(String(row.cv).trim());
+            } else if (row.subCvName && String(row.subCvName).trim() !== '' && String(row.subCvName).trim() !== '-') {
+                cSet.add(String(row.subCvName).trim());
+            }
+            if (!row.brand || row.brand === '-') return;
             let b = String(row.brand).trim();
             if (row.rebate && String(row.rebate).trim() !== '' && String(row.rebate).trim() !== '-') {
                 rSet.add(b);
             }
             if (row.set && String(row.set).trim() !== '' && String(row.set).trim() !== '-') {
+                let campName = String(row.set).trim();
                 sSet.add(b);
+                if (!pMap.has(campName)) pMap.set(campName, new Set());
+                pMap.get(campName).add(b);
             }
         });
         extractedRebateBrands = Array.from(rSet).sort();
         extractedSetBrands = Array.from(sSet).sort();
+        extractedCVs = Array.from(cSet).sort();
+        extractedPointCampaigns = pMap;
+
+        if (!currentProfile.rebateConfig) currentProfile.rebateConfig = { percent: 0, startDate: '', endDate: '', cvList: [] };
+        if (!currentProfile.rebateConfig.cvList) currentProfile.rebateConfig.cvList = [];
+        if (typeof currentProfile.rebateConfig.startDate === 'undefined') currentProfile.rebateConfig.startDate = '';
+        if (typeof currentProfile.rebateConfig.endDate === 'undefined') currentProfile.rebateConfig.endDate = '';
+
+        if (!currentProfile.pointConfig) currentProfile.pointConfig = { unit: 'points', tiers: [], campaigns: [] };
+        if (!currentProfile.pointConfig.campaigns || !Array.isArray(currentProfile.pointConfig.campaigns) || currentProfile.pointConfig.campaigns.length === 0) {
+            currentProfile.pointConfig.campaigns = [];
+            if (pMap.size > 0) {
+                pMap.forEach((brandSet, campName) => {
+                    currentProfile.pointConfig.campaigns.push({
+                        id: 'camp_' + Math.random().toString(36).substr(2, 9),
+                        name: campName,
+                        startDate: '',
+                        endDate: '',
+                        unit: currentProfile.pointConfig.unit || 'points',
+                        brands: Array.from(brandSet).sort(),
+                        tiers: (currentProfile.pointConfig.tiers && currentProfile.pointConfig.tiers.length > 0) ? JSON.parse(JSON.stringify(currentProfile.pointConfig.tiers)) : [{ threshold: 50000, reward: 100 }]
+                    });
+                });
+            } else {
+                currentProfile.pointConfig.campaigns.push({
+                    id: 'camp_default',
+                    name: 'General Campaign',
+                    startDate: '',
+                    endDate: '',
+                    unit: currentProfile.pointConfig.unit || 'points',
+                    brands: extractedSetBrands || [],
+                    tiers: (currentProfile.pointConfig.tiers && currentProfile.pointConfig.tiers.length > 0) ? JSON.parse(JSON.stringify(currentProfile.pointConfig.tiers)) : [{ threshold: 50000, reward: 100 }]
+                });
+            }
+        } else {
+            currentProfile.pointConfig.campaigns.forEach(camp => {
+                if (pMap.has(camp.name)) {
+                    camp.brands = Array.from(pMap.get(camp.name)).sort();
+                }
+            });
+            pMap.forEach((brandSet, campName) => {
+                let exists = currentProfile.pointConfig.campaigns.some(c => c.name === campName);
+                if (!exists) {
+                    currentProfile.pointConfig.campaigns.push({
+                        id: 'camp_' + Math.random().toString(36).substr(2, 9),
+                        name: campName,
+                        startDate: '',
+                        endDate: '',
+                        unit: 'points',
+                        brands: Array.from(brandSet).sort(),
+                        tiers: [{ threshold: 50000, reward: 100 }]
+                    });
+                }
+            });
+        }
     }
 
     function openModal() {
@@ -16646,13 +16715,16 @@ window.TargetMatch = (function() {
 
     function renderUI() {
         let modal = document.getElementById('target-match-modal');
+        let camps = currentProfile.pointConfig.campaigns || [];
+        if (activePointCampaignIndex >= camps.length) activePointCampaignIndex = 0;
+        let activeCamp = camps[activePointCampaignIndex] || { name: 'General', startDate: '', endDate: '', unit: 'points', brands: [], tiers: [] };
         
         let html = `
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="material-symbols-outlined text-blue-600">account_tree</span>
-                    ตั้งค่า Target Match & กฎโบนัส
+                    ตั้งค่า Target Match & กฎโบนัส (Rebate & Point Campaigns)
                 </h2>
                 <button type="button" onclick="event.preventDefault(); event.stopPropagation(); TargetMatch.closeModal();" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <span class="material-symbols-outlined">close</span>
@@ -16666,7 +16738,7 @@ window.TargetMatch = (function() {
                     <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 font-semibold text-slate-700">
                         1. จับคู่กลุ่มสินค้าและแบรนด์ (Data Mapping)
                     </div>
-                    <div class="p-4 flex flex-col gap-3" id="tm-tree-container">
+                    <div class="p-4 flex flex-col gap-3 max-h-52 overflow-y-auto" id="tm-tree-container">
                         <!-- Rendered Tree -->
                     </div>
                 </div>
@@ -16675,28 +16747,80 @@ window.TargetMatch = (function() {
                     <!-- Rebate Config -->
                     <div class="border border-blue-100 rounded-xl overflow-hidden bg-blue-50/30 shadow-sm flex flex-col justify-between">
                         <div>
-                            <div class="bg-blue-100/50 px-4 py-3 border-b border-blue-100 font-semibold text-blue-800 flex items-center justify-between">
+                            <div class="bg-blue-100/60 px-4 py-3 border-b border-blue-100 font-semibold text-blue-900 flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="material-symbols-outlined text-blue-600 text-lg">percent</span>
-                                    2. Rebate Program
+                                    2. Rebate Program (กำหนดราย CV หลัก)
                                 </div>
-                                <span class="text-xs bg-blue-200/70 text-blue-900 px-2.5 py-0.5 rounded-full font-bold">ร่วมรายการ ${extractedRebateBrands.length} แบรนด์</span>
+                                <span class="text-xs bg-blue-200/80 text-blue-950 px-2.5 py-0.5 rounded-full font-bold">ร่วมรายการ ${extractedRebateBrands.length} แบรนด์</span>
                             </div>
                             <div class="p-4 flex flex-col gap-4">
+                                <!-- Time Period -->
+                                <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-2xs">
+                                    <label class="block text-xs font-bold text-blue-900 mb-2 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[15px] text-blue-600">calendar_month</span>
+                                        ช่วงเวลาสะสมยอด Rebate (วันที่เริ่ม - วันที่สิ้นสุด):
+                                    </label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <span class="text-[10px] text-gray-500 font-semibold">ตั้งแต่วันที่</span>
+                                            <input type="date" id="tm-rebate-start" value="${currentProfile.rebateConfig.startDate || ''}" onchange="TargetMatch.updateRebatePeriod('start', this.value)" class="w-full text-xs border-gray-300 rounded-md py-1.5 px-2 bg-slate-50 border focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] text-gray-500 font-semibold">ถึงวันที่</span>
+                                            <input type="date" id="tm-rebate-end" value="${currentProfile.rebateConfig.endDate || ''}" onchange="TargetMatch.updateRebatePeriod('end', this.value)" class="w-full text-xs border-gray-300 rounded-md py-1.5 px-2 bg-slate-50 border focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Participating Brands -->
                                 <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-2xs">
                                     <label class="block text-xs font-bold text-blue-800 mb-2 flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[15px]">verified</span>
                                         แบรนด์ร่วมรายการ Rebate อัตโนมัติ (จากข้อมูล Rebate):
                                     </label>
-                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                                    <div class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto pr-1">
                                         ${extractedRebateBrands.length > 0 ? extractedRebateBrands.map(b => `<span class="px-2 py-0.5 bg-blue-100 border border-blue-200 text-blue-800 text-xs rounded-full font-medium shadow-2xs">${b}</span>`).join('') : '<span class="text-xs text-gray-400 italic">ยังไม่พบแบรนด์ในคอลัมน์ Rebate</span>'}
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">ให้เงินคืนกี่เปอร์เซ็นต์ (%) เมื่อถึงเป้า</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="number" id="tm-rebate-percent" value="${currentProfile.rebateConfig.percent || 0}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border bg-white">
-                                        <span class="text-gray-500 font-medium">%</span>
+
+                                <!-- CV List Management -->
+                                <div class="border-t border-blue-200/60 pt-3">
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">รายชื่อ CV หลักที่ร่วมรายการ & เป้าหมาย</label>
+                                    <p class="text-[11px] text-gray-500 mb-2">*เฉพาะ CV หลักที่เลือกด้านล่างเท่านั้นจึงจะได้รับสิทธิ์ (หากไม่เลือก = ไม่ได้ร่วมรายการ)</p>
+                                    
+                                    <div class="flex gap-2 mb-3">
+                                        <select id="tm-add-cv-select" class="flex-1 text-xs border-gray-300 rounded-lg py-2 px-2 border bg-white focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- เลือก CV หลักจากฐานข้อมูล (${extractedCVs.length} CV) --</option>
+                                            ${extractedCVs.map(cv => `<option value="${cv}">${cv}</option>`).join('')}
+                                        </select>
+                                        <button type="button" onclick="TargetMatch.addRebateCV()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-colors flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">add</span> เพิ่ม CV
+                                        </button>
+                                    </div>
+
+                                    <div class="flex flex-col gap-2 max-h-52 overflow-y-auto pr-1">
+                                        ${(currentProfile.rebateConfig.cvList && currentProfile.rebateConfig.cvList.length > 0) ? currentProfile.rebateConfig.cvList.map((item, idx) => `
+                                            <div class="bg-white p-2.5 rounded-lg border border-blue-200 shadow-2xs flex items-center justify-between gap-1.5">
+                                                <div class="w-1/3 text-xs font-bold text-slate-800 truncate" title="${item.cv}">${idx+1}. ${item.cv}</div>
+                                                <div class="flex items-center gap-1 w-1/3">
+                                                    <span class="text-[10px] text-gray-500">เป้า(บ.):</span>
+                                                    <input type="number" value="${item.target || 0}" onchange="TargetMatch.updateRebateCV(${idx}, 'target', this.value)" class="w-full text-xs border-gray-300 rounded px-1 py-1 border focus:ring-blue-500">
+                                                </div>
+                                                <div class="flex items-center gap-1 w-1/4">
+                                                    <span class="text-[10px] text-gray-500">คืน:</span>
+                                                    <input type="number" value="${item.percent || 0}" onchange="TargetMatch.updateRebateCV(${idx}, 'percent', this.value)" class="w-12 text-xs border-gray-300 rounded px-1 py-1 border focus:ring-blue-500">
+                                                    <span class="text-xs font-bold text-gray-600">%</span>
+                                                </div>
+                                                <button type="button" onclick="TargetMatch.removeRebateCV(${idx})" class="text-red-400 hover:text-red-600 p-1">
+                                                    <span class="material-symbols-outlined text-base">delete</span>
+                                                </button>
+                                            </div>
+                                        `).join('') : `
+                                            <div class="text-center py-4 bg-white/60 rounded-lg border border-dashed border-blue-200 text-xs text-gray-400">
+                                                ยังไม่ได้เลือก CV หลัก (ไม่ได้ร่วมรายการ)
+                                            </div>
+                                        `}
                                     </div>
                                 </div>
                             </div>
@@ -16706,39 +16830,82 @@ window.TargetMatch = (function() {
                     <!-- Point Program -->
                     <div class="border border-amber-100 rounded-xl overflow-hidden bg-amber-50/30 shadow-sm flex flex-col justify-between">
                         <div>
-                            <div class="bg-amber-100/50 px-4 py-3 border-b border-amber-100 font-semibold text-amber-800 flex items-center justify-between">
+                            <div class="bg-amber-100/60 px-4 py-3 border-b border-amber-100 font-semibold text-amber-900 flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="material-symbols-outlined text-amber-600 text-lg">stars</span>
-                                    3. Point Program (แบบขั้นบันได)
+                                    3. Point Program แยก Campaign
                                 </div>
-                                <span class="text-xs bg-amber-200/70 text-amber-900 px-2.5 py-0.5 rounded-full font-bold">ร่วมรายการ ${extractedSetBrands.length} แบรนด์</span>
+                                <button type="button" onclick="TargetMatch.addPointCampaign()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 shadow-2xs transition-colors">
+                                    <span class="material-symbols-outlined text-[14px]">add</span> เพิ่ม Campaign
+                                </button>
                             </div>
+
+                            <!-- Campaign Tabs Header -->
+                            <div class="bg-amber-100/30 px-3 py-2 border-b border-amber-100 flex gap-1.5 overflow-x-auto">
+                                ${camps.map((c, i) => `
+                                    <button type="button" onclick="TargetMatch.switchPointCampaign(${i})" class="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${i === activePointCampaignIndex ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-amber-800 hover:bg-amber-100 border border-amber-200'}">
+                                        <span class="material-symbols-outlined text-[14px]">${i === activePointCampaignIndex ? 'sell' : 'label'}</span>
+                                        ${c.name}
+                                    </button>
+                                `).join('')}
+                            </div>
+
                             <div class="p-4 flex flex-col gap-4">
-                                <div class="bg-white p-3 rounded-lg border border-amber-100 shadow-2xs">
-                                    <label class="block text-xs font-bold text-amber-800 mb-2 flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[15px]">verified</span>
-                                        แบรนด์ร่วมรายการ Point/Set อัตโนมัติ (จากข้อมูล Set):
+                                <!-- Active Campaign Header & Period -->
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
+                                    <div class="flex justify-between items-center pb-2 mb-2 border-b border-amber-100">
+                                        <span class="text-sm font-bold text-amber-900 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-amber-600 text-base">campaign</span>
+                                            ตั้งค่า Campaign: <span class="text-amber-600 underline">${activeCamp.name}</span>
+                                        </span>
+                                        ${camps.length > 1 ? `
+                                            <button type="button" onclick="TargetMatch.removePointCampaign(${activePointCampaignIndex})" class="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-0.5 rounded flex items-center gap-0.5">
+                                                <span class="material-symbols-outlined text-[14px]">delete</span> ลบแคมเปญ
+                                            </button>
+                                        ` : ''}
+                                    </div>
+
+                                    <label class="block text-xs font-bold text-amber-900 mb-1.5 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[15px] text-amber-600">calendar_month</span>
+                                        ช่วงเวลาสะสมยอดแคมเปญนี้ (วันที่เริ่ม - วันที่สิ้นสุด):
                                     </label>
-                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
-                                        ${extractedSetBrands.length > 0 ? extractedSetBrands.map(b => `<span class="px-2 py-0.5 bg-amber-100 border border-amber-200 text-amber-800 text-xs rounded-full font-medium shadow-2xs">${b}</span>`).join('') : '<span class="text-xs text-gray-400 italic">ยังไม่พบแบรนด์ในคอลัมน์ Set</span>'}
+                                    <div class="grid grid-cols-2 gap-2 mb-3">
+                                        <div>
+                                            <span class="text-[10px] text-gray-500 font-semibold">ตั้งแต่วันที่</span>
+                                            <input type="date" id="tm-point-start" value="${activeCamp.startDate || ''}" onchange="TargetMatch.updatePointPeriod('start', this.value)" class="w-full text-xs border-gray-300 rounded-md py-1.5 px-2 bg-slate-50 border focus:ring-amber-500 focus:border-amber-500">
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] text-gray-500 font-semibold">ถึงวันที่</span>
+                                            <input type="date" id="tm-point-end" value="${activeCamp.endDate || ''}" onchange="TargetMatch.updatePointPeriod('end', this.value)" class="w-full text-xs border-gray-300 rounded-md py-1.5 px-2 bg-slate-50 border focus:ring-amber-500 focus:border-amber-500">
+                                        </div>
+                                    </div>
+
+                                    <label class="block text-xs font-bold text-amber-800 mb-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[15px]">verified</span>
+                                        แบรนด์ใน Campaign นี้ (${activeCamp.brands ? activeCamp.brands.length : 0} แบรนด์):
+                                    </label>
+                                    <div class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto pr-1">
+                                        ${(activeCamp.brands && activeCamp.brands.length > 0) ? activeCamp.brands.map(b => `<span class="px-2 py-0.5 bg-amber-100 border border-amber-200 text-amber-800 text-xs rounded-full font-medium shadow-2xs">${b}</span>`).join('') : '<span class="text-xs text-gray-400 italic">ทุกแบรนด์ในโปรแกรม</span>'}
                                     </div>
                                 </div>
+
+                                <!-- Unit selection -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">หน่วยของรางวัล (Unit)</label>
-                                    <select id="tm-point-unit" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-white">
-                                        <option value="points" ${currentProfile.pointConfig.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
-                                        <option value="baht" ${currentProfile.pointConfig.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1.5">หน่วยของรางวัลใน Campaign นี้ (Unit)</label>
+                                    <select id="tm-point-unit" onchange="TargetMatch.updatePointUnit(this.value)" class="w-full text-xs border-gray-300 rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 py-2 px-3 border bg-white">
+                                        <option value="points" ${activeCamp.unit === 'points' ? 'selected' : ''}>เป็นคะแนน (Points)</option>
+                                        <option value="baht" ${activeCamp.unit === 'baht' ? 'selected' : ''}>เป็นเงินบาท (Baht)</option>
                                     </select>
                                 </div>
                                 
-                                <div class="border-t border-amber-200/50 pt-4">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">เงื่อนไขขั้นบันได (Tiers)</label>
-                                    <p class="text-xs text-gray-500 mb-3">*ยอดขายสะสมทะลุขั้นไหน จะได้รางวัลของขั้นนั้นบวกเพิ่มไปเรื่อยๆ</p>
-                                    <div id="tm-tiers-container" class="flex flex-col gap-2 mb-3">
-                                        <!-- Rendered Tiers -->
+                                <div class="border-t border-amber-200/50 pt-3">
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">เงื่อนไขขั้นบันไดของ Campaign: ${activeCamp.name}</label>
+                                    <p class="text-[11px] text-gray-500 mb-2">*ยอดขายสะสมทะลุขั้นไหน จะได้รางวัลของขั้นนั้นบวกเพิ่มไปเรื่อยๆ</p>
+                                    <div id="tm-tiers-container" class="flex flex-col gap-2 mb-3 max-h-48 overflow-y-auto pr-1">
+                                        <!-- Rendered Tiers for activeCamp -->
                                     </div>
-                                    <button type="button" onclick="TargetMatch.addTier()" class="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-sm transition-colors flex items-center justify-center gap-1">
-                                        <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขใหม่
+                                    <button type="button" onclick="TargetMatch.addTier()" class="w-full py-2 border-2 border-dashed border-amber-300 rounded-lg text-amber-700 hover:bg-amber-100 font-medium text-xs transition-colors flex items-center justify-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">add</span> เพิ่มเงื่อนไขขั้นบันไดให้ Campaign นี้
                                     </button>
                                 </div>
                             </div>
@@ -16818,55 +16985,140 @@ window.TargetMatch = (function() {
         const container = document.getElementById('tm-tiers-container');
         if (!container) return;
 
+        let camps = currentProfile.pointConfig.campaigns || [];
+        if (activePointCampaignIndex >= camps.length) activePointCampaignIndex = 0;
+        let activeCamp = camps[activePointCampaignIndex];
+        if (!activeCamp || !activeCamp.tiers) {
+            container.innerHTML = `<div class="text-sm text-gray-400 text-center py-2 italic">ยังไม่มีเงื่อนไขขั้นบันได</div>`;
+            return;
+        }
+
         let html = '';
-        currentProfile.pointConfig.tiers.forEach((tier, index) => {
+        activeCamp.tiers.forEach((tier, index) => {
             html += `
-                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-amber-200 shadow-sm relative group">
-                    <div class="absolute -left-2.5 -top-2.5 bg-amber-100 text-amber-700 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border border-amber-200">
+                <div class="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-amber-200 shadow-2xs relative group">
+                    <div class="bg-amber-100 text-amber-800 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border border-amber-200 shrink-0">
                         ${index + 1}
                     </div>
-                    <div class="flex flex-col w-1/2 ml-2">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">ยอดขายถึง (Baht)</span>
-                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'threshold', this.value)" value="${tier.threshold}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                    <div class="flex flex-col flex-1">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">ยอดขายถึง (Baht)</span>
+                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'threshold', this.value)" value="${tier.threshold}" class="w-full text-xs border-gray-300 rounded px-2 py-1 border focus:ring-amber-500 focus:border-amber-500">
                     </div>
-                    <div class="flex flex-col w-1/2">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">รางวัลที่ได้</span>
-                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'reward', this.value)" value="${tier.reward}" class="w-full text-sm border-gray-300 rounded-md p-1.5 border focus:ring-amber-500 focus:border-amber-500">
+                    <div class="flex flex-col flex-1">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">รางวัลที่ได้</span>
+                        <input type="number" onchange="TargetMatch.updateTier(${index}, 'reward', this.value)" value="${tier.reward}" class="w-full text-xs border-gray-300 rounded px-2 py-1 border focus:ring-amber-500 focus:border-amber-500">
                     </div>
-                    <button onclick="TargetMatch.removeTier(${index})" class="mt-4 text-red-400 hover:text-red-600 transition-colors p-1" title="ลบเงื่อนไข">
-                        <span class="material-symbols-outlined text-lg">delete</span>
+                    <button type="button" onclick="TargetMatch.removeTier(${index})" class="text-red-400 hover:text-red-600 transition-colors p-1 self-center" title="ลบเงื่อนไข">
+                        <span class="material-symbols-outlined text-base">delete</span>
                     </button>
                 </div>
             `;
         });
         
-        if (currentProfile.pointConfig.tiers.length === 0) {
+        if (activeCamp.tiers.length === 0) {
             html = `<div class="text-sm text-gray-400 text-center py-2 italic">ยังไม่มีเงื่อนไขขั้นบันได</div>`;
         }
 
         container.innerHTML = html;
     }
 
-    function addTier() {
-        // Find max threshold to suggest the next one
-        let maxThreshold = 0;
-        if (currentProfile.pointConfig.tiers.length > 0) {
-            maxThreshold = Math.max(...currentProfile.pointConfig.tiers.map(t => t.threshold));
+    function addRebateCV(cvName) {
+        if (!cvName || cvName === '') {
+            const selectEl = document.getElementById('tm-add-cv-select');
+            if (selectEl) cvName = selectEl.value;
         }
-        currentProfile.pointConfig.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
-        
-        // Sort tiers by threshold
-        currentProfile.pointConfig.tiers.sort((a, b) => a.threshold - b.threshold);
+        if (!cvName) return;
+        if (!currentProfile.rebateConfig.cvList) currentProfile.rebateConfig.cvList = [];
+        let exists = currentProfile.rebateConfig.cvList.some(item => item.cv === cvName);
+        if (!exists) {
+            currentProfile.rebateConfig.cvList.push({ cv: cvName, target: 500000, percent: currentProfile.rebateConfig.percent || 3 });
+            renderUI();
+        }
+    }
+
+    function removeRebateCV(index) {
+        if (currentProfile.rebateConfig && currentProfile.rebateConfig.cvList) {
+            currentProfile.rebateConfig.cvList.splice(index, 1);
+            renderUI();
+        }
+    }
+
+    function updateRebateCV(index, field, value) {
+        if (currentProfile.rebateConfig && currentProfile.rebateConfig.cvList && currentProfile.rebateConfig.cvList[index]) {
+            if (field === 'target' || field === 'percent') {
+                currentProfile.rebateConfig.cvList[index][field] = Number(value);
+            } else {
+                currentProfile.rebateConfig.cvList[index][field] = value;
+            }
+        }
+    }
+
+    function switchPointCampaign(index) {
+        activePointCampaignIndex = index;
+        renderUI();
+    }
+
+    function addPointCampaign() {
+        let name = prompt("กรุณาระบุชื่อ Campaign ใหม่ (เช่น ECO, Fish, Premium):", "New Campaign");
+        if (!name || !name.trim()) return;
+        name = name.trim();
+        if (!currentProfile.pointConfig.campaigns) currentProfile.pointConfig.campaigns = [];
+        let brands = extractedPointCampaigns && extractedPointCampaigns.has(name) ? Array.from(extractedPointCampaigns.get(name)).sort() : [];
+        currentProfile.pointConfig.campaigns.push({
+            id: 'camp_' + Math.random().toString(36).substr(2, 9),
+            name: name,
+            startDate: '',
+            endDate: '',
+            unit: 'points',
+            brands: brands,
+            tiers: [{ threshold: 50000, reward: 100 }]
+        });
+        activePointCampaignIndex = currentProfile.pointConfig.campaigns.length - 1;
+        renderUI();
+    }
+
+    function removePointCampaign(index) {
+        if (!currentProfile.pointConfig.campaigns || currentProfile.pointConfig.campaigns.length <= 1) {
+            alert("ต้องมีอย่างน้อย 1 Campaign");
+            return;
+        }
+        if (confirm("ต้องการลบ Campaign นี้ใช่หรือไม่?")) {
+            currentProfile.pointConfig.campaigns.splice(index, 1);
+            if (activePointCampaignIndex >= currentProfile.pointConfig.campaigns.length) {
+                activePointCampaignIndex = currentProfile.pointConfig.campaigns.length - 1;
+            }
+            renderUI();
+        }
+    }
+
+    function addTier() {
+        let camps = currentProfile.pointConfig.campaigns || [];
+        let activeCamp = camps[activePointCampaignIndex];
+        if (!activeCamp) return;
+        let maxThreshold = 0;
+        if (activeCamp.tiers && activeCamp.tiers.length > 0) {
+            maxThreshold = Math.max(...activeCamp.tiers.map(t => t.threshold));
+        } else {
+            activeCamp.tiers = [];
+        }
+        activeCamp.tiers.push({ threshold: maxThreshold + 50000, reward: 0 });
+        activeCamp.tiers.sort((a, b) => a.threshold - b.threshold);
         renderTiers();
     }
 
     function removeTier(index) {
-        currentProfile.pointConfig.tiers.splice(index, 1);
+        let camps = currentProfile.pointConfig.campaigns || [];
+        let activeCamp = camps[activePointCampaignIndex];
+        if (!activeCamp || !activeCamp.tiers) return;
+        activeCamp.tiers.splice(index, 1);
         renderTiers();
     }
 
     function updateTier(index, field, value) {
-        currentProfile.pointConfig.tiers[index][field] = Number(value);
+        let camps = currentProfile.pointConfig.campaigns || [];
+        let activeCamp = camps[activePointCampaignIndex];
+        if (!activeCamp || !activeCamp.tiers || !activeCamp.tiers[index]) return;
+        activeCamp.tiers[index][field] = Number(value);
     }
 
     function closeModal() {
@@ -16890,27 +17142,35 @@ window.TargetMatch = (function() {
         });
 
         // Collect Rebate
-        const rebateInput = document.getElementById('tm-rebate-percent');
-        if(rebateInput) currentProfile.rebateConfig.percent = Number(rebateInput.value);
+        const rebateStart = document.getElementById('tm-rebate-start');
+        const rebateEnd = document.getElementById('tm-rebate-end');
+        if (rebateStart) currentProfile.rebateConfig.startDate = rebateStart.value;
+        if (rebateEnd) currentProfile.rebateConfig.endDate = rebateEnd.value;
 
-        // Collect Point Unit
-        const unitInput = document.getElementById('tm-point-unit');
-        if(unitInput) currentProfile.pointConfig.unit = unitInput.value;
+        const campStart = document.getElementById('tm-point-start');
+        const campEnd = document.getElementById('tm-point-end');
+        const campUnit = document.getElementById('tm-point-unit');
+        let camps = currentProfile.pointConfig.campaigns || [];
+        let activeCamp = camps[activePointCampaignIndex];
+        if (activeCamp) {
+            if (campStart) activeCamp.startDate = campStart.value;
+            if (campEnd) activeCamp.endDate = campEnd.value;
+            if (campUnit) activeCamp.unit = campUnit.value;
+            if (activeCamp.tiers) activeCamp.tiers.sort((a, b) => a.threshold - b.threshold);
+        }
 
-        // Sort Tiers
-        currentProfile.pointConfig.tiers.sort((a, b) => a.threshold - b.threshold);
+        if (camps.length > 0) {
+            currentProfile.pointConfig.unit = camps[0].unit;
+            currentProfile.pointConfig.tiers = camps[0].tiers;
+        }
 
         // Save
         profiles[0] = currentProfile;
         localStorage.setItem('targetMatchProfiles', JSON.stringify(profiles));
-        
-        // Update global variable for immediate dashboard sync
         window.__TargetMatchActiveProfile = currentProfile;
-
-        // Trigger a custom event in case dashboard needs to re-render charts
         window.dispatchEvent(new CustomEvent('targetMatchProfileUpdated', { detail: currentProfile }));
 
-        alert('บันทึกการตั้งค่า Target Match สำเร็จ! ข้อมูลพร้อมถูกนำไปคำนวณกราฟ');
+        alert('บันทึกการตั้งค่า Target Match สำเร็จ! ข้อมูลพร้อมถูกนำไปคำนวณ');
         closeModal();
     }
 
@@ -16923,7 +17183,31 @@ window.TargetMatch = (function() {
         saveConfig,
         addTier,
         removeTier,
-        updateTier
+        updateTier,
+        addRebateCV,
+        removeRebateCV,
+        updateRebateCV,
+        updateRebatePeriod: function(type, val) {
+            if (!currentProfile.rebateConfig) currentProfile.rebateConfig = {};
+            if (type === 'start') currentProfile.rebateConfig.startDate = val;
+            if (type === 'end') currentProfile.rebateConfig.endDate = val;
+        },
+        switchPointCampaign,
+        addPointCampaign,
+        removePointCampaign,
+        updatePointPeriod: function(type, val) {
+            let camps = currentProfile.pointConfig.campaigns || [];
+            let activeCamp = camps[activePointCampaignIndex];
+            if (activeCamp) {
+                if (type === 'start') activeCamp.startDate = val;
+                if (type === 'end') activeCamp.endDate = val;
+            }
+        },
+        updatePointUnit: function(val) {
+            let camps = currentProfile.pointConfig.campaigns || [];
+            let activeCamp = camps[activePointCampaignIndex];
+            if (activeCamp) activeCamp.unit = val;
+        }
     };
 })();
 
