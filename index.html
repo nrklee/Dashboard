@@ -8128,7 +8128,7 @@ var App = function App() {
               if (data) {
                 setAllData(normalizeAllDataShape(data));
                 setIsUsingSavedData(true);
-                // removed annoying popup
+                try { localStorage.setItem('salytix_saved_data_v2', 'true'); } catch(e){}
                 setIsLoading(false);
               } else {
                 setAllData(normalizeAllDataShape());
@@ -8174,16 +8174,18 @@ var App = function App() {
       }
       var today = new Date().toISOString().split('T')[0];
       var lastSync = localStorage.getItem('salytix_last_sync_date');
-      var hasSavedData = Boolean(localStorage.getItem('salytix_saved_data_v2'));
-      if (!hasSavedData) {
-        setTimeout(function() {
-          syncSalesFromSupabase(false);
-        }, 500);
-      } else if (lastSync !== today) {
-        setTimeout(function() {
-          syncSalesFromSupabase(true);
-        }, 1500);
-      }
+      idb.load(activeDataKey).then(function(savedData) {
+        var hasSavedData = Boolean((savedData && (savedData.monthly || savedData.daily)) || localStorage.getItem('salytix_saved_data_v2'));
+        if (!hasSavedData) {
+          setTimeout(function() {
+            syncSalesFromSupabase(false);
+          }, 500);
+        } else if (lastSync !== today) {
+          setTimeout(function() {
+            syncSalesFromSupabase(true);
+          }, 1500);
+        }
+      });
     }
   }, [authUser]);
 
@@ -8310,6 +8312,7 @@ var App = function App() {
             return nextTick();
           case 1:
             _context8.n = 2;
+            try { localStorage.setItem('salytix_saved_data_v2', 'true'); } catch(e){}
             return idb.save(data, storageKey);
           case 2:
             setIsUsingSavedData(true);
@@ -14192,10 +14195,13 @@ return _context20.a(2, false);
                 setAllData(function(prev) {
                     var oldDaily = (prev && prev.daily) ? prev.daily.filter(function(r) { return r && Number(r.year) < 2568; }) : [];
                     var oldTargets = (prev && prev.targets) ? prev.targets.filter(function(r) { return r && Number(r.year) < 2568; }) : [];
+                    var merged = stage1Data;
                     if (oldDaily.length > 0 && window.buildFullDataShape) {
-                        return window.buildFullDataShape(stage1Data.daily.concat(oldDaily), (stage1Data.targets || []).concat(oldTargets));
+                        merged = window.buildFullDataShape(stage1Data.daily.concat(oldDaily), (stage1Data.targets || []).concat(oldTargets));
                     }
-                    return stage1Data;
+                    saveToStorage(merged);
+                    try { localStorage.setItem('salytix_saved_data_v2', 'true'); } catch(e){}
+                    return merged;
                 });
                 if (window.TargetMatch && window.TargetMatch.setTargetData) window.TargetMatch.setTargetData(stage1Data);
                 setFilters(buildLockedFiltersState(lockedFilters));
@@ -14229,6 +14235,7 @@ return _context20.a(2, false);
                     var fullTargets = latestTargets.concat(stage2Data.targets || []);
                     var finalFullData = window.buildFullDataShape ? window.buildFullDataShape(fullDaily, fullTargets) : currentData;
                     saveToStorage(finalFullData);
+                    try { localStorage.setItem('salytix_saved_data_v2', 'true'); } catch(e){}
                     return finalFullData;
                 });
             } else {
