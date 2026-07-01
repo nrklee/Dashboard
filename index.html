@@ -16655,9 +16655,12 @@ window.TargetMatch = (function() {
             }
             if (row.set && String(row.set).trim() !== '' && String(row.set).trim() !== '-') {
                 let campName = String(row.set).trim();
-                sSet.add(b);
-                if (!pMap.has(campName)) pMap.set(campName, new Set());
-                pMap.get(campName).add(b);
+                let lowerCamp = campName.toLowerCase();
+                if (lowerCamp !== 'ลดหนี้' && lowerCamp !== 'no set' && lowerCamp !== 'noset') {
+                    sSet.add(b);
+                    if (!pMap.has(campName)) pMap.set(campName, new Set());
+                    pMap.get(campName).add(b);
+                }
             }
         });
         extractedRebateBrands = Array.from(rSet).sort();
@@ -16671,6 +16674,12 @@ window.TargetMatch = (function() {
         if (typeof currentProfile.rebateConfig.endDate === 'undefined') currentProfile.rebateConfig.endDate = '';
 
         if (!currentProfile.pointConfig) currentProfile.pointConfig = { unit: 'points', tiers: [], campaigns: [] };
+        if (Array.isArray(currentProfile.pointConfig.campaigns)) {
+            currentProfile.pointConfig.campaigns = currentProfile.pointConfig.campaigns.filter(c => {
+                let lower = String(c.name || '').trim().toLowerCase();
+                return lower !== 'ลดหนี้' && lower !== 'no set' && lower !== 'noset';
+            });
+        }
         if (!currentProfile.pointConfig.campaigns || !Array.isArray(currentProfile.pointConfig.campaigns) || currentProfile.pointConfig.campaigns.length === 0) {
             currentProfile.pointConfig.campaigns = [];
             if (pMap.size > 0) {
@@ -16720,6 +16729,7 @@ window.TargetMatch = (function() {
     }
 
     function openModal(section, campIndex) {
+        window.__TargetMatchModalSection = section || 'all';
         if (typeof campIndex === 'number') {
             activePointCampaignIndex = campIndex;
         }
@@ -16761,8 +16771,8 @@ window.TargetMatch = (function() {
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-blue-600">account_tree</span>
-                    ตั้งค่า Target Match & กฎโบนัส (Rebate & Point Campaigns)
+                    <span class="material-symbols-outlined text-blue-600">${window.__TargetMatchModalSection === 'point' ? 'campaign' : (window.__TargetMatchModalSection === 'rebate' ? 'percent' : 'account_tree')}</span>
+                    ${window.__TargetMatchModalSection === 'point' ? `ตั้งค่า Campaign: <span class="text-amber-600">${activeCamp.name}</span>` : (window.__TargetMatchModalSection === 'rebate' ? 'ตั้งค่า Rebate Program (กำหนดราย CV หลัก & สัดส่วนเงินคืน)' : 'ตั้งค่า Target Match & กฎโบนัส (Rebate & Point Campaigns)')}
                 </h2>
                 <button type="button" onclick="event.preventDefault(); event.stopPropagation(); TargetMatch.closeModal();" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <span class="material-symbols-outlined">close</span>
@@ -16770,7 +16780,7 @@ window.TargetMatch = (function() {
             </div>
             
             <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-                
+                ${window.__TargetMatchModalSection !== 'rebate' && window.__TargetMatchModalSection !== 'point' ? `
                 <!-- Tree View Section -->
                 <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                     <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 font-semibold text-slate-700">
@@ -16780,8 +16790,10 @@ window.TargetMatch = (function() {
                         <!-- Rendered Tree -->
                     </div>
                 </div>
+                ` : ''}
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 ${window.__TargetMatchModalSection === 'rebate' || window.__TargetMatchModalSection === 'point' ? '' : 'md:grid-cols-2'} gap-6">
+                    ${window.__TargetMatchModalSection !== 'point' ? `
                     <!-- Rebate Config -->
                     <div id="tm-rebate-section" class="border border-blue-100 rounded-xl overflow-hidden bg-blue-50/30 shadow-sm flex flex-col justify-between">
                         <div>
@@ -16865,6 +16877,7 @@ window.TargetMatch = (function() {
                         </div>
                     </div>
 
+                    ${window.__TargetMatchModalSection !== 'rebate' ? `
                     <!-- Point Program -->
                     <div id="tm-point-section" class="border border-amber-100 rounded-xl overflow-hidden bg-amber-50/30 shadow-sm flex flex-col justify-between">
                         <div>
@@ -16878,6 +16891,7 @@ window.TargetMatch = (function() {
                                 </button>
                             </div>
 
+                            ${window.__TargetMatchModalSection !== 'point' ? `
                             <!-- Campaign Tabs Header -->
                             <div class="bg-amber-100/30 px-3 py-2 border-b border-amber-100 flex gap-1.5 overflow-x-auto">
                                 ${camps.map((c, i) => `
@@ -16887,6 +16901,7 @@ window.TargetMatch = (function() {
                                     </button>
                                 `).join('')}
                             </div>
+                            ` : ''}
 
                             <div class="p-4 flex flex-col gap-4">
                                 <!-- Active Campaign Header & Period -->
@@ -16896,11 +16911,9 @@ window.TargetMatch = (function() {
                                             <span class="material-symbols-outlined text-amber-600 text-base">campaign</span>
                                             ตั้งค่า Campaign: <span class="text-amber-600 underline">${activeCamp.name}</span>
                                         </span>
-                                        ${camps.length > 1 ? `
-                                            <button type="button" onclick="TargetMatch.removePointCampaign(${activePointCampaignIndex})" class="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-0.5 rounded flex items-center gap-0.5">
-                                                <span class="material-symbols-outlined text-[14px]">delete</span> ลบแคมเปญ
-                                            </button>
-                                        ` : ''}
+                                        <button type="button" onclick="TargetMatch.removePointCampaign(${activePointCampaignIndex})" class="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-0.5 rounded flex items-center gap-0.5">
+                                            <span class="material-symbols-outlined text-[14px]">delete</span> ลบแคมเปญ
+                                        </button>
                                     </div>
 
                                     <label class="block text-xs font-bold text-amber-900 mb-1.5 flex items-center gap-1">
@@ -16949,6 +16962,7 @@ window.TargetMatch = (function() {
                             </div>
                         </div>
                     </div>
+                    ` : ''}
                 </div>
 
             </div>
@@ -17115,17 +17129,27 @@ window.TargetMatch = (function() {
         renderUI();
     }
 
-    function removePointCampaign(index) {
-        if (!currentProfile.pointConfig.campaigns || currentProfile.pointConfig.campaigns.length <= 1) {
-            alert("ต้องมีอย่างน้อย 1 Campaign");
-            return;
-        }
-        if (confirm("ต้องการลบ Campaign นี้ใช่หรือไม่?")) {
+    function removePointCampaign(index, skipConfirm) {
+        if (!currentProfile.pointConfig || !currentProfile.pointConfig.campaigns) return;
+        if (skipConfirm || confirm("ต้องการลบ Campaign นี้ใช่หรือไม่?")) {
             currentProfile.pointConfig.campaigns.splice(index, 1);
-            if (activePointCampaignIndex >= currentProfile.pointConfig.campaigns.length) {
-                activePointCampaignIndex = currentProfile.pointConfig.campaigns.length - 1;
+            if (currentProfile.pointConfig.campaigns.length === 0) {
+                currentProfile.pointConfig.campaigns.push({
+                    id: 'camp_' + Math.random().toString(36).substr(2, 9),
+                    name: 'General',
+                    startDate: '',
+                    endDate: '',
+                    unit: currentProfile.pointConfig.unit || 'points',
+                    brands: [],
+                    tiers: [{ threshold: 50000, reward: 100 }]
+                });
             }
+            if (activePointCampaignIndex >= currentProfile.pointConfig.campaigns.length) {
+                activePointCampaignIndex = Math.max(0, currentProfile.pointConfig.campaigns.length - 1);
+            }
+            saveConfig();
             renderUI();
+            window.dispatchEvent(new Event('targetMatchProfileUpdated'));
         }
     }
 
