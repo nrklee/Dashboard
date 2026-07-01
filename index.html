@@ -3306,6 +3306,31 @@ var filterRowsByFilterState = function filterRowsByFilterState(rows, filterState
     return rowMatchesFilterState(item, safeFilters, options);
   });
 };
+var computeLatestDataDate = function computeLatestDataDate(data) {
+  if (!data) return '';
+  var maxYear = 0, maxMonth = -1, maxDay = 0;
+  var checkRows = function(rows) {
+    if (!Array.isArray(rows)) return;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      if (!r) continue;
+      var y = Number(r.year || r.year_label || 0);
+      if (y >= 2560 && y <= 2600) {
+        var m = r.monthIndex !== undefined && r.monthIndex !== null ? Number(r.monthIndex) : (r.month_index !== undefined && r.month_index !== null ? Number(r.month_index) : -1);
+        var d = Number(r.day || 0);
+        if (y > maxYear || (y === maxYear && m > maxMonth) || (y === maxYear && m === maxMonth && d > maxDay)) {
+          maxYear = y; maxMonth = m; maxDay = d;
+        }
+      }
+    }
+  };
+  checkRows(data.daily);
+  if (maxYear === 0) checkRows(data.monthly);
+  if (maxYear === 0) return '';
+  var THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  var monthStr = (maxMonth >= 0 && maxMonth < 12) ? THAI_MONTHS_SHORT[maxMonth] : '';
+  return (maxDay > 0 ? maxDay + ' ' : '') + monthStr + ' ' + maxYear;
+};
 var formatLastSyncLabel = function formatLastSyncLabel(value) {
   if (!value) return 'ยังไม่เคยรีเฟรช';
   var parsed = new Date(value);
@@ -7499,6 +7524,11 @@ var App = function App() {
         }, 250);
     };
 
+    window.reinitDashboardGrid = function(delayMs) {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(initGrid, typeof delayMs === 'number' ? delayMs : 1500);
+    };
+
     initGrid();
 
     return function() {
@@ -7508,7 +7538,7 @@ var App = function App() {
             try { gridEl.gridstack.destroy(false); } catch(e) {}
         }
     };
-  }, [activeTab]); // Only re-init when tab changes
+  }, [activeTab, Boolean(allData && (allData.monthly || allData.daily))]);
 
   var getGridProps = function(id, defW, defH) {
       var layouts = {};
@@ -14178,12 +14208,16 @@ return _context20.a(2, false);
             if (isAutoSync !== true) {
                 finishLoadingStatus('โหลด 2 ปีล่าสุดสำเร็จ! ระบบกำลังดึงข้อมูลปีย้อนหลังเบื้องหลังเงียบๆ...', 'success');
             }
-            setTimeout(() => {
-                var gridEl = document.querySelector('.grid-stack');
-                if (gridEl && gridEl.gridstack) {
-                    try { gridEl.gridstack.compact(); } catch(e){}
-                }
-            }, 250);
+            if (window.reinitDashboardGrid) {
+                window.reinitDashboardGrid(1500);
+            } else {
+                setTimeout(() => {
+                    var gridEl = document.querySelector('.grid-stack');
+                    if (gridEl && gridEl.gridstack) {
+                        try { gridEl.gridstack.compact(); } catch(e){}
+                    }
+                }, 1500);
+            }
 
             return window.downloadSalesFromSupabase({ stage: 2, silent: true });
         }).then(function(stage2Data) {
@@ -14203,6 +14237,7 @@ return _context20.a(2, false);
                     return currentData;
                 });
             }
+            if (window.reinitDashboardGrid) window.reinitDashboardGrid(500);
             localStorage.setItem('salytix_last_sync_date', today);
             console.log("[Cloud Sync] Background full sync completed successfully.");
         }).catch(function(err) {
@@ -15412,12 +15447,10 @@ return _context20.a(2, false);
   }, /*#__PURE__*/React.createElement("div", {
     className: "filters-source-meta-row"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "filters-source-label"
-  }, "Supabase Sync"), /*#__PURE__*/React.createElement("span", {
-    className: "filters-source-sep ml-2"
-  }, "·"), /*#__PURE__*/React.createElement("span", {
-    className: "ml-2"
-  }, "อัปเดตล่าสุด ", supabaseSyncLabel))), /*#__PURE__*/React.createElement("div", {
+    className: "filters-source-label font-bold text-blue-700"
+  }, "ข้อมูลยอดขาย update :"), /*#__PURE__*/React.createElement("span", {
+    className: "ml-2 font-medium text-slate-800"
+  }, computeLatestDataDate(allData) || salesSourceUpdateLabel || supabaseSyncLabel || 'ล่าสุดในฐานข้อมูล'))), /*#__PURE__*/React.createElement("div", {
     className: "filters-grid"
   }, filtersDef.map(function (f) {
     if (f.key === 'dateRange' || f.key === 'monthRange') {
