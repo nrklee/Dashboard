@@ -7439,6 +7439,12 @@ var App = function App() {
   var _useStateCustomDashboards = React.useState(function() { try { return JSON.parse(localStorage.getItem('custom_dashboards')) || []; } catch(e) { return []; } }), customDashboards = _useStateCustomDashboards[0], setCustomDashboards = _useStateCustomDashboards[1];
   var _useStateTargetUploadConfirm = React.useState(null), targetUploadConfirm = _useStateTargetUploadConfirm[0], setTargetUploadConfirm = _useStateTargetUploadConfirm[1];
   var _useStateUploadTargetRegion = React.useState(''), uploadTargetRegion = _useStateUploadTargetRegion[0], setUploadTargetRegion = _useStateUploadTargetRegion[1];
+  var _useStateTargetMatchVer = React.useState(0), targetMatchVer = _useStateTargetMatchVer[0], setTargetMatchVer = _useStateTargetMatchVer[1];
+  React.useEffect(function() {
+    var handler = function() { setTargetMatchVer(function(v) { return v + 1; }); };
+    window.addEventListener('targetMatchProfileUpdated', handler);
+    return function() { window.removeEventListener('targetMatchProfileUpdated', handler); };
+  }, []);
   var dbDistrictsForUpload = React.useMemo(function() {
       var regions = new Set();
       if (allData && allData.monthly) {
@@ -14885,16 +14891,22 @@ return _context20.a(2, false);
       /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined transition-transform duration-200", style: { transform: activeTab === 'target_match' ? 'rotate(180deg)' : 'rotate(0deg)' } }, "expand_more")
     ),
     activeTab === 'target_match' && (function() {
-      var tmProfile = window.__TargetMatchActiveProfile;
-      if (!tmProfile) {
-        try {
-          var p = JSON.parse(localStorage.getItem('targetMatchProfiles'));
-          if (p && p[0]) tmProfile = p[0];
-        } catch(e) {}
+      var _ver = targetMatchVer; // ensure reactivity
+      var pointCamps = [];
+      if (window.TargetMatch && typeof window.TargetMatch.getPointCampaigns === 'function') {
+        pointCamps = window.TargetMatch.getPointCampaigns();
+      } else {
+        var tmProfile = window.__TargetMatchActiveProfile;
+        if (!tmProfile) {
+          try {
+            var p = JSON.parse(localStorage.getItem('targetMatchProfiles'));
+            if (p && p[0]) tmProfile = p[0];
+          } catch(e) {}
+        }
+        pointCamps = (tmProfile && tmProfile.pointConfig && Array.isArray(tmProfile.pointConfig.campaigns)) ? tmProfile.pointConfig.campaigns : [];
       }
-      var pointCamps = (tmProfile && tmProfile.pointConfig && Array.isArray(tmProfile.pointConfig.campaigns)) ? tmProfile.pointConfig.campaigns : [];
       if (pointCamps.length === 0) {
-        pointCamps = [{ name: 'Point Program' }];
+        pointCamps = [{ name: 'General Campaign' }];
       }
       return /*#__PURE__*/React.createElement("div", { className: "flex flex-col pl-10 pr-4 mt-1 gap-1 mb-2" },
         /*#__PURE__*/React.createElement("button", {
@@ -14902,11 +14914,27 @@ return _context20.a(2, false);
           className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2"
         }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-blue-600", style: { fontSize: "16px" } }, "percent"), " Rebate Program"),
         pointCamps.map(function(camp, cIdx) {
-          return /*#__PURE__*/React.createElement("button", {
+          return /*#__PURE__*/React.createElement("div", {
             key: "point_camp_" + cIdx,
             onClick: function() { if(window.TargetMatch) window.TargetMatch.openModal('point', cIdx); },
-            className: "text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center gap-2"
-          }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-amber-600", style: { fontSize: "16px" } }, "stars"), " Campaign: " + (camp.name || ("Campaign " + (cIdx + 1))));
+            className: "cursor-pointer text-left px-3 py-2 rounded-lg text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container-high flex items-center justify-between group"
+          },
+            /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 truncate" },
+              /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined text-amber-600 shrink-0", style: { fontSize: "16px" } }, "stars"),
+              /*#__PURE__*/React.createElement("span", { className: "truncate" }, "Campaign: " + (camp.name || ("Campaign " + (cIdx + 1))))
+            ),
+            /*#__PURE__*/React.createElement("button", {
+              type: "button",
+              title: "ลบ Campaign นี้",
+              onClick: function(e) {
+                e.stopPropagation();
+                if(window.TargetMatch && typeof window.TargetMatch.removePointCampaign === 'function') {
+                  window.TargetMatch.removePointCampaign(cIdx);
+                }
+              },
+              className: "text-red-400 hover:text-red-600 opacity-60 group-hover:opacity-100 transition-opacity p-0.5 rounded shrink-0 flex items-center"
+            }, /*#__PURE__*/React.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "15px" } }, "delete"))
+          );
         }),
         /*#__PURE__*/React.createElement("button", {
           onClick: function() { if(window.TargetMatch) window.TargetMatch.openModal(); },
@@ -16725,7 +16753,17 @@ window.TargetMatch = (function() {
                     });
                 }
             });
+            if (pMap.size > 0) {
+                currentProfile.pointConfig.campaigns = currentProfile.pointConfig.campaigns.filter(c => {
+                    let n = (c.name || '').trim();
+                    if ((n === 'General Campaign' || n === 'Point Program' || n === 'General') && (!c.brands || c.brands.length === 0) && !pMap.has(n)) {
+                        return false;
+                    }
+                    return true;
+                });
+            }
         }
+        window.__TargetMatchActiveProfile = currentProfile;
     }
 
     function openModal(section, campIndex) {
@@ -17255,6 +17293,14 @@ window.TargetMatch = (function() {
             if (type === 'end') currentProfile.rebateConfig.endDate = val;
         },
         switchPointCampaign,
+        getPointCampaigns: function() {
+            extractRebateAndSetBrands();
+            let camps = (currentProfile && currentProfile.pointConfig && Array.isArray(currentProfile.pointConfig.campaigns)) ? currentProfile.pointConfig.campaigns : [];
+            return camps.filter(c => {
+                let n = String(c.name || '').trim().toLowerCase();
+                return n !== 'ลดหนี้' && n !== 'no set' && n !== 'noset';
+            });
+        },
         addPointCampaign,
         removePointCampaign,
         updatePointPeriod: function(type, val) {
