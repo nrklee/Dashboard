@@ -2661,16 +2661,21 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
             return { ...row, row_signature: signature };
         }));
         
-        // Insert new data in batches
-        const BATCH_SIZE = 1000;
+        // Insert new data in batches - sequential to avoid overwhelming Supabase free tier
+        const BATCH_SIZE = 500;
         const batches = [];
         for (let i = 0; i < rowsWithSignature.length; i += BATCH_SIZE) {
             batches.push(rowsWithSignature.slice(i, i + BATCH_SIZE));
         }
         
         let completedBatches = 0;
-        const uploadBatchWithRetry = async (batch, batchIndex, retries = 3) => {
-            for (let attempt = 1; attempt <= retries; attempt++) {
+        const totalBatches = batches.length;
+        
+        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+            const batch = batches[batchIndex];
+            let success = false;
+            
+            for (let attempt = 1; attempt <= 3 && !success; attempt++) {
                 try {
                     const { error: insertError } = await window.supabase.from(tableName).upsert(batch, { 
                         onConflict: 'row_signature', 
@@ -2679,32 +2684,25 @@ window.uploadSalesToSupabase = async function(parsedData, type, isAppend) {
                     if (insertError) throw insertError;
                     
                     completedBatches++;
-                    return; // Success!
+                    success = true;
+                    
+                    // Progress notification every 10 batches
+                    if (completedBatches % 10 === 0 || completedBatches === totalBatches) {
+                        const pct = Math.round((completedBatches / totalBatches) * 100);
+                        console.log(`[Background Sync] ${type} progress: ${pct}% (${completedBatches}/${totalBatches} batches)`);
+                    }
                 } catch (err) {
-                    console.warn(`[Background Sync] Batch ${batchIndex + 1} attempt ${attempt} failed:`, err);
-                    if (attempt === retries) throw err;
-                    await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+                    console.warn(`[Background Sync] Batch ${batchIndex + 1}/${totalBatches} attempt ${attempt} failed:`, err.message);
+                    if (attempt === 3) throw err;
+                    await new Promise(resolve => setTimeout(resolve, 3000 * attempt)); // longer backoff
                 }
             }
-        };
-
-        const CONCURRENCY = 3;
-        const queue = batches.map((batch, idx) => () => uploadBatchWithRetry(batch, idx));
-        const runQueue = async () => {
-            const workers = [];
-            const next = async () => {
-                if (queue.length === 0) return;
-                const task = queue.shift();
-                await task();
-                await next();
-            };
-            for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) {
-                workers.push(next());
+            
+            // Delay between batches to respect Supabase free tier rate limits
+            if (batchIndex < totalBatches - 1) {
+                await new Promise(resolve => setTimeout(resolve, 200));
             }
-            await Promise.all(workers);
-        };
-
-        await runQueue();
+        }
         
         console.log(`[Background Sync] บันทึกข้อมูล ${type} สำเร็จ 100%! (${rowsToInsert.length} บรรทัด)`);
         if (window.addNotification) {
@@ -14162,19 +14160,13 @@ return _context20.a(2, false);
             if (typeof setLastSupabaseSyncAt !== 'undefined') setLastSupabaseSyncAt(dateString + ' ' + timeString);
             if (isAutoSync !== true) {
                 finishLoadingStatus('โหลดข้อมูลยอดขายล่าสุดจากระบบคลาวด์สำเร็จ!', 'success');
-                setTimeout(() => {
-                    // Force a complete page reload to ensure GridStack initializes perfectly with the new data
-                    window.location.reload();
-                }, 100);
-            } else {
-                // For auto-sync, just try to re-layout gridstack
-                setTimeout(() => {
-                    var gridEl = document.querySelector('.grid-stack');
-                    if (gridEl && gridEl.gridstack) {
-                        try { gridEl.gridstack.compact(); } catch(e){}
-                    }
-                }, 250);
             }
+            setTimeout(() => {
+                var gridEl = document.querySelector('.grid-stack');
+                if (gridEl && gridEl.gridstack) {
+                    try { gridEl.gridstack.compact(); } catch(e){}
+                }
+            }, 250);
         }).catch(function(err) {
             console.error("Manual sync failed:", err);
             if (isAutoSync !== true) {
@@ -15433,7 +15425,13 @@ return _context20.a(2, false);
     className: "grid grid-cols-1 md:grid-cols-3 gap-4 fade-in"
   }, /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
-  }, kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 pb-2 border-b border-slate-100/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-blue-600 text-lg"
+  }, "payments"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-700"
+  }, "\u0E22\u0E2D\u0E14\u0E02\u0E32\u0E22\u0E23\u0E27\u0E21 (", getUnitLabel(metricMode, unitMode), ")")), kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5"
   }, kpiYearRows.map(function (row) {
     return /*#__PURE__*/React.createElement("div", {
@@ -15452,7 +15450,13 @@ return _context20.a(2, false);
     className: "text-sm font-normal text-slate-500"
   }, getUnitLabel(metricMode, unitMode)))), /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
-  }, kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 pb-2 border-b border-slate-100/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-emerald-600 text-lg"
+  }, "inventory_2"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-700"
+  }, "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E2A\u0E34\u0E49\u0E19\u0E04\u0E49\u0E32 (SKUs)")), kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5"
   }, kpiYearRows.map(function (row) {
     return /*#__PURE__*/React.createElement("div", {
@@ -15467,7 +15471,13 @@ return _context20.a(2, false);
     className: "text-xl font-bold"
   }, totalSKUs.toLocaleString())), /*#__PURE__*/React.createElement("div", {
     className: "kpi-card"
-  }, kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 pb-2 border-b border-slate-100/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "material-symbols-outlined text-amber-600 text-lg"
+  }, "storefront"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-700"
+  }, "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32\u0E17\u0E35\u0E48\u0E0B\u0E37\u0E49\u0E2D (Active CV)")), kpiYearRows.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5"
   }, kpiYearRows.map(function (row) {
     return /*#__PURE__*/React.createElement("div", {
